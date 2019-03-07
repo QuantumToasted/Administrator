@@ -1,0 +1,10 @@
+{
+  "token": "",
+  "prefix": "!!",
+  "connectionString": "",
+  "owners": [],
+  "successColor": "8650AC",
+  "errorColor": "EB4B4B",
+  "warningColor": "FFD700",
+  "verbose": false
+}
