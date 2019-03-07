@@ -330,4 +330,4 @@ ASALocalRun/
 .mfractor/
 
 # "Real" configuration file
-Data/Config.json
+Administrator/Data/Config\.json
