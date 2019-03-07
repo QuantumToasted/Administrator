@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Administrator.Common;
 using Administrator.Database;
 using Discord;
-using Discord.WebSocket;
+using Discord.Rest;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -16,75 +14,15 @@ namespace Administrator.Services
 {
     public sealed class ConfigurationService : IService
     {
-        private readonly DiscordShardedClient _client;
+        private readonly DiscordRestClient _restClient;
+        private readonly LoggingService _logging;
         
-        public ConfigurationService(DiscordShardedClient client)
+        public ConfigurationService(DiscordRestClient restClient, LoggingService logging)
         {
-            try
-            {
-                JsonConvert.PopulateObject(File.ReadAllText("./Data/Config.json"), this);
-
-                if (string.IsNullOrWhiteSpace(DiscordToken))
-                    throw new ArgumentException("You have not supplied a token for the bot.");
-
-                if (string.IsNullOrWhiteSpace(PostgresConnectionString))
-                    throw new ArgumentException(
-                        "You have not supplied a connection string for the PostgreSQL database.");
-            }
-            catch (Exception ex)
-            {
-                Log.Critical(ex);
-                Console.ReadKey();
-                Environment.Exit(-1);
-            }
-
-            _client = client;
-            Log.VerboseEnabled = Verbose;
+            _restClient = restClient;
+            _logging = logging;
         }
 
-        public async Task InitializeAsync()
-        {
-            if (OwnerIds.Count == 0)
-            {
-                Log.Warning("No owner IDs found. Fetching the bot owner's ID.");
-
-                var app = await _client.GetApplicationInfoAsync();
-                Log.Verbose($"Got owner {app.Owner}.");
-                OwnerIds = new List<ulong>
-                {
-                    app.Owner.Id
-                };
-            }
-
-            using (var ctx = new AdminDatabaseContext())
-            {
-                if (!await ctx.Database.CanConnectAsync())
-                {
-                    Log.Critical("Could not connect to the PostgreSQL database using the following connection string:\n" +
-                                 PostgresConnectionString);
-                    Console.ReadKey();
-                    Environment.Exit(-1);
-                }
-
-                var migrations = await ctx.Database.GetPendingMigrationsAsync();
-                if (migrations.Any())
-                {
-                    try
-                    {
-                        await ctx.Database.MigrateAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Critical($"An error occurred migrating the PostgreSQL database:\n{ex}");
-                        Console.ReadKey();
-                        Environment.Exit(-1);
-                    }
-                }
-            }
-            
-            Log.Verbose("Initialized.");
-        }
-        
         [JsonProperty("token")]
         public string DiscordToken { get; private set; }
         
@@ -110,12 +48,103 @@ namespace Administrator.Services
         public bool Verbose { get; private set; }
 
         [JsonProperty("successColor")]
-        private readonly string _successColor;
+        private string _successColor;
 
         [JsonProperty("warnColor")]
-        private readonly string _warnColor;
+        private string _warnColor;
 
         [JsonProperty("errorColor")]
-        private readonly string _errorColor;
+        private string _errorColor;
+
+        public static ConfigurationService Basic
+        {
+            get
+            {
+                var config = new ConfigurationService(null, null);
+                try
+                {
+                    JsonConvert.PopulateObject(File.ReadAllText("./Data/Config.json"), config);
+
+                    if (string.IsNullOrWhiteSpace(config.DiscordToken))
+                        throw new ArgumentException("You have not supplied a token for the bot.");
+
+                    if (string.IsNullOrWhiteSpace(config.PostgresConnectionString))
+                        throw new ArgumentException(
+                            "You have not supplied a connection string for the PostgreSQL database.");
+                }
+                catch (Exception ex)
+                {
+                    new LoggingService().LogCriticalAsync(ex);
+                    Console.ReadKey();
+                    Environment.Exit(-1);
+                }
+
+                return config;
+            }
+        }
+        
+        async Task IService.InitializeAsync()
+        {
+            var config = Basic;
+            DiscordToken = config.DiscordToken;
+            DefaultPrefix = config.DefaultPrefix;
+            PostgresConnectionString = config.PostgresConnectionString;
+            OwnerIds = config.OwnerIds;
+            _successColor = config._successColor;
+            _warnColor = config._warnColor;
+            _errorColor = config._errorColor;
+            Verbose = config.Verbose;
+
+            _logging.Verbose = Verbose;
+            
+            if (OwnerIds.Count == 0)
+            {
+                await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.");
+
+                await _restClient.LoginAsync(TokenType.Bot, DiscordToken);
+                var app = await _restClient.GetApplicationInfoAsync();
+                await _logging.LogDebugAsync($"Got owner {app.Owner}.");
+                
+                OwnerIds = new List<ulong>
+                {
+                    app.Owner.Id
+                };
+            }
+
+            using (var ctx = new AdminDatabaseContext())
+            {
+                await _logging.LogDebugAsync("Attempting database connection.");
+                if (!await ctx.Database.CanConnectAsync())
+                {
+                    await _logging.LogCriticalAsync(
+                        "Could not connect to the PostgreSQL database using the following connection string:\n" +
+                        PostgresConnectionString);
+                    Console.ReadKey();
+                    Environment.Exit(-1);
+                }
+                else await _logging.LogDebugAsync("Connection successful.");
+
+                await _logging.LogDebugAsync("Checking for pending database migrations.");
+                var migrations = (await ctx.Database.GetPendingMigrationsAsync()).ToList();
+                if (migrations.Count > 0)
+                {
+                    await _logging.LogDebugAsync($"{migrations.Count} new migration(s) found.\n" +
+                                                 "Attempting to apply migrations.");
+                    try
+                    {
+                        await ctx.Database.MigrateAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await _logging.LogCriticalAsync($"An error occurred migrating the PostgreSQL database:\n{ex}");
+                        Console.ReadKey();
+                        Environment.Exit(-1);
+                    }
+                }
+                else await _logging.LogDebugAsync("No migrations found.");
+            }
+
+            await _logging.LogDebugAsync("Initialized.");
+        }
     }
 }

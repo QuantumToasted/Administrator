@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Administrator.Common;
 
 namespace Administrator.Services
 {
@@ -10,13 +9,15 @@ namespace Administrator.Services
     {
         private readonly ConcurrentQueue<Func<Task>> _queue;
         private readonly SemaphoreSlim _semaphore;
+        private readonly LoggingService _logging;
 
         private event Func<Task> CollectionChanged;
 
-        public TaskQueueService()
+        public TaskQueueService(LoggingService logging)
         {
             _queue = new ConcurrentQueue<Func<Task>>();
             _semaphore = new SemaphoreSlim(1, 1);
+            _logging = logging;
         }
 
         public Task Enqueue(Func<Task> func)
@@ -37,20 +38,19 @@ namespace Administrator.Services
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.InnerException);
+                    await _logging.LogErrorAsync(ex.InnerException);
                 }
             }
 
             _semaphore.Release();
         }
 
-        public Task InitializeAsync()
+        public async Task InitializeAsync()
         {
             CollectionChanged += () 
                 => Task.Run(EmptyQueueAsync);
 
-            Log.Verbose("Initialized.");
-            return Task.CompletedTask;
+            await _logging.LogDebugAsync("Initialized.");
         }
     }
 }

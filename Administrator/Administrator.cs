@@ -1,10 +1,8 @@
 ﻿using Administrator.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Administrator.Common;
 using Administrator.Services;
 using Discord;
 using Discord.Rest;
@@ -17,32 +15,19 @@ namespace Administrator
     {
         private IServiceProvider _provider;
         private DiscordShardedClient _client;
-        private int _recommendedShards;
-        private int _shardsReady;
-        private bool _ready;
-
-        private async Task OnShardReadyAsync(DiscordSocketClient shard)
-        {
-            Log.Info($"Shard #[{_client.GetShardIdFor(shard.Guilds.First())}/{_client.Shards.Count}] ready.");
-
-            if (_ready || ++_shardsReady != _recommendedShards) return;
-            
-            _ready = true;
-            await ServiceUtilities.InitializeServicesAsync(_provider);
-        }
 
         public async Task InitializeAsync()
         {
             var restClient = new DiscordRestClient();
-            await restClient.LoginAsync(TokenType.Bot,
-                new ConfigurationService(null).DiscordToken);
-            _recommendedShards = await restClient.GetRecommendedShardCountAsync();
+            var config = ConfigurationService.Basic;
+            
+            await restClient.LoginAsync(TokenType.Bot, config.DiscordToken);
             
             _client = new DiscordShardedClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 100,
                 LogLevel = LogSeverity.Info,
-                TotalShards = _recommendedShards
+                TotalShards = await restClient.GetRecommendedShardCountAsync()
             });
             
             _provider = ServiceUtilities.AutoBuildServices()
@@ -51,9 +36,8 @@ namespace Administrator
                 .AddSingleton<CommandService>()
                 .AddSingleton<CancellationTokenSource>()
                 .BuildServiceProvider();
-
-            _client.ShardReady += OnShardReadyAsync;
             
+            await ServiceUtilities.InitializeServicesAsync(_provider);
             await _client.LoginAsync(TokenType.Bot, _provider.GetRequiredService<ConfigurationService>().DiscordToken);
             await _client.StartAsync();
 

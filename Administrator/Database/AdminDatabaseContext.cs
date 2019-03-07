@@ -5,7 +5,7 @@ namespace Administrator.Database
 {
     public sealed class AdminDatabaseContext : DbContext
     {
-        private static readonly ConfigurationService Config = new ConfigurationService(null);
+        private static readonly ConfigurationService Config = ConfigurationService.Basic;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

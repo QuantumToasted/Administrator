@@ -1,25 +1,24 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Administrator.Common;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using Qmmands;
 
 namespace Administrator.Services
 {
     public sealed class EventDispatcherService : IService
     {
         private readonly IServiceProvider _provider;
+        private readonly LoggingService _logging;
 
         public EventDispatcherService(IServiceProvider provider)
         {
             _provider = provider;
+            _logging = _provider.GetRequiredService<LoggingService>();
         }
        
-        public Task InitializeAsync()
+        public async Task InitializeAsync()
         {
             var client = _provider.GetRequiredService<DiscordShardedClient>();
             var restClient = _provider.GetRequiredService<DiscordRestClient>();
@@ -27,8 +26,7 @@ namespace Administrator.Services
             client.Log += OnLog;
             restClient.Log += OnLog;
 
-            Log.Verbose("Initialized.");
-            return Task.CompletedTask;
+            await _logging.LogDebugAsync("Initialized.");
         }
 
         private Task OnLog(LogMessage message)
@@ -38,26 +36,20 @@ namespace Administrator.Services
             switch (message.Severity)
             {
                 case LogSeverity.Critical:
-                    Log.Critical(message.Message, message.Source);
-                    break;
+                    return _logging.LogCriticalAsync(message.Message, message.Source);
                 case LogSeverity.Error:
-                    Log.Error(message.Message, message.Source);
-                    break;
+                    return _logging.LogErrorAsync(message.Message, message.Source);
                 case LogSeverity.Warning:
-                    Log.Warning(message.Message, message.Source);
-                    break;
+                    return _logging.LogWarningAsync(message.Message, message.Source);
                 case LogSeverity.Info:
-                    Log.Info(message.Message, message.Source);
-                    break;
+                    return _logging.LogInfoAsync(message.Message, message.Source);
                 case LogSeverity.Verbose:
-                    Log.Verbose(message.Message, message.Source);
-                    break;
+                    return _logging.LogVerboseAsync(message.Message, message.Source);
                 case LogSeverity.Debug:
-                    Log.Debug(message.Message, message.Source);
-                    break;
+                    return _logging.LogDebugAsync(message.Message, message.Source);
+                default:
+                    return Task.CompletedTask;
             }
-
-            return Task.CompletedTask;
         }
     }
 }
