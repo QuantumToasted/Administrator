@@ -331,3 +331,5 @@ ASALocalRun/
 
 # "Real" configuration file
 Administrator/Data/Config\.json
+
+global\.json
