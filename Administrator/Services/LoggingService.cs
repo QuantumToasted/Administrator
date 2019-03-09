@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,7 +7,7 @@ namespace Administrator.Services
 {
     public sealed class LoggingService : IService
     {
-        private const int PAD_LENGTH = 24;
+        private const int PAD_LENGTH = 16;
         private readonly SemaphoreSlim _semaphore;
 
         public LoggingService()
@@ -18,27 +17,27 @@ namespace Administrator.Services
         
         public bool Verbose { get; set; }
         
-        public Task LogCriticalAsync(object value, [CallerFilePath] string source = "",
+        public Task LogCriticalAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
             => LogMessageAsync(value, source, "CRIT", ConsoleColor.Red, textColor);
 
-        public Task LogErrorAsync(object value, [CallerFilePath] string source = "",
+        public Task LogErrorAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
             => LogMessageAsync(value, source, "ERRO", ConsoleColor.Yellow, textColor);
 
-        public Task LogWarningAsync(object value, [CallerFilePath] string source = "",
+        public Task LogWarningAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
             => LogMessageAsync(value, source, "WARN", ConsoleColor.Magenta, textColor);
 
-        public Task LogInfoAsync(object value, [CallerFilePath] string source = "",
+        public Task LogInfoAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
             => LogMessageAsync(value, source, "INFO", ConsoleColor.Green, textColor);
 
-        public Task LogVerboseAsync(object value, [CallerFilePath] string source = "",
+        public Task LogVerboseAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
             => Verbose ? LogMessageAsync(value, source, "VRBS", ConsoleColor.White, textColor) : Task.CompletedTask;
 
-        public Task LogDebugAsync(object value, [CallerFilePath] string source = "",
+        public Task LogDebugAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
 #if DEBUG
             => LogMessageAsync(value, source, "DBUG", ConsoleColor.DarkGray, textColor);

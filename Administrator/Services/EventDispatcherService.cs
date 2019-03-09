@@ -26,7 +26,7 @@ namespace Administrator.Services
             client.Log += OnLog;
             restClient.Log += OnLog;
 
-            await _logging.LogDebugAsync("Initialized.");
+            await _logging.LogDebugAsync("Initialized.", "Configuration");
         }
 
         private Task OnLog(LogMessage message)

@@ -74,7 +74,7 @@ namespace Administrator.Services
                 }
                 catch (Exception ex)
                 {
-                    new LoggingService().LogCriticalAsync(ex);
+                    new LoggingService().LogCriticalAsync(ex, "Configuration");
                     Console.ReadKey();
                     Environment.Exit(-1);
                 }
@@ -99,11 +99,12 @@ namespace Administrator.Services
             
             if (OwnerIds.Count == 0)
             {
-                await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.");
+                await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.", 
+                    "Configuration");
 
                 await _restClient.LoginAsync(TokenType.Bot, DiscordToken);
                 var app = await _restClient.GetApplicationInfoAsync();
-                await _logging.LogDebugAsync($"Got owner {app.Owner}.");
+                await _logging.LogDebugAsync($"Got owner {app.Owner}.", "Configuration");
                 
                 OwnerIds = new List<ulong>
                 {
@@ -113,38 +114,39 @@ namespace Administrator.Services
 
             using (var ctx = new AdminDatabaseContext())
             {
-                await _logging.LogDebugAsync("Attempting database connection.");
+                await _logging.LogDebugAsync("Attempting database connection.", "Configuration");
                 if (!await ctx.Database.CanConnectAsync())
                 {
                     await _logging.LogCriticalAsync(
                         "Could not connect to the PostgreSQL database using the following connection string:\n" +
-                        PostgresConnectionString);
+                        PostgresConnectionString, "Configuration");
                     Console.ReadKey();
                     Environment.Exit(-1);
                 }
-                else await _logging.LogDebugAsync("Connection successful.");
+                else await _logging.LogDebugAsync("Connection successful.", "Configuration");
 
-                await _logging.LogDebugAsync("Checking for pending database migrations.");
+                await _logging.LogDebugAsync("Checking for pending database migrations.", "Configuration");
                 var migrations = (await ctx.Database.GetPendingMigrationsAsync()).ToList();
                 if (migrations.Count > 0)
                 {
                     await _logging.LogDebugAsync($"{migrations.Count} new migration(s) found.\n" +
-                                                 "Attempting to apply migrations.");
+                                                 "Attempting to apply migrations.", "Configuration");
                     try
                     {
                         await ctx.Database.MigrateAsync();
                     }
                     catch (Exception ex)
                     {
-                        await _logging.LogCriticalAsync($"An error occurred migrating the PostgreSQL database:\n{ex}");
+                        await _logging.LogCriticalAsync($"An error occurred migrating the PostgreSQL database:\n{ex}",
+                            "Configuration");
                         Console.ReadKey();
                         Environment.Exit(-1);
                     }
                 }
-                else await _logging.LogDebugAsync("No migrations found.");
+                else await _logging.LogDebugAsync("No migrations found.", "Configuration");
             }
 
-            await _logging.LogDebugAsync("Initialized.");
+            await _logging.LogDebugAsync("Initialized.", "Configuration");
         }
     }
 }

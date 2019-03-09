@@ -38,7 +38,7 @@ namespace Administrator.Services
                 }
                 catch (Exception ex)
                 {
-                    await _logging.LogErrorAsync(ex.InnerException);
+                    await _logging.LogErrorAsync(ex.InnerException, "TaskQueue");
                 }
             }
 
@@ -50,7 +50,7 @@ namespace Administrator.Services
             CollectionChanged += () 
                 => Task.Run(EmptyQueueAsync);
 
-            await _logging.LogDebugAsync("Initialized.");
+            await _logging.LogDebugAsync("Initialized.", "TaskQueue");
         }
     }
 }
