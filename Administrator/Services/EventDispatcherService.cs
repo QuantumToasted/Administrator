@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
@@ -10,26 +11,35 @@ namespace Administrator.Services
     public sealed class EventDispatcherService : IService
     {
         private readonly IServiceProvider _provider;
+        private readonly DiscordShardedClient _client;
         private readonly LoggingService _logging;
+        private readonly TaskQueueService _queue;
 
         public EventDispatcherService(IServiceProvider provider)
         {
             _provider = provider;
+            _client = _provider.GetRequiredService<DiscordShardedClient>();
             _logging = _provider.GetRequiredService<LoggingService>();
+            _queue = _provider.GetRequiredService<TaskQueueService>();
         }
        
         public async Task InitializeAsync()
         {
-            var client = _provider.GetRequiredService<DiscordShardedClient>();
             var restClient = _provider.GetRequiredService<DiscordRestClient>();
 
-            client.Log += OnLog;
-            restClient.Log += OnLog;
+            _client.Log += message
+                => _queue.Enqueue(() => HandleClientLog(message));
+
+            restClient.Log += message
+                => _queue.Enqueue(() => HandleClientLog(message));
+
+            _client.ShardReady += shard
+                => _queue.Enqueue(() => HandleShardReady(shard));
 
             await _logging.LogDebugAsync("Initialized.", "Configuration");
         }
 
-        private Task OnLog(LogMessage message)
+        private Task HandleClientLog(LogMessage message)
         {
             if (string.IsNullOrWhiteSpace(message.Message)) return Task.CompletedTask;
 
@@ -50,6 +60,12 @@ namespace Administrator.Services
                 default:
                     return Task.CompletedTask;
             }
+        }
+
+        private Task HandleShardReady(BaseSocketClient shard)
+        {
+            // TODO: Track total shard(s) ready
+            return _logging.LogInfoAsync("Ready", $"Shard {_client.GetShardIdFor(shard.Guilds.First())}");
         }
     }
 }
