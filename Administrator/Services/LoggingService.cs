@@ -1,3 +1,5 @@
+// #define VERBOSE
+
 using System;
 using System.IO;
 using System.Threading;
@@ -14,8 +16,6 @@ namespace Administrator.Services
         {
             _semaphore = new SemaphoreSlim(1, 1);
         }
-        
-        public bool Verbose { get; set; }
         
         public Task LogCriticalAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
@@ -35,7 +35,11 @@ namespace Administrator.Services
 
         public Task LogVerboseAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
-            => Verbose ? LogMessageAsync(value, source, "VRBS", ConsoleColor.White, textColor) : Task.CompletedTask;
+#if VERBOSE
+            => LogMessageAsync(value, source, "VRBS", ConsoleColor.White, textColor);
+#else
+            => Task.CompletedTask;
+#endif
 
         public Task LogDebugAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)

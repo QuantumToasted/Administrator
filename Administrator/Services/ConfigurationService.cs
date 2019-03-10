@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -43,9 +43,6 @@ namespace Administrator.Services
         
         [JsonIgnore]
         public Color ErrorColor => new Color(uint.Parse(_errorColor, NumberStyles.HexNumber));
-        
-        [JsonProperty("verbose")]
-        public bool Verbose { get; private set; }
 
         [JsonProperty("successColor")]
         private string _successColor;
@@ -93,9 +90,6 @@ namespace Administrator.Services
             _successColor = config._successColor;
             _warnColor = config._warnColor;
             _errorColor = config._errorColor;
-            Verbose = config.Verbose;
-
-            _logging.Verbose = Verbose;
             
             if (OwnerIds.Count == 0)
             {
