@@ -23,7 +23,7 @@ namespace Administrator.Services
             _queue = _provider.GetRequiredService<TaskQueueService>();
         }
        
-        public async Task InitializeAsync()
+        async Task IService.InitializeAsync()
         {
             var restClient = _provider.GetRequiredService<DiscordRestClient>();
 

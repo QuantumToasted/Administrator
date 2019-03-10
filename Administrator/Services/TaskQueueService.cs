@@ -45,12 +45,12 @@ namespace Administrator.Services
             _semaphore.Release();
         }
 
-        public async Task InitializeAsync()
+        Task IService.InitializeAsync()
         {
             CollectionChanged += () 
                 => Task.Run(EmptyQueueAsync);
 
-            await _logging.LogDebugAsync("Initialized.", "TaskQueue");
+            return _logging.LogDebugAsync("Initialized.", "TaskQueue");
         }
     }
 }
