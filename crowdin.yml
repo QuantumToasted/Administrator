@@ -1,0 +1,3 @@
+files:
+  - source: /Administrator/Data/Responses/en-US.json
+    translation: /Administrator/Data/Responses/%locale%.json
