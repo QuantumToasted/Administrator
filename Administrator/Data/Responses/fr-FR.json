@@ -1,0 +1,13 @@
+{
+  "code": "fr-FR",
+  "englishName": "French (France)",
+  "nativeName": "Français (France)",
+  "responses": {
+    "test_hello": [
+      "Salut, {0}!",
+      "Bonjour, {0}!"
+    ],
+    "test_goodbye": [ "À plus tard, {0}!" ]
+  }
+}
+
