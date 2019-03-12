@@ -47,8 +47,12 @@ namespace Administrator.Services
 
         Task IService.InitializeAsync()
         {
-            CollectionChanged += () 
-                => Task.Run(EmptyQueueAsync);
+            CollectionChanged += ()
+                =>
+            {
+                _ = Task.Run(EmptyQueueAsync);
+                return Task.CompletedTask;
+            };
 
             return _logging.LogDebugAsync("Initialized.", "TaskQueue");
         }
