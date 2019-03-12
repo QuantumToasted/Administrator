@@ -96,7 +96,6 @@ namespace Administrator.Services
                 await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.", 
                     "Configuration");
 
-                await _restClient.LoginAsync(TokenType.Bot, DiscordToken);
                 var app = await _restClient.GetApplicationInfoAsync();
                 await _logging.LogDebugAsync($"Got owner {app.Owner}.", "Configuration");
                 
