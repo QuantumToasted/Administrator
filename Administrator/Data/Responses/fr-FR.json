@@ -10,16 +10,15 @@
     "test_goodbye": [
       "À plus tard, {0}!"
     ],
-    "requirecontext": "This command can only be used in a {0} context.",
+    "requirecontext_guild": "This command can only be used in a guild.",
+    "requirecontext_dm": "This command can only be used in DMs.",
     "requireowner": "Cette commande ne peut être utilisée que par un de mes propriétaires.",
     "requirehierarchy_self": "La hiérarchie ne me permet pas de faire cela.",
     "requirehierarchy_user": "La hiérarchie ne vous permet pas de faire cela.",
-    "requirebotpermissions_guild": "Cette commande nécessite les permissions de guilde suivantes: {0}",
-    "requirebotpermissions_channel": "This command requires me to have the following channel permissions: {0}",
-    "requireuserpermissions_guild": "This command requires you to have the following guild permissions: {0}",
+    "requirebotpermissions_guild": "J'ai besoin des permissions de guilde suivantes pour utiliser cette commande: {0}",
+    "requirebotpermissions_channel": "J'ai besoin des permissions des permissions de canal suivantes pour utiliser cette commande: {0}",
+    "requireuserpermissions_guild": "Vous avez besoin des permissions de guilde suivantes pour utiliser cette commande: {0}",
     "requireuserpermissions_channel": "This command requires you to have the following channel permissions: {0}",
-    "requireguildowner": "This command can only used by the guild owner.",
-    "guild": "guild",
-    "dm": "DM"
+    "requireguildowner": "This command can only used by the guild owner."
   }
 }
