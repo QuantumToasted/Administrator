@@ -33,6 +33,7 @@ namespace Administrator
                 .AddSingleton<CommandService>()
                 .AddSingleton<CancellationTokenSource>()
                 .AddSingleton<Random>()
+                .AddEntityFrameworkNpgsql()
                 .BuildServiceProvider();
             
             await ServiceUtilities.InitializeServicesAsync(provider);
