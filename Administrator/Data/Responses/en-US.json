@@ -8,7 +8,8 @@
       "Greetings, {0}!"
     ],
     "test_goodbye": [ "Seeya, {0}!" ],
-    "requirecontext": "This command can only be used in a {0} context.",
+    "requirecontext_guild": "This command can only be used in a guild.",
+    "requirecontext_dm": "This command can only be used in DMs.", 
     "requireowner": "This command can only be used by one of my owners.",
     "requirehierarchy_self": "The hierarchy doesn't allow me to do that.",
     "requirehierarchy_user": "The hierarchy doesn't allow you to do that.",
@@ -16,8 +17,6 @@
     "requirebotpermissions_channel": "This command requires me to have the following channel permissions: {0}",
     "requireuserpermissions_guild": "This command requires you to have the following guild permissions: {0}",
     "requireuserpermissions_channel": "This command requires you to have the following channel permissions: {0}",
-    "requireguildowner" : "This command can only used by the guild owner.", 
-    "guild": "guild",
-    "dm": "DM"
+    "requireguildowner" : "This command can only used by the guild owner."
   }
 }

@@ -1,11 +1,8 @@
-﻿using System;
-
-namespace Administrator.Common
+﻿namespace Administrator.Common
 {
-    [Flags]
     public enum ContextType
     {
-        Guild = 1,
-        DM = 2
+        Guild,
+        DM
     }
 }
