@@ -1,14 +1,14 @@
 {
   "code": "en-US",
   "englishName": "English (US)",
-  "nativeName": "English (US)",
+  "nativeName": "Français (FR)",
   "responses": {
     "test_hello": [
-      "Hello, {0}!",
-      "Greetings, {0}!"
+      "Salut, {0}!",
+      "Bonjour, {0}!"
     ],
     "test_goodbye": [
-      "Seeya, {0}!"
+      "À plus tard, {0}!"
     ]
   }
 }
