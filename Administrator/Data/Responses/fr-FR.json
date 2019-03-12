@@ -9,6 +9,17 @@
     ],
     "test_goodbye": [
       "À plus tard, {0}!"
-    ]
+    ],
+    "requirecontext": "This command can only be used in a {0} context.",
+    "requireowner": "This command can only be used by one of my owners.",
+    "requirehierarchy_self": "The hierarchy doesn't allow me to do that.",
+    "requirehierarchy_user": "The hierarchy doesn't allow you to do that.",
+    "requirebotpermissions_guild": "This command requires me to have the following guild permissions: {0}",
+    "requirebotpermissions_channel": "This command requires me to have the following channel permissions: {0}",
+    "requireuserpermissions_guild": "This command requires you to have the following guild permissions: {0}",
+    "requireuserpermissions_channel": "This command requires you to have the following channel permissions: {0}",
+    "requireguildowner": "This command can only used by the guild owner.",
+    "guild": "guild",
+    "dm": "DM"
   }
 }
