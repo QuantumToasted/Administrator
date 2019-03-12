@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Administrator.Common;
-using Discord;
 using Qmmands;
 
 namespace Administrator.Commands
