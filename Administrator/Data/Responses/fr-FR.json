@@ -20,10 +20,10 @@
       "Cette commande ne peut être utilisée que par un de mes propriétaires."
     ],
     "requirehierarchy_self": [
-      "The role hierarchy doesn't allow me to do that."
+      "La hiérarchie des rôles ne me permet pas de faire cela."
     ],
     "requirehierarchy_user": [
-      "The role hierarchy doesn't allow you to do that."
+      "La hiérarchie des rôles ne vous permet pas de faire cela."
     ],
     "requirebotpermissions_guild": [
       "J'ai besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
