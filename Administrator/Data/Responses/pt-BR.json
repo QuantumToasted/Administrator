@@ -4,11 +4,11 @@
   "nativeName": "English (US)",
   "responses": {
     "test_hello": [
-      "Hello, {0}!",
-      "Greetings, {0}!"
+      "Olá, {0}!",
+      "Saudações, {0}!"
     ],
     "test_goodbye": [
-      "Seeya, {0}!"
+      "Tchau, {0}!"
     ],
     "requirecontext_guild": [
       "This command can only be used in a guild."
