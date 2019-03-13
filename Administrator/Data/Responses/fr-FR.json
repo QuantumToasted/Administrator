@@ -10,15 +10,74 @@
     "test_goodbye": [
       "À plus tard, {0}!"
     ],
-    "requirecontext_guild": "Cette commande ne peut être utilisée que dans une guilde.",
-    "requirecontext_dm": "Cette commande ne peut être utilisée qu'en MDs.",
-    "requireowner": "Cette commande ne peut être utilisée que par un de mes propriétaires.",
-    "requirehierarchy_self": "La hiérarchie ne me permet pas de faire cela.",
-    "requirehierarchy_user": "La hiérarchie ne vous permet pas de faire cela.",
-    "requirebotpermissions_guild": "J'ai besoin des permissions de guilde suivantes pour utiliser cette commande: {0}",
-    "requirebotpermissions_channel": "J'ai besoin des permissions des permissions de canal suivantes pour utiliser cette commande: {0}",
-    "requireuserpermissions_guild": "Vous avez besoin des permissions de guilde suivantes pour utiliser cette commande: {0}",
-    "requireuserpermissions_channel": "Vous avez besoin des permissions de canal suivantes pour utiliser cette commande: {0}",
-    "requireguildowner": "Cette commande ne peut être utilisée que par le propriétaire de cette guilde."
+    "requirecontext_guild": [
+      "This command can only be used in a guild."
+    ],
+    "requirecontext_dm": [
+      "This command can only be used in DMs."
+    ],
+    "requireowner": [
+      "This command can only be used by one of my owners."
+    ],
+    "requirehierarchy_self": [
+      "The hierarchy doesn't allow me to do that."
+    ],
+    "requirehierarchy_user": [
+      "The hierarchy doesn't allow you to do that."
+    ],
+    "requirebotpermissions_guild": [
+      "This command requires me to have the following guild permissions: {0}"
+    ],
+    "requirebotpermissions_channel": [
+      "This command requires me to have the following channel permissions: {0}"
+    ],
+    "requireuserpermissions_guild": [
+      "This command requires you to have the following guild permissions: {0}"
+    ],
+    "requireuserpermissions_channel": [
+      "This command requires you to have the following channel permissions: {0}"
+    ],
+    "requireguildowner": [
+      "This command can only used by the guild owner."
+    ],
+    "operator_greaterthan": [
+      "The number supplied must be greater than {0}."
+    ],
+    "operator_equalto": [
+      "The number supplied must be equal to {0}."
+    ],
+    "operator_lessthan": [
+      "The number supplied must be less than {0}."
+    ],
+    "operator_divisibleby": [
+      "The number supplied must be divisible by {0}."
+    ],
+    "stringvalue_longerthan": [
+      "The supplied text must be longer than {0} characters."
+    ],
+    "stringvalue_exactly": [
+      "The supplied text must be exactly {0} characters."
+    ],
+    "stringvalue_shorterthan": [
+      "The supplied text must be shorter than {0} characters."
+    ],
+    "userparser_multiple": [
+      "Multiple users were found with that name or nickname."
+    ],
+    "userparser_notfound": [
+      "User not found."
+    ],
+    "roleparser_multiple": [
+      "Multiple roles were found with that name."
+    ],
+    "roleparser_notfound": [
+      "Role not found."
+    ],
+    "channelparser_multiple": [
+      "Multiple channels were found by that name."
+    ],
+    "channelparser_notfound": [
+      "Channel not found."
+    ]
   }
 }
