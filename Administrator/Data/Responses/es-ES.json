@@ -1,7 +1,7 @@
 {
   "code": "en-US",
   "englishName": "English (US)",
-  "nativeName": "English (US)",
+  "nativeName": "Español (ES)",
   "responses": {
     "test_hello": [
       "¡Hola, {0}!",
@@ -11,7 +11,7 @@
       "¡Adios, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a guild."
+      "Este comando solo puede ser usado en un servidor."
     ],
     "requirecontext_dm": [
       "Este comando solo puede ser utilizado en mensajes directos."
@@ -20,10 +20,10 @@
       "Este comando solo puede ser utilizado por uno de mis dueños."
     ],
     "requirehierarchy_self": [
-      "The role hierarchy doesn't allow me to do that."
+      "La jerarquia de roles no me permite hacer eso."
     ],
     "requirehierarchy_user": [
-      "The role hierarchy doesn't allow you to do that."
+      "La jerarquia de roles no te permite hacer eso."
     ],
     "requirebotpermissions_guild": [
       "Este comando me requiere tener los siguientes permisos de servidor: {0}"
@@ -41,28 +41,28 @@
       "Este comando solo puede ser utilizado por el dueño del servidor."
     ],
     "operator_greaterthan": [
-      "The number supplied must be greater than {0}."
+      "El numero debe ser mas grande que {0}."
     ],
     "operator_equalto": [
-      "The number supplied must be equal to {0}."
+      "El numero debe ser igual que {0}."
     ],
     "operator_lessthan": [
-      "The number supplied must be less than {0}."
+      "El numero debe ser menos que {0}."
     ],
     "operator_divisibleby": [
-      "The number supplied must be divisible by {0}."
+      "El numero debe ser divisible por {0}."
     ],
     "stringvalue_longerthan": [
-      "The supplied text must be longer than {0} characters."
+      "El texto debe ser mas largo que {0} caracteres."
     ],
     "stringvalue_exactly": [
-      "The supplied text must be exactly {0} characters."
+      "El texto debe ser {0} caracteres."
     ],
     "stringvalue_shorterthan": [
-      "The supplied text must be shorter than {0} characters."
+      "El texto debe ser mas corto que {0} caracteres."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that name or nickname."
+      "Multiples usuarios fueron encontrados con este nombre o apodo."
     ],
     "userparser_notfound": [
       "Usuario no encontrado."
