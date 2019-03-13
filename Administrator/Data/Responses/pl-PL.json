@@ -1,6 +1,6 @@
 {
-  "code": "en-US",
-  "englishName": "English (US)",
+  "code": "pl-PL",
+  "englishName": "Polish (PL)",
   "nativeName": "Polski (PL)",
   "responses": {
     "test_hello": [
@@ -20,10 +20,10 @@
       "Ta komenda może zostać użyta jedynie przez moich właścicieli."
     ],
     "requirehierarchy_self": [
-      "Hierarchia ról mi na to nie pozwala."
+      "The role hierarchy doesn't allow me to do that."
     ],
     "requirehierarchy_user": [
-      "Hierarchia ról ci na to nie pozwala."
+      "The role hierarchy doesn't allow you to do that."
     ],
     "requirebotpermissions_guild": [
       "Ta komenda wymaga ode mnie następujących uprawnień w tej gildii: {0}"
