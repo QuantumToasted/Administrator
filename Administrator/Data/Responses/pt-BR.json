@@ -1,7 +1,7 @@
 {
   "code": "en-US",
   "englishName": "English (US)",
-  "nativeName": "English (US)",
+  "nativeName": "Português (Brasil)",
   "responses": {
     "test_hello": [
       "Olá, {0}!",
@@ -17,7 +17,7 @@
       "Esse comando só pode ser usado em MDs."
     ],
     "requireowner": [
-      "Esse comando só pode ser usado por um(a) de meus donos."
+      "Esse comando só pode ser usado por um(a) de meus proprietários."
     ],
     "requirehierarchy_self": [
       "A hierarquia dos cargos não me permite fazer isso."
@@ -32,52 +32,52 @@
       "Esse comando requer que eu tenha as seguintes permissões neste canal: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following guild permissions: {0}"
+      "Esse comando requer que você tenha as seguintes permissões neste servidor: {0}"
     ],
     "requireuserpermissions_channel": [
-      "This command requires you to have the following channel permissions: {0}"
+      "Esse comando requer que você tenha as seguintes permissões neste canal: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the guild owner."
+      "Esse commando só pode ser usado pelo proprietário do servidor."
     ],
     "operator_greaterthan": [
-      "The number supplied must be greater than {0}."
+      "O número fornecido deve ser maior do que {0}."
     ],
     "operator_equalto": [
-      "The number supplied must be equal to {0}."
+      "O número fornecido deve ser igual a {0}."
     ],
     "operator_lessthan": [
-      "The number supplied must be less than {0}."
+      "O número fornecido deve ser menor do que {0}."
     ],
     "operator_divisibleby": [
-      "The number supplied must be divisible by {0}."
+      "O número fornecido deve ser divisível por {0}."
     ],
     "stringvalue_longerthan": [
-      "The supplied text must be longer than {0} characters."
+      "O texto fornecido deve ter mais de {0} caracteres."
     ],
     "stringvalue_exactly": [
-      "The supplied text must be exactly {0} characters."
+      "O texto fornecido deve ter exatamente {0} caracteres."
     ],
     "stringvalue_shorterthan": [
-      "The supplied text must be shorter than {0} characters."
+      "O texto fornecido deve ter menos de {0} caracteres."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that name or nickname."
+      "Vários usuários foram encontrados com esse nome ou apelido."
     ],
     "userparser_notfound": [
-      "User not found."
+      "Usuário não encontrado."
     ],
     "roleparser_multiple": [
-      "Multiple roles were found with that name."
+      "Vários cargos foram encontrados com esse nome."
     ],
     "roleparser_notfound": [
-      "Role not found."
+      "Cargo não encontrado."
     ],
     "channelparser_multiple": [
-      "Multiple channels were found by that name."
+      "Vários canais foram encontrados com esse nome."
     ],
     "channelparser_notfound": [
-      "Channel not found."
+      "Canal não encontrado."
     ]
   }
 }
