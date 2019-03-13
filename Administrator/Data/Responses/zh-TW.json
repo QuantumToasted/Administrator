@@ -1,0 +1,83 @@
+{
+  "code": "en-US",
+  "englishName": "English (US)",
+  "nativeName": "英語 （美國）",
+  "responses": {
+    "test_hello": [
+      "嗨，{0}！",
+      "您好，{0}！"
+    ],
+    "test_goodbye": [
+      "掰啦，{0}！"
+    ],
+    "requirecontext_guild": [
+      "此指令只能用在伺服器中。"
+    ],
+    "requirecontext_dm": [
+      "此指令只能用在私訊中。"
+    ],
+    "requireowner": [
+      "此指令只能由我的主人使用。"
+    ],
+    "requirehierarchy_self": [
+      "我在此伺服器權限不足。"
+    ],
+    "requirehierarchy_user": [
+      "您在此伺服器權限不足。"
+    ],
+    "requirebotpermissions_guild": [
+      "我需要該伺服器的 {0} 的權限"
+    ],
+    "requirebotpermissions_channel": [
+      "我需要該頻道的 {0} 的權限"
+    ],
+    "requireuserpermissions_guild": [
+      "您需要該伺服器的 {0} 的權限"
+    ],
+    "requireuserpermissions_channel": [
+      "您需要該頻道的 {0} 的權限"
+    ],
+    "requireguildowner": [
+      "此指令僅能由該伺服器之擁有者使用。"
+    ],
+    "operator_greaterthan": [
+      "您輸入的數字必須大於{0}。"
+    ],
+    "operator_equalto": [
+      "您輸入的數字必須等於{0}。"
+    ],
+    "operator_lessthan": [
+      "您輸入的數字必須小於{0}。"
+    ],
+    "operator_divisibleby": [
+      "您輸入的數字必須可被 {0} 整除。"
+    ],
+    "stringvalue_longerthan": [
+      "您輸入的字元數需大於 {0}。"
+    ],
+    "stringvalue_exactly": [
+      "您輸入的字元數需等於 {0}。"
+    ],
+    "stringvalue_shorterthan": [
+      "您輸入的字元數需小於 {0}。"
+    ],
+    "userparser_multiple": [
+      "發現多個具有此名稱或匿名之成員。"
+    ],
+    "userparser_notfound": [
+      "找不到此成員。"
+    ],
+    "roleparser_multiple": [
+      "發現多個具有此名稱之身分組。"
+    ],
+    "roleparser_notfound": [
+      "找不到此身分組。"
+    ],
+    "channelparser_multiple": [
+      "發現多個具有此名稱之頻道。"
+    ],
+    "channelparser_notfound": [
+      "找不到此頻道。"
+    ]
+  }
+}
