@@ -11,34 +11,34 @@
       "掰啦，{0}！"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a guild."
+      "無法使用該指令，此指令只能用在伺服器中。"
     ],
     "requirecontext_dm": [
-      "This command can only be used in DMs."
+      "無法使用該指令，此指令只能用在私訊中。"
     ],
     "requireowner": [
-      "This command can only be used by one of my owners."
+      "無法使用該指令，此指令只能由我其中的主人使用。"
     ],
     "requirehierarchy_self": [
-      "The hierarchy doesn't allow me to do that."
+      "無法使用該指令，我在此伺服器權限不足。"
     ],
     "requirehierarchy_user": [
-      "The hierarchy doesn't allow you to do that."
+      "無法使用該指令，您在此伺服器權限不足。"
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following guild permissions: {0}"
+      "無法使用該指令，我需要該伺服器的 {0} 的權限"
     ],
     "requirebotpermissions_channel": [
-      "This command requires me to have the following channel permissions: {0}"
+      "無法使用該指令，我需要該頻道的 {0} 的權限"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following guild permissions: {0}"
+      "無法使用該指令，您需要該伺服器的 {0} 的權限"
     ],
     "requireuserpermissions_channel": [
-      "This command requires you to have the following channel permissions: {0}"
+      "無法使用該指令，您需要該頻道的 {0} 的權限"
     ],
     "requireguildowner": [
-      "This command can only used by the guild owner."
+      "無法使用該指令，此指令僅能由該伺服器之擁有者使用。"
     ],
     "operator_greaterthan": [
       "The number supplied must be greater than {0}."
