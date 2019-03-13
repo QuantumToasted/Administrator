@@ -20,10 +20,10 @@
       "此指令只能由我的主人使用。"
     ],
     "requirehierarchy_self": [
-      "The role hierarchy doesn't allow me to do that."
+      "我在此伺服器身分組階級不足。"
     ],
     "requirehierarchy_user": [
-      "The role hierarchy doesn't allow you to do that."
+      "您在此伺服器身分組階級不足。"
     ],
     "requirebotpermissions_guild": [
       "我需要該伺服器的 {0} 的權限"
