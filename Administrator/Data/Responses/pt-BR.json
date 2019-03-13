@@ -11,25 +11,25 @@
       "Tchau, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a guild."
+      "Esse comando só pode ser usado em um servidor."
     ],
     "requirecontext_dm": [
-      "This command can only be used in DMs."
+      "Esse comando só pode ser usado em MDs."
     ],
     "requireowner": [
-      "This command can only be used by one of my owners."
+      "Esse comando só pode ser usado por um(a) de meus donos."
     ],
     "requirehierarchy_self": [
-      "The role hierarchy doesn't allow me to do that."
+      "A hierarquia dos cargos não me permite fazer isso."
     ],
     "requirehierarchy_user": [
-      "The role hierarchy doesn't allow you to do that."
+      "A hierarquia dos cargos não lhe permite fazer isso."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following guild permissions: {0}"
+      "Esse comando requer que eu tenha as seguintes permissões neste servidor: {0}"
     ],
     "requirebotpermissions_channel": [
-      "This command requires me to have the following channel permissions: {0}"
+      "Esse comando requer que eu tenha as seguintes permissões neste canal: {0}"
     ],
     "requireuserpermissions_guild": [
       "This command requires you to have the following guild permissions: {0}"
