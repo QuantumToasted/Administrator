@@ -41,31 +41,31 @@
       "無法使用該指令，此指令僅能由該伺服器之擁有者使用。"
     ],
     "operator_greaterthan": [
-      "The number supplied must be greater than {0}."
+      "您輸入的數字必須大於{0}。"
     ],
     "operator_equalto": [
-      "The number supplied must be equal to {0}."
+      "您輸入的數字必須等於{0}。"
     ],
     "operator_lessthan": [
-      "The number supplied must be less than {0}."
+      "您輸入的數字必須小於{0}。"
     ],
     "operator_divisibleby": [
-      "The number supplied must be divisible by {0}."
+      "您輸入的數字必須可被 {0} 整除。"
     ],
     "stringvalue_longerthan": [
-      "The supplied text must be longer than {0} characters."
+      "您輸入的字元數需大於 {0}。"
     ],
     "stringvalue_exactly": [
-      "The supplied text must be exactly {0} characters."
+      "您輸入的字元數需等於 {0}。"
     ],
     "stringvalue_shorterthan": [
-      "The supplied text must be shorter than {0} characters."
+      "您輸入的字元數需小於 {0}。"
     ],
     "userparser_multiple": [
       "Multiple users were found with that name or nickname."
     ],
     "userparser_notfound": [
-      "User not found."
+      "找不到此用戶。"
     ],
     "roleparser_multiple": [
       "Multiple roles were found with that name."
