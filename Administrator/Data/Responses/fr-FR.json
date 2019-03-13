@@ -1,6 +1,6 @@
 {
-  "code": "en-US",
-  "englishName": "English (US)",
+  "code": "fr-FR",
+  "englishName": "French (FR)",
   "nativeName": "Français (FR)",
   "responses": {
     "test_hello": [
@@ -14,16 +14,16 @@
       "Cette commande ne peut être utilisée que dans une guilde."
     ],
     "requirecontext_dm": [
-      "Cette commande ne peut être utilisée qu'en MDs."
+      "Cette commande ne peut être utilisée qu'en MPs."
     ],
     "requireowner": [
       "Cette commande ne peut être utilisée que par un de mes propriétaires."
     ],
     "requirehierarchy_self": [
-      "La hiérarchie ne me permet pas de faire cela."
+      "La hiérarchie des rôles ne me permet pas de faire cela."
     ],
     "requirehierarchy_user": [
-      "La hiérarchie ne vous permet pas de faire cela."
+      "La hiérarchie des rôles ne vous permet pas de faire cela."
     ],
     "requirebotpermissions_guild": [
       "J'ai besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
