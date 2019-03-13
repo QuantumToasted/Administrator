@@ -1,7 +1,7 @@
 {
-  "code": "en-US",
-  "englishName": "English (US)",
-  "nativeName": "Английский (США)",
+  "code": "англ-США",
+  "englishName": "Английский (США)",
+  "nativeName": "Русский (РФ)",
   "responses": {
     "test_hello": [
       "Привет, {0}!",
@@ -10,15 +10,15 @@
     "test_goodbye": [
       "Пока, {0}!"
     ],
-    "requirecontext_guild": "This command can only be used in a guild.",
-    "requirecontext_dm": "This command can only be used in DMs.",
-    "requireowner": "This command can only be used by one of my owners.",
-    "requirehierarchy_self": "The hierarchy doesn't allow me to do that.",
-    "requirehierarchy_user": "The hierarchy doesn't allow you to do that.",
-    "requirebotpermissions_guild": "This command requires me to have the following guild permissions: {0}",
-    "requirebotpermissions_channel": "This command requires me to have the following channel permissions: {0}",
-    "requireuserpermissions_guild": "This command requires you to have the following guild permissions: {0}",
-    "requireuserpermissions_channel": "This command requires you to have the following channel permissions: {0}",
-    "requireguildowner": "This command can only used by the guild owner."
+    "requirecontext_guild": "Эта команда может быть использована только на сервере.",
+    "requirecontext_dm": "Эта команда может быть использована только в Личных Сообщениях.",
+    "requireowner": "Эта команда может быть использована только одним из моих владельцев.",
+    "requirehierarchy_self": "Иерархия не позволяет мне сделать этого.",
+    "requirehierarchy_user": "Иерархия не позволяет Вам сделать этого.",
+    "requirebotpermissions_guild": "Эта команда требует, чтобы у меня были следующие разрешения сервера: {0}",
+    "requirebotpermissions_channel": "Эта команда требует, чтобы у меня были следующие разрешения канала: {0}",
+    "requireuserpermissions_guild": "Эта команда требует, чтобы у Вас были следующие разрешения сервера: {0}",
+    "requireuserpermissions_channel": "Эта команда требует, чтобы у Вас были следующие разрешения канала: {0}",
+    "requireguildowner": "Эта команда может быть использована только владельцем сервера."
   }
 }
