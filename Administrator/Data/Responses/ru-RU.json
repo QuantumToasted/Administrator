@@ -1,6 +1,6 @@
 {
-  "code": "англ-США",
-  "englishName": "Английский (США)",
+  "code": "ru-RU",
+  "englishName": "Russian (RU)",
   "nativeName": "Русский (РФ)",
   "responses": {
     "test_hello": [
