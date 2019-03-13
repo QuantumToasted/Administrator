@@ -1,6 +1,6 @@
 {
-  "code": "англ-США",
-  "englishName": "Английский (США)",
+  "code": "ru-RU",
+  "englishName": "Russian (RU)",
   "nativeName": "Русский (РФ)",
   "responses": {
     "test_hello": [
@@ -20,10 +20,10 @@
       "Эта команда может быть использована только одним из моих владельцев."
     ],
     "requirehierarchy_self": [
-      "Иерархия не позволяет мне сделать этого."
+      "The role hierarchy doesn't allow me to do that."
     ],
     "requirehierarchy_user": [
-      "Иерархия не позволяет Вам сделать этого."
+      "The role hierarchy doesn't allow you to do that."
     ],
     "requirebotpermissions_guild": [
       "Эта команда требует, чтобы у меня были следующие разрешения сервера: {0}"
