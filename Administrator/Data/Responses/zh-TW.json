@@ -11,34 +11,34 @@
       "掰啦，{0}！"
     ],
     "requirecontext_guild": [
-      "無法使用該指令，此指令只能用在伺服器中。"
+      "此指令只能用在伺服器中。"
     ],
     "requirecontext_dm": [
-      "無法使用該指令，此指令只能用在私訊中。"
+      "此指令只能用在私訊中。"
     ],
     "requireowner": [
-      "無法使用該指令，此指令只能由我其中的主人使用。"
+      "此指令只能由我的主人使用。"
     ],
     "requirehierarchy_self": [
-      "無法使用該指令，我在此伺服器權限不足。"
+      "我在此伺服器權限不足。"
     ],
     "requirehierarchy_user": [
-      "無法使用該指令，您在此伺服器權限不足。"
+      "您在此伺服器權限不足。"
     ],
     "requirebotpermissions_guild": [
-      "無法使用該指令，我需要該伺服器的 {0} 的權限"
+      "我需要該伺服器的 {0} 的權限"
     ],
     "requirebotpermissions_channel": [
-      "無法使用該指令，我需要該頻道的 {0} 的權限"
+      "我需要該頻道的 {0} 的權限"
     ],
     "requireuserpermissions_guild": [
-      "無法使用該指令，您需要該伺服器的 {0} 的權限"
+      "您需要該伺服器的 {0} 的權限"
     ],
     "requireuserpermissions_channel": [
-      "無法使用該指令，您需要該頻道的 {0} 的權限"
+      "您需要該頻道的 {0} 的權限"
     ],
     "requireguildowner": [
-      "無法使用該指令，此指令僅能由該伺服器之擁有者使用。"
+      "此指令僅能由該伺服器之擁有者使用。"
     ],
     "operator_greaterthan": [
       "您輸入的數字必須大於{0}。"
@@ -62,22 +62,22 @@
       "您輸入的字元數需小於 {0}。"
     ],
     "userparser_multiple": [
-      "Multiple users were found with that name or nickname."
+      "發現多個具有此名稱或匿名之成員。"
     ],
     "userparser_notfound": [
-      "找不到此用戶。"
+      "找不到此成員。"
     ],
     "roleparser_multiple": [
-      "Multiple roles were found with that name."
+      "發現多個具有此名稱之身分組。"
     ],
     "roleparser_notfound": [
-      "Role not found."
+      "找不到此身分組。"
     ],
     "channelparser_multiple": [
-      "Multiple channels were found by that name."
+      "發現多個具有此名稱之頻道。"
     ],
     "channelparser_notfound": [
-      "Channel not found."
+      "找不到此頻道。"
     ]
   }
 }
