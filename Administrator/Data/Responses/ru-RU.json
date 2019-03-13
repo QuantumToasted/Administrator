@@ -53,31 +53,31 @@
       "Указанное число должно быть кратно числу {0}."
     ],
     "stringvalue_longerthan": [
-      "Указанный текст должен быть длиннее {0} символов."
+      "Длина указанного текста должна быть более {0} символов."
     ],
     "stringvalue_exactly": [
-      "The supplied text must be exactly {0} characters."
+      "Длина указанного текста должна быть равна {0} символам."
     ],
     "stringvalue_shorterthan": [
-      "The supplied text must be shorter than {0} characters."
+      "Длина указанного текста должна быть менее {0} символов."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that name or nickname."
+      "Несколько пользователей были найдены с таким именем или никнеймом."
     ],
     "userparser_notfound": [
-      "User not found."
+      "Пользователь не найден."
     ],
     "roleparser_multiple": [
-      "Multiple roles were found with that name."
+      "Несколько ролей были найдены с таким именем."
     ],
     "roleparser_notfound": [
-      "Role not found."
+      "Роль не найдена."
     ],
     "channelparser_multiple": [
-      "Multiple channels were found by that name."
+      "Несколько каналов были найдены с таким именем."
     ],
     "channelparser_notfound": [
-      "Channel not found."
+      "Канал не найден."
     ]
   }
 }
