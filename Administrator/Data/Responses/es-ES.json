@@ -4,20 +4,20 @@
   "nativeName": "English (US)",
   "responses": {
     "test_hello": [
-      "Hello, {0}!",
-      "Greetings, {0}!"
+      "¡Hola, {0}!",
+      "¡Bienvenido, {0}!"
     ],
     "test_goodbye": [
-      "Seeya, {0}!"
+      "¡Adios, {0}!"
     ],
     "requirecontext_guild": [
       "This command can only be used in a guild."
     ],
     "requirecontext_dm": [
-      "This command can only be used in DMs."
+      "Este comando solo puede ser utilizado en mensajes directos."
     ],
     "requireowner": [
-      "This command can only be used by one of my owners."
+      "Este comando solo puede ser utilizado por uno de mis dueños."
     ],
     "requirehierarchy_self": [
       "The role hierarchy doesn't allow me to do that."
@@ -26,19 +26,19 @@
       "The role hierarchy doesn't allow you to do that."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following guild permissions: {0}"
+      "Este comando me requiere tener los siguientes permisos de servidor: {0}"
     ],
     "requirebotpermissions_channel": [
-      "This command requires me to have the following channel permissions: {0}"
+      "Este comando me requiere tener los siguientes permisos de canal: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following guild permissions: {0}"
+      "Este comando te requiere tener los siguientes permisos de servidor: {0}"
     ],
     "requireuserpermissions_channel": [
-      "This command requires you to have the following channel permissions: {0}"
+      "Este comando te requiere tener los siguientes permisos de canal: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the guild owner."
+      "Este comando solo puede ser utilizado por el dueño del servidor."
     ],
     "operator_greaterthan": [
       "The number supplied must be greater than {0}."
@@ -65,19 +65,19 @@
       "Multiple users were found with that name or nickname."
     ],
     "userparser_notfound": [
-      "User not found."
+      "Usuario no encontrado."
     ],
     "roleparser_multiple": [
-      "Multiple roles were found with that name."
+      "Multiples roles fueron encontrados con este nombre."
     ],
     "roleparser_notfound": [
-      "Role not found."
+      "Rol no encontrado."
     ],
     "channelparser_multiple": [
-      "Multiple channels were found by that name."
+      "Multiples canales fueron encontrados con este nombre."
     ],
     "channelparser_notfound": [
-      "Channel not found."
+      "Canal no encontrado."
     ]
   }
 }
