@@ -11,73 +11,73 @@
       "À plus tard, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a guild."
+      "Cette commande ne peut être utilisée que dans une guilde."
     ],
     "requirecontext_dm": [
-      "This command can only be used in DMs."
+      "Cette commande ne peut être utilisée qu'en MDs."
     ],
     "requireowner": [
-      "This command can only be used by one of my owners."
+      "Cette commande ne peut être utilisée que par un de mes propriétaires."
     ],
     "requirehierarchy_self": [
-      "The hierarchy doesn't allow me to do that."
+      "La hiérarchie ne me permet pas de faire cela."
     ],
     "requirehierarchy_user": [
-      "The hierarchy doesn't allow you to do that."
+      "La hiérarchie ne vous permet pas de faire cela."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following guild permissions: {0}"
+      "J'ai besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
     ],
     "requirebotpermissions_channel": [
-      "This command requires me to have the following channel permissions: {0}"
+      "J'ai besoin des permissions des permissions de canal suivantes pour utiliser cette commande: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following guild permissions: {0}"
+      "Vous avez besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
     ],
     "requireuserpermissions_channel": [
-      "This command requires you to have the following channel permissions: {0}"
+      "Vous avez besoin des permissions de canal suivantes pour utiliser cette commande: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the guild owner."
+      "Cette commande ne peut être utilisée que par le propriétaire de cette guilde."
     ],
     "operator_greaterthan": [
-      "The number supplied must be greater than {0}."
+      "Le nombre fourni doit être supérieur à {0}."
     ],
     "operator_equalto": [
-      "The number supplied must be equal to {0}."
+      "Le nombre fourni doit être égal à {0}."
     ],
     "operator_lessthan": [
-      "The number supplied must be less than {0}."
+      "Le nombre fourni doit être inférieur à {0}."
     ],
     "operator_divisibleby": [
-      "The number supplied must be divisible by {0}."
+      "Le nombre fourni doit être divisible par {0}."
     ],
     "stringvalue_longerthan": [
-      "The supplied text must be longer than {0} characters."
+      "Le texte fourni doit contenir plus de {0} caractères."
     ],
     "stringvalue_exactly": [
-      "The supplied text must be exactly {0} characters."
+      "Le texte fourni doit contenir exactement {0} caractères."
     ],
     "stringvalue_shorterthan": [
-      "The supplied text must be shorter than {0} characters."
+      "Le texte fourni doit contenir moins de {0} caractères."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that name or nickname."
+      "Plusieurs utilisateurs ont été trouvés pour ce nom ou ce surnom."
     ],
     "userparser_notfound": [
-      "User not found."
+      "Utilisateur introuvable."
     ],
     "roleparser_multiple": [
-      "Multiple roles were found with that name."
+      "Plusieurs rôles ont été trouvés pour ce nom."
     ],
     "roleparser_notfound": [
-      "Role not found."
+      "Rôle introuvable."
     ],
     "channelparser_multiple": [
-      "Multiple channels were found by that name."
+      "Plusieurs canaux ont été trouvés pour ce nom."
     ],
     "channelparser_notfound": [
-      "Channel not found."
+      "Canal introuvable."
     ]
   }
 }
