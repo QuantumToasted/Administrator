@@ -1,0 +1,83 @@
+{
+  "code": "en-US",
+  "englishName": "English (US)",
+  "nativeName": "Français (FR)",
+  "responses": {
+    "test_hello": [
+      "Salut, {0}!",
+      "Bonjour, {0}!"
+    ],
+    "test_goodbye": [
+      "À plus tard, {0}!"
+    ],
+    "requirecontext_guild": [
+      "Cette commande ne peut être utilisée que dans une guilde."
+    ],
+    "requirecontext_dm": [
+      "Cette commande ne peut être utilisée qu'en MDs."
+    ],
+    "requireowner": [
+      "Cette commande ne peut être utilisée que par un de mes propriétaires."
+    ],
+    "requirehierarchy_self": [
+      "La hiérarchie ne me permet pas de faire cela."
+    ],
+    "requirehierarchy_user": [
+      "La hiérarchie ne vous permet pas de faire cela."
+    ],
+    "requirebotpermissions_guild": [
+      "J'ai besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
+    ],
+    "requirebotpermissions_channel": [
+      "J'ai besoin des permissions des permissions de canal suivantes pour utiliser cette commande: {0}"
+    ],
+    "requireuserpermissions_guild": [
+      "Vous avez besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
+    ],
+    "requireuserpermissions_channel": [
+      "Vous avez besoin des permissions de canal suivantes pour utiliser cette commande: {0}"
+    ],
+    "requireguildowner": [
+      "Cette commande ne peut être utilisée que par le propriétaire de cette guilde."
+    ],
+    "operator_greaterthan": [
+      "Le nombre fourni doit être supérieur à {0}."
+    ],
+    "operator_equalto": [
+      "Le nombre fourni doit être égal à {0}."
+    ],
+    "operator_lessthan": [
+      "Le nombre fourni doit être inférieur à {0}."
+    ],
+    "operator_divisibleby": [
+      "Le nombre fourni doit être divisible par {0}."
+    ],
+    "stringvalue_longerthan": [
+      "Le texte fourni doit contenir plus de {0} caractères."
+    ],
+    "stringvalue_exactly": [
+      "Le texte fourni doit contenir exactement {0} caractères."
+    ],
+    "stringvalue_shorterthan": [
+      "Le texte fourni doit contenir moins de {0} caractères."
+    ],
+    "userparser_multiple": [
+      "Plusieurs utilisateurs ont été trouvés pour ce nom ou ce surnom."
+    ],
+    "userparser_notfound": [
+      "Utilisateur introuvable."
+    ],
+    "roleparser_multiple": [
+      "Plusieurs rôles ont été trouvés pour ce nom."
+    ],
+    "roleparser_notfound": [
+      "Rôle introuvable."
+    ],
+    "channelparser_multiple": [
+      "Plusieurs canaux ont été trouvés pour ce nom."
+    ],
+    "channelparser_notfound": [
+      "Canal introuvable."
+    ]
+  }
+}
