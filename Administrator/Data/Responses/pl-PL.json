@@ -1,83 +1,83 @@
 {
   "code": "en-US",
   "englishName": "English (US)",
-  "nativeName": "English (US)",
+  "nativeName": "Angielski (US)",
   "responses": {
     "test_hello": [
-      "Hello, {0}!",
-      "Greetings, {0}!"
+      "Cześć, {0}!",
+      "Witaj, {0}!"
     ],
     "test_goodbye": [
-      "Seeya, {0}!"
+      "Na razie, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a guild."
+      "Ta komenda może zostać użyta jedynie w gildii."
     ],
     "requirecontext_dm": [
-      "This command can only be used in DMs."
+      "Ta komenda może zostać użyta jedynie w kanale prywatnym."
     ],
     "requireowner": [
-      "This command can only be used by one of my owners."
+      "Ta komenda może zostać użyta jedynie przez moich właścicieli."
     ],
     "requirehierarchy_self": [
-      "The hierarchy doesn't allow me to do that."
+      "Hierarchia mi na to nie pozwala."
     ],
     "requirehierarchy_user": [
-      "The hierarchy doesn't allow you to do that."
+      "Hierarchia ci na to nie pozwala."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following guild permissions: {0}"
+      "Ta komenda wymaga ode mnie następujących uprawnień w tej gildii: {0}"
     ],
     "requirebotpermissions_channel": [
-      "This command requires me to have the following channel permissions: {0}"
+      "Ta komenda wymaga ode mnie następujących uprawnień w tym kanale: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following guild permissions: {0}"
+      "Ta komenda wymaga od ciebie następujących uprawnień w tej gildii: {0}"
     ],
     "requireuserpermissions_channel": [
-      "This command requires you to have the following channel permissions: {0}"
+      "Ta komenda wymaga od ciebie następujących uprawnień w tym kanale: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the guild owner."
+      "Ta komenda może zostać użyta jedynie przez właściciela gildii."
     ],
     "operator_greaterthan": [
-      "The number supplied must be greater than {0}."
+      "Podana liczba musi być większa niż {0}."
     ],
     "operator_equalto": [
-      "The number supplied must be equal to {0}."
+      "Podana liczba musi być równa {0}."
     ],
     "operator_lessthan": [
-      "The number supplied must be less than {0}."
+      "Podana liczba musi być mniejsza niż {0}."
     ],
     "operator_divisibleby": [
-      "The number supplied must be divisible by {0}."
+      "Podana liczba musi być podzielna przez {0}."
     ],
     "stringvalue_longerthan": [
-      "The supplied text must be longer than {0} characters."
+      "Podany tekst musi być dłuższy niż {0} znaków."
     ],
     "stringvalue_exactly": [
-      "The supplied text must be exactly {0} characters."
+      "Podany tekst musi mieć dokładnie {0} znaków."
     ],
     "stringvalue_shorterthan": [
-      "The supplied text must be shorter than {0} characters."
+      "Podany tekst musi być krótszy niż {0} znaków."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that name or nickname."
+      "Znaleziono kilku użytkowników z tą samą nazwą."
     ],
     "userparser_notfound": [
-      "User not found."
+      "Nie znaleziono użytkownika."
     ],
     "roleparser_multiple": [
-      "Multiple roles were found with that name."
+      "Znaleziono kilka ról z tą samą nazwą."
     ],
     "roleparser_notfound": [
-      "Role not found."
+      "Nie znaleziono roli."
     ],
     "channelparser_multiple": [
-      "Multiple channels were found by that name."
+      "Znaleziono kilka kanałów z tą samą nazwą."
     ],
     "channelparser_notfound": [
-      "Channel not found."
+      "Nie znaleziono kanału."
     ]
   }
 }
