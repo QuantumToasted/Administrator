@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Qmmands;
 
-namespace Administrator.Commands.Testing
+namespace Administrator.Commands
 {
     public sealed class TestCommands : AdminModuleBase
     {
