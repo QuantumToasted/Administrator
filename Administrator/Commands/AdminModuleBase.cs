@@ -14,12 +14,18 @@ namespace Administrator.Commands
         
         public LocalizationService Localization { get; set; }
 
-        protected AdminCommandResult CommandSuccess(string key = null, Embed embed = null, MessageFile file = null,
+        protected AdminCommandResult CommandSuccess(string text = null, Embed embed = null, MessageFile file = null)
+            => new AdminCommandResult(_watch.Elapsed, text, embed, file, true);
+
+        protected AdminCommandResult CommandSuccessLocalized(string key, Embed embed = null, MessageFile file = null,
             params object[] args)
             => new AdminCommandResult(_watch.Elapsed, Localization.Localize(Context.Language, key, args), embed, file,
                 true);
 
-        protected AdminCommandResult CommandError(string key, Embed embed = null, MessageFile file = null,
+        protected AdminCommandResult CommandError(string text, Embed embed = null, MessageFile file = null)
+            => new AdminCommandResult(_watch.Elapsed, text, embed, file, false);
+
+        protected AdminCommandResult CommandErrorLocalized(string key, Embed embed = null, MessageFile file = null,
             params object[] args)
             => new AdminCommandResult(_watch.Elapsed, Localization.Localize(Context.Language, key, args), embed, file,
                 false);
