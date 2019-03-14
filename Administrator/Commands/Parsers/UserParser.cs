@@ -15,7 +15,7 @@ namespace Administrator.Commands
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)
                 return Task.FromResult(
-                    TypeParserResult<TUser>.Unsuccessful(context.Language.Localize("requirecontext_guild")));
+                    TypeParserResult<TUser>.Unsuccessful(context.Localize("requirecontext_guild")));
 
             TUser user = null;
 
@@ -42,14 +42,14 @@ namespace Administrator.Commands
 
                 if (matches.Count > 1)
                     return Task.FromResult(
-                        TypeParserResult<TUser>.Unsuccessful(context.Language.Localize("userparser_multiple")));
+                        TypeParserResult<TUser>.Unsuccessful(context.Localize("userparser_multiple")));
 
                 user = matches.FirstOrDefault() as TUser;
             }
 
             return Task.FromResult(!(user is null)
                 ? TypeParserResult<TUser>.Successful(user)
-                : TypeParserResult<TUser>.Unsuccessful(context.Language.Localize("userparser_notfound")));
+                : TypeParserResult<TUser>.Unsuccessful(context.Localize("userparser_notfound")));
         }
     }
 }

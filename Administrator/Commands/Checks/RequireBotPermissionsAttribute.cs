@@ -39,14 +39,14 @@ namespace Administrator.Commands
             {
                 return context.Guild.CurrentUser.GuildPermissions.Has(RequiredGuildPermissions)
                     ? CheckResult.Successful
-                    : CheckResult.Unsuccessful(context.Language.Localize("requirebotpermissions_guild",
+                    : CheckResult.Unsuccessful(context.Localize("requirebotpermissions_guild",
                         Format.Bold(RequiredGuildPermissions.Humanize(LetterCasing.Title))));
             }
 
             return context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)
                 .Has(RequiredChannelPermissions)
                 ? CheckResult.Successful
-                : CheckResult.Unsuccessful(context.Language.Localize("requirebotpermissions_channel",
+                : CheckResult.Unsuccessful(context.Localize("requirebotpermissions_channel",
                     Format.Bold(RequiredChannelPermissions.Humanize(LetterCasing.Title))));
         }
     }

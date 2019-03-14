@@ -16,7 +16,7 @@ namespace Administrator.Commands
 
             return Task.FromResult(config.OwnerIds.Contains(context.User.Id)
                 ? CheckResult.Successful
-                : CheckResult.Unsuccessful(context.Language.Localize("requireowner")));
+                : CheckResult.Unsuccessful(context.Localize("requireowner")));
         }
     }
 }

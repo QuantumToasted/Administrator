@@ -44,7 +44,7 @@ namespace Administrator.Commands
                 if (matchingChannels.Count > 1)
                 {
                     return Task.FromResult(
-                        TypeParserResult<TChannel>.Unsuccessful(context.Language.Localize("channelparser_multiple")));
+                        TypeParserResult<TChannel>.Unsuccessful(context.Localize("channelparser_multiple")));
                 }
 
                 channel = matchingChannels.FirstOrDefault();
@@ -52,7 +52,7 @@ namespace Administrator.Commands
 
             return Task.FromResult(!(channel is null)
                 ? TypeParserResult<TChannel>.Successful(channel)
-                : TypeParserResult<TChannel>.Unsuccessful(context.Language.Localize("channelparser_notfound")));
+                : TypeParserResult<TChannel>.Unsuccessful(context.Localize("channelparser_notfound")));
         }
     }
 }

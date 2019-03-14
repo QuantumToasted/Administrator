@@ -30,19 +30,6 @@ namespace Administrator.Commands
             => new AdminCommandResult(_watch.Elapsed, Localization.Localize(Context.Language, key, args), embed, file,
                 false);
 
-        protected override async Task BeforeExecutedAsync(Command command)
-        {
-            if (!Context.IsPrivate)
-            {
-                var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
-                Context.SetLanguage(guild.Language);
-                return;
-            }
-
-            var user = await Context.Database.GetOrCreateGlobalUserAsync(Context.User.Id);
-            Context.SetLanguage(user.Language);
-        }
-
         public void Dispose()
         {
             _watch.Stop();

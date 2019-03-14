@@ -21,7 +21,7 @@ namespace Administrator.Commands
             var context = (AdminCommandContext) ctx;
             return ((SocketGuildUser) context.User).Id == context.Guild.OwnerId
                 ? CheckResult.Successful
-                : CheckResult.Unsuccessful(context.Language.Localize("requireguildowner"));
+                : CheckResult.Unsuccessful(context.Localize("requireguildowner"));
         }
     }
 }

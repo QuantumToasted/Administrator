@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
+using Administrator.Services;
 using Newtonsoft.Json;
 
 namespace Administrator.Common
@@ -18,17 +20,5 @@ namespace Administrator.Common
 
         [JsonProperty("responses")]
         public IReadOnlyDictionary<string, ImmutableArray<string>> Responses { get; private set; }
-
-        public string Localize(string str, params object[] args)
-        {
-            try
-            {
-                return string.Format(new CultureInfo(CultureCode), str, args);
-            }
-            catch (CultureNotFoundException)
-            {
-                return string.Format(str, args);
-            }
-        }
     }
 }

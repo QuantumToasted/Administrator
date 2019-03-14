@@ -17,13 +17,13 @@ namespace Administrator.Commands
 
             if (context.IsPrivate)
                 return Task.FromResult(
-                    CheckResult.Unsuccessful(context.Language.Localize("requirecontext", Format.Bold("guild"))));
+                    CheckResult.Unsuccessful(context.Localize("requirecontext", Format.Bold("guild"))));
 
             if (context.Guild.CurrentUser.Hierarchy <= target.Hierarchy)
-                return Task.FromResult(CheckResult.Unsuccessful(context.Language.Localize("requirehierarchy_self")));
+                return Task.FromResult(CheckResult.Unsuccessful(context.Localize("requirehierarchy_self")));
 
             if (user.Hierarchy <= target.Hierarchy)
-                return Task.FromResult(CheckResult.Unsuccessful(context.Language.Localize("requirehierarchy_user")));
+                return Task.FromResult(CheckResult.Unsuccessful(context.Localize("requirehierarchy_user")));
 
             return Task.FromResult(CheckResult.Successful);
         }

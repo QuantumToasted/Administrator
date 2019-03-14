@@ -41,19 +41,19 @@ namespace Administrator.Commands
                     case Operator.GreaterThan:
                         return Task.FromResult(value > Value
                             ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Language.Localize("operator_greaterthan", Value)));
+                            : CheckResult.Unsuccessful(context.Localize("operator_greaterthan", Value)));
                     case Operator.EqualTo:
                         return Task.FromResult(value == Value
                             ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Language.Localize("operator_equalto", Value)));
+                            : CheckResult.Unsuccessful(context.Localize("operator_equalto", Value)));
                     case Operator.LessThan:
                         return Task.FromResult(value < Value
                             ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Language.Localize("operator_lessthan", Value)));
+                            : CheckResult.Unsuccessful(context.Localize("operator_lessthan", Value)));
                     case Operator.DivisibleBy:
                         return Task.FromResult(value % Value == 0
                             ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Language.Localize("operator_divisibleby", Value)));
+                            : CheckResult.Unsuccessful(context.Localize("operator_divisibleby", Value)));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -65,15 +65,15 @@ namespace Administrator.Commands
                 case StringLength.LongerThan:
                     return Task.FromResult(str.Length > Value
                         ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Language.Localize("stringvalue_longerthan", Value)));
+                        : CheckResult.Unsuccessful(context.Localize("stringvalue_longerthan", Value)));
                 case StringLength.Exactly:
                     return Task.FromResult(str.Length == Value
                         ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Language.Localize("stringvalue_exactly", Value)));
+                        : CheckResult.Unsuccessful(context.Localize("stringvalue_exactly", Value)));
                 case StringLength.ShorterThan:
                     return Task.FromResult(str.Length < Value
                         ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Language.Localize("stringvalue_shorterthan", Value)));
+                        : CheckResult.Unsuccessful(context.Localize("stringvalue_shorterthan", Value)));
                 default:
                     throw new ArgumentOutOfRangeException();
             }

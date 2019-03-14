@@ -46,9 +46,20 @@ namespace Administrator.Services
         public string Localize(LocalizedLanguage language, string key, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(key)) return null;
-            
+
             if (language.Responses.TryGetValue(key, out var responses))
-                return language.Localize(responses[_random.Next(0, responses.Length)], args);
+            {
+                var response = responses[_random.Next(0, responses.Length)];
+
+                try
+                {
+                    return string.Format(new CultureInfo(language.CultureCode), response, args);
+                }
+                catch
+                {
+                    return string.Format(response, args);
+                }
+            }
             
             _logging.LogErrorAsync(
                 $"Response key {key} is missing from {language.CultureCode} localization file.",

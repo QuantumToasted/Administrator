@@ -42,14 +42,14 @@ namespace Administrator.Commands
             {
                 return user.GuildPermissions.Has(RequiredGuildPermissions)
                     ? CheckResult.Successful
-                    : CheckResult.Unsuccessful(context.Language.Localize("requireuserpermissions_guild",
+                    : CheckResult.Unsuccessful(context.Localize("requireuserpermissions_guild",
                         Format.Bold(RequiredGuildPermissions.Humanize(LetterCasing.Title))));
             }
 
             return user.GetPermissions(context.Channel as IGuildChannel)
                 .Has(RequiredChannelPermissions)
                 ? CheckResult.Successful
-                : CheckResult.Unsuccessful(context.Language.Localize("requireuserpermissions_channel",
+                : CheckResult.Unsuccessful(context.Localize("requireuserpermissions_channel",
                     Format.Bold(RequiredChannelPermissions.Humanize(LetterCasing.Title))));
         }
     }

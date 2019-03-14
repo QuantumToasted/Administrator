@@ -32,14 +32,14 @@ namespace Administrator.Commands
 
                 if (matches.Count > 1)
                     return Task.FromResult(
-                        TypeParserResult<TRole>.Unsuccessful(context.Language.Localize("roleparser_multiple")));
+                        TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_multiple")));
 
                 role = matches.FirstOrDefault() as TRole;
             }
 
             return role is null
                 ? Task.FromResult(
-                    TypeParserResult<TRole>.Unsuccessful(context.Language.Localize("roleparser_notfound")))
+                    TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_notfound")))
                 : Task.FromResult(TypeParserResult<TRole>.Successful(role));
         }
     }

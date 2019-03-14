@@ -1,24 +1,30 @@
 using System;
 using Administrator.Common;
 using Administrator.Database;
+using Administrator.Services;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Administrator.Commands
 {
     public sealed class AdminCommandContext : ICommandContext, IDisposable
     {
-        public AdminCommandContext(DiscordShardedClient client, SocketUserMessage message, string prefix, IServiceProvider provider)
+        private readonly LocalizationService _localization;
+
+        public AdminCommandContext(SocketUserMessage message, string prefix, LocalizedLanguage langage, IServiceProvider provider)
         {
-            Client = client;
-            Shard = client.GetShardFor(Guild);
+            _localization = provider.GetRequiredService<LocalizationService>();
+            Client = provider.GetRequiredService<DiscordShardedClient>();
+            Shard = Client.GetShardFor(Guild);
             User = message.Author;
             Guild = (message.Channel as SocketGuildChannel)?.Guild;
             Message = message;
             Channel = message.Channel;
             IsPrivate = message.Channel is IPrivateChannel;
             Prefix = prefix;
+            Language = langage;
             Database = new AdminDatabaseContext(provider);
         }
         
@@ -40,12 +46,10 @@ namespace Administrator.Commands
 
         public AdminDatabaseContext Database { get; }
         
-        public LocalizedLanguage Language { get; private set; }
+        public LocalizedLanguage Language { get; }
 
-        public void SetLanguage(LocalizedLanguage language)
-        {
-            Language = language;
-        }
+        public string Localize(string key, params object[] args)
+            => _localization.Localize(Language, key, args);
 
         public void Dispose()
         {

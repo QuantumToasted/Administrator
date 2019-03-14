@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Administrator.Commands;
+using Administrator.Common;
 using Administrator.Database;
 using Discord;
 using Discord.WebSocket;
@@ -29,35 +31,67 @@ namespace Administrator.Services
             _logging = _provider.GetRequiredService<LoggingService>();
         }
 
-        public async Task<bool> TryExecuteCommandAsync(SocketUserMessage message)
+        public async Task<bool> TryExecuteCommandAsync(SocketUserMessage userMessage)
         {
-            if (message.Source != MessageSource.User || string.IsNullOrWhiteSpace(message.Content)) return false;
+            if (userMessage.Source != MessageSource.User || string.IsNullOrWhiteSpace(userMessage.Content)) return false;
 
             var prefixes = new List<string>
                 {_config.DefaultPrefix, $"<@{_client.CurrentUser.Id}> ", $"<@!{_client.CurrentUser.Id}> "};
 
+            LocalizedLanguage language;
             using (var ctx = new AdminDatabaseContext(_provider))
             {
-                if (message.Channel is IGuildChannel guildChannel)
+                if (userMessage.Channel is IGuildChannel guildChannel)
                 {
                     var guild = await ctx.GetOrCreateGuildAsync(guildChannel.GuildId);
                     prefixes.AddRange(guild.CustomPrefixes);
+                    language = guild.Language;
+                }
+                else
+                {
+                    var user = await ctx.GetOrCreateGlobalUserAsync(userMessage.Author.Id);
+                    language = user.Language;
                 }
             }
             
-            if (!CommandUtilities.HasAnyPrefix(message.Content, prefixes, StringComparison.OrdinalIgnoreCase,
+            if (!CommandUtilities.HasAnyPrefix(userMessage.Content, prefixes, StringComparison.OrdinalIgnoreCase,
                 out var prefix, out var input)) return false;
             
-            var context = new AdminCommandContext(_client, message, prefix, _provider);
+            var context = new AdminCommandContext(userMessage, prefix, language, _provider);
             var result = await _commands.ExecuteAsync(input, context, _provider);
 
             if (!(result is FailedResult failedResult)) return true;
             
             // TODO: localized error messages, log stuff
-            await context.Channel.SendMessageAsync(failedResult.Reason);
+            var builder = new StringBuilder("command_error_placeholder: ");
+            switch (failedResult)
+            {
+                case ParameterChecksFailedResult parameterCheckResult:
+                    foreach (var check in parameterCheckResult.FailedChecks)
+                    {
+                        builder.AppendLine(check.Error);
+                    }
 
-            if (failedResult is ExecutionFailedResult r)
-                await _logging.LogErrorAsync(r.Exception, "CommandHandler");
+                    break;
+                case ChecksFailedResult checkResult:
+                    foreach (var check in checkResult.FailedChecks)
+                    {
+                        builder.AppendLine(check.Error);
+                    }
+
+                    break;
+                case CommandNotFoundResult notFoundResult:
+                    return false;
+                case ExecutionFailedResult execResult:
+                    await _logging.LogErrorAsync(execResult.Exception, "CommandHandler");
+                    builder.Append(execResult.Exception.Message);
+                    break;
+                default:
+                    builder.Append(failedResult.Reason);
+                    break;
+            }
+
+            await context.Channel.SendMessageAsync(builder.ToString());
             return false;
         }
 
@@ -81,7 +115,16 @@ namespace Administrator.Services
         Task IService.InitializeAsync()
         {
             var modules = _commands.AddModules(Assembly.GetEntryAssembly());
+
             // TODO: Add TypeParsers
+            _commands.AddTypeParser(new ChannelParser<SocketGuildChannel>());
+            _commands.AddTypeParser(new ChannelParser<SocketTextChannel>());
+            _commands.AddTypeParser(new ChannelParser<SocketVoiceChannel>());
+            _commands.AddTypeParser(new ChannelParser<SocketCategoryChannel>());
+            _commands.AddTypeParser(new RoleParser<SocketRole>());
+            _commands.AddTypeParser(new UserParser<SocketUser>());
+            _commands.AddTypeParser(new UserParser<SocketGuildUser>());
+
             return _logging.LogInfoAsync(modules.SelectMany(x => x.Commands).Count(), "CommandHandler");
         }
     }
