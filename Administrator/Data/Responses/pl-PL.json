@@ -20,10 +20,10 @@
       "Ta komenda może zostać użyta jedynie przez moich właścicieli."
     ],
     "requirehierarchy_self": [
-      ""
+      "Hierarchia ról mi na to nie pozwala."
     ],
     "requirehierarchy_user": [
-      ""
+      "Hierarchia ról ci na to nie pozwala."
     ],
     "requirebotpermissions_guild": [
       "Ta komenda wymaga ode mnie następujących uprawnień w tej gildii: {0}"
