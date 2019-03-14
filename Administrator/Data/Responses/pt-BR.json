@@ -1,0 +1,83 @@
+{
+  "code": "pt-BR",
+  "englishName": "Portuguese (BR)",
+  "nativeName": "Português (BR)",
+  "responses": {
+    "test_hello": [
+      "Olá, {0}!",
+      "Saudações, {0}!"
+    ],
+    "test_goodbye": [
+      "Tchau, {0}!"
+    ],
+    "requirecontext_guild": [
+      "Esse comando só pode ser usado em um servidor."
+    ],
+    "requirecontext_dm": [
+      "Esse comando só pode ser usado em mensagens diretas."
+    ],
+    "requireowner": [
+      "Esse comando só pode ser usado por um(a) de meus proprietários."
+    ],
+    "requirehierarchy_self": [
+      "A hierarquia dos cargos não me permite fazer isso."
+    ],
+    "requirehierarchy_user": [
+      "A hierarquia dos cargos não lhe permite fazer isso."
+    ],
+    "requirebotpermissions_guild": [
+      "Esse comando requer que eu tenha as seguintes permissões neste servidor: {0}"
+    ],
+    "requirebotpermissions_channel": [
+      "Esse comando requer que eu tenha as seguintes permissões neste canal: {0}"
+    ],
+    "requireuserpermissions_guild": [
+      "Esse comando requer que você tenha as seguintes permissões neste servidor: {0}"
+    ],
+    "requireuserpermissions_channel": [
+      "Esse comando requer que você tenha as seguintes permissões neste canal: {0}"
+    ],
+    "requireguildowner": [
+      "Esse commando só pode ser usado pelo proprietário do servidor."
+    ],
+    "operator_greaterthan": [
+      "O número fornecido deve ser maior do que {0}."
+    ],
+    "operator_equalto": [
+      "O número fornecido deve ser igual a {0}."
+    ],
+    "operator_lessthan": [
+      "O número fornecido deve ser menor do que {0}."
+    ],
+    "operator_divisibleby": [
+      "O número fornecido deve ser divisível por {0}."
+    ],
+    "stringvalue_longerthan": [
+      "O texto fornecido deve ter mais de {0} caracteres."
+    ],
+    "stringvalue_exactly": [
+      "O texto fornecido deve ter exatamente {0} caracteres."
+    ],
+    "stringvalue_shorterthan": [
+      "O texto fornecido deve ter menos de {0} caracteres."
+    ],
+    "userparser_multiple": [
+      "Vários usuários foram encontrados com esse nome de usuário ou apelido."
+    ],
+    "userparser_notfound": [
+      "Usuário não encontrado."
+    ],
+    "roleparser_multiple": [
+      "Vários cargos foram encontrados com esse nome."
+    ],
+    "roleparser_notfound": [
+      "Cargo não encontrado."
+    ],
+    "channelparser_multiple": [
+      "Vários canais foram encontrados com esse nome."
+    ],
+    "channelparser_notfound": [
+      "Canal não encontrado."
+    ]
+  }
+}

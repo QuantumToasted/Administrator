@@ -62,7 +62,7 @@
       "Le texte fourni doit contenir moins de {0} caractères."
     ],
     "userparser_multiple": [
-      "Plusieurs utilisateurs ont été trouvés pour ce nom ou ce surnom."
+      "Plusieurs utilisateurs ont été trouvés pour ce nom d'utilisateur ou ce surnom."
     ],
     "userparser_notfound": [
       "Utilisateur introuvable."

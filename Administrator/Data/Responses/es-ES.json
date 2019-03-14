@@ -1,0 +1,83 @@
+{
+  "code": "en-US",
+  "englishName": "English (US)",
+  "nativeName": "Español (ES)",
+  "responses": {
+    "test_hello": [
+      "¡Hola, {0}!",
+      "¡Bienvenido, {0}!"
+    ],
+    "test_goodbye": [
+      "¡Adios, {0}!"
+    ],
+    "requirecontext_guild": [
+      "Este comando solo puede ser usado en un servidor."
+    ],
+    "requirecontext_dm": [
+      "Este comando solo puede ser utilizado en mensajes directos."
+    ],
+    "requireowner": [
+      "Este comando solo puede ser utilizado por uno de mis dueños."
+    ],
+    "requirehierarchy_self": [
+      "The role hierarchy doesn't allow me to do that."
+    ],
+    "requirehierarchy_user": [
+      "The role hierarchy doesn't allow you to do that."
+    ],
+    "requirebotpermissions_guild": [
+      "Este comando me requiere tener los siguientes permisos de servidor: {0}"
+    ],
+    "requirebotpermissions_channel": [
+      "Este comando me requiere tener los siguientes permisos de canal: {0}"
+    ],
+    "requireuserpermissions_guild": [
+      "Este comando te requiere tener los siguientes permisos de servidor: {0}"
+    ],
+    "requireuserpermissions_channel": [
+      "Este comando te requiere tener los siguientes permisos de canal: {0}"
+    ],
+    "requireguildowner": [
+      "Este comando solo puede ser utilizado por el dueño del servidor."
+    ],
+    "operator_greaterthan": [
+      "El numero debe ser mas grande que {0}."
+    ],
+    "operator_equalto": [
+      "El numero debe ser igual que {0}."
+    ],
+    "operator_lessthan": [
+      "El numero debe ser menos que {0}."
+    ],
+    "operator_divisibleby": [
+      "El numero debe ser divisible por {0}."
+    ],
+    "stringvalue_longerthan": [
+      "El texto debe ser mas largo que {0} caracteres."
+    ],
+    "stringvalue_exactly": [
+      "El texto debe ser {0} caracteres."
+    ],
+    "stringvalue_shorterthan": [
+      "El texto debe ser mas corto que {0} caracteres."
+    ],
+    "userparser_multiple": [
+      "Multiple users were found with that username or nickname."
+    ],
+    "userparser_notfound": [
+      "Usuario no encontrado."
+    ],
+    "roleparser_multiple": [
+      "Multiples roles fueron encontrados con este nombre."
+    ],
+    "roleparser_notfound": [
+      "Rol no encontrado."
+    ],
+    "channelparser_multiple": [
+      "Multiples canales fueron encontrados con este nombre."
+    ],
+    "channelparser_notfound": [
+      "Canal no encontrado."
+    ]
+  }
+}

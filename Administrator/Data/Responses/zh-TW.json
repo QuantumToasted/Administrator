@@ -1,7 +1,7 @@
 {
-  "code": "en-US",
-  "englishName": "English (US)",
-  "nativeName": "英語 （美國）",
+  "code": "zh-TW",
+  "englishName": "Chinese (Traditional)",
+  "nativeName": "中文 (台灣)",
   "responses": {
     "test_hello": [
       "嗨，{0}！",
