@@ -1,6 +1,6 @@
 {
-  "code": "",
-  "englishName": "",
+  "code": "en-US",
+  "englishName": "English (US)",
   "nativeName": "Español (ES)",
   "responses": {
     "test_hello": [
@@ -20,10 +20,10 @@
       "Este comando solo puede ser utilizado por uno de mis dueños."
     ],
     "requirehierarchy_self": [
-      ""
+      "The role hierarchy doesn't allow me to do that."
     ],
     "requirehierarchy_user": [
-      ""
+      "The role hierarchy doesn't allow you to do that."
     ],
     "requirebotpermissions_guild": [
       "Este comando me requiere tener los siguientes permisos de servidor: {0}"
@@ -62,7 +62,7 @@
       "El texto debe ser mas corto que {0} caracteres."
     ],
     "userparser_multiple": [
-      ""
+      "Multiple users were found with that username or nickname."
     ],
     "userparser_notfound": [
       "Usuario no encontrado."
