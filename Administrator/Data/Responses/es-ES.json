@@ -1,7 +1,7 @@
 {
   "code": "es-LA",
   "englishName": "Spanish",
-  "nativeName": "Español (ES)",
+  "nativeName": "Español",
   "responses": {
     "test_hello": [
       "¡Hola, {0}!",
@@ -20,10 +20,10 @@
       "Este comando solo puede ser utilizado por uno de mis dueños."
     ],
     "requirehierarchy_self": [
-      "The role hierarchy doesn't allow me to do that."
+      "La jerarquía del Rol no me lo permite."
     ],
     "requirehierarchy_user": [
-      "The role hierarchy doesn't allow you to do that."
+      "La jerarquía del Rol no te lo permite."
     ],
     "requirebotpermissions_guild": [
       "Este comando requiere que yo tenga los siguientes permisos de servidor: {0}"
