@@ -14,7 +14,7 @@
       "Esse comando só pode ser usado em um servidor."
     ],
     "requirecontext_dm": [
-      "Esse comando só pode ser usado em MDs."
+      "Esse comando só pode ser usado em mensagens diretas."
     ],
     "requireowner": [
       "Esse comando só pode ser usado por um(a) de meus proprietários."
