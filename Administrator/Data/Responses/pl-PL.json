@@ -62,7 +62,7 @@
       "Podany tekst musi być krótszy niż {0} znaków."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that username or nickname."
+      "Znaleziono kilku użytkowników z tą samą nazwą."
     ],
     "userparser_notfound": [
       "Nie znaleziono użytkownika."
