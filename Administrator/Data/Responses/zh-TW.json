@@ -62,7 +62,7 @@
       "您輸入的字元數需小於 {0}。"
     ],
     "userparser_multiple": [
-      ""
+      "發現多個具有此名稱或匿名之成員。"
     ],
     "userparser_notfound": [
       "找不到此成員。"
