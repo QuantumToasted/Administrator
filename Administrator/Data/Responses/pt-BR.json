@@ -1,7 +1,7 @@
 {
   "code": "pt-BR",
   "englishName": "Portuguese (BR)",
-  "nativeName": "Português (Brasil)",
+  "nativeName": "Português (BR)",
   "responses": {
     "test_hello": [
       "Olá, {0}!",
