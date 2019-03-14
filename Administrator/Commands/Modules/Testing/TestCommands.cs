@@ -93,13 +93,21 @@ namespace Administrator.Commands
         [Command("setlang")]
         public async Task<AdminCommandResult> SetLanguageAsync(string locale)
         {
+            if (Context.IsPrivate)
+            {
+                var user = await Context.Database.GetOrCreateGlobalUserAsync(Context.User.Id);
+                user.Language = Localization.Languages.First(x => x.CultureCode.Equals(locale, StringComparison.OrdinalIgnoreCase));
+                Context.Database.GlobalUsers.Update(user);
+                await Context.Database.SaveChangesAsync();
+                return CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
+            }
+
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             guild.Language =
                 Localization.Languages.First(x => x.CultureCode.Equals(locale, StringComparison.OrdinalIgnoreCase));
             Context.Database.Guilds.Update(guild);
             await Context.Database.SaveChangesAsync();
-            await Context.Channel.SendMessageAsync("gottem");
-            return CommandSuccess();
+            return CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
         }
     }
 }
