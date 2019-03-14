@@ -62,7 +62,7 @@
       "O texto fornecido deve ter menos de {0} caracteres."
     ],
     "userparser_multiple": [
-      "Vários usuários foram encontrados com esse nome ou apelido."
+      "Multiple users were found with that username or nickname."
     ],
     "userparser_notfound": [
       "Usuário não encontrado."
