@@ -62,7 +62,7 @@
       "Длина указанного текста должна быть менее {0} символов."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that username or nickname."
+      "Несколько пользователей были найдены с таким именем или никнеймом."
     ],
     "userparser_notfound": [
       "Пользователь не найден."
