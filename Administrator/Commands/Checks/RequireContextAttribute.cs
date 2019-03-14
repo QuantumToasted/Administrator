@@ -24,8 +24,8 @@ namespace Administrator.Commands
                 return Task.FromResult(CheckResult.Successful);
 
             return Task.FromResult(CheckResult.Unsuccessful(RequiredContext == ContextType.DM
-                ? "requirecontext_dm"
-                : "requirecontext_guild"));
+                ? context.Localize("requirecontext_dm")
+                : context.Localize("requirecontext_guild")));
         }
     }
 }
