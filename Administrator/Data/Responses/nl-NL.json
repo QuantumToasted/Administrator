@@ -62,7 +62,7 @@
       "The supplied text must be shorter than {0} characters."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that name or nickname."
+      "Multiple users were found with that username or nickname."
     ],
     "userparser_notfound": [
       "User not found."
