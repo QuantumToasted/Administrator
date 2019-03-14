@@ -16,8 +16,7 @@ namespace Administrator.Commands
         public AdminCommandContext(SocketUserMessage message, string prefix, LocalizedLanguage langage, IServiceProvider provider)
         {
             _localization = provider.GetRequiredService<LocalizationService>();
-            Client = provider.GetRequiredService<DiscordShardedClient>();
-            Shard = Client.GetShardFor(Guild);
+            Client = provider.GetRequiredService<DiscordSocketClient>();
             User = message.Author;
             Guild = (message.Channel as SocketGuildChannel)?.Guild;
             Message = message;
@@ -28,9 +27,7 @@ namespace Administrator.Commands
             Database = new AdminDatabaseContext(provider);
         }
         
-        public DiscordShardedClient Client { get; }
-
-        public DiscordSocketClient Shard { get; }
+        public DiscordSocketClient Client { get; }
         
         public SocketUser User { get; }
 

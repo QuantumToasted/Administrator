@@ -18,7 +18,7 @@ namespace Administrator.Services
     {
         private readonly IServiceProvider _provider;
         private readonly CommandService _commands;
-        private readonly DiscordShardedClient _client;
+        private readonly DiscordSocketClient _client;
         private readonly ConfigurationService _config;
         private readonly LoggingService _logging;
 
@@ -26,7 +26,7 @@ namespace Administrator.Services
         {
             _provider = provider;
             _commands = _provider.GetRequiredService<CommandService>();
-            _client = _provider.GetRequiredService<DiscordShardedClient>();
+            _client = _provider.GetRequiredService<DiscordSocketClient>();
             _config = _provider.GetRequiredService<ConfigurationService>();
             _logging = _provider.GetRequiredService<LoggingService>();
         }

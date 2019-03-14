@@ -54,7 +54,7 @@ namespace Administrator.Services
                 return Task.CompletedTask;
             };
 
-            return _logging.LogDebugAsync("Initialized.", "TaskQueue");
+            return _logging.LogInfoAsync("Initialized.", "TaskQueue");
         }
     }
 }

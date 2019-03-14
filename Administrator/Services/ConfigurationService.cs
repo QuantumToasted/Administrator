@@ -139,7 +139,7 @@ namespace Administrator.Services
                 else await _logging.LogDebugAsync("No migrations found.", "Configuration");
             }
 
-            await _logging.LogDebugAsync("Initialized.", "Configuration");
+            await _logging.LogInfoAsync("Initialized.", "Configuration");
         }
     }
 }

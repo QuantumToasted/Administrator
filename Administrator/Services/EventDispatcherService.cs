@@ -14,7 +14,7 @@ namespace Administrator.Services
     {
         private readonly IServiceProvider _provider;
         private readonly TaskQueueService _queue;
-        private readonly DiscordShardedClient _client;
+        private readonly DiscordSocketClient _client;
         private readonly DiscordRestClient _restClient;
         private readonly CommandService _commands;
         private readonly LoggingService _logging;
@@ -24,7 +24,7 @@ namespace Administrator.Services
         {
             _provider = provider;
             _queue = _provider.GetRequiredService<TaskQueueService>();
-            _client = _provider.GetRequiredService<DiscordShardedClient>();
+            _client = _provider.GetRequiredService<DiscordSocketClient>();
             _restClient = _provider.GetRequiredService<DiscordRestClient>();
             _commands = _provider.GetRequiredService<CommandService>();
             _logging = _provider.GetRequiredService<LoggingService>();
@@ -36,19 +36,16 @@ namespace Administrator.Services
             _client.Log += message
                 => _queue.Enqueue(() => HandleClientLog(message));
 
-            _restClient.Log += message
-                => _queue.Enqueue(() => HandleClientLog(message));
-
-            _client.ShardReady += shard
-                => _queue.Enqueue(() => HandleShardReady(shard));
-
             _client.MessageReceived += message
                 => _queue.Enqueue(() => HandleMessageReceivedAsync(message));
+
+            _restClient.Log += message
+                => _queue.Enqueue(() => HandleClientLog(message));
 
             _commands.CommandExecuted += (command, result, context, provider)
                 => _queue.Enqueue(() => HandleCommandExecutedAsync(command, result, context, provider));
 
-            return _logging.LogDebugAsync("Initialized.", "Configuration");
+            return _logging.LogInfoAsync("Initialized.", "Dispatcher");
         }
 
         private async Task HandleMessageReceivedAsync(SocketMessage message)
@@ -71,27 +68,20 @@ namespace Administrator.Services
             switch (message.Severity)
             {
                 case LogSeverity.Critical:
-                    return _logging.LogCriticalAsync(message.Message, message.Source);
+                    return _logging.LogCriticalAsync(message.Message, "Discord");
                 case LogSeverity.Error:
-                    return _logging.LogErrorAsync(message.Message, message.Source);
+                    return _logging.LogErrorAsync(message.Message, "Discord");
                 case LogSeverity.Warning:
-                    return _logging.LogWarningAsync(message.Message, message.Source);
+                    return _logging.LogWarningAsync(message.Message, "Discord");
                 case LogSeverity.Info:
-                    return _logging.LogInfoAsync(message.Message, message.Source);
+                    return _logging.LogInfoAsync(message.Message, "Discord");
                 case LogSeverity.Verbose:
-                    return _logging.LogVerboseAsync(message.Message, message.Source);
+                    return _logging.LogVerboseAsync(message.Message, "Discord");
                 case LogSeverity.Debug:
-                    return _logging.LogDebugAsync(message.Message, message.Source);
+                    return _logging.LogDebugAsync(message.Message, "Discord");
                 default:
                     return Task.CompletedTask;
             }
-        }
-
-        private Task HandleShardReady(BaseSocketClient shard)
-        {
-            // TODO: Track total shard(s) ready
-            
-            return _logging.LogInfoAsync("Ready", $"Shard {_client.GetShardIdFor(shard.Guilds.First())}");
         }
     }
 }

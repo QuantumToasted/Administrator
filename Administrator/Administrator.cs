@@ -1,8 +1,8 @@
-﻿using Administrator.Utilities;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Administrator.Extensions;
 using Administrator.Services;
 using Discord;
 using Discord.Rest;
@@ -15,19 +15,16 @@ namespace Administrator
     {
         public async Task InitializeAsync()
         {
-            var restClient = new DiscordRestClient();
             var config = ConfigurationService.Basic;
-            
-            await restClient.LoginAsync(TokenType.Bot, config.DiscordToken);
-            
-            var client = new DiscordShardedClient(new DiscordSocketConfig
+            var restClient = new DiscordRestClient();
+            var client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 100,
-                LogLevel = LogSeverity.Info,
-                TotalShards = await restClient.GetRecommendedShardCountAsync()
+                LogLevel = LogSeverity.Info
             });
             
-            var provider = ServiceUtilities.AutoBuildServices()
+            var provider = new ServiceCollection()
+                .AutoAddServices()
                 .AddSingleton(client)
                 .AddSingleton(restClient)
                 .AddSingleton<CommandService>()
@@ -35,9 +32,10 @@ namespace Administrator
                 .AddSingleton<Random>()
                 .AddEntityFrameworkNpgsql()
                 .BuildServiceProvider();
-            
-            await ServiceUtilities.InitializeServicesAsync(provider);
-            await client.LoginAsync(TokenType.Bot, provider.GetRequiredService<ConfigurationService>().DiscordToken);
+
+            await restClient.LoginAsync(TokenType.Bot,config.DiscordToken);
+            await provider.InitializeServicesAsync();
+            await client.LoginAsync(TokenType.Bot, config.DiscordToken);
             await client.StartAsync();
 
             try

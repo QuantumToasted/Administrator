@@ -1,17 +1,16 @@
-using Administrator.Services;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Administrator.Services;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Administrator.Utilities
+namespace Administrator.Extensions
 {
-    public static class ServiceUtilities
+    public static class ServiceExtensions
     {
-        public static ServiceCollection AutoBuildServices()
+        public static ServiceCollection AutoAddServices(this ServiceCollection collection)
         {
-            var collection = new ServiceCollection();
             foreach (var type in Assembly.GetEntryAssembly().GetTypes()
                 .Where(x => typeof(IService).IsAssignableFrom(x) && !x.IsInterface))
             {
@@ -21,7 +20,7 @@ namespace Administrator.Utilities
             return collection;
         }
 
-        public static async Task InitializeServicesAsync(IServiceProvider provider)
+        public static async Task InitializeServicesAsync(this IServiceProvider provider)
         {
             foreach (var type in Assembly.GetEntryAssembly().GetTypes()
                 .Where(x => typeof(IService).IsAssignableFrom(x) && !x.IsInterface))
