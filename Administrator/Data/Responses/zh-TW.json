@@ -1,7 +1,7 @@
 {
   "code": "zh-TW",
   "englishName": "Chinese (Traditional)",
-  "nativeName": "英語 （美國）",
+  "nativeName": "",
   "responses": {
     "test_hello": [
       "嗨，{0}！",
