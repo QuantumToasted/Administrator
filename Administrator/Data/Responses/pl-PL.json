@@ -20,10 +20,10 @@
       "Ta komenda może zostać użyta jedynie przez moich właścicieli."
     ],
     "requirehierarchy_self": [
-      "The role hierarchy doesn't allow me to do that."
+      ""
     ],
     "requirehierarchy_user": [
-      "The role hierarchy doesn't allow you to do that."
+      ""
     ],
     "requirebotpermissions_guild": [
       "Ta komenda wymaga ode mnie następujących uprawnień w tej gildii: {0}"
@@ -62,7 +62,7 @@
       "Podany tekst musi być krótszy niż {0} znaków."
     ],
     "userparser_multiple": [
-      "Znaleziono kilku użytkowników z tą samą nazwą."
+      ""
     ],
     "userparser_notfound": [
       "Nie znaleziono użytkownika."
