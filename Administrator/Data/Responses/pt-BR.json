@@ -1,6 +1,6 @@
 {
-  "code": "en-US",
-  "englishName": "English (US)",
+  "code": "pt-BR",
+  "englishName": "Portuguese (BR)",
   "nativeName": "Português (Brasil)",
   "responses": {
     "test_hello": [
@@ -62,7 +62,7 @@
       "O texto fornecido deve ter menos de {0} caracteres."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that username or nickname."
+      "Vários usuários foram encontrados com esse nome de usuário ou apelido."
     ],
     "userparser_notfound": [
       "Usuário não encontrado."
