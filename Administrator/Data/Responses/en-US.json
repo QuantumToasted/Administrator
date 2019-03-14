@@ -25,7 +25,7 @@
     "stringvalue_longerthan": [ "The supplied text must be longer than {0} characters." ],
     "stringvalue_exactly": [ "The supplied text must be exactly {0} characters." ],
     "stringvalue_shorterthan": [ "The supplied text must be shorter than {0} characters." ],
-    "userparser_multiple": [ "Multiple users were found with that name or nickname." ],
+    "userparser_multiple": [ "Multiple users were found with that username or nickname." ],
     "userparser_notfound": [ "User not found." ],
     "roleparser_multiple": [ "Multiple roles were found with that name." ],
     "roleparser_notfound": [ "Role not found." ],
