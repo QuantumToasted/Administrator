@@ -80,10 +80,10 @@
       "Canal introuvable."
     ],
     "commanderror": [
-      "Command error"
+      "Erreur de commande"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n```{1}```\n"
+      "Une erreur inattendue est survenue lors de l'utilisation de cette commande. S'il vous plaît, signalez le texte suivant dans [la guilde de support technique]({0}):\n```{1}```\n"
     ]
   }
 }
