@@ -88,7 +88,7 @@ namespace Administrator.Services
                 var frame = frames.First(x => x.GetFileName()?.Contains("Administrator") == true);
                 var message = Convert.ToBase64String(Encoding.UTF8.GetBytes(
                     $"{ex.Message} - at {frame.GetFileName()}, line {frame.GetFileLineNumber()} - {DateTimeOffset.UtcNow:g} UTC"));
-                return context.Localize("commanderror_exception", message);
+                return context.Localize("commanderror_exception", ConfigurationService.SUPPORT_GUILD, message);
             }
         }
 
