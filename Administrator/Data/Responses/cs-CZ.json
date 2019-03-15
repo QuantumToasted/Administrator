@@ -78,6 +78,12 @@
     ],
     "channelparser_notfound": [
       "Kanál nenalezen."
+    ],
+    "commanderror": [
+      "Command Error"
+    ],
+    "commanderror_exception": [
+      "An unhandled exception occurred while trying to process this command. Please report the following :\n```{0}```\n"
     ]
   }
 }
