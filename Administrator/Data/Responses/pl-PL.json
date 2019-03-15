@@ -83,7 +83,7 @@
       "Command error"
     ],
     "commanderror_exception": [
-      "An unexpected error while trying to use this command. Please report the following text in [the support guild](https://discord.gg/rTvGube):\n```{0}```\n"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n```{1}```\n"
     ]
   }
 }
