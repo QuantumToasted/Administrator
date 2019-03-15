@@ -80,7 +80,7 @@
       "找不到此頻道。"
     ],
     "commanderror": [
-      "Command Error"
+      "Command error"
     ],
     "commanderror_exception": [
       "An unhandled exception occurred while trying to process this command. Please report the following text in [the support guild](https://discord.gg/rTvGube):\n```{0}```\n"
