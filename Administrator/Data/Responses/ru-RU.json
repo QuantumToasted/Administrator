@@ -80,10 +80,10 @@
       "Канал не найден."
     ],
     "commanderror": [
-      "Command error"
+      "Ошибка в команде"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n```{1}```\n"
+      "Произошла непредвиденная ошибка при попытке использовать эту команду. Пожалуйста, сообщите о следующем тексте на [сервере поддержки]({0}):\n```{1}```\n"
     ]
   }
 }
