@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -69,20 +70,26 @@ namespace Administrator.Services
             {
                 ParameterChecksFailedResult parameterChecksResult => string.Join('\n', parameterChecksResult.FailedChecks.Select(x => x.Error)),
                 ChecksFailedResult checkResult => string.Join('\n', checkResult.FailedChecks.Select(x => x.Error)),
-                ExecutionFailedResult execResult => ((Func<string>) (() =>
-                {
-                    _logging.LogErrorAsync(execResult.Exception, "CommandHandler");
-                    return execResult.Exception.Message;
-                }))(),
+                ExecutionFailedResult execResult => GenerateException(execResult.Exception),
                 CommandNotFoundResult _ => string.Empty,
                 _ => failedResult.Reason
             }).ToString();
 
             if (!string.IsNullOrWhiteSpace(error))
                 await context.Channel.SendMessageAsync(embed: new EmbedBuilder().WithErrorColor()
-                    .WithTitle("Command Error").WithDescription(error).Build());
+                    .WithTitle(context.Localize("commanderror")).WithDescription(error).Build());
             
             return false;
+
+            string GenerateException(Exception ex)
+            {
+                _logging.LogErrorAsync(ex, "CommandHandler");
+                var frames = new StackTrace(ex, true).GetFrames();
+                var frame = frames.First(x => x.GetFileName()?.Contains("Administrator") == true);
+                var message = Convert.ToBase64String(Encoding.UTF8.GetBytes(
+                    $"{ex.Message} - at {frame.GetFileName()}, line {frame.GetFileLineNumber()} - {DateTimeOffset.UtcNow:g} UTC"));
+                return context.Localize("commanderror_exception", message);
+            }
         }
 
         public async Task SendCommandResultAsync(Command command, AdminCommandResult result,
@@ -101,7 +108,7 @@ namespace Administrator.Services
                 await context.Channel.SendMessageAsync(result.Text ?? string.Empty, embed: result.Embed);
             }
         }
-        
+
         Task IService.InitializeAsync()
         {
             var modules = _commands.AddModules(Assembly.GetEntryAssembly());
