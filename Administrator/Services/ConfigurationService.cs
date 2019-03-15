@@ -23,6 +23,8 @@ namespace Administrator.Services
             _logging = logging;
         }
 
+        public const string SUPPORT_GUILD = @"https://discord.gg/rTvGube";
+
         [JsonProperty("token")]
         public string DiscordToken { get; private set; }
         
