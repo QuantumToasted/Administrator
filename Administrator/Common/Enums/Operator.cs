@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Administrator.Common
+﻿namespace Administrator.Common
 {
     public enum Operator
     {

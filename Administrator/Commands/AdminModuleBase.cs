@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Services;
 using Discord;
