@@ -8,76 +8,82 @@
       "Greetings, {0}!"
     ],
     "test_goodbye": [
-        "Seeya, {0}!"
+      "Seeya, {0}!"
     ],
     "requirecontext_guild": [
-        "This command can only be used in a guild."
+      "This command can only be used in a guild."
     ],
     "requirecontext_dm": [
-        "This command can only be used in DMs."
+      "This command can only be used in DMs."
     ],
     "requireowner": [
-        "This command can only be used by one of my owners."
+      "This command can only be used by one of my owners."
     ],
     "requirehierarchy_self": [
-        "The role hierarchy doesn't allow me to do that."
+      "The role hierarchy doesn't allow me to do that."
     ],
     "requirehierarchy_user": [
-        "The role hierarchy doesn't allow you to do that."
+      "The role hierarchy doesn't allow you to do that."
     ],
     "requirebotpermissions_guild": [
-        "This command requires me to have the following guild permissions: {0}"
+      "This command requires me to have the following guild permissions: {0}"
     ],
     "requirebotpermissions_channel": [
-        "This command requires me to have the following channel permissions: {0}"
+      "This command requires me to have the following channel permissions: {0}"
     ],
     "requireuserpermissions_guild": [
-        "This command requires you to have the following guild permissions: {0}"
+      "This command requires you to have the following guild permissions: {0}"
     ],
     "requireuserpermissions_channel": [
-        "This command requires you to have the following channel permissions: {0}"
+      "This command requires you to have the following channel permissions: {0}"
     ],
     "requireguildowner": [
-        "This command can only used by the guild owner."
+      "This command can only used by the guild owner."
     ],
     "operator_greaterthan": [
-        "The number supplied must be greater than {0}."
+      "The number supplied must be greater than {0}."
     ],
     "operator_equalto": [
-        "The number supplied must be equal to {0}."
+      "The number supplied must be equal to {0}."
     ],
     "operator_lessthan": [
-        "The number supplied must be less than {0}."
+      "The number supplied must be less than {0}."
     ],
     "operator_divisibleby": [
-        "The number supplied must be divisible by {0}."
+      "The number supplied must be divisible by {0}."
     ],
     "stringvalue_longerthan": [
-        "The supplied text must be longer than {0} characters."
+      "The supplied text must be longer than {0} characters."
     ],
     "stringvalue_exactly": [
-        "The supplied text must be exactly {0} characters."
+      "The supplied text must be exactly {0} characters."
     ],
     "stringvalue_shorterthan": [
-        "The supplied text must be shorter than {0} characters."
+      "The supplied text must be shorter than {0} characters."
     ],
     "userparser_multiple": [
-        "Multiple users were found with that username or nickname."
+      "Multiple users were found with that username or nickname."
     ],
     "userparser_notfound": [
-        "User not found."
+      "User not found."
     ],
     "roleparser_multiple": [
-        "Multiple roles were found with that name."
+      "Multiple roles were found with that name."
     ],
     "roleparser_notfound": [
-        "Role not found."
+      "Role not found."
     ],
     "channelparser_multiple": [
-        "Multiple channels were found by that name."
+      "Multiple channels were found by that name."
     ],
     "channelparser_notfound": [
-        "Channel not found."
+      "Channel not found."
+    ],
+    "commanderror": [
+      "Command Error"
+    ],
+    "commanderror_exception": [
+      "An unhandled exception occurred while trying to process this command. Please report the following :\n```{0}```\n"
     ]
   }
 }
