@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Administrator.Commands;
 using Administrator.Common;
 using Administrator.Database;
+using Administrator.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,36 +63,25 @@ namespace Administrator.Services
 
             if (!(result is FailedResult failedResult)) return true;
             
-            // TODO: localized error messages, log stuff
-            var builder = new StringBuilder("command_error_placeholder: ");
-            switch (failedResult)
+            // TODO: localized error messages, log 
+            var error = new StringBuilder()
+                .Append(failedResult switch
             {
-                case ParameterChecksFailedResult parameterCheckResult:
-                    foreach (var check in parameterCheckResult.FailedChecks)
-                    {
-                        builder.AppendLine(check.Error);
-                    }
+                ParameterChecksFailedResult parameterChecksResult => string.Join('\n', parameterChecksResult.FailedChecks.Select(x => x.Error)),
+                ChecksFailedResult checkResult => string.Join('\n', checkResult.FailedChecks.Select(x => x.Error)),
+                ExecutionFailedResult execResult => ((Func<string>) (() =>
+                {
+                    _logging.LogErrorAsync(execResult.Exception, "CommandHandler");
+                    return execResult.Exception.Message;
+                }))(),
+                CommandNotFoundResult _ => string.Empty,
+                _ => failedResult.Reason
+            }).ToString();
 
-                    break;
-                case ChecksFailedResult checkResult:
-                    foreach (var check in checkResult.FailedChecks)
-                    {
-                        builder.AppendLine(check.Error);
-                    }
-
-                    break;
-                case CommandNotFoundResult notFoundResult:
-                    return false;
-                case ExecutionFailedResult execResult:
-                    await _logging.LogErrorAsync(execResult.Exception, "CommandHandler");
-                    builder.Append(execResult.Exception.Message);
-                    break;
-                default:
-                    builder.Append(failedResult.Reason);
-                    break;
-            }
-
-            await context.Channel.SendMessageAsync(builder.ToString());
+            if (!string.IsNullOrWhiteSpace(error))
+                await context.Channel.SendMessageAsync(embed: new EmbedBuilder().WithErrorColor()
+                    .WithTitle("Command Error").WithDescription(error).Build());
+            
             return false;
         }
 

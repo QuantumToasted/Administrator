@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Commands;
@@ -65,23 +66,16 @@ namespace Administrator.Services
         {
             if (string.IsNullOrWhiteSpace(message.Message)) return Task.CompletedTask;
 
-            switch (message.Severity)
+            return message.Severity switch
             {
-                case LogSeverity.Critical:
-                    return _logging.LogCriticalAsync(message.Message, "Discord");
-                case LogSeverity.Error:
-                    return _logging.LogErrorAsync(message.Message, "Discord");
-                case LogSeverity.Warning:
-                    return _logging.LogWarningAsync(message.Message, "Discord");
-                case LogSeverity.Info:
-                    return _logging.LogInfoAsync(message.Message, "Discord");
-                case LogSeverity.Verbose:
-                    return _logging.LogVerboseAsync(message.Message, "Discord");
-                case LogSeverity.Debug:
-                    return _logging.LogDebugAsync(message.Message, "Discord");
-                default:
-                    return Task.CompletedTask;
-            }
+                LogSeverity.Critical => _logging.LogCriticalAsync(message.Message, "Discord"),
+                LogSeverity.Error => _logging.LogErrorAsync(message.Message, "Discord"),
+                LogSeverity.Warning => _logging.LogWarningAsync(message.Message, "Discord"),
+                LogSeverity.Info => _logging.LogInfoAsync(message.Message, "Discord"),
+                LogSeverity.Verbose => _logging.LogVerboseAsync(message.Message, "Discord"),
+                LogSeverity.Debug => _logging.LogVerboseAsync(message.Message, "Discord"),
+                _ => Task.CompletedTask
+            };
         }
     }
 }
