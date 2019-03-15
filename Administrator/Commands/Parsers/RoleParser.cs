@@ -37,10 +37,9 @@ namespace Administrator.Commands
                 role = matches.FirstOrDefault() as TRole;
             }
 
-            return role is null
-                ? Task.FromResult(
-                    TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_notfound")))
-                : Task.FromResult(TypeParserResult<TRole>.Successful(role));
+            return Task.FromResult(!(role is null)
+                ? TypeParserResult<TRole>.Successful(role)
+                : TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_notfound")));
         }
     }
 }
