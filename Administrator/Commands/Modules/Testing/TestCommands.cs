@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Administrator.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
@@ -108,6 +109,16 @@ namespace Administrator.Commands
             Context.Database.Guilds.Update(guild);
             await Context.Database.SaveChangesAsync();
             return CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
+        }
+
+        [Command("fixate")]
+        public Task<AdminCommandResult> Fixate(int center, int truncateTo, [Remainder] string text)
+        {
+            var original = $"{text}\n{$"^{center}".PadLeft(center + 1)}";
+            text = text.FixateTo(ref center, truncateTo);
+            var newText = $"{text}\n{$"^{center}".PadLeft(center + 1)}";
+
+            return CommandSuccess(Format.Code($"{original}\n\n{newText}"));
         }
     }
 }
