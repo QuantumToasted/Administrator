@@ -83,7 +83,25 @@
       "Ошибка в команде"
     ],
     "commanderror_exception": [
-      "Произошла непредвиденная ошибка при попытке использовать эту команду. Пожалуйста, сообщите о следующем тексте на [сервере поддержки]({0}):\n```{1}```\n"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
+    ],
+    "commanderror_paramchecks": [
+      "One or more requirements for the arguments in this command were not met:\n{0}"
+    ],
+    "commanderror_checks": [
+      "One or more requirements for this command were not met:\n{0}"
+    ],
+    "commanderror_toofewarguments": [
+      "You did not provide enough arguments for this command. It needs {0}."
+    ],
+    "commanderror_toomanyarguments": [
+      "You provided too many arguments for this command. It only needs {0}."
+    ],
+    "commanderror_typeparsefailed": [
+      "Failed to parse argument {0}: {1}"
+    ],
+    "commanderror_overloadsfailed": [
+      "All overloads for this command failed:\n{0}"
     ]
   }
 }
