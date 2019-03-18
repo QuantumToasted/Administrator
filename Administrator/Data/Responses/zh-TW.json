@@ -86,19 +86,19 @@
       "嘗試使用此指令時出現意外錯誤，請於我們的[支援伺服器]({0})中通報以下訊息：\n{1}"
     ],
     "commanderror_paramchecks": [
-      "One or more requirements for the parameters in this command were not met:\n{0}"
+      "無法滿足該指令其中一個或多項參數的條件:\n{0}"
     ],
     "commanderror_checks": [
-      "One or more requirements for this command were not met:\n{0}"
+      "無法滿足該指令其中一個或多項條件:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It needs {0}."
+      "您需要提供更多參數，此指令需要 {0} 個參數。"
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It only needs {0}."
+      "您輸入太多參數了，此指令只需 {0} 個參數。"
     ],
     "commanderror_overloadsfailed": [
-      "All variations of this command failed:\n{0}"
+      "無法執行任何符合條件的指令:\n{0}"
     ]
   }
 }
