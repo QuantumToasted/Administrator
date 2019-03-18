@@ -5,9 +5,9 @@ namespace Administrator.Extensions
 {
     public static class CommandExtensions
     {
-        public static string Format(this Command command)
+        public static string FormatArguments(this Command command)
         {
-            var builder = new StringBuilder(command.FullAliases[0]);
+            var builder = new StringBuilder();
             foreach (var parameter in command.Parameters)
             {
                 builder.Append(' ')

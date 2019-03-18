@@ -137,8 +137,10 @@ namespace Administrator.Services
                         string.Join('\n', paramCheckResult.FailedChecks.Select(x => x.Error))));
                     break;
                 case TypeParseFailedResult typeParseResult:
-                    builder.AppendLine(context.Localize("commanderror_typeparsefailed",
-                        Format.Code(typeParseResult.Parameter.Name), typeParseResult.Reason));
+                    // TODO: Replace with context.Path
+                    builder.AppendLine(Format.Code(
+                            $"{context.Prefix}{typeParseResult.Parameter.Command.FullAliases[0]}{typeParseResult.Parameter.Command.FormatArguments()}"))
+                        .AppendLine($"\n{Format.Code(typeParseResult.Parameter.Name)}: {typeParseResult.Reason}");
                     break;
             }
 
