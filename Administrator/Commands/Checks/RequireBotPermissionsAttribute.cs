@@ -9,13 +9,13 @@ namespace Administrator.Commands
 {
     public sealed class RequireBotPermissionsAttribute : RequireContextAttribute
     {
-        private readonly bool isGuildPermissions;
+        private readonly bool _isGuildPermissions;
 
         public RequireBotPermissionsAttribute(GuildPermission requiredGuildPermissions)
             : base(ContextType.Guild)
         {
             RequiredGuildPermissions = requiredGuildPermissions;
-            isGuildPermissions = true;
+            _isGuildPermissions = true;
         }
 
         public RequireBotPermissionsAttribute(ChannelPermission requiredChannelPermissions)
@@ -35,7 +35,7 @@ namespace Administrator.Commands
                 return baseCheck;
 
             var context = (AdminCommandContext) ctx;
-            if (isGuildPermissions)
+            if (_isGuildPermissions)
             {
                 return context.Guild.CurrentUser.GuildPermissions.Has(RequiredGuildPermissions)
                     ? CheckResult.Successful

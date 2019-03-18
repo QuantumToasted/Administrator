@@ -10,13 +10,13 @@ namespace Administrator.Commands
 {
     public sealed class RequireUserPermissionsAttribute : RequireContextAttribute
     {
-        private readonly bool isGuildPermissions;
+        private readonly bool _isGuildPermissions;
 
         public RequireUserPermissionsAttribute(GuildPermission requiredGuildPermissions)
             : base(ContextType.Guild)
         {
             RequiredGuildPermissions = requiredGuildPermissions;
-            isGuildPermissions = true;
+            _isGuildPermissions = true;
         }
 
         public RequireUserPermissionsAttribute(ChannelPermission requiredChannelPermissions)
@@ -38,7 +38,7 @@ namespace Administrator.Commands
             var context = (AdminCommandContext) ctx;
             var user = (SocketGuildUser) context.User;
 
-            if (isGuildPermissions)
+            if (_isGuildPermissions)
             {
                 return user.GuildPermissions.Has(RequiredGuildPermissions)
                     ? CheckResult.Successful
