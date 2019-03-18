@@ -83,7 +83,7 @@
       "指令執行錯誤"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
+      "嘗試使用此指令時出現意外錯誤，請於我們的[支援伺服器]({0})中通報以下訊息：\n{1}"
     ],
     "commanderror_paramchecks": [
       "One or more requirements for the parameters in this command were not met:\n{0}"
