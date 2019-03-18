@@ -28,6 +28,8 @@ namespace Administrator.Database
         
         public DbSet<GlobalUser> GlobalUsers { get; set; }
 
+        public DbSet<Punishment> Punishments { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
             if (await Guilds.FindAsync(guildId) is Guild guild)
@@ -75,6 +77,42 @@ namespace Administrator.Database
                     .HasConversion(x => x.CultureCode,
                         x => _provider.GetRequiredService<LocalizationService>().Languages
                             .First(y => y.CultureCode.Equals(x)));
+            });
+
+            modelBuilder.Entity<Punishment>(punishment =>
+            {
+                punishment.HasKey(x => x.Id);
+                punishment.Property(x => x.Id).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<Kick>(kick =>
+            {
+                kick.HasBaseType<Punishment>();
+            });
+
+            modelBuilder.Entity<RevocablePunishment>(punishment =>
+            {
+                punishment.HasBaseType<Punishment>();
+            });
+
+            modelBuilder.Entity<Ban>(ban =>
+            {
+                ban.HasBaseType<RevocablePunishment>();
+            });
+
+            modelBuilder.Entity<Mute>(mute =>
+            {
+                mute.HasBaseType<RevocablePunishment>();
+            });
+
+            modelBuilder.Entity<TemporaryBan>(tempBan =>
+            {
+                tempBan.HasBaseType<RevocablePunishment>();
+            });
+
+            modelBuilder.Entity<Warning>(warning =>
+            {
+                warning.HasBaseType<RevocablePunishment>();
             });
         }
     }

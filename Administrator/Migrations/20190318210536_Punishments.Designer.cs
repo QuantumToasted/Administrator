@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using Administrator.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Administrator.Migrations
 {
     [DbContext(typeof(AdminDatabaseContext))]
-    partial class AdminDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20190318210536_Punishments")]
+    partial class Punishments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
