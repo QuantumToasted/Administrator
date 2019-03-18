@@ -86,19 +86,19 @@
       "Произошла непредвиденная ошибка при попытке использовать эту команду. Пожалуйста, сообщите о следующем тексте на [сервере поддержки]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
-      "One or more requirements for the parameters in this command were not met:\n{0}"
+      "Одно или несколько требований к параметрам в этой команде не были выполнены:\n{0}"
     ],
     "commanderror_checks": [
       "Одно или несколько требований для этой команды не были выполнены:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It needs {0}."
+      "Вы ввели недостаточно параметров для этой команды. Требуется {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It only needs {0}."
+      "Вы ввели слишком много параметров для этой команды. Требуется только {0}."
     ],
     "commanderror_overloadsfailed": [
-      "All variations of this command failed:\n{0}"
+      "Не удалось выполнить ни один вариант этой команды:\n{0}"
     ]
   }
 }
