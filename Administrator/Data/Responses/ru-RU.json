@@ -99,6 +99,81 @@
     ],
     "commanderror_overloadsfailed": [
       "Не удалось выполнить ни один вариант этой команды:\n{0}"
+    ],
+    "punishment_case": [
+      "Case #{0}"
+    ],
+    "punishment_ban": [
+      "Ban"
+    ],
+    "punishment_ban_description": [
+      "You have been banned from {0}."
+    ],
+    "punishment_ban_description_guild": [
+      "User {0} has been banned."
+    ],
+    "punishment_kick": [
+      "Kick"
+    ],
+    "punishment_kick_description": [
+      "You have been kicked out of {0}."
+    ],
+    "punishment_kick_description_guild": [
+      "User {0} has been kicked."
+    ],
+    "punishment_mute": [
+      "Mute"
+    ],
+    "punishment_mute_permanent": [
+      "Permanent"
+    ],
+    "punishment_mute_description": [
+      "You have been muted in {0}."
+    ],
+    "punishment_mute_description_guild": [
+      "User {0} has been muted."
+    ],
+    "punishment_temporaryban": [
+      "Temporary Ban"
+    ],
+    "punishment_temporaryban_description": [
+      "You have been temporarily banned from {0}."
+    ],
+    "punishment_temporaryban_description_guild": [
+      "User {0} has been temporarily banned."
+    ],
+    "punishment_warning": [
+      "Warning"
+    ],
+    "punishment_warning_description": [
+      "You have been given a warning in {0}. This is your {1} warning."
+    ],
+    "punishment_warning_description_guild": [
+      "User {0} has been warned. This is their {1} warning."
+    ],
+    "punishment_warning_additional": [
+      "Additional punishment"
+    ],
+    "punishment_reason": [
+      "Reason"
+    ],
+    "punishment_noreason": [
+      "No reason provided."
+    ],
+    "punishment_needsreason": [
+      "Moderator: use {0} to give this punishment a reason."
+    ],
+    "punishment_appeal": [
+      "Appeal instructions"
+    ],
+    "punishment_tooshort": [
+      "Due to the length of your punishment ({0}), it cannot be appealed."
+    ],
+    "punishment_appeal_instructions": [
+      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+    ],
+    "punishment_moderator": [
+      "Moderator: {0}"
     ]
   }
 }
