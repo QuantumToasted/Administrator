@@ -86,10 +86,10 @@
       "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
-      "One or more requirements for the parameters in this command were not met:\n{0}"
+      "Un ou plusieurs des exigences pour les paramètres de cette commande n'ont pas été respectées:\n{0}"
     ],
     "commanderror_checks": [
-      "One or more requirements for this command were not met:\n{0}"
+      "Une ou plusieurs exigences pour cette commande n'ont pas été respectées:\n{0}"
     ],
     "commanderror_toofewarguments": [
       "Vous n'avez pas fourni assez de paramètres pour cette commande. Elle en nécessite {0}."
@@ -98,34 +98,34 @@
       "Vous avez fourni trop de paramètres. Cette commande nécessite {0} paramètre(s)."
     ],
     "commanderror_overloadsfailed": [
-      "All variations of this command failed:\n{0}"
+      "Toutes les variations de cette commande ont échouées:\n{0}"
     ],
     "punishment_case": [
-      "Case #{0}"
+      "Cas #{0}"
     ],
     "punishment_ban": [
-      "Ban"
+      "Bannissement"
     ],
     "punishment_ban_description": [
-      "Vous avez été banni de la guide {0}."
+      "You have been banned from {0}."
     ],
     "punishment_ban_description_guild": [
       "User {0} has been banned."
     ],
     "punishment_kick": [
-      "Kick"
+      "Exclusion"
     ],
     "punishment_kick_description": [
-      "You have been kicked out of {0}."
+      "Vous avez été exclu de la guilde {0}."
     ],
     "punishment_kick_description_guild": [
-      "User {0} has been kicked."
+      "L'utilisateur {0} a été exclu."
     ],
     "punishment_mute": [
-      "Mute"
+      "Sourdine"
     ],
     "punishment_mute_permanent": [
-      "Permanente"
+      "Permanent"
     ],
     "punishment_mute_description": [
       "You have been muted in {0}."
