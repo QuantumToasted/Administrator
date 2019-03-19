@@ -11,7 +11,7 @@
       "Na razie, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a server."
+      "Ta komenda może zostać użyta jedynie na serwerze."
     ],
     "requirecontext_dm": [
       "Ta komenda może zostać użyta jedynie w kanale prywatnym."
@@ -26,19 +26,19 @@
       "Hierarchia ról ci na to nie pozwala."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following server permissions: {0}"
+      "Ta komenda wymaga ode mnie następujących uprawnień na serwerze: {0}"
     ],
     "requirebotpermissions_channel": [
       "Ta komenda wymaga ode mnie następujących uprawnień w tym kanale: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following server permissions: {0}"
+      "Ta komenda wymaga od ciebie następujących uprawnień na serwerze: {0}"
     ],
     "requireuserpermissions_channel": [
       "Ta komenda wymaga od ciebie następujących uprawnień w tym kanale: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the server owner."
+      "Ta komenda może zostać użyta jedynie przez właściciela serwera."
     ],
     "operator_greaterthan": [
       "Podana liczba musi być większa niż {0}."
@@ -80,97 +80,97 @@
       "Nie znaleziono kanału."
     ],
     "commanderror": [
-      "Command error"
+      "Błąd komendy"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
+      "Nieoczekiwany błąd nastąpił podczas próby użycia tej komendy. Proszę zgłosić następujący tekst na [serwerze wsparcia]({0}): {1}"
     ],
     "commanderror_paramchecks": [
-      "One or more requirements for the parameters in this command were not met:\n{0}"
+      "Nie spełniono jednego lub więcej wymagań dla parametrów tej komendy:\n{0}"
     ],
     "commanderror_checks": [
-      "One or more requirements for this command were not met:\n{0}"
+      "Nie spełniono jednego lub więcej wymagań dla tej komendy:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It needs {0}."
+      "Nie podałeś wystarczającej ilości parametrów dla tej komendy. Wymaga ona {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It only needs {0}."
+      "Podałeś zbyt wiele parametrów dla tej komendy. Wymaga ona jedynie {0}."
     ],
     "commanderror_overloadsfailed": [
-      "All variations of this command failed:\n{0}"
+      "Żadna z wariacji tej komendy się nie powiodła:\n{0}"
     ],
     "punishment_case": [
-      "Case #{0}"
+      "Sprawa #{0}"
     ],
     "punishment_ban": [
       "Ban"
     ],
     "punishment_ban_description": [
-      "You have been banned from {0}."
+      "Zostałeś zbanowany na {0}."
     ],
     "punishment_ban_description_guild": [
-      "User {0} has been banned."
+      "Użytkownik {0} został zbanowany."
     ],
     "punishment_kick": [
-      "Kick"
+      "Wyrzucenie"
     ],
     "punishment_kick_description": [
-      "You have been kicked out of {0}."
+      "Zostałeś wyrzucony z {0}."
     ],
     "punishment_kick_description_guild": [
-      "User {0} has been kicked."
+      "Użytkownik {0} został wyrzucony."
     ],
     "punishment_mute": [
-      "Mute"
+      "Wyciszenie"
     ],
     "punishment_mute_permanent": [
-      "Permanent"
+      "Permanentny"
     ],
     "punishment_mute_description": [
-      "You have been muted in {0}."
+      "Zostałeś wyciszony na {0}."
     ],
     "punishment_mute_description_guild": [
-      "User {0} has been muted."
+      "Użytkownik {0} został wyciszony."
     ],
     "punishment_temporaryban": [
-      "Temporary Ban"
+      "Tymczasowy Ban"
     ],
     "punishment_temporaryban_description": [
-      "You have been temporarily banned from {0}."
+      "Zostałeś tymczasowo zbanowany na {0}."
     ],
     "punishment_temporaryban_description_guild": [
-      "User {0} has been temporarily banned."
+      "Użytkownik {0} został tymczasowo zbanowany."
     ],
     "punishment_warning": [
-      "Warning"
+      "Ostrzeżenie"
     ],
     "punishment_warning_description": [
-      "You have been given a warning in {0}. This is your {1} warning."
+      "Otrzymałeś ostrzeżenie na {0}. To jest twoje {1} ostrzeżenie."
     ],
     "punishment_warning_description_guild": [
-      "User {0} has been warned. This is their {1} warning."
+      "Użytkownik {0} został ostrzeżony. To jest ich {1} ostrzeżenie."
     ],
     "punishment_warning_additional": [
-      "Additional punishment"
+      "Dodatkowa kara"
     ],
     "punishment_reason": [
-      "Reason"
+      "Powód"
     ],
     "punishment_noreason": [
-      "No reason provided."
+      "Nie podano powodu."
     ],
     "punishment_needsreason": [
-      "Moderator: use {0} to give this punishment a reason."
+      "Moderatorze: użyj {0}, aby przypisać tej karze powód."
     ],
     "punishment_appeal": [
-      "Appeal instructions"
+      "Instrukcje odwołania"
     ],
     "punishment_tooshort": [
-      "Due to the length of your punishment ({0}), it cannot be appealed."
+      "Ze względu na czas trwania twojej kary ({0}), nie możesz się od niej odwołać."
     ],
     "punishment_appeal_instructions": [
-      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+      "Twój numer sprawy to {0}. Aby odwołać się od niej, użyj komendy {1} i zostanie to rozpatrzone przez moderatorów serwera."
     ],
     "punishment_moderator": [
       "Moderator: {0}"
