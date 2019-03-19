@@ -10,11 +10,11 @@ namespace Administrator.Commands
     public sealed class RoleParser<TRole> : TypeParser<TRole>
         where TRole : SocketRole
     {
-        public override Task<TypeParserResult<TRole>> ParseAsync(Parameter parameter, string value, ICommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TRole>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)
-                return Task.FromResult(TypeParserResult<TRole>.Unsuccessful("requirecontext_guild"));
+                return TypeParserResult<TRole>.Unsuccessful("requirecontext_guild");
 
             TRole role = null;
 
@@ -31,15 +31,14 @@ namespace Administrator.Commands
                     .ToList();
 
                 if (matches.Count > 1)
-                    return Task.FromResult(
-                        TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_multiple")));
+                    return TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_multiple"));
 
                 role = matches.FirstOrDefault() as TRole;
             }
 
-            return Task.FromResult(!(role is null)
+            return !(role is null)
                 ? TypeParserResult<TRole>.Successful(role)
-                : TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_notfound")));
+                : TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_notfound"));
         }
     }
 }

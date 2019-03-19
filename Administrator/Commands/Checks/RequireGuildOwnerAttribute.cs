@@ -12,7 +12,7 @@ namespace Administrator.Commands
             : base(ContextType.Guild)
         { }
 
-        public override async Task<CheckResult> CheckAsync(ICommandContext ctx, IServiceProvider provider)
+        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx, IServiceProvider provider)
         {
             var baseResult = await base.CheckAsync(ctx, provider);
             if (!baseResult.IsSuccessful)

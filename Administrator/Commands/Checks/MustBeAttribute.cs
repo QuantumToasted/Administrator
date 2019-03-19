@@ -2,11 +2,12 @@
 using System.Threading.Tasks;
 using Administrator.Common;
 using Qmmands;
+using Remotion.Linq.Parsing;
 
 namespace Administrator.Commands
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = true)]
-    public sealed class MustBeAttribute : ParameterCheckBaseAttribute
+    public sealed class MustBeAttribute : ParameterCheckAttribute
     {
         private readonly bool _isOperator;
 
@@ -29,54 +30,45 @@ namespace Administrator.Commands
 
         public int Value { get; }
 
-        public override Task<CheckResult> CheckAsync(object argument, ICommandContext ctx, IServiceProvider provider)
+        public override ValueTask<CheckResult> CheckAsync(object argument, CommandContext ctx, IServiceProvider provider)
         {
             var context = (AdminCommandContext) ctx;
 
             if (_isOperator)
             {
                 var value = (int) argument;
-                switch (Operator)
+                return Operator switch
                 {
-                    case Operator.GreaterThan:
-                        return Task.FromResult(value > Value
-                            ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Localize("operator_greaterthan", Value)));
-                    case Operator.EqualTo:
-                        return Task.FromResult(value == Value
-                            ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Localize("operator_equalto", Value)));
-                    case Operator.LessThan:
-                        return Task.FromResult(value < Value
-                            ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Localize("operator_lessthan", Value)));
-                    case Operator.DivisibleBy:
-                        return Task.FromResult(value % Value == 0
-                            ? CheckResult.Successful
-                            : CheckResult.Unsuccessful(context.Localize("operator_divisibleby", Value)));
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    Operator.GreaterThan => value > Value
+                        ? CheckResult.Successful
+                        : CheckResult.Unsuccessful(context.Localize("operator_greaterthan", Value)),
+                    Operator.EqualTo => value == Value
+                        ? CheckResult.Successful
+                        : CheckResult.Unsuccessful(context.Localize("operator_equalto", Value)),
+                    Operator.LessThan => value < Value
+                        ? CheckResult.Successful
+                        : CheckResult.Unsuccessful(context.Localize("operator_lessthan", Value)),
+                    Operator.DivisibleBy => value % Value == 0
+                        ? CheckResult.Successful
+                        : CheckResult.Unsuccessful(context.Localize("operator_divisibleby", Value)),
+                        _ => throw new ArgumentOutOfRangeException(nameof(Operator))
+                };
             }
 
             var str = (string) argument;
-            switch (StringLength)
+            return StringLength switch
             {
-                case StringLength.LongerThan:
-                    return Task.FromResult(str.Length > Value
-                        ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Localize("stringvalue_longerthan", Value)));
-                case StringLength.Exactly:
-                    return Task.FromResult(str.Length == Value
-                        ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Localize("stringvalue_exactly", Value)));
-                case StringLength.ShorterThan:
-                    return Task.FromResult(str.Length < Value
-                        ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Localize("stringvalue_shorterthan", Value)));
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                StringLength.LongerThan => str.Length > Value
+                    ? CheckResult.Successful
+                    : CheckResult.Unsuccessful(context.Localize("stringvalue_longerthan", Value)),
+                StringLength.Exactly => str.Length == Value
+                    ? CheckResult.Successful
+                    : CheckResult.Unsuccessful(context.Localize("stringvalue_exactly", Value)),
+                StringLength.ShorterThan => str.Length < Value
+                    ? CheckResult.Successful
+                    : CheckResult.Unsuccessful(context.Localize("stringvalue_shorterthan", Value)),
+                _ => throw new ArgumentOutOfRangeException(nameof(StringLength))
+            };
         }
     }
 }

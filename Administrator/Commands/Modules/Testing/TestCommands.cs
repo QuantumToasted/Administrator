@@ -12,83 +12,83 @@ namespace Administrator.Commands
     public sealed class TestCommands : AdminModuleBase
     {
         [Command("longerthan")]
-        public Task<AdminCommandResult> MustBeLongerThanTest([MustBe(StringLength.LongerThan, 10)] string value)
+        public ValueTask<AdminCommandResult> MustBeLongerThanTest([MustBe(StringLength.LongerThan, 10)] string value)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("shorterthan")]
-        public Task<AdminCommandResult> MustBeShorterThanTest([MustBe(StringLength.ShorterThan, 3)] string value)
+        public ValueTask<AdminCommandResult> MustBeShorterThanTest([MustBe(StringLength.ShorterThan, 3)] string value)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("exactly")]
-        public Task<AdminCommandResult> MustBeExactlyTest([MustBe(StringLength.Exactly, 5)] string value)
+        public ValueTask<AdminCommandResult> MustBeExactlyTest([MustBe(StringLength.Exactly, 5)] string value)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("lessthan")]
-        public Task<AdminCommandResult> MustBeLessThanTest([MustBe(Operator.LessThan, 3)] int value)
+        public ValueTask<AdminCommandResult> MustBeLessThanTest([MustBe(Operator.LessThan, 3)] int value)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("greaterthan")]
-        public Task<AdminCommandResult> MustBeGreaterThanTest([MustBe(Operator.GreaterThan, 50)] int value)
+        public ValueTask<AdminCommandResult> MustBeGreaterThanTest([MustBe(Operator.GreaterThan, 50)] int value)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("equalto")]
-        public Task<AdminCommandResult> MustBeEqualToTest([MustBe(Operator.EqualTo, 15)] int value)
+        public ValueTask<AdminCommandResult> MustBeEqualToTest([MustBe(Operator.EqualTo, 15)] int value)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("dmsonly")]
         [RequireContext(ContextType.DM)]
-        public Task<AdminCommandResult> DMsOnlyTest()
+        public ValueTask<AdminCommandResult> DMsOnlyTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("guildonly")]
         [RequireContext(ContextType.Guild)]
-        public Task<AdminCommandResult> GuildOnlyTest()
+        public ValueTask<AdminCommandResult> GuildOnlyTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("owneronly")]
         [RequireOwner]
-        public Task<AdminCommandResult> OwnerOnlyTest()
+        public ValueTask<AdminCommandResult> OwnerOnlyTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("guildowneronly")]
         [RequireGuildOwner]
-        public Task<AdminCommandResult> GuildOwnerOnlyTest()
+        public ValueTask<AdminCommandResult> GuildOwnerOnlyTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("hierarchy")]
-        public Task<AdminCommandResult> HierarchyTest([RequireHierarchy, Remainder] SocketGuildUser target)
+        public ValueTask<AdminCommandResult> HierarchyTest([RequireHierarchy, Remainder] SocketGuildUser target)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("botguildperms")]
         [RequireBotPermissions(GuildPermission.Administrator | GuildPermission.ManageGuild)]
-        public Task<AdminCommandResult> BotGuildPermissionsTest()
+        public ValueTask<AdminCommandResult> BotGuildPermissionsTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("botchannelperms")]
         [RequireBotPermissions(ChannelPermission.ManageRoles)]
-        public Task<AdminCommandResult> BotChannelPermissionsTest()
+        public ValueTask<AdminCommandResult> BotChannelPermissionsTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("userguildperms")]
         [RequireUserPermissions(GuildPermission.Administrator | GuildPermission.ManageGuild)]
-        public Task<AdminCommandResult> UserGuildPermissionsTest()
+        public ValueTask<AdminCommandResult> UserGuildPermissionsTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("userchannelperms")]
         [RequireUserPermissions(ChannelPermission.ManageRoles)]
-        public Task<AdminCommandResult> UserChannelPermissionsTest()
+        public ValueTask<AdminCommandResult> UserChannelPermissionsTest()
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("finduser")]
-        public Task<AdminCommandResult> FindUserTest([Remainder] SocketGuildUser target)
+        public ValueTask<AdminCommandResult> FindUserTest([Remainder] SocketGuildUser target)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("findrole")]
-        public Task<AdminCommandResult> FindRoleTest([Remainder] SocketRole target)
+        public ValueTask<AdminCommandResult> FindRoleTest([Remainder] SocketRole target)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("findchannel")]
-        public Task<AdminCommandResult> FindChannelTest([Remainder] SocketGuildChannel target)
+        public ValueTask<AdminCommandResult> FindChannelTest([Remainder] SocketGuildChannel target)
             => CommandSuccess(Emote.Parse("<:mowpiffygootem:553849138647793674>").ToString());
 
         [Command("setlang")]
@@ -112,7 +112,7 @@ namespace Administrator.Commands
         }
 
         [Command("fixate")]
-        public Task<AdminCommandResult> Fixate(int center, int truncateTo, [Remainder] string text)
+        public ValueTask<AdminCommandResult> Fixate(int center, int truncateTo, [Remainder] string text)
         {
             var original = $"{text}\n{$"^{center}".PadLeft(center + 1)}";
             text = text.FixateTo(ref center, truncateTo);

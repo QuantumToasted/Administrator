@@ -11,11 +11,11 @@ namespace Administrator.Commands
     public sealed class ChannelParser<TChannel> : TypeParser<TChannel>
         where TChannel : SocketGuildChannel
     {
-        public override Task<TypeParserResult<TChannel>> ParseAsync(Parameter parameter, string value, ICommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TChannel>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)
-                return Task.FromResult(TypeParserResult<TChannel>.Unsuccessful("requirecontext_guild"));
+                return TypeParserResult<TChannel>.Unsuccessful("requirecontext_guild");
 
             TChannel channel = null;
             IEnumerable<TChannel> channels;
@@ -43,16 +43,15 @@ namespace Administrator.Commands
 
                 if (matchingChannels.Count > 1)
                 {
-                    return Task.FromResult(
-                        TypeParserResult<TChannel>.Unsuccessful(context.Localize("channelparser_multiple")));
+                    return TypeParserResult<TChannel>.Unsuccessful(context.Localize("channelparser_multiple"));
                 }
 
                 channel = matchingChannels.FirstOrDefault();
             }
 
-            return Task.FromResult(!(channel is null)
+            return !(channel is null)
                 ? TypeParserResult<TChannel>.Successful(channel)
-                : TypeParserResult<TChannel>.Unsuccessful(context.Localize("channelparser_notfound")));
+                : TypeParserResult<TChannel>.Unsuccessful(context.Localize("channelparser_notfound"));
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Administrator.Commands
         
         public override bool IsSuccessful { get; }
         
-        public static implicit operator Task<AdminCommandResult>(AdminCommandResult result)
-            => Task.FromResult(result);
+        public static implicit operator ValueTask<AdminCommandResult>(AdminCommandResult result)
+            => new ValueTask<AdminCommandResult>(result);
     }
 }

@@ -6,7 +6,7 @@ using Qmmands;
 namespace Administrator.Commands
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class RequireContextAttribute : CheckBaseAttribute
+    public class RequireContextAttribute : CheckAttribute
     {
         public RequireContextAttribute(ContextType requiredContext)
         {
@@ -15,17 +15,17 @@ namespace Administrator.Commands
 
         public ContextType RequiredContext { get; }
 
-        public override Task<CheckResult> CheckAsync(ICommandContext ctx, IServiceProvider provider)
+        public override ValueTask<CheckResult> CheckAsync(CommandContext ctx, IServiceProvider provider)
         {
             var context = (AdminCommandContext) ctx;
             var contextType = context.IsPrivate ? ContextType.DM : ContextType.Guild;
 
             if (RequiredContext == contextType)
-                return Task.FromResult(CheckResult.Successful);
+                return CheckResult.Successful;
 
-            return Task.FromResult(CheckResult.Unsuccessful(RequiredContext == ContextType.DM
+            return CheckResult.Unsuccessful(RequiredContext == ContextType.DM
                 ? context.Localize("requirecontext_dm")
-                : context.Localize("requirecontext_guild")));
+                : context.Localize("requirecontext_guild"));
         }
     }
 }

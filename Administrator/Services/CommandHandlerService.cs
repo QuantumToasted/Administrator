@@ -96,10 +96,10 @@ namespace Administrator.Services
                 case ArgumentParseFailedResult argumentParseResult:
                     if (argumentParseResult.Position.HasValue)
                     {
-                        // TODO: Replace with context.Path on next Qmmands update
-                        var center = context.Prefix.Length + argumentParseResult.Command.FullAliases[0].Length + argumentParseResult.Position.Value;
-                        var fullString = $"{context.Prefix}{argumentParseResult.Command.FullAliases[0]} {argumentParseResult.RawArguments}"
-                            .FixateTo(ref center, 30 - (context.Prefix.Length + argumentParseResult.Command.FullAliases[0].Length));
+                        var path = string.Join(' ', context.Path);
+                        var center = context.Prefix.Length + path.Length + argumentParseResult.Position.Value;
+                        var fullString = $"{context.Prefix}{path} {argumentParseResult.RawArguments}"
+                            .FixateTo(ref center, 30 - (context.Prefix.Length + path.Length));
                         builder.AppendLine(Format.Code($"{fullString}\n{"↑".PadLeft(center + 2)}"));
                     }
                     builder.AppendLine(argumentParseResult.ArgumentParserFailure switch
@@ -114,7 +114,7 @@ namespace Administrator.Services
                     break;
                 case ChecksFailedResult checkResult:
                     builder.AppendLine(context.Localize("commanderror_checks",
-                        string.Join('\n', checkResult.FailedChecks.Select(x => x.Error))));
+                        string.Join('\n', checkResult.FailedChecks.Select(x => x.Result.Reason))));
                     break;
                 case CommandNotFoundResult _:
                 case CommandOnCooldownResult _:
@@ -134,12 +134,11 @@ namespace Administrator.Services
                         overloadResult.FailedOverloads.Values.First());
                 case ParameterChecksFailedResult paramCheckResult:
                     builder.AppendLine(context.Localize("commanderror_paramchecks",
-                        string.Join('\n', paramCheckResult.FailedChecks.Select(x => x.Error))));
+                        string.Join('\n', paramCheckResult.FailedChecks.Select(x => x.Result.Reason))));
                     break;
                 case TypeParseFailedResult typeParseResult:
-                    // TODO: Replace with context.Path
                     builder.AppendLine(Format.Code(
-                            $"{context.Prefix}{typeParseResult.Parameter.Command.FullAliases[0]}{typeParseResult.Parameter.Command.FormatArguments()}"))
+                            $"{context.Prefix}{string.Join(' ', context.Path)}{typeParseResult.Parameter.Command.FormatArguments()}"))
                         .AppendLine($"\n{Format.Code(typeParseResult.Parameter.Name)}: {typeParseResult.Reason}");
                     break;
             }

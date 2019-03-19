@@ -9,7 +9,7 @@ using Qmmands;
 
 namespace Administrator.Commands
 {
-    public sealed class AdminCommandContext : ICommandContext, IDisposable
+    public sealed class AdminCommandContext : CommandContext, IDisposable
     {
         private readonly LocalizationService _localization;
 

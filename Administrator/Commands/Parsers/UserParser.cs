@@ -10,12 +10,11 @@ namespace Administrator.Commands
     public sealed class UserParser<TUser> : TypeParser<TUser>
         where TUser : SocketUser
     {
-        public override Task<TypeParserResult<TUser>> ParseAsync(Parameter parameter, string value, ICommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TUser>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)
-                return Task.FromResult(
-                    TypeParserResult<TUser>.Unsuccessful(context.Localize("requirecontext_guild")));
+                return TypeParserResult<TUser>.Unsuccessful(context.Localize("requirecontext_guild"));
 
             TUser user = null;
 
@@ -41,15 +40,14 @@ namespace Administrator.Commands
                     .ToList();
 
                 if (matches.Count > 1)
-                    return Task.FromResult(
-                        TypeParserResult<TUser>.Unsuccessful(context.Localize("userparser_multiple")));
+                    return TypeParserResult<TUser>.Unsuccessful(context.Localize("userparser_multiple"));
 
                 user = matches.FirstOrDefault() as TUser;
             }
 
-            return Task.FromResult(!(user is null)
+            return !(user is null)
                 ? TypeParserResult<TUser>.Successful(user)
-                : TypeParserResult<TUser>.Unsuccessful(context.Localize("userparser_notfound")));
+                : TypeParserResult<TUser>.Unsuccessful(context.Localize("userparser_notfound"));
         }
     }
 }

@@ -43,8 +43,8 @@ namespace Administrator.Services
             _restClient.Log += message
                 => _queue.Enqueue(() => HandleClientLog(message));
 
-            _commands.CommandExecuted += (command, result, context, provider)
-                => _queue.Enqueue(() => HandleCommandExecutedAsync(command, result, context, provider));
+            _commands.CommandExecuted += (result, context, provider)
+                => _queue.Enqueue(() => HandleCommandExecutedAsync(result, context, provider));
 
             return _logging.LogInfoAsync("Initialized.", "Dispatcher");
         }
@@ -55,10 +55,10 @@ namespace Administrator.Services
             await _commandHandler.TryExecuteCommandAsync(userMessage);
         }
 
-        private async Task HandleCommandExecutedAsync(Command command, CommandResult result, ICommandContext context,
+        private async Task HandleCommandExecutedAsync(CommandResult result, CommandContext context,
             IServiceProvider provider)
         {
-            await _commandHandler.SendCommandResultAsync(command, (AdminCommandResult) result,
+            await _commandHandler.SendCommandResultAsync(result.Command, (AdminCommandResult) result,
                 (AdminCommandContext) context, provider);
         }
 
