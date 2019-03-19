@@ -107,7 +107,7 @@
       "Ban"
     ],
     "punishment_ban_description": [
-      "You have been banned from {0}."
+      "Vous avez été banni de la guide {0}."
     ],
     "punishment_ban_description_guild": [
       "User {0} has been banned."
