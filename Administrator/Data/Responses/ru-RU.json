@@ -101,79 +101,79 @@
       "Не удалось выполнить ни один вариант этой команды:\n{0}"
     ],
     "punishment_case": [
-      "Case #{0}"
+      "Дело #{0}"
     ],
     "punishment_ban": [
-      "Ban"
+      "Бан"
     ],
     "punishment_ban_description": [
-      "You have been banned from {0}."
+      "Вы были забанены в {0}."
     ],
     "punishment_ban_description_guild": [
-      "User {0} has been banned."
+      "Пользователь {0} был забанен."
     ],
     "punishment_kick": [
-      "Kick"
+      "Кик"
     ],
     "punishment_kick_description": [
-      "You have been kicked out of {0}."
+      "Вы были кикнуты из {0}."
     ],
     "punishment_kick_description_guild": [
-      "User {0} has been kicked."
+      "Пользователь {0} был кикнут."
     ],
     "punishment_mute": [
-      "Mute"
+      "Заглушить"
     ],
     "punishment_mute_permanent": [
-      "Permanent"
+      "Постоянный"
     ],
     "punishment_mute_description": [
-      "You have been muted in {0}."
+      "Вы были заглушены в {0}."
     ],
     "punishment_mute_description_guild": [
-      "User {0} has been muted."
+      "Пользователь {0} был заглушён."
     ],
     "punishment_temporaryban": [
-      "Temporary Ban"
+      "Временный бан"
     ],
     "punishment_temporaryban_description": [
-      "You have been temporarily banned from {0}."
+      "Вы были временно забанены в {0}."
     ],
     "punishment_temporaryban_description_guild": [
-      "User {0} has been temporarily banned."
+      "Пользователь {0} был временно забанен."
     ],
     "punishment_warning": [
-      "Warning"
+      "Предупреждение"
     ],
     "punishment_warning_description": [
-      "You have been given a warning in {0}. This is your {1} warning."
+      "Вам было выдано предупреждение в {0}. Это ваше {1}-е предупреждение."
     ],
     "punishment_warning_description_guild": [
-      "User {0} has been warned. This is their {1} warning."
+      "{0} пользователь были предупреждён. Это их {1}-е предупреждение."
     ],
     "punishment_warning_additional": [
-      "Additional punishment"
+      "Дополнительное наказание"
     ],
     "punishment_reason": [
-      "Reason"
+      "Причина"
     ],
     "punishment_noreason": [
-      "No reason provided."
+      "Причина не указана."
     ],
     "punishment_needsreason": [
-      "Moderator: use {0} to give this punishment a reason."
+      "Модератор: используйте {0}, чтобы дать причину этому наказанию."
     ],
     "punishment_appeal": [
-      "Appeal instructions"
+      "Инструкции по обжалованию"
     ],
     "punishment_tooshort": [
-      "Due to the length of your punishment ({0}), it cannot be appealed."
+      "Из-за длины вашего наказания ({0}), оно не может быть обжаловано."
     ],
     "punishment_appeal_instructions": [
-      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+      "Номер вашего дела - {0}. Чтобы обжаловать его, используйте команду {1} и оно будет рассмотрено модераторами сервера."
     ],
     "punishment_moderator": [
-      "Moderator: {0}"
+      "Модератор: {0}"
     ]
   }
 }
