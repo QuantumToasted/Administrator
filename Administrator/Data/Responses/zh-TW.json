@@ -11,7 +11,7 @@
       "掰啦，{0}！"
     ],
     "requirecontext_guild": [
-      "此指令只能用在伺服器中。"
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
       "此指令只能用在私訊中。"
@@ -26,19 +26,19 @@
       "您在此伺服器身分組階級不足。"
     ],
     "requirebotpermissions_guild": [
-      "我需要該伺服器的 {0} 的權限"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
       "我需要該頻道的 {0} 的權限"
     ],
     "requireuserpermissions_guild": [
-      "您需要該伺服器的 {0} 的權限"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
       "您需要該頻道的 {0} 的權限"
     ],
     "requireguildowner": [
-      "此指令僅能由該伺服器之擁有者使用。"
+      "This command can only used by the server owner."
     ],
     "operator_greaterthan": [
       "您輸入的數字必須大於{0}。"
@@ -83,7 +83,7 @@
       "指令執行錯誤"
     ],
     "commanderror_exception": [
-      "嘗試使用此指令時出現意外錯誤，請於我們的[支援伺服器]({0})中通報以下訊息：\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "無法滿足該指令其中一個或多項參數的條件:\n{0}"
