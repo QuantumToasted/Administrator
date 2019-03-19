@@ -11,7 +11,7 @@
       "Na razie, {0}!"
     ],
     "requirecontext_guild": [
-      "Ta komenda może zostać użyta jedynie w gildii."
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
       "Ta komenda może zostać użyta jedynie w kanale prywatnym."
@@ -26,19 +26,19 @@
       "Hierarchia ról ci na to nie pozwala."
     ],
     "requirebotpermissions_guild": [
-      "Ta komenda wymaga ode mnie następujących uprawnień w tej gildii: {0}"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
       "Ta komenda wymaga ode mnie następujących uprawnień w tym kanale: {0}"
     ],
     "requireuserpermissions_guild": [
-      "Ta komenda wymaga od ciebie następujących uprawnień w tej gildii: {0}"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
       "Ta komenda wymaga od ciebie następujących uprawnień w tym kanale: {0}"
     ],
     "requireguildowner": [
-      "Ta komenda może zostać użyta jedynie przez właściciela gildii."
+      "This command can only used by the server owner."
     ],
     "operator_greaterthan": [
       "Podana liczba musi być większa niż {0}."
@@ -83,7 +83,7 @@
       "Command error"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "One or more requirements for the parameters in this command were not met:\n{0}"
