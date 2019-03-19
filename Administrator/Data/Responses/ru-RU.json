@@ -11,7 +11,7 @@
       "Пока, {0}!"
     ],
     "requirecontext_guild": [
-      "Эта команда может быть использована только на сервере."
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
       "Эта команда может быть использована только в Личных Сообщениях."
@@ -26,19 +26,19 @@
       "Ролевая иерархия не позволяет Вам сделать этого."
     ],
     "requirebotpermissions_guild": [
-      "Эта команда требует, чтобы у меня были следующие разрешения сервера: {0}"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
       "Эта команда требует, чтобы у меня были следующие разрешения канала: {0}"
     ],
     "requireuserpermissions_guild": [
-      "Эта команда требует, чтобы у Вас были следующие разрешения сервера: {0}"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
       "Эта команда требует, чтобы у Вас были следующие разрешения канала: {0}"
     ],
     "requireguildowner": [
-      "Эта команда может быть использована только владельцем сервера."
+      "This command can only used by the server owner."
     ],
     "operator_greaterthan": [
       "Указанное число должно быть больше числа {0}."
@@ -83,7 +83,7 @@
       "Ошибка в команде"
     ],
     "commanderror_exception": [
-      "Произошла непредвиденная ошибка при попытке использовать эту команду. Пожалуйста, сообщите о следующем тексте на [сервере поддержки]({0}):\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "Одно или несколько требований к параметрам в этой команде не были выполнены:\n{0}"
