@@ -11,7 +11,7 @@
       "À plus tard, {0}!"
     ],
     "requirecontext_guild": [
-      "Cette commande ne peut être utilisée que dans une guilde."
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
       "Cette commande ne peut être utilisée qu'en MPs."
@@ -26,19 +26,19 @@
       "La hiérarchie des rôles ne vous permet pas de faire cela."
     ],
     "requirebotpermissions_guild": [
-      "J'ai besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
       "J'ai besoin des permissions des permissions de canal suivantes pour utiliser cette commande: {0}"
     ],
     "requireuserpermissions_guild": [
-      "Vous avez besoin des permissions de guilde suivantes pour utiliser cette commande: {0}"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
       "Vous avez besoin des permissions de canal suivantes pour utiliser cette commande: {0}"
     ],
     "requireguildowner": [
-      "Cette commande ne peut être utilisée que par le propriétaire de cette guilde."
+      "This command can only used by the server owner."
     ],
     "operator_greaterthan": [
       "Le nombre fourni doit être supérieur à {0}."
@@ -83,7 +83,7 @@
       "Erreur de commande"
     ],
     "commanderror_exception": [
-      "Une erreur inattendue est survenue lors de l'utilisation de cette commande. S'il vous plaît, signalez le texte suivant dans [la guilde de support technique]({0}):\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "Un ou plusieurs des exigences pour les paramètres de cette commande n'ont pas été respectées:\n{0}"
