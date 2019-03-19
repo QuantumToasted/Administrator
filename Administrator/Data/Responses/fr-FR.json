@@ -149,19 +149,19 @@
       "Vous avez été averti dans la guilde {0}. Ceci est votre {1} avertissement."
     ],
     "punishment_warning_description_guild": [
-      "User {0} has been warned. This is their {1} warning."
+      "Utilisateur {0} a été averti. Ceci est leur {1} avertissement."
     ],
     "punishment_warning_additional": [
-      "Additional punishment"
+      "Sanction additionnelle"
     ],
     "punishment_reason": [
-      "Reason"
+      "Raison"
     ],
     "punishment_noreason": [
-      "No reason provided."
+      "Aucune raison fournie."
     ],
     "punishment_needsreason": [
-      "Moderator: use {0} to give this punishment a reason."
+      "Modérateur: utilisez {0} pour fournir une raison à cette sanction."
     ],
     "punishment_appeal": [
       "Appeal instructions"
