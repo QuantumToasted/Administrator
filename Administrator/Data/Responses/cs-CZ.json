@@ -11,7 +11,7 @@
       "Nashle, {0}!"
     ],
     "requirecontext_guild": [
-      "Tento příkaz může být použit pouze v guildě."
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
       "Tento příkaz může být pouze použit v soukromých zprávách."
@@ -26,19 +26,19 @@
       "Hierarchie rolí ti neumožňuje tohle provést."
     ],
     "requirebotpermissions_guild": [
-      "Tento příkaz vyžaduje, abych měla následující povolení v guildě: {0}"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
       "Tenhle příkaz vyžaduje, abych měla následujíc povolení kanálu: {0}"
     ],
     "requireuserpermissions_guild": [
-      "Tento příkaz vyžaduje, abyste měl následující povolení v guildě: {0}"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
       "Tento příkaz vyžaduje, abyste měl následující povolení kanálu: {0}"
     ],
     "requireguildowner": [
-      "Tento příkaz může být použit pouze vlastníkem guildy."
+      "This command can only used by the server owner."
     ],
     "operator_greaterthan": [
       "Zadané číslo musí být větší než {0}."
@@ -83,7 +83,7 @@
       "Command error"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "One or more requirements for the parameters in this command were not met:\n{0}"
