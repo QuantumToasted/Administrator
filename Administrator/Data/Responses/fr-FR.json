@@ -146,7 +146,7 @@
       "Warning"
     ],
     "punishment_warning_description": [
-      "You have been given a warning in {0}. This is your {1} warning."
+      "Vous avez été averti dans la guilde {0}. Ceci est votre {1} avertissement."
     ],
     "punishment_warning_description_guild": [
       "User {0} has been warned. This is their {1} warning."
