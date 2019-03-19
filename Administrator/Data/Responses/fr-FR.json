@@ -11,7 +11,7 @@
       "À plus tard, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a server."
+      "Cette commande ne peut être utilisée que dans un serveur."
     ],
     "requirecontext_dm": [
       "Cette commande ne peut être utilisée qu'en MPs."
