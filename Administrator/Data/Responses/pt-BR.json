@@ -11,7 +11,7 @@
       "Tchau, {0}!"
     ],
     "requirecontext_guild": [
-      "Esse comando só pode ser usado em um servidor."
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
       "Esse comando só pode ser usado em mensagens diretas."
@@ -26,19 +26,19 @@
       "A hierarquia dos cargos não lhe permite fazer isso."
     ],
     "requirebotpermissions_guild": [
-      "Esse comando requer que eu tenha as seguintes permissões neste servidor: {0}"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
       "Esse comando requer que eu tenha as seguintes permissões neste canal: {0}"
     ],
     "requireuserpermissions_guild": [
-      "Esse comando requer que você tenha as seguintes permissões neste servidor: {0}"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
       "Esse comando requer que você tenha as seguintes permissões neste canal: {0}"
     ],
     "requireguildowner": [
-      "Esse commando só pode ser usado pelo proprietário do servidor."
+      "This command can only used by the server owner."
     ],
     "operator_greaterthan": [
       "O número fornecido deve ser maior do que {0}."
@@ -83,7 +83,7 @@
       "Command error"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "One or more requirements for the parameters in this command were not met:\n{0}"
