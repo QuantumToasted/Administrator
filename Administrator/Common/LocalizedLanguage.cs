@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using Newtonsoft.Json;
 
 namespace Administrator.Common
@@ -17,5 +18,21 @@ namespace Administrator.Common
 
         [JsonProperty("responses")]
         public IReadOnlyDictionary<string, ImmutableArray<string>> Responses { get; private set; }
+
+        [JsonIgnore]
+        public CultureInfo Culture
+        {
+            get
+            {
+                try
+                {
+                    return new CultureInfo(CultureCode);
+                }
+                catch (CultureNotFoundException)
+                {
+                    return null;
+                }
+            }
+        }
     }
 }
