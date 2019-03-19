@@ -1,4 +1,5 @@
 ﻿using System;
+using Discord;
 
 namespace Administrator.Database
 {
@@ -27,5 +28,15 @@ namespace Administrator.Database
         public string Reason { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
+
+        public ulong LogMessageId { get; set; }
+
+        public ulong LogMessageChannelId { get; set; }
+
+        public void SetLogMessage(IUserMessage message)
+        {
+            LogMessageId = message.Id;
+            LogMessageChannelId = message.Channel.Id;
+        }
     }
 }

@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Administrator.Common;
 using Administrator.Services;
+using Discord;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,20 +18,30 @@ namespace Administrator.Database
             new ServiceCollection().AddEntityFrameworkNpgsql().BuildServiceProvider();
 
         private readonly IServiceProvider _provider;
+        private readonly DiscordSocketClient _client;
 
-        public AdminDatabaseContext() : this(EmptyProvider)
+        public AdminDatabaseContext() : this(null)
         { }
 
         public AdminDatabaseContext(IServiceProvider provider)
         {
+            if (!(provider is null))
+            {
+                _client = provider.GetRequiredService<DiscordSocketClient>();
+            }
+
             _provider = provider ?? EmptyProvider;
         }
-        
+
         public DbSet<Guild> Guilds { get; set; }
         
         public DbSet<GlobalUser> GlobalUsers { get; set; }
 
         public DbSet<Punishment> Punishments { get; set; }
+
+        public DbSet<LoggingChannel> LoggingChannels { get; set; }
+
+        public DbSet<SpecialRole> SpecialRoles { get; set; }
 
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
@@ -50,6 +63,22 @@ namespace Administrator.Database
             GlobalUsers.Add(user);
             await SaveChangesAsync();
             return user;
+        }
+
+        public async Task<SocketTextChannel> GetLoggingChannelAsync(ulong guildId, LogType type)
+        {
+            if (!(await LoggingChannels.FindAsync(guildId, type) is LoggingChannel logChannel))
+                return null;
+
+            return _client.GetGuild(guildId).GetTextChannel(logChannel.Id);
+        }
+
+        public async Task<SocketRole> GetSpecialRoleAsync(ulong guildId, RoleType type)
+        {
+            if (!(await SpecialRoles.FindAsync(guildId, type) is SpecialRole role))
+                return null;
+
+            return _client.GetGuild(guildId).GetRole(role.Id);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -113,6 +142,16 @@ namespace Administrator.Database
             modelBuilder.Entity<Warning>(warning =>
             {
                 warning.HasBaseType<RevocablePunishment>();
+            });
+
+            modelBuilder.Entity<LoggingChannel>(channel =>
+            {
+                channel.HasKey(x => new {x.GuildId, x.Type});
+            });
+
+            modelBuilder.Entity<SpecialRole>(role =>
+            {
+                role.HasKey(x => new {x.GuildId, x.Type});
             });
         }
     }
