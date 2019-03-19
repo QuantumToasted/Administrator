@@ -11,7 +11,7 @@
       "¡Adios, {0}!"
     ],
     "requirecontext_guild": [
-      "Este comando solo puede ser usado en un servidor."
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
       "Este comando solo puede ser utilizado en mensajes directos."
@@ -26,19 +26,19 @@
       "La jerarquía del Rol no te lo permite."
     ],
     "requirebotpermissions_guild": [
-      "Este comando requiere que yo tenga los siguientes permisos de servidor: {0}"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
       "Este comando requiere que yo tenga los siguientes permisos de canal: {0}"
     ],
     "requireuserpermissions_guild": [
-      "Este comando requiere que usted tenga los siguientes permisos de servidor: {0}"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
       "Este comando requiere que usted tenga los siguientes permisos de canal: {0}"
     ],
     "requireguildowner": [
-      "Este comando solo puede ser utilizado por el dueño del servidor."
+      "This command can only used by the server owner."
     ],
     "operator_greaterthan": [
       "El numero debe ser mayor que {0}."
@@ -83,7 +83,7 @@
       "Error en el comando."
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "One or more requirements for the parameters in this command were not met:\n{0}"
