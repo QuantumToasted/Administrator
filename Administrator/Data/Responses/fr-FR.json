@@ -92,10 +92,10 @@
       "One or more requirements for this command were not met:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It needs {0}."
+      "Vous n'avez pas fourni assez de paramètres pour cette commande. Elle en nécessite {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It only needs {0}."
+      "Vous avez fourni trop de paramètres. Cette commande nécessite {0} paramètre(s)."
     ],
     "commanderror_overloadsfailed": [
       "All variations of this command failed:\n{0}"
