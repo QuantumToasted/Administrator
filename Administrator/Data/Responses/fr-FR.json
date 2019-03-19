@@ -83,7 +83,7 @@
       "Erreur de commande"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support guild]({0}):\n{1}"
+      "Une erreur inattendue est survenue lors de l'utilisation de cette commande. S'il vous plaît, signalez le texte suivant dans [la guilde de support technique]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "Un ou plusieurs des exigences pour les paramètres de cette commande n'ont pas été respectées:\n{0}"
@@ -107,10 +107,10 @@
       "Bannissement"
     ],
     "punishment_ban_description": [
-      "You have been banned from {0}."
+      "Vous avez été banni de la guide {0}."
     ],
     "punishment_ban_description_guild": [
-      "User {0} has been banned."
+      "L'utilisateur {0} a été banni."
     ],
     "punishment_kick": [
       "Exclusion"
@@ -125,25 +125,25 @@
       "Sourdine"
     ],
     "punishment_mute_permanent": [
-      "Permanent"
+      "Permanente"
     ],
     "punishment_mute_description": [
-      "You have been muted in {0}."
+      "Vous avez été mis en sourdine dans la guilde {0}."
     ],
     "punishment_mute_description_guild": [
-      "User {0} has been muted."
+      "L’utilisateur {0} a été mis en sourdine."
     ],
     "punishment_temporaryban": [
-      "Temporary Ban"
+      "Bannissement Temporaire"
     ],
     "punishment_temporaryban_description": [
-      "You have been temporarily banned from {0}."
+      "Vous avez été temporairement banni de la guilde {0}."
     ],
     "punishment_temporaryban_description_guild": [
-      "User {0} has been temporarily banned."
+      "L'utilisateur {0} a été temporairement banni."
     ],
     "punishment_warning": [
-      "Warning"
+      "Avertissement"
     ],
     "punishment_warning_description": [
       "Vous avez été averti dans la guilde {0}. Ceci est votre {1} avertissement."
@@ -164,16 +164,16 @@
       "Modérateur: utilisez {0} pour fournir une raison à cette sanction."
     ],
     "punishment_appeal": [
-      "Appeal instructions"
+      "Instructions pour contester une sanction"
     ],
     "punishment_tooshort": [
-      "Due to the length of your punishment ({0}), it cannot be appealed."
+      "En raison de la longueur de votre sanction ({0}), celle-ci ne peut pas être contestée."
     ],
     "punishment_appeal_instructions": [
-      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+      "Votre numéro de sanction est {0}. Pour contester celle-ci, utilisez la commande {1} et votre requête sera évaluée par les modérateurs du serveur."
     ],
     "punishment_moderator": [
-      "Moderator: {0}"
+      "Modérateur: {0}"
     ]
   }
 }
