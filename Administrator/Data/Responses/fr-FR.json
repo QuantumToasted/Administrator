@@ -26,7 +26,7 @@
       "La hiérarchie des rôles ne vous permet pas de faire cela."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following server permissions: {0}"
+      "J'ai besoin des permissions du serveur suivantes pour utiliser cette commande: {0}"
     ],
     "requirebotpermissions_channel": [
       "J'ai besoin des permissions des permissions de canal suivantes pour utiliser cette commande: {0}"
