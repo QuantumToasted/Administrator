@@ -32,13 +32,13 @@
       "J'ai besoin des permissions des permissions de canal suivantes pour utiliser cette commande: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following server permissions: {0}"
+      "Vous avez besoin des permissions du serveur suivantes pour utiliser cette commande: {0}"
     ],
     "requireuserpermissions_channel": [
       "Vous avez besoin des permissions de canal suivantes pour utiliser cette commande: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the server owner."
+      "Cette commande ne peut être utilisée que par le propriétaire de ce serveur."
     ],
     "operator_greaterthan": [
       "Le nombre fourni doit être supérieur à {0}."
