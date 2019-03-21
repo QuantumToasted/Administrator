@@ -1,176 +1,176 @@
 {
   "code": "de-DE",
   "englishName": "German",
-  "nativeName": "English (US)",
+  "nativeName": "Deutsch (DE)",
   "responses": {
     "test_hello": [
       "Hello, {0}!",
-      "Greetings, {0}!"
+      "Hallo, {0}!"
     ],
     "test_goodbye": [
-      "Seeya, {0}!"
+      "Tschüss, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a server."
+      "Dieser Befehl kann nur in einem Server benutzt werden."
     ],
     "requirecontext_dm": [
-      "This command can only be used in DMs."
+      "Dieser Befehl kann nur in DMs benutzt werden."
     ],
     "requireowner": [
-      "This command can only be used by one of my owners."
+      "Dieser Befehl kann nur von einem meiner Besitzer verwendet werden."
     ],
     "requirehierarchy_self": [
-      "The role hierarchy doesn't allow me to do that."
+      "Die Rollenhierarchie erlaubt es mir nicht, das zu tun."
     ],
     "requirehierarchy_user": [
-      "The role hierarchy doesn't allow you to do that."
+      "Die Rollenhierarchie erlaubt es dir nicht, das zu tun."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following server permissions: {0}"
+      "Für diesen Befehl brauche ich folgende Serverberechtigungen: {0}"
     ],
     "requirebotpermissions_channel": [
-      "This command requires me to have the following channel permissions: {0}"
+      "Für diesen Befehl brauche ich folgende Kanalberechtigungen: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following server permissions: {0}"
+      "Für diesen Befehl benötigst du folgende Serverberechtigungen: {0}"
     ],
     "requireuserpermissions_channel": [
-      "This command requires you to have the following channel permissions: {0}"
+      "Für diesen Befehl benötigst du folgende Kanalberechtigungen: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the server owner."
+      "Dieser Befehl kann nur vom Besitzer des Servers verwendet werden."
     ],
     "operator_greaterthan": [
-      "The number supplied must be greater than {0}."
+      "Die angegebene Nummer muss größer als {0} sein."
     ],
     "operator_equalto": [
-      "The number supplied must be equal to {0}."
+      "Die angegebene Nummer muss gleich {0} sein."
     ],
     "operator_lessthan": [
-      "The number supplied must be less than {0}."
+      "Die angegebene Nummer muss kleiner als {0} sein."
     ],
     "operator_divisibleby": [
-      "The number supplied must be divisible by {0}."
+      "Die angegebene Nummer muss teilbar durch {0} sein."
     ],
     "stringvalue_longerthan": [
-      "The supplied text must be longer than {0} characters."
+      "Der angegebene Text muss länger als {0} Zeichen sein."
     ],
     "stringvalue_exactly": [
-      "The supplied text must be exactly {0} characters."
+      "Der angegebene Text muss exakt {0} Zeichen lang sein."
     ],
     "stringvalue_shorterthan": [
-      "The supplied text must be shorter than {0} characters."
+      "Der angegebene Text muss kürzer als {0} Zeichen sein."
     ],
     "userparser_multiple": [
-      "Multiple users were found with that username or nickname."
+      "Mehrere Personen mit diesem Benutzernamen oder Spitznamen wurden gefunden."
     ],
     "userparser_notfound": [
-      "User not found."
+      "Die Person konnte nicht gefunden werden."
     ],
     "roleparser_multiple": [
-      "Multiple roles were found with that name."
+      "Es wurden mehrere Rollen mit diesem Namen gefunden."
     ],
     "roleparser_notfound": [
-      "Role not found."
+      "Rolle nicht gefunden."
     ],
     "channelparser_multiple": [
-      "Multiple channels were found by that name."
+      "Es wurden mehrere Kanäle mit diesem Namen gefunden."
     ],
     "channelparser_notfound": [
-      "Channel not found."
+      "Kanal nicht gefunden."
     ],
     "commanderror": [
-      "Command error"
+      "Fehler bei Befehlsausführung"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
+      "Ein Fehler ist aufgetreten während der Ausführung des Befehls. Bitte melden sie folgenden Text in dem [Supportserver]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
-      "One or more requirements for the parameters in this command were not met:\n{0}"
+      "Eine oder mehrere Anforderungen für die Parameter dieses Befehls wurden nicht erfüllt:\n{0}"
     ],
     "commanderror_checks": [
-      "One or more requirements for this command were not met:\n{0}"
+      "Eine oder mehrere Anforderungen für diesen Befehl wurden nicht erfüllt:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It needs {0}."
+      "Sie haben nicht genügend Parameter für diesen Befehl angegeben. Er benötigt {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It only needs {0}."
+      "Sie haben zu viele Parameter für diesen Befehl angegeben: Er braucht nur {0}."
     ],
     "commanderror_overloadsfailed": [
-      "All variations of this command failed:\n{0}"
+      "Alle Variationen dieses Befehls sind fehlgeschlagen:\n{0}"
     ],
     "punishment_case": [
-      "Case #{0}"
+      "Fall #{0}"
     ],
     "punishment_ban": [
-      "Ban"
+      "Bann"
     ],
     "punishment_ban_description": [
-      "You have been banned from {0}."
+      "Du wurdest von {0} gebannt."
     ],
     "punishment_ban_description_guild": [
-      "User {0} has been banned."
+      "Der Nutzer {0} wurde gebannt."
     ],
     "punishment_kick": [
       "Kick"
     ],
     "punishment_kick_description": [
-      "You have been kicked out of {0}."
+      "Du wurdest von {0} gekickt."
     ],
     "punishment_kick_description_guild": [
-      "User {0} has been kicked."
+      "Der Nutzer {0} wurde gekickt."
     ],
     "punishment_mute": [
-      "Mute"
+      "Stummschaltung"
     ],
     "punishment_mute_permanent": [
       "Permanent"
     ],
     "punishment_mute_description": [
-      "You have been muted in {0}."
+      "Du wurdest in {0} stumm geschaltet."
     ],
     "punishment_mute_description_guild": [
-      "User {0} has been muted."
+      "Der Nutzer {0} wurde stumm geschaltet."
     ],
     "punishment_temporaryban": [
-      "Temporary Ban"
+      "Temporärer Bann"
     ],
     "punishment_temporaryban_description": [
-      "You have been temporarily banned from {0}."
+      "Du wurdest für einen temporären Zeitraum von {0} gebannt."
     ],
     "punishment_temporaryban_description_guild": [
-      "User {0} has been temporarily banned."
+      "Der Nutzer {0} wurde für einen temporären Zeitraum gebannt."
     ],
     "punishment_warning": [
-      "Warning"
+      "Verwarnung"
     ],
     "punishment_warning_description": [
-      "You have been given a warning in {0}. This is your {1} warning."
+      "Du wurdest in {0} verwarnt. Dies ist deine {1}. Verwarnung."
     ],
     "punishment_warning_description_guild": [
-      "User {0} has been warned. This is their {1} warning."
+      "Der Nutzer {0} wurde verwarnt. Dies ist deren {1}. Verwarnung."
     ],
     "punishment_warning_additional": [
-      "Additional punishment"
+      "Zusätzliche Strafe"
     ],
     "punishment_reason": [
-      "Reason"
+      "Begründung"
     ],
     "punishment_noreason": [
-      "No reason provided."
+      "Kein Grund angegeben."
     ],
     "punishment_needsreason": [
-      "Moderator: use {0} to give this punishment a reason."
+      "Moderator: verwende {0} um dieser Strafe einen Begründung hinzuzufügen."
     ],
     "punishment_appeal": [
-      "Appeal instructions"
+      "Widersprechungsanweisungen"
     ],
     "punishment_tooshort": [
-      "Due to the length of your punishment ({0}), it cannot be appealed."
+      "Aufgrund der Länge der Strafe ({0}), kann ihr nicht widersprochen werden."
     ],
     "punishment_appeal_instructions": [
-      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+      "Deine Nummer lautet {0}. Um der Strafe zu widersprechen können sie den Befehl {1} benutzen, daraufhin wird dieser Widerspruch von unseren Moderatoren geprüft."
     ],
     "punishment_moderator": [
       "Moderator: {0}"
