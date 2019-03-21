@@ -11,7 +11,7 @@
       "掰啦，{0}！"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a server."
+      "此指令只能用在伺服器中。"
     ],
     "requirecontext_dm": [
       "此指令只能用在私訊中。"
@@ -26,19 +26,19 @@
       "您在此伺服器身分組階級不足。"
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following server permissions: {0}"
+      "我需要該伺服器的 {0} 的權限"
     ],
     "requirebotpermissions_channel": [
       "我需要該頻道的 {0} 的權限"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following server permissions: {0}"
+      "您需要該伺服器的 {0} 的權限"
     ],
     "requireuserpermissions_channel": [
       "您需要該頻道的 {0} 的權限"
     ],
     "requireguildowner": [
-      "This command can only used by the server owner."
+      "此指令僅能由該伺服器之擁有者使用。"
     ],
     "operator_greaterthan": [
       "您輸入的數字必須大於{0}。"
@@ -83,7 +83,7 @@
       "指令執行錯誤"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
+      "嘗試使用此指令時出現意外錯誤，請於我們的[支援伺服器]({0})中通報以下訊息：\n{1}"
     ],
     "commanderror_paramchecks": [
       "無法滿足該指令其中一個或多項參數的條件:\n{0}"
@@ -101,79 +101,79 @@
       "無法執行任何符合條件的指令:\n{0}"
     ],
     "punishment_case": [
-      "Case #{0}"
+      "案例 #{0}"
     ],
     "punishment_ban": [
-      "Ban"
+      "封鎖"
     ],
     "punishment_ban_description": [
-      "You have been banned from {0}."
+      "您已被 {0} 伺服器封鎖。"
     ],
     "punishment_ban_description_guild": [
-      "User {0} has been banned."
+      "使用者 {0} 已被封鎖。"
     ],
     "punishment_kick": [
-      "Kick"
+      "踢除"
     ],
     "punishment_kick_description": [
-      "You have been kicked out of {0}."
+      "您已被 {0} 伺服器踢除。"
     ],
     "punishment_kick_description_guild": [
-      "User {0} has been kicked."
+      "使用者 {0} 已被踢除。"
     ],
     "punishment_mute": [
-      "Mute"
+      "禁言"
     ],
     "punishment_mute_permanent": [
-      "Permanent"
+      "永久"
     ],
     "punishment_mute_description": [
-      "You have been muted in {0}."
+      "你已被 {0} 伺服器禁言。"
     ],
     "punishment_mute_description_guild": [
-      "User {0} has been muted."
+      "使用者 {0} 已被禁言。"
     ],
     "punishment_temporaryban": [
-      "Temporary Ban"
+      "暫時封鎖"
     ],
     "punishment_temporaryban_description": [
-      "You have been temporarily banned from {0}."
+      "您已被 {0} 伺服器暫時封鎖。"
     ],
     "punishment_temporaryban_description_guild": [
-      "User {0} has been temporarily banned."
+      "使用者 {0} 已被暫時封鎖。"
     ],
     "punishment_warning": [
-      "Warning"
+      "警告"
     ],
     "punishment_warning_description": [
-      "You have been given a warning in {0}. This is your {1} warning."
+      "您已被 {0} 伺服器警告，這是你的第 {1} 支警告。"
     ],
     "punishment_warning_description_guild": [
-      "User {0} has been warned. This is their {1} warning."
+      "使用者 {0} 已被警告，這是他們的第 {1} 個警告。"
     ],
     "punishment_warning_additional": [
-      "Additional punishment"
+      "額外處罰"
     ],
     "punishment_reason": [
-      "Reason"
+      "理由"
     ],
     "punishment_noreason": [
-      "No reason provided."
+      "沒有提供理由"
     ],
     "punishment_needsreason": [
-      "Moderator: use {0} to give this punishment a reason."
+      "管理員: 請使用 {0} 添加懲罰原因"
     ],
     "punishment_appeal": [
-      "Appeal instructions"
+      "反駁指示"
     ],
     "punishment_tooshort": [
-      "Due to the length of your punishment ({0}), it cannot be appealed."
+      "由於您的處罰時間過長 ({0})，無法反駁。"
     ],
     "punishment_appeal_instructions": [
-      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+      "您的案件編號為 {0}。若要反駁，請使用 {1}。您的案件將由伺服器版主進行審核。"
     ],
     "punishment_moderator": [
-      "Moderator: {0}"
+      "管理員: {0}"
     ]
   }
 }
