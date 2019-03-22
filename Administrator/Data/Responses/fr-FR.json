@@ -83,7 +83,7 @@
       "Erreur de commande"
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
+      "Une erreur inattendue est survenue lors de l'utilisation de cette commandes. S'il vous plaît, signalez le texte suivant dans [le serveur de support technique]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "Un ou plusieurs des exigences pour les paramètres de cette commande n'ont pas été respectées:\n{0}"
