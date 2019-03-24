@@ -80,7 +80,7 @@
       "Kanál nenalezen."
     ],
     "commanderror": [
-      "Command error"
+      "Chyba příkazu"
     ],
     "commanderror_exception": [
       "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
