@@ -182,7 +182,7 @@
       "Devido à duração do seu castigo ({0}), ele não pode ser recorrido."
     ],
     "punishment_appeal_instructions": [
-      "O número do caso é {0}. Para recorrer, use o comando {1} e ele será revisto pelos moderadores do servidor."
+      "O número do seu caso é {0}. Para recorrer, use o comando {1} e ele será revisto pelos moderadores do servidor."
     ],
     "punishment_moderator": [
       "Moderador: {0}"
