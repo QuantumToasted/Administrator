@@ -112,6 +112,12 @@
     "punishment_ban_description_guild": [
       "User {0} has been banned."
     ],
+    "punishment_ban_revoke_description": [
+      "You have been unbanned from {0}."
+    ],
+    "punishment_ban_revoke_description_guild": [
+      "User {0} has been unbanned."
+    ],
     "punishment_kick": [
       "Kick"
     ],
@@ -124,23 +130,17 @@
     "punishment_mute": [
       "Mute"
     ],
-    "punishment_mute_permanent": [
-      "Permanent"
-    ],
     "punishment_mute_description": [
       "You have been muted in {0}."
     ],
     "punishment_mute_description_guild": [
       "User {0} has been muted."
     ],
-    "punishment_temporaryban": [
-      "Temporary Ban"
+    "punishment_mute_revoke_description": [
+      "You have been unmuted in {0}."
     ],
-    "punishment_temporaryban_description": [
-      "You have been temporarily banned from {0}."
-    ],
-    "punishment_temporaryban_description_guild": [
-      "User {0} has been temporarily banned."
+    "punishment_mute_revoke_description_guild": [
+      "User {0} has been unmuted."
     ],
     "punishment_warning": [
       "Warning"
@@ -151,8 +151,20 @@
     "punishment_warning_description_guild": [
       "User {0} has been warned. This is their {1} warning."
     ],
+    "punishment_warning_revoke_description": [
+      "Your warning has been revoked in {0}."
+    ],
+    "punishment_warning_revoke_description_guild": [
+      "User {0} has had their warning revoked."
+    ],
     "punishment_warning_additional": [
       "Additional punishment"
+    ],
+    "punishment_duration": [
+      "Duration"
+    ],
+    "punishment_permanent": [
+      "Permanent"
     ],
     "punishment_reason": [
       "Reason"
