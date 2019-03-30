@@ -185,7 +185,7 @@
       "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
     ],
     "punishment_moderator": [
-      "Moderator: {0}"
+      "Moderador: {0}"
     ]
   }
 }
