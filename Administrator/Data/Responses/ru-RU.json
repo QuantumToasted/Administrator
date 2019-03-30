@@ -113,10 +113,10 @@
       "Пользователь {0} был забанен."
     ],
     "punishment_ban_revoke_description": [
-      "You have been unbanned from {0}."
+      "Вы были разбанены в {0}."
     ],
     "punishment_ban_revoke_description_guild": [
-      "User {0} has been unbanned."
+      "Пользователь {0} был разбанен."
     ],
     "punishment_kick": [
       "Кик"
@@ -137,10 +137,10 @@
       "Пользователь {0} был заглушён."
     ],
     "punishment_mute_revoke_description": [
-      "You have been unmuted in {0}."
+      "Вы были размучены в {0}."
     ],
     "punishment_mute_revoke_description_guild": [
-      "User {0} has been unmuted."
+      "Пользователь {0} был размучен."
     ],
     "punishment_warning": [
       "Предупреждение"
@@ -152,16 +152,16 @@
       "{0} пользователь были предупреждён. Это их {1}-е предупреждение."
     ],
     "punishment_warning_revoke_description": [
-      "Your warning has been revoked in {0}."
+      "Ваше предупреждение было аннулировано в {0}."
     ],
     "punishment_warning_revoke_description_guild": [
-      "User {0} has had their warning revoked."
+      "Предупреждение пользователя {0} было аннулировано."
     ],
     "punishment_warning_additional": [
       "Дополнительное наказание"
     ],
     "punishment_duration": [
-      "Duration"
+      "Длительность"
     ],
     "punishment_permanent": [
       "Permanent"
