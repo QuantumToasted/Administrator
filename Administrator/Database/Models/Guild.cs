@@ -21,5 +21,7 @@ namespace Administrator.Database
         public LocalizedLanguage Language { get; set; }
         
         public List<string> CustomPrefixes { get; set; } = new List<string>();
+
+        public GuildSettings Settings { get; set; }
     }
 }

@@ -107,7 +107,7 @@ namespace Administrator.Services
                 };
             }
 
-            using (var ctx = new AdminDatabaseContext())
+            using (var ctx = new AdminDatabaseContext(null))
             {
                 await _logging.LogDebugAsync("Attempting database connection.", "Configuration");
                 if (!await ctx.Database.CanConnectAsync())

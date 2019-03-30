@@ -19,6 +19,7 @@ namespace Administrator.Database
 
         private readonly IServiceProvider _provider;
         private readonly DiscordSocketClient _client;
+        private readonly LocalizationService _localization;
 
         public AdminDatabaseContext() : this(null)
         { }
@@ -28,6 +29,7 @@ namespace Administrator.Database
             if (!(provider is null))
             {
                 _client = provider.GetRequiredService<DiscordSocketClient>();
+                _localization = provider.GetRequiredService<LocalizationService>();
             }
 
             _provider = provider ?? EmptyProvider;
@@ -48,7 +50,7 @@ namespace Administrator.Database
             if (await Guilds.FindAsync(guildId) is Guild guild)
                 return guild;
 
-            guild = new Guild(guildId, _provider.GetRequiredService<LocalizationService>());
+            guild = new Guild(guildId, _localization);
             Guilds.Add(guild);
             await SaveChangesAsync();
             return guild;
@@ -59,7 +61,7 @@ namespace Administrator.Database
             if (await GlobalUsers.FindAsync(userId) is GlobalUser user)
                 return user;
 
-            user = new GlobalUser(userId, _provider.GetRequiredService<LocalizationService>());
+            user = new GlobalUser(userId, _localization);
             GlobalUsers.Add(user);
             await SaveChangesAsync();
             return user;
@@ -94,7 +96,7 @@ namespace Administrator.Database
                 guild.HasKey(x => x.Id);
                 guild.Property(x => x.Language)
                     .HasConversion(x => x.CultureCode,
-                        x => _provider.GetRequiredService<LocalizationService>().Languages
+                        x => _localization.Languages
                             .First(y => y.CultureCode.Equals(x)));
                 guild.Property(x => x.CustomPrefixes).HasDefaultValueSql("'{}'");
             });
@@ -104,7 +106,7 @@ namespace Administrator.Database
                 user.HasKey(x => x.Id);
                 user.Property(x => x.Language)
                     .HasConversion(x => x.CultureCode,
-                        x => _provider.GetRequiredService<LocalizationService>().Languages
+                        x => _localization.Languages
                             .First(y => y.CultureCode.Equals(x)));
             });
 
@@ -132,11 +134,6 @@ namespace Administrator.Database
             modelBuilder.Entity<Mute>(mute =>
             {
                 mute.HasBaseType<RevocablePunishment>();
-            });
-
-            modelBuilder.Entity<TemporaryBan>(tempBan =>
-            {
-                tempBan.HasBaseType<RevocablePunishment>();
             });
 
             modelBuilder.Entity<Warning>(warning =>

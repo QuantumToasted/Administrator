@@ -22,7 +22,7 @@ namespace Administrator
                 MessageCacheSize = 100,
                 LogLevel = LogSeverity.Info
             });
-            
+
             var provider = new ServiceCollection()
                 .AutoAddServices()
                 .AddSingleton(client)

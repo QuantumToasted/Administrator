@@ -1,9 +1,15 @@
-﻿namespace Administrator.Database
+﻿using System;
+
+namespace Administrator.Database
 {
     public sealed class Ban : RevocablePunishment
     {
-        public Ban(ulong guildId, ulong targetId, ulong moderatorId, string reason) 
-            : base(guildId, targetId, moderatorId, reason, true)
-        { }
+        public Ban(ulong guildId, ulong targetId, ulong moderatorId, string reason, TimeSpan? duration)
+            : base(guildId, targetId, moderatorId, reason, !duration.HasValue || duration.Value > TimeSpan.FromDays(1))
+        {
+            Duration = duration;
+        }
+
+        public TimeSpan? Duration { get; set; }
     }
 }

@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Core" Version="2.0.2-dev-01059" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.0.2-dev-01059" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.2-dev-01059" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.2-dev-20190326.4" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.0.2-dev-20190326.4" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.2-dev-20190326.4" />
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="Humanizer" Version="2.6.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0" />
@@ -19,7 +19,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
-    <PackageReference Include="Qmmands" Version="3.0.0-nightly-00141" />
+    <PackageReference Include="Qmmands" Version="3.0.0-nightly-00146" />
   </ItemGroup>
 
   <ItemGroup>

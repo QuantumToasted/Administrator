@@ -103,14 +103,14 @@ namespace Administrator.Services
                         builder.AppendLine(Format.Code($"{fullString}\n{"↑".PadLeft(center + 2)}"));
                     }
                     builder.AppendLine(argumentParseResult.ArgumentParserFailure switch
-                        {
-                            ArgumentParserFailure.TooFewArguments => context.Localize("commanderror_toofewarguments",
-                                argumentParseResult.Command.Parameters.Count),
-                            ArgumentParserFailure.TooManyArguments => context.Localize("commanderror_toomanyarguments",
-                                argumentParseResult.Command.Parameters.Count),
-                            // TODO: Localize the rest of the errors.
-                            _ => argumentParseResult.Reason
-                        });
+                    {
+                        ArgumentParserFailure.TooFewArguments => context.Localize("commanderror_toofewarguments",
+                            argumentParseResult.Command.Parameters.Count),
+                        ArgumentParserFailure.TooManyArguments => context.Localize("commanderror_toomanyarguments",
+                            argumentParseResult.Command.Parameters.Count),
+                        // TODO: Localize the rest of the errors.
+                        _ => argumentParseResult.Reason
+                    });
                     break;
                 case ChecksFailedResult checkResult:
                     builder.AppendLine(context.Localize("commanderror_checks",
