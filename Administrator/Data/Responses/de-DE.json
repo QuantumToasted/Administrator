@@ -112,6 +112,12 @@
     "punishment_ban_description_guild": [
       "Der Nutzer {0} wurde gebannt."
     ],
+    "punishment_ban_revoke_description": [
+      "You have been unbanned from {0}."
+    ],
+    "punishment_ban_revoke_description_guild": [
+      "User {0} has been unbanned."
+    ],
     "punishment_kick": [
       "Kick"
     ],
@@ -124,23 +130,17 @@
     "punishment_mute": [
       "Stummschaltung"
     ],
-    "punishment_mute_permanent": [
-      "Permanent"
-    ],
     "punishment_mute_description": [
       "Du wurdest in {0} stumm geschaltet."
     ],
     "punishment_mute_description_guild": [
       "Der Nutzer {0} wurde stumm geschaltet."
     ],
-    "punishment_temporaryban": [
-      "Temporärer Bann"
+    "punishment_mute_revoke_description": [
+      "You have been unmuted in {0}."
     ],
-    "punishment_temporaryban_description": [
-      "Du wurdest für einen temporären Zeitraum von {0} gebannt."
-    ],
-    "punishment_temporaryban_description_guild": [
-      "Der Nutzer {0} wurde für einen temporären Zeitraum gebannt."
+    "punishment_mute_revoke_description_guild": [
+      "User {0} has been unmuted."
     ],
     "punishment_warning": [
       "Verwarnung"
@@ -151,8 +151,20 @@
     "punishment_warning_description_guild": [
       "Der Nutzer {0} wurde verwarnt. Dies ist deren {1}. Verwarnung."
     ],
+    "punishment_warning_revoke_description": [
+      "Your warning has been revoked in {0}."
+    ],
+    "punishment_warning_revoke_description_guild": [
+      "User {0} has had their warning revoked."
+    ],
     "punishment_warning_additional": [
       "Zusätzliche Strafe"
+    ],
+    "punishment_duration": [
+      "Duration"
+    ],
+    "punishment_permanent": [
+      "Permanent"
     ],
     "punishment_reason": [
       "Begründung"
