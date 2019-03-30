@@ -11,7 +11,7 @@
       "¡Adios, {0}!"
     ],
     "requirecontext_guild": [
-      "This command can only be used in a server."
+      "Este comando solo puede ser utilizado dentro de un servidor."
     ],
     "requirecontext_dm": [
       "Este comando solo puede ser utilizado en mensajes directos."
@@ -26,19 +26,19 @@
       "La jerarquía del Rol no te lo permite."
     ],
     "requirebotpermissions_guild": [
-      "This command requires me to have the following server permissions: {0}"
+      "Este comando requiere que yo tenga los siguientes permisos del servidor: {0}"
     ],
     "requirebotpermissions_channel": [
       "Este comando requiere que yo tenga los siguientes permisos de canal: {0}"
     ],
     "requireuserpermissions_guild": [
-      "This command requires you to have the following server permissions: {0}"
+      "Este comando requiere que usted tenga los siguientes permisos del servidor: {0}"
     ],
     "requireuserpermissions_channel": [
       "Este comando requiere que usted tenga los siguientes permisos de canal: {0}"
     ],
     "requireguildowner": [
-      "This command can only used by the server owner."
+      "Este comando solo puede ser utilizado por el dueño del servidor."
     ],
     "operator_greaterthan": [
       "El numero debe ser mayor que {0}."
@@ -83,7 +83,7 @@
       "Error en el comando."
     ],
     "commanderror_exception": [
-      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
+      "Un error inesperado ha ocurrido al intentar utilizar este comando. Por favor reporte el error enviando el siguiente texto a [El Servidor de Soporte]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
       "One or more requirements for the parameters in this command were not met:\n{0}"
@@ -101,91 +101,91 @@
       "All variations of this command failed:\n{0}"
     ],
     "punishment_case": [
-      "Case #{0}"
+      "Caso #{0}"
     ],
     "punishment_ban": [
       "Ban"
     ],
     "punishment_ban_description": [
-      "You have been banned from {0}."
+      "Has sido baneado de {0}."
     ],
     "punishment_ban_description_guild": [
-      "User {0} has been banned."
+      "El usuario {0} ha sido baneado."
     ],
     "punishment_ban_revoke_description": [
-      "You have been unbanned from {0}."
+      "Has sido desbaneado de {0}."
     ],
     "punishment_ban_revoke_description_guild": [
-      "User {0} has been unbanned."
+      "El usuario {0} ha sido desbaneado."
     ],
     "punishment_kick": [
-      "Kick"
+      "Expulsión"
     ],
     "punishment_kick_description": [
-      "You have been kicked out of {0}."
+      "Has sido expulsado de {0}."
     ],
     "punishment_kick_description_guild": [
-      "User {0} has been kicked."
+      "El usuario {0} ha sido expulsado."
     ],
     "punishment_mute": [
-      "Mute"
+      "Silenciar"
     ],
     "punishment_mute_description": [
-      "You have been muted in {0}."
+      "Has sido silenciado en {0}."
     ],
     "punishment_mute_description_guild": [
-      "User {0} has been muted."
+      "El usuario {0} ha sido silenciado."
     ],
     "punishment_mute_revoke_description": [
-      "You have been unmuted in {0}."
+      "Ya no estas silenciado en {0}."
     ],
     "punishment_mute_revoke_description_guild": [
-      "User {0} has been unmuted."
+      "El usuario {0} ya no esta silenciado."
     ],
     "punishment_warning": [
-      "Warning"
+      "Advertencia"
     ],
     "punishment_warning_description": [
-      "You have been given a warning in {0}. This is your {1} warning."
+      "Se te ha dado una advertencia en {0}. Esta es tu {1} advertencia."
     ],
     "punishment_warning_description_guild": [
-      "User {0} has been warned. This is their {1} warning."
+      "El usuario {0} ha sido advertido. Esta es su {1} advertencia."
     ],
     "punishment_warning_revoke_description": [
-      "Your warning has been revoked in {0}."
+      "Tu advertencia ha sido anulada en {0}."
     ],
     "punishment_warning_revoke_description_guild": [
-      "User {0} has had their warning revoked."
+      "La advertencia del usuario {0} ha sido anulada."
     ],
     "punishment_warning_additional": [
-      "Additional punishment"
+      "Castigo adicional"
     ],
     "punishment_duration": [
-      "Duration"
+      "Duración"
     ],
     "punishment_permanent": [
-      "Permanent"
+      "Permanente"
     ],
     "punishment_reason": [
-      "Reason"
+      "Razón"
     ],
     "punishment_noreason": [
-      "No reason provided."
+      "Ninguna razón especificada."
     ],
     "punishment_needsreason": [
-      "Moderator: use {0} to give this punishment a reason."
+      "Moderador: Use {0} para agregar una razón a este castigo."
     ],
     "punishment_appeal": [
-      "Appeal instructions"
+      "Instrucciones de apelación"
     ],
     "punishment_tooshort": [
-      "Due to the length of your punishment ({0}), it cannot be appealed."
+      "Dada la duración de tu castigo({0}), este no es apelable."
     ],
     "punishment_appeal_instructions": [
       "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
     ],
     "punishment_moderator": [
-      "Moderador: {0}"
+      "Moderator: {0}"
     ]
   }
 }
