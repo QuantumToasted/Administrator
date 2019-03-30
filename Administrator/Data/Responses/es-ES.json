@@ -86,19 +86,19 @@
       "Un error inesperado ha ocurrido al intentar utilizar este comando. Por favor reporte el error enviando el siguiente texto a [El Servidor de Soporte]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
-      "One or more requirements for the parameters in this command were not met:\n{0}"
+      "No se cumple con uno o mas de los requisitos para los parámetros del comando: {0}"
     ],
     "commanderror_checks": [
-      "One or more requirements for this command were not met:\n{0}"
+      "No se cumplen uno o mas de los requisitos de este comando: {0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It needs {0}."
+      "No se han entregado suficientes parámetros para este comando. Se necesitan {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It only needs {0}."
+      "Se ha entregado demasiados parámetros para este comando. Solo se necesita {0}."
     ],
     "commanderror_overloadsfailed": [
-      "All variations of this command failed:\n{0}"
+      "Todas las variaciones de este comando han fallado: {0}"
     ],
     "punishment_case": [
       "Caso #{0}"
@@ -182,10 +182,10 @@
       "Dada la duración de tu castigo({0}), este no es apelable."
     ],
     "punishment_appeal_instructions": [
-      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+      "Tienes asignado el número de caso {0}. Si buscas apelar la decisión, usa el comando {1} y los moderadores revisarán tu caso."
     ],
     "punishment_moderator": [
-      "Moderator: {0}"
+      "Moderador: {0}"
     ]
   }
 }
