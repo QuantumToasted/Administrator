@@ -113,10 +113,10 @@
       "L'utilisateur {0} a été banni."
     ],
     "punishment_ban_revoke_description": [
-      "You have been unbanned from {0}."
+      "Votre bannissement a été retiré pour le serveur {0}."
     ],
     "punishment_ban_revoke_description_guild": [
-      "User {0} has been unbanned."
+      "Le bannissement pour l'utilisateur {0} a été retiré."
     ],
     "punishment_kick": [
       "Exclusion"
@@ -137,10 +137,10 @@
       "L’utilisateur {0} a été mis en sourdine."
     ],
     "punishment_mute_revoke_description": [
-      "You have been unmuted in {0}."
+      "Votre sourdine a été retirée dans le serveur {0}."
     ],
     "punishment_mute_revoke_description_guild": [
-      "User {0} has been unmuted."
+      "La sourdine pour l'utilisateur {0} a été retirée."
     ],
     "punishment_warning": [
       "Avertissement"
@@ -152,16 +152,16 @@
       "Utilisateur {0} a été averti. Ceci est leur {1} avertissement."
     ],
     "punishment_warning_revoke_description": [
-      "Your warning has been revoked in {0}."
+      "Votre avertissement a été révoqué dans le serveur {0}."
     ],
     "punishment_warning_revoke_description_guild": [
-      "User {0} has had their warning revoked."
+      "L’utilisateur {0} a eu leur avertissement révoqué."
     ],
     "punishment_warning_additional": [
       "Sanction additionnelle"
     ],
     "punishment_duration": [
-      "Duration"
+      "Durée"
     ],
     "punishment_permanent": [
       "Permanent"
