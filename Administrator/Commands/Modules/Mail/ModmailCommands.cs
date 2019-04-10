@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Database;
@@ -48,7 +48,7 @@ namespace Administrator.Commands.Modules.Mail
                 {
                     IconUrl =
                         modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
-                    Name = modmail.IsAnonymous ? "Anonymous" : Context.User.ToString()
+                    Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString()
                 })
                 .WithDescription(message)
                 .WithTitle(Context.Localize("modmail_title", modmail.Id))
@@ -114,7 +114,7 @@ namespace Administrator.Commands.Modules.Mail
                     {
                         IconUrl =
                             modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
-                        Name = modmail.IsAnonymous ? "Anonymous" : Context.User.ToString()
+                        Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString()
                     })
                     .WithDescription(message)
                     .WithTitle(Context.Localize("modmail_title", modmail.Id))
