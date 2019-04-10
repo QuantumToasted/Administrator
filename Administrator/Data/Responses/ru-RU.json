@@ -40,6 +40,15 @@
     "requireguildowner": [
       "Эта команда может быть использована только владельцем сервера."
     ],
+    "requiremember": [
+      "This command can only be used by members of {0}."
+    ],
+    "requireloggingchannel_notfound": [
+      "The {0} channel could not be found, or was not set up."
+    ],
+    "requireloggingchannel": [
+      "This command can only be used in the {0} channel."
+    ],
     "operator_greaterthan": [
       "Указанное число должно быть больше числа {0}."
     ],
@@ -78,6 +87,9 @@
     ],
     "channelparser_notfound": [
       "Канал не найден."
+    ],
+    "guildparser_multiple": [
+      "Multiple servers were found by that name."
     ],
     "commanderror": [
       "Ошибка в команде"
@@ -186,6 +198,51 @@
     ],
     "punishment_moderator": [
       "Модератор: {0}"
+    ],
+    "modmail_send_success": [
+      "Your modmail has been successfully sent! Your ID is {0}."
+    ],
+    "modmail_reply_command": [
+      "You can reply to this thread with the command {0}, and close it with {1}."
+    ],
+    "modmail_exists": [
+      "You already have an open modmail thread with {0}. Reply to it with the command {1}, or close it with {2}."
+    ],
+    "modmail_title": [
+      "New message in modmail thread #{0}"
+    ],
+    "modmail_notfound": [
+      "Could not find any modmail by that ID."
+    ],
+    "modmail_closed_user": [
+      "You cannot reply to this modmail because you closed it."
+    ],
+    "modmail_closed_user_guild": [
+      "You cannot reply to this modmail because the user closed it."
+    ],
+    "modmail_closed_guild": [
+      "You cannot reply to this modmail because the modteam closed it."
+    ],
+    "modmail_resume": [
+      "Open up a new modmail to resume discussion with this server."
+    ],
+    "modmail_reply_success": [
+      "You've successfully replied to this modmail."
+    ],
+    "modmail_alreadyclosed": [
+      "This modmail has already been closed."
+    ],
+    "modmail_closed_success": [
+      "You've successfully closed this modmail."
+    ],
+    "modmail_blacklist_contains": [
+      "That user is already blacklisted from sending modmail."
+    ],
+    "modmail_blacklist_added": [
+      "This user has been added to the modmail blacklist."
+    ],
+    "modmail_blacklist_removed": [
+      "This user has been removed from the modmail blacklist."
     ]
   }
 }
