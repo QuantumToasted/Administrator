@@ -19,7 +19,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
-    <PackageReference Include="Qmmands" Version="3.0.0-nightly-00146" />
+    <PackageReference Include="Qmmands" Version="3.0.0-nightly-00174" />
   </ItemGroup>
 
   <ItemGroup>

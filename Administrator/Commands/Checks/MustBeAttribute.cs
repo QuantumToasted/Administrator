@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Administrator.Common;
 using Qmmands;
-using Remotion.Linq.Parsing;
 
 namespace Administrator.Commands
 {
@@ -39,18 +38,18 @@ namespace Administrator.Commands
                 var value = (int) argument;
                 return Operator switch
                 {
-                    Operator.GreaterThan => value > Value
-                        ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Localize("operator_greaterthan", Value)),
-                    Operator.EqualTo => value == Value
-                        ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Localize("operator_equalto", Value)),
-                    Operator.LessThan => value < Value
-                        ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Localize("operator_lessthan", Value)),
-                    Operator.DivisibleBy => value % Value == 0
-                        ? CheckResult.Successful
-                        : CheckResult.Unsuccessful(context.Localize("operator_divisibleby", Value)),
+                    Operator.GreaterThan => value < Value
+                        ? CheckResult.Unsuccessful(context.Localize("operator_greaterthan", Value))
+                        : CheckResult.Successful,
+                    Operator.EqualTo => value != Value
+                        ? CheckResult.Unsuccessful(context.Localize("operator_equalto", Value))
+                        : CheckResult.Successful,
+                    Operator.LessThan => value > Value
+                        ? CheckResult.Unsuccessful(context.Localize("operator_lessthan", Value))
+                        : CheckResult.Successful,
+                    Operator.DivisibleBy => value % Value != 0
+                        ? CheckResult.Unsuccessful(context.Localize("operator_divisibleby", Value))
+                        : CheckResult.Successful,
                         _ => throw new ArgumentOutOfRangeException(nameof(Operator))
                 };
             }
@@ -58,15 +57,15 @@ namespace Administrator.Commands
             var str = (string) argument;
             return StringLength switch
             {
-                StringLength.LongerThan => str.Length > Value
-                    ? CheckResult.Successful
-                    : CheckResult.Unsuccessful(context.Localize("stringvalue_longerthan", Value)),
-                StringLength.Exactly => str.Length == Value
-                    ? CheckResult.Successful
-                    : CheckResult.Unsuccessful(context.Localize("stringvalue_exactly", Value)),
-                StringLength.ShorterThan => str.Length < Value
-                    ? CheckResult.Successful
-                    : CheckResult.Unsuccessful(context.Localize("stringvalue_shorterthan", Value)),
+                StringLength.LongerThan => str.Length < Value
+                    ? CheckResult.Unsuccessful(context.Localize("stringvalue_longerthan", Value))
+                    : CheckResult.Successful,
+                StringLength.Exactly => str.Length != Value
+                    ? CheckResult.Unsuccessful(context.Localize("stringvalue_exactly", Value))
+                    : CheckResult.Successful,
+                StringLength.ShorterThan => str.Length > Value
+                    ? CheckResult.Unsuccessful(context.Localize("stringvalue_shorterthan", Value))
+                    : CheckResult.Successful,
                 _ => throw new ArgumentOutOfRangeException(nameof(StringLength))
             };
         }

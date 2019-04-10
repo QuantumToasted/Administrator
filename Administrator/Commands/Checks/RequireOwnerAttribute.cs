@@ -14,9 +14,9 @@ namespace Administrator.Commands
             var context = (AdminCommandContext) ctx;
             var config = provider.GetRequiredService<ConfigurationService>();
 
-            return config.OwnerIds.Contains(context.User.Id)
-                ? CheckResult.Successful
-                : CheckResult.Unsuccessful(context.Localize("requireowner"));
+            return !config.OwnerIds.Contains(context.User.Id)
+                ? CheckResult.Unsuccessful(context.Localize("requireowner"))
+                : CheckResult.Successful;
         }
     }
 }

@@ -12,7 +12,6 @@ using Humanizer;
 using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Qmmands;
 
 namespace Administrator.Services
 {

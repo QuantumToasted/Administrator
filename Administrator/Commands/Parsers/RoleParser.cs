@@ -14,7 +14,7 @@ namespace Administrator.Commands
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)
-                return TypeParserResult<TRole>.Unsuccessful("requirecontext_guild");
+                return TypeParserResult<TRole>.Unsuccessful(context.Localize("requirecontext_guild"));
 
             TRole role = null;
 

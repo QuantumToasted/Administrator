@@ -40,17 +40,17 @@ namespace Administrator.Commands
 
             if (_isGuildPermissions)
             {
-                return user.GuildPermissions.Has(RequiredGuildPermissions)
-                    ? CheckResult.Successful
-                    : CheckResult.Unsuccessful(context.Localize("requireuserpermissions_guild",
-                        Format.Bold(RequiredGuildPermissions.Humanize(LetterCasing.Title))));
+                return !user.GuildPermissions.Has(RequiredGuildPermissions)
+                    ? CheckResult.Unsuccessful(context.Localize("requireuserpermissions_guild",
+                        Format.Bold(RequiredGuildPermissions.Humanize(LetterCasing.Title))))
+                    : CheckResult.Successful;
             }
 
-            return user.GetPermissions(context.Channel as IGuildChannel)
+            return !user.GetPermissions(context.Channel as IGuildChannel)
                 .Has(RequiredChannelPermissions)
-                ? CheckResult.Successful
-                : CheckResult.Unsuccessful(context.Localize("requireuserpermissions_channel",
-                    Format.Bold(RequiredChannelPermissions.Humanize(LetterCasing.Title))));
+                ? CheckResult.Unsuccessful(context.Localize("requireuserpermissions_channel",
+                    Format.Bold(RequiredChannelPermissions.Humanize(LetterCasing.Title))))
+                : CheckResult.Successful;
         }
     }
 }

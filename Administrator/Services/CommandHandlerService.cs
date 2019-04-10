@@ -161,6 +161,7 @@ namespace Administrator.Services
             _commands.AddTypeParser(new RoleParser<SocketRole>());
             _commands.AddTypeParser(new UserParser<SocketUser>());
             _commands.AddTypeParser(new UserParser<SocketGuildUser>());
+            _commands.AddTypeParser(new GuildParser());
 
             return _logging.LogInfoAsync(modules.SelectMany(x => x.Commands).Count(), "CommandHandler");
         }

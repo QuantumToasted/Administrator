@@ -19,9 +19,9 @@ namespace Administrator.Commands
                 return baseResult;
 
             var context = (AdminCommandContext) ctx;
-            return ((SocketGuildUser) context.User).Id == context.Guild.OwnerId
-                ? CheckResult.Successful
-                : CheckResult.Unsuccessful(context.Localize("requireguildowner"));
+            return ((SocketGuildUser) context.User).Id != context.Guild.OwnerId
+                ? CheckResult.Unsuccessful(context.Localize("requireguildowner"))
+                : CheckResult.Successful;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Administrator.Commands
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)
-                return TypeParserResult<TChannel>.Unsuccessful("requirecontext_guild");
+                return TypeParserResult<TChannel>.Unsuccessful(context.Localize("requirecontext_guild"));
 
             TChannel channel = null;
             IEnumerable<TChannel> channels;

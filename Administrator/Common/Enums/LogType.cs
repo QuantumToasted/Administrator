@@ -3,9 +3,12 @@
     public enum LogType
     {
         Ban,
+        Unban,
         Kick,
         Mute,
-        Tempban,
-        Warn
+        Unmute,
+        Warn,
+        Unwarn, // TODO: Better name
+        Modmail
     }
 }

@@ -39,6 +39,10 @@ namespace Administrator.Migrations
                         .ValueGeneratedOnAdd()
                         .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
+                    b.Property<string>("BlacklistedModmailAuthors")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("''");
+
                     b.Property<List<string>>("CustomPrefixes")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("'{}'");
@@ -65,6 +69,46 @@ namespace Administrator.Migrations
                     b.HasKey("GuildId", "Type");
 
                     b.ToTable("LoggingChannels");
+                });
+
+            modelBuilder.Entity("Administrator.Database.Modmail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int?>("ClosedBy");
+
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<bool>("IsAnonymous");
+
+                    b.Property<decimal>("UserId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Modmails");
+                });
+
+            modelBuilder.Entity("Administrator.Database.ModmailMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Message");
+
+                    b.Property<int>("SourceId");
+
+                    b.Property<int>("Target");
+
+                    b.Property<DateTimeOffset>("Timestamp");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceId");
+
+                    b.ToTable("ModmailMessages");
                 });
 
             modelBuilder.Entity("Administrator.Database.Punishment", b =>
@@ -170,6 +214,14 @@ namespace Administrator.Migrations
                     b.HasBaseType("Administrator.Database.RevocablePunishment");
 
                     b.HasDiscriminator().HasValue("Warning");
+                });
+
+            modelBuilder.Entity("Administrator.Database.ModmailMessage", b =>
+                {
+                    b.HasOne("Administrator.Database.Modmail", "Source")
+                        .WithMany("Messages")
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

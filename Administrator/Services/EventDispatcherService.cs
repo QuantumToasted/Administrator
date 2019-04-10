@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Commands;
 using Discord;
@@ -43,8 +41,8 @@ namespace Administrator.Services
             _restClient.Log += message
                 => _queue.Enqueue(() => HandleClientLog(message));
 
-            _commands.CommandExecuted += (result, context, provider)
-                => _queue.Enqueue(() => HandleCommandExecutedAsync(result, context, provider));
+            _commands.CommandExecuted += args
+                => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context, args.Provider));
 
             return _logging.LogInfoAsync("Initialized.", "Dispatcher");
         }

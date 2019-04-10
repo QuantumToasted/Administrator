@@ -22,6 +22,8 @@ namespace Administrator.Database
         
         public List<string> CustomPrefixes { get; set; } = new List<string>();
 
+        public List<ulong> BlacklistedModmailAuthors { get; set; } = new List<ulong>();
+
         public GuildSettings Settings { get; set; }
     }
 }

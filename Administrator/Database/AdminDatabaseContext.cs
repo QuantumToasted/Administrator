@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Services;
-using Discord;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +43,10 @@ namespace Administrator.Database
         public DbSet<LoggingChannel> LoggingChannels { get; set; }
 
         public DbSet<SpecialRole> SpecialRoles { get; set; }
+
+        public DbSet<Modmail> Modmails { get; set; }
+
+        public DbSet<ModmailMessage> ModmailMessages { get; set; }
 
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
@@ -99,6 +102,9 @@ namespace Administrator.Database
                         x => _localization.Languages
                             .First(y => y.CultureCode.Equals(x)));
                 guild.Property(x => x.CustomPrefixes).HasDefaultValueSql("'{}'");
+                guild.Property(x => x.BlacklistedModmailAuthors)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
             });
 
             modelBuilder.Entity<GlobalUser>(user =>
@@ -149,6 +155,21 @@ namespace Administrator.Database
             modelBuilder.Entity<SpecialRole>(role =>
             {
                 role.HasKey(x => new {x.GuildId, x.Type});
+            });
+
+            modelBuilder.Entity<Modmail>(mail =>
+            {
+                mail.HasKey(x => x.Id);
+                mail.Property(x => x.Id).ValueGeneratedOnAdd();
+                mail.HasMany(x => x.Messages)
+                    .WithOne(x => x.Source)
+                    .HasForeignKey(x => x.SourceId);
+            });
+
+            modelBuilder.Entity<ModmailMessage>(message =>
+            {
+                message.HasKey(x => x.Id);
+                message.Property(x => x.Id).ValueGeneratedOnAdd();
             });
         }
     }
