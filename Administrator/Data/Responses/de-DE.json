@@ -91,6 +91,9 @@
     "guildparser_multiple": [
       "Multiple servers were found by that name."
     ],
+    "guildparser_notfound": [
+      "Server not found."
+    ],
     "commanderror": [
       "Fehler bei Befehlsausführung"
     ],
@@ -243,6 +246,9 @@
     ],
     "modmail_blacklist_removed": [
       "This user has been removed from the modmail blacklist."
+    ],
+    "modmail_anonymous": [
+      "Anonymous"
     ]
   }
 }
