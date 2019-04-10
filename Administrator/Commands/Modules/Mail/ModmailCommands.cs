@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Database;
@@ -43,7 +43,7 @@ namespace Administrator.Commands.Modules.Mail
             await Context.Database.SaveChangesAsync();
 
             await logChannel.SendMessageAsync(embed: new EmbedBuilder()
-                .WithSuccessColor()
+                .WithColor(new Color(0x8ED0FF))
                 .WithAuthor(new EmbedAuthorBuilder
                 {
                     IconUrl =
@@ -109,7 +109,7 @@ namespace Administrator.Commands.Modules.Mail
             if (Context.IsPrivate)
             {
                 await loggingChannel.SendMessageAsync(embed: new EmbedBuilder()
-                    .WithSuccessColor()
+                    .WithColor(new Color(0x8ED0FF))
                     .WithAuthor(new EmbedAuthorBuilder
                     {
                         IconUrl =
@@ -133,7 +133,7 @@ namespace Administrator.Commands.Modules.Mail
                         var user = Context.Client.GetUser(modmail.UserId) ??
                                    await Context.Client.Rest.GetUserAsync(modmail.UserId) as IUser;
                         await user.SendMessageAsync(embed: new EmbedBuilder()
-                            .WithSuccessColor()
+                            .WithColor(new Color(0x8ED0FF))
                             .WithAuthor(new EmbedAuthorBuilder
                             {
                                 IconUrl = Context.Guild.IconUrl,
