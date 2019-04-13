@@ -226,9 +226,6 @@
     "modmail_closed_guild": [
       "You cannot reply to this modmail because the modteam closed it."
     ],
-    "modmail_resume": [
-      "Open up a new modmail to resume discussion with this server."
-    ],
     "modmail_reply_success": [
       "You've successfully replied to this modmail."
     ],
@@ -238,9 +235,6 @@
     "modmail_closed_success": [
       "You've successfully closed this modmail."
     ],
-    "modmail_blacklist_contains": [
-      "That user is already blacklisted from sending modmail."
-    ],
     "modmail_blacklist_added": [
       "This user has been added to the modmail blacklist."
     ],
@@ -249,6 +243,12 @@
     ],
     "modmail_anonymous": [
       "Anonymous"
+    ],
+    "modmail_message_title": [
+      "Messages for modmail thread #{0}"
+    ],
+    "modmail_modteam": [
+      "{0} modteam"
     ]
   }
 }
