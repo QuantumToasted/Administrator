@@ -236,19 +236,19 @@
       "You've successfully closed this modmail."
     ],
     "modmail_blacklist_added": [
-      "This user has been added to the modmail blacklist."
+      "Cet utilisateur a été ajouté à la liste noire du modmail."
     ],
     "modmail_blacklist_removed": [
-      "This user has been removed from the modmail blacklist."
+      "Cet utilisateur a été retiré de la liste noire du modmail."
     ],
     "modmail_anonymous": [
-      "Anonymous"
+      "Anonyme"
     ],
     "modmail_message_title": [
       "Messages for modmail thread #{0}"
     ],
     "modmail_modteam": [
-      "{0} modteam"
+      "Équipe de modération du serveur {0}"
     ]
   }
 }
