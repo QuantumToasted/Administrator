@@ -96,11 +96,11 @@ namespace Administrator.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Message");
-
                     b.Property<int>("SourceId");
 
                     b.Property<int>("Target");
+
+                    b.Property<string>("Text");
 
                     b.Property<DateTimeOffset>("Timestamp");
 

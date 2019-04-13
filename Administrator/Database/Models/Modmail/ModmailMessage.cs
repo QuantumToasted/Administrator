@@ -8,10 +8,10 @@ namespace Administrator.Database
         private ModmailMessage()
         { }
 
-        public ModmailMessage(ModmailTarget target, string message, Modmail source)
+        public ModmailMessage(ModmailTarget target, string text, Modmail source)
         {
             Target = target;
-            Message = message;
+            Text = text;
             SourceId = source.Id;
             Timestamp = DateTimeOffset.UtcNow;
         }
@@ -20,7 +20,7 @@ namespace Administrator.Database
 
         public ModmailTarget Target { get; set; }
 
-        public string Message { get; set; }
+        public string Text { get; set; }
 
         public Modmail Source { get; set; }
 

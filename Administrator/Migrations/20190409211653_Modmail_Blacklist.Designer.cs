@@ -98,7 +98,7 @@ namespace Administrator.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Message");
+                    b.Property<string>("Text");
 
                     b.Property<int>("SourceId");
 

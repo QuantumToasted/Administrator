@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
+using Administrator.Services;
 using Discord;
 using Discord.WebSocket;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
@@ -13,6 +18,8 @@ namespace Administrator.Commands.Modules.Mail
     [Group("modmail", "mm")]
     public sealed class ModmailCommands : AdminModuleBase
     {
+        public PaginationService Pagination { get; set; }
+
         [Command("", "anon", "anonymous")]
         [RequireContext(ContextType.DM)]
         public async ValueTask<AdminCommandResult> OpenModmailAsync([RequireMember] SocketGuild guild,
@@ -217,6 +224,112 @@ namespace Administrator.Commands.Modules.Mail
             return CommandSuccessLocalized(guild.BlacklistedModmailAuthors.Contains(userId)
                 ? "modmail_blacklist_added"
                 : "modmail_blacklist_removed");
+        }
+
+        [Command("show", "thread")]
+        [RequireLoggingChannel(LogType.Modmail, Group = "show")]
+        [RequireContext(ContextType.DM, Group = "show")]
+        public ValueTask<AdminCommandResult> ShowModmailThread(int id)
+            => ShowModmailThreadAsync(id, 1);
+
+        [Command("show", "thread")]
+        [RequireLoggingChannel(LogType.Modmail, Group = "show")]
+        [RequireContext(ContextType.DM, Group = "show")]
+        public async ValueTask<AdminCommandResult> ShowModmailThreadAsync(int id, [MustBe(Operator.GreaterThan, 0)] int page)
+        {
+            var modmail = await Context.Database.Modmails.Include(x => x.Messages).FirstOrDefaultAsync(x => x.Id == id);
+            if (modmail is null)
+                return CommandErrorLocalized("modmail_notfound");
+
+            if (Context.IsPrivate && modmail.UserId != Context.User.Id)
+                return CommandErrorLocalized("modmail_notfound");
+
+            if (!Context.IsPrivate && modmail.GuildId != Context.Guild.Id)
+                return CommandErrorLocalized("modmail_notfound");
+
+            var split = modmail.Messages.OrderBy(x => x.Timestamp)
+                .ToList().SplitBy(10);
+            if (page > split.Count)
+                page = split.Count - 1;
+            else page--;
+
+            var builder = new EmbedBuilder()
+                .WithSuccessColor()
+                .WithTitle(Context.Localize("modmail_message_title", modmail.Id));
+
+            if (split.Count > 1)
+                builder.WithFooter($"{page + 1}/{split.Count}");
+
+            var guild = Context.IsPrivate ? Context.Client.GetGuild(modmail.GuildId) : Context.Guild;
+            var user = Context.Client.GetUser(modmail.UserId) ??
+                       await Context.Client.Rest.GetUserAsync(modmail.UserId) as IUser;
+
+            var sb = new StringBuilder();
+            var lastTarget = ModmailTarget.User;
+            var pages = new List<Page>();
+            foreach (var group in split)
+            {
+                for (var i = 0; i < group.Count; i++)
+                {
+                    var message = group[i];
+
+                    if (message.Target != lastTarget && i > 0)
+                    {
+                        if (Context.IsPrivate)
+                        {
+                            builder.AddField(lastTarget == ModmailTarget.User
+                                    ? Context.User.Username
+                                    : Context.Localize("modmail_modteam", guild.Name),
+                                sb.ToString().TrimTo(256, true));
+                        }
+                        else
+                        {
+                            builder.AddField(lastTarget == ModmailTarget.User
+                                    ? modmail.IsAnonymous ? "modmail_anonymous" : user.Username
+                                    : Context.Localize("modmail_modteam", guild.Name),
+                                sb.ToString().TrimTo(256, true));
+                        }
+
+                        sb.Clear();
+                        i--;
+                    }
+                    else
+                    {
+                        sb.AppendLine(message.Text);
+                    }
+
+                    lastTarget = message.Target;
+
+                    if (i == group.Count - 1)
+                    {
+                        if (Context.IsPrivate)
+                        {
+                            builder.AddField(lastTarget == ModmailTarget.User
+                                    ? Context.User.Username
+                                    : Context.Localize("modmail_modteam", guild.Name),
+                                sb.ToString().TrimTo(256, true));
+                        }
+                        else
+                        {
+                            builder.AddField(lastTarget == ModmailTarget.User
+                                    ? modmail.IsAnonymous ? "modmail_anonymous" : user.Username
+                                    : Context.Localize("modmail_modteam", guild.Name),
+                                sb.ToString().TrimTo(256, true));
+                        }
+                    }
+                }
+
+                pages.Add(builder.Build());
+            }
+
+            if (split.Count > 1)
+            {
+                var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[page]);
+                Pagination.AddPaginator(new DefaultPaginator(message, pages, page));
+                return CommandSuccess();
+            }
+
+            return CommandSuccess(embed: pages[0].Embed);
         }
     }
 }
