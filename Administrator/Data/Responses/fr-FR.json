@@ -179,7 +179,7 @@
       "Durée"
     ],
     "punishment_permanent": [
-      "Permanent"
+      "Permanente"
     ],
     "punishment_reason": [
       "Raison"
@@ -245,7 +245,7 @@
       "Anonyme"
     ],
     "modmail_message_title": [
-      "Messages for modmail thread #{0}"
+      "Messages pour la discussion modmail #{0}"
     ],
     "modmail_modteam": [
       "Équipe de modération du serveur {0}"
