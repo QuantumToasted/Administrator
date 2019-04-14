@@ -41,13 +41,13 @@
       "Эта команда может быть использована только владельцем сервера."
     ],
     "requiremember": [
-      "This command can only be used by members of {0}."
+      "Эта команда может быть использована только участниками сервера {0}."
     ],
     "requireloggingchannel_notfound": [
-      "The {0} channel could not be found, or was not set up."
+      "Канал {0} не был найден или не был настроен."
     ],
     "requireloggingchannel": [
-      "This command can only be used in the {0} channel."
+      "Эта команда может быть использована только в канале {0}."
     ],
     "operator_greaterthan": [
       "Указанное число должно быть больше числа {0}."
@@ -89,10 +89,10 @@
       "Канал не найден."
     ],
     "guildparser_multiple": [
-      "Multiple servers were found by that name."
+      "Было найдено несколько серверов с таким именем."
     ],
     "guildparser_notfound": [
-      "Server not found."
+      "Сервер не найден."
     ],
     "commanderror": [
       "Ошибка в команде"
@@ -203,52 +203,52 @@
       "Модератор: {0}"
     ],
     "modmail_send_success": [
-      "Your modmail has been successfully sent! Your ID is {0}."
+      "Ваша мод-почта была успешно отправлена! Ваш ID — {0}."
     ],
     "modmail_reply_command": [
-      "You can reply to this thread with the command {0}, and close it with {1}."
+      "Вы можете ответить на эту ветку командой {0}, и закрыть её с помощью {1}."
     ],
     "modmail_exists": [
-      "You already have an open modmail thread with {0}. Reply to it with the command {1}, or close it with {2}."
+      "У вас уже есть открытая ветка мод-почты в {0}. Ответьте на неё командой {1}, или закройте её с помощью {2}."
     ],
     "modmail_title": [
-      "New message in modmail thread #{0}"
+      "Новое сообщение в ветке мод-почты #{0}"
     ],
     "modmail_notfound": [
-      "Could not find any modmail by that ID."
+      "Не удалось найти мод-почту по этому ID."
     ],
     "modmail_closed_user": [
-      "You cannot reply to this modmail because you closed it."
+      "Вы не можете ответить на эту мод-почту, потому что Вы закрыли её."
     ],
     "modmail_closed_user_guild": [
-      "You cannot reply to this modmail because the user closed it."
+      "Вы не можете ответить на эту мод-почту, потому что пользователь закрыл её."
     ],
     "modmail_closed_guild": [
-      "You cannot reply to this modmail because the modteam closed it."
+      "Вы не можете ответить на эту мод-почту, потому что команда модераторов закрыла её."
     ],
     "modmail_reply_success": [
-      "You've successfully replied to this modmail."
+      "Вы успешно ответили на эту мод-почту."
     ],
     "modmail_alreadyclosed": [
-      "This modmail has already been closed."
+      "Эта мод-почта уже была закрыта."
     ],
     "modmail_closed_success": [
-      "You've successfully closed this modmail."
+      "Вы успешно закрыли эту мод-почту."
     ],
     "modmail_blacklist_added": [
-      "This user has been added to the modmail blacklist."
+      "Этот пользователь был добавлен в черный список мод-почты."
     ],
     "modmail_blacklist_removed": [
-      "This user has been removed from the modmail blacklist."
+      "Этот пользователь был удалён из чёрного списка мод-почты."
     ],
     "modmail_anonymous": [
-      "Anonymous"
+      "Неизвестно"
     ],
     "modmail_message_title": [
-      "Messages for modmail thread #{0}"
+      "Сообщения в ветке мод-почты #{0}"
     ],
     "modmail_modteam": [
-      "{0} modteam"
+      "Команда модераторов {0}"
     ]
   }
 }
