@@ -18,6 +18,7 @@ namespace Administrator.Services
         private readonly CommandService _commands;
         private readonly LoggingService _logging;
         private readonly CommandHandlerService _commandHandler;
+        private readonly PaginationService _pagination;
 
         public EventDispatcherService(IServiceProvider provider)
         {
@@ -28,6 +29,7 @@ namespace Administrator.Services
             _commands = _provider.GetRequiredService<CommandService>();
             _logging = _provider.GetRequiredService<LoggingService>();
             _commandHandler = _provider.GetRequiredService<CommandHandlerService>();
+            _pagination = _provider.GetRequiredService<PaginationService>();
         }
        
         Task IService.InitializeAsync()
@@ -38,6 +40,9 @@ namespace Administrator.Services
             _client.MessageReceived += message
                 => _queue.Enqueue(() => HandleMessageReceivedAsync(message));
 
+            _client.ReactionAdded += (cacheable, channel, reaction)
+                => _queue.Enqueue(() => HandleReactionAddedAsync(cacheable, channel, reaction));
+
             _restClient.Log += message
                 => _queue.Enqueue(() => HandleClientLog(message));
 
@@ -45,6 +50,12 @@ namespace Administrator.Services
                 => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context, args.Provider));
 
             return _logging.LogInfoAsync("Initialized.", "Dispatcher");
+        }
+
+        private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable,
+            ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            await _pagination.ModifyPaginatorsAsync(cacheable, channel, reaction);
         }
 
         private async Task HandleMessageReceivedAsync(SocketMessage message)
