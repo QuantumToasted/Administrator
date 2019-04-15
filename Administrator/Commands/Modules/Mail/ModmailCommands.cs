@@ -28,7 +28,6 @@ namespace Administrator.Commands.Modules.Mail
             var guildConfig = await Context.Database.GetOrCreateGuildAsync(guild.Id);
             if (guildConfig.BlacklistedModmailAuthors.Contains(Context.User.Id))
             {
-                // TODO
                 return CommandSuccessLocalized("modmail_send_success",
                     args: await Context.Database.Modmails.CountAsync() + 1);
             }
@@ -39,7 +38,7 @@ namespace Administrator.Commands.Modules.Mail
                 return CommandErrorLocalized("modmail_exists", args: new object[]
                 {
                     guild.Name,
-                    Format.Code($"{Context.Prefix}mm reply {mm.Id} {message.TrimTo(10, true)}"),
+                    Format.Code($"{Context.Prefix}mm reply {mm.Id} {message.TrimTo(20, true)}"),
                     Format.Code($"{Context.Prefix}mm close {mm.Id}")
                 });
             }
@@ -253,13 +252,6 @@ namespace Administrator.Commands.Modules.Mail
                 page = split.Count - 1;
             else page--;
 
-            var builder = new EmbedBuilder()
-                .WithSuccessColor()
-                .WithTitle(Context.Localize("modmail_message_title", modmail.Id));
-
-            if (split.Count > 1)
-                builder.WithFooter($"{page + 1}/{split.Count}");
-
             var guild = Context.IsPrivate ? Context.Client.GetGuild(modmail.GuildId) : Context.Guild;
             var user = Context.Client.GetUser(modmail.UserId) ??
                        await Context.Client.Rest.GetUserAsync(modmail.UserId) as IUser;
@@ -267,8 +259,16 @@ namespace Administrator.Commands.Modules.Mail
             var sb = new StringBuilder();
             var lastTarget = ModmailTarget.User;
             var pages = new List<Page>();
+            var counter = 0;
             foreach (var group in split)
             {
+                var builder = new EmbedBuilder()
+                    .WithSuccessColor()
+                    .WithTitle(Context.Localize("modmail_message_title", modmail.Id));
+
+                if (split.Count > 1)
+                    builder.WithFooter($"{++counter}/{split.Count}");
+
                 for (var i = 0; i < group.Count; i++)
                 {
                     var message = group[i];
@@ -285,7 +285,7 @@ namespace Administrator.Commands.Modules.Mail
                         else
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? modmail.IsAnonymous ? "modmail_anonymous" : user.Username
+                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username
                                     : Context.Localize("modmail_modteam", guild.Name),
                                 sb.ToString().TrimTo(256, true));
                         }
@@ -312,7 +312,7 @@ namespace Administrator.Commands.Modules.Mail
                         else
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? modmail.IsAnonymous ? "modmail_anonymous" : user.Username
+                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username
                                     : Context.Localize("modmail_modteam", guild.Name),
                                 sb.ToString().TrimTo(256, true));
                         }
