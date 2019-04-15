@@ -42,6 +42,7 @@ namespace Administrator.Common
                 return new ValueTask<Page>(_pages[++_currentPage]);
             }
 
+            _ = Message.RemoveReactionAsync(emote, user);
             return new ValueTask<Page>((Page) null);
         }
 
