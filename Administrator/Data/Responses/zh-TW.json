@@ -202,6 +202,9 @@
     "punishment_moderator": [
       "管理員: {0}"
     ],
+    "punishment_moderator_title": [
+      "Moderator"
+    ],
     "modmail_send_success": [
       "Your modmail has been successfully sent! Your ID is {0}."
     ],
@@ -249,6 +252,129 @@
     ],
     "modmail_modteam": [
       "{0} modteam"
+    ],
+    "moderation_ban": [
+      "{0} has been banned."
+    ],
+    "moderation_tempban": [
+      "{0} has been temporarily banned for {1}."
+    ],
+    "moderation_kick": [
+      "{0} has been kicked."
+    ],
+    "moderation_mute": [
+      "{0} has been muted."
+    ],
+    "moderation_mute_temporary": [
+      "{0} has been temporarily muted for {1}."
+    ],
+    "moderation_block": [
+      "{0} has been blocked from {1}."
+    ],
+    "moderation_block_temporary": [
+      "{0} has been temporarily blocked from {1} for {2}."
+    ],
+    "moderation_nomuterole": [
+      "The mute role was not set up or was deleted."
+    ],
+    "moderation_alreadymuted": [
+      "This user was already muted."
+    ],
+    "moderation_additional_punishment": [
+      "Additional punishment from warning #{0}: {1}"
+    ],
+    "moderation_warn": [
+      "{0} has been warned."
+    ],
+    "timespanparser_nomatch": [
+      "Failed to match this text to a time span."
+    ],
+    "punishment_list_title": [
+      "Punishments for {0}"
+    ],
+    "punishment_target": [
+      "Target: {0}"
+    ],
+    "punishment_target_title": [
+      "Target"
+    ],
+    "punishment_timestamp": [
+      "Timestamp: {0}"
+    ],
+    "punishment_timestamp_title": [
+      "Timestamp"
+    ],
+    "punishment_nopunishments_guild": [
+      "No punishments could be found for this server."
+    ],
+    "punishment_nopunishments_user": [
+      "No punishments could be found for that user."
+    ],
+    "punishment_notfound_id": [
+      "No punishment could be found by that ID."
+    ],
+    "punishment_revoked": [
+      "Revoked?"
+    ],
+    "punishment_appealed": [
+      "Appealed?"
+    ],
+    "punishment_alreadyrevoked": [
+      "That punishment has already been revoked."
+    ],
+    "punishment_revoked_nounban": [
+      "Punishment successfully revoked, but the target is not currently banned."
+    ],
+    "punishment_revoked_nounmute": [
+      "Punishment successfully revoked, but the target is not currently muted."
+    ],
+    "punishment_revoked_success": [
+      "Punishment successfully revoked."
+    ],
+    "punishment_reason_exists": [
+      "That punishment already has been given a reason."
+    ],
+    "punishment_reason_missingmessage": [
+      "However, I could not find a message to modify with the reason."
+    ],
+    "punishment_reason_success": [
+      "The reason for this punishment was successfully updated."
+    ],
+    "warningpunishment_notfound_count": [
+      "No automatic punishment has been set to be given out at {0} warning(s)."
+    ],
+    "warningpunishment_show": [
+      "Upon being warned {0} time(s), users will receive a {1}."
+    ],
+    "warningpunishment_ban_duration": [
+      "ban for {0}"
+    ],
+    "warningpunishment_mute_duration": [
+      "mute for {0}"
+    ],
+    "warningpunishments_none": [
+      "No punishments have been set up for warnings."
+    ],
+    "warningpunishments_title": [
+      "Warning punishments for {0}"
+    ],
+    "punishment_mute_channel": [
+      "Channel"
+    ],
+    "punishment_mute_expired": [
+      "Mute has expired."
+    ],
+    "punishment_ban_expired": [
+      "Ban has expired."
+    ],
+    "punishment_alreadyappealed": [
+      "That punishment has already been appealed."
+    ],
+    "punishment_appeal_success": [
+      "Your punishment has been successfully appealed."
+    ],
+    "punishment_appeal_description_guild": [
+      "User {0} has appealed their {1}."
     ]
   }
 }
