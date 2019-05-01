@@ -1,4 +1,5 @@
 ﻿using System;
+using Discord;
 
 namespace Administrator.Database
 {
@@ -16,5 +17,15 @@ namespace Administrator.Database
         public bool IsExpired => Duration.HasValue && DateTimeOffset.UtcNow > CreatedAt + Duration.Value;
 
         public ulong? ChannelId { get; set; }
+
+        public void StoreOverwrite(Overwrite overwrite)
+        {
+            PreviousChannelAllowValue = overwrite.Permissions.AllowValue;
+            PreviousChannelDenyValue = overwrite.Permissions.DenyValue;
+        }
+
+        public ulong? PreviousChannelAllowValue { get; set; }
+
+        public ulong? PreviousChannelDenyValue { get; set; }
     }
 }

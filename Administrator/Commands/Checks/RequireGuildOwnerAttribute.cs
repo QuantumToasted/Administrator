@@ -6,6 +6,7 @@ using Qmmands;
 
 namespace Administrator.Commands
 {
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public sealed class RequireGuildOwnerAttribute : RequireContextAttribute
     {
         public RequireGuildOwnerAttribute() 

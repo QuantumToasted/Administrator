@@ -8,6 +8,7 @@ using Qmmands;
 
 namespace Administrator.Commands
 {
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
     public sealed class RequireUserPermissionsAttribute : RequireContextAttribute
     {
         private readonly bool _isGuildPermissions;

@@ -1,9 +1,13 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Commands;
+using Administrator.Common;
+using Administrator.Database;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using FluentScheduler;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -19,6 +23,8 @@ namespace Administrator.Services
         private readonly LoggingService _logging;
         private readonly CommandHandlerService _commandHandler;
         private readonly PaginationService _pagination;
+        private readonly PunishmentService _punishments;
+        private bool _firstReady;
 
         public EventDispatcherService(IServiceProvider provider)
         {
@@ -30,26 +36,35 @@ namespace Administrator.Services
             _logging = _provider.GetRequiredService<LoggingService>();
             _commandHandler = _provider.GetRequiredService<CommandHandlerService>();
             _pagination = _provider.GetRequiredService<PaginationService>();
+            _punishments = _provider.GetRequiredService<PunishmentService>();
         }
-       
-        Task IService.InitializeAsync()
+
+        private async Task HandleUserBannedAsync(SocketUser user, SocketGuild guild)
         {
-            _client.Log += message
-                => _queue.Enqueue(() => HandleClientLog(message));
+            if (_punishments.BannedUserIds.Remove(user.Id)) return;
 
-            _client.MessageReceived += message
-                => _queue.Enqueue(() => HandleMessageReceivedAsync(message));
+            using (var ctx = new AdminDatabaseContext(_provider))
+            {
+                var config = await ctx.GetOrCreateGuildAsync(guild.Id);
+                if (config.Settings.HasFlag(GuildSettings.Punishments | GuildSettings.AutoPunishments))
+                {
+                    await _punishments.LogBanAsync(user, guild, null);
+                }
+            }
+        }
 
-            _client.ReactionAdded += (cacheable, channel, reaction)
-                => _queue.Enqueue(() => HandleReactionAddedAsync(cacheable, channel, reaction));
+        private async Task HandleUserLeftAsync(SocketGuildUser user)
+        {
+            if (_punishments.KickedUserIds.Remove(user.Id)) return;
 
-            _restClient.Log += message
-                => _queue.Enqueue(() => HandleClientLog(message));
-
-            _commands.CommandExecuted += args
-                => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context, args.Provider));
-
-            return _logging.LogInfoAsync("Initialized.", "Dispatcher");
+            using (var ctx = new AdminDatabaseContext(_provider))
+            {
+                var config = await ctx.GetOrCreateGuildAsync(user.Guild.Id);
+                if (config.Settings.HasFlag(GuildSettings.Punishments | GuildSettings.AutoPunishments))
+                {
+                    await _punishments.LogKickAsync(user, user.Guild, null);
+                }
+            }
         }
 
         private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable,
@@ -85,6 +100,45 @@ namespace Administrator.Services
                 LogSeverity.Debug => _logging.LogVerboseAsync(message.Message, "Discord"),
                 _ => Task.CompletedTask
             };
+        }
+
+        private Task HandleReady()
+        {
+            if (_firstReady)
+                return Task.CompletedTask;
+
+            JobManager.Initialize(_provider.GetRequiredService<Registry>());
+            _firstReady = true;
+            return Task.CompletedTask;
+        }
+
+        Task IService.InitializeAsync()
+        {
+            _client.Ready += ()
+                => _queue.Enqueue(HandleReady);
+
+            _client.Log += message
+                => _queue.Enqueue(() => HandleClientLog(message));
+
+            _client.MessageReceived += message
+                => _queue.Enqueue(() => HandleMessageReceivedAsync(message));
+
+            _client.ReactionAdded += (cacheable, channel, reaction)
+                => _queue.Enqueue(() => HandleReactionAddedAsync(cacheable, channel, reaction));
+
+            _client.UserBanned += (user, guild)
+                => _queue.Enqueue(() => HandleUserBannedAsync(user, guild));
+
+            _client.UserLeft += user
+                => _queue.Enqueue(() => HandleUserLeftAsync(user));
+
+            _restClient.Log += message
+                => _queue.Enqueue(() => HandleClientLog(message));
+
+            _commands.CommandExecuted += args
+                => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context, args.Provider));
+
+            return _logging.LogInfoAsync("Initialized.", "Dispatcher");
         }
     }
 }

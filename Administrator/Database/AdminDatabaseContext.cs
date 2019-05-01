@@ -48,6 +48,8 @@ namespace Administrator.Database
 
         public DbSet<ModmailMessage> ModmailMessages { get; set; }
 
+        public DbSet<WarningPunishment> WarningPunishments { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
             if (await Guilds.FindAsync(guildId) is Guild guild)
@@ -170,6 +172,11 @@ namespace Administrator.Database
             {
                 message.HasKey(x => x.Id);
                 message.Property(x => x.Id).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<WarningPunishment>(punishment =>
+            {
+                punishment.HasKey(x => new {x.GuildId, x.Count});
             });
         }
     }

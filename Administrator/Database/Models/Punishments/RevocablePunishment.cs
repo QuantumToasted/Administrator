@@ -14,15 +14,11 @@ namespace Administrator.Database
 
         public DateTimeOffset? RevokedAt { get; set; }
 
-        public bool IsRevoked => RevokedAt.HasValue;
-
         public ulong RevokerId { get; set; }
 
         public string RevocationReason { get; set; }
 
         public DateTimeOffset? AppealedAt { get; set; }
-
-        public bool IsAppealed => AppealedAt.HasValue;
 
         public string AppealReason { get; set; }
 

@@ -8,20 +8,18 @@ namespace Administrator.Common
     public abstract class Paginator : IDisposable
     {
         private readonly PaginationService _service;
-        private readonly IEmote[] _emotes;
 
         protected Paginator(IUserMessage message, IEmote[] emotes, PaginationService service = null)
         {
             Message = message;
             _service = service;
-            _emotes = emotes;
+            Emotes = emotes;
             _service?.AddPaginator(this);
         }
 
         public IUserMessage Message { get; }
 
-        public Task AddReactionsAsync()
-            => Message.AddReactionsAsync(_emotes);
+        public IEmote[] Emotes { get; }
 
         public abstract ValueTask<Page> GetPageAsync(IUser user, IEmote emote);
 

@@ -7,6 +7,7 @@ using Qmmands;
 
 namespace Administrator.Commands
 {
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
     public sealed class RequireBotPermissionsAttribute : RequireContextAttribute
     {
         private readonly bool _isGuildPermissions;

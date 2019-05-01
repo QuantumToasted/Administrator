@@ -25,12 +25,13 @@ namespace Administrator.Services
         public void AddPaginator(Paginator paginator)
         {
             _paginators.Add(paginator);
-            paginator.AddReactionsAsync();
+            _ = paginator.Message?.AddReactionsAsync(paginator.Emotes);
         }
 
         public void RemovePaginator(Paginator paginator)
         {
             _paginators.Remove(paginator);
+            _ = paginator.Message?.RemoveAllReactionsAsync();
         }
 
         public async Task ModifyPaginatorsAsync(Cacheable<IUserMessage, ulong> cacheable, ISocketMessageChannel channel,

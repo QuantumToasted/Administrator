@@ -9,6 +9,7 @@
         Unmute,
         Warn,
         Unwarn, // TODO: Better name
-        Modmail
+        Modmail,
+        Appeal
     }
 }

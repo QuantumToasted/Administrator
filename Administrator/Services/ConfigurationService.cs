@@ -49,7 +49,7 @@ namespace Administrator.Services
         [JsonProperty("successColor")]
         private string _successColor;
 
-        [JsonProperty("warnColor")]
+        [JsonProperty("warningColor")]
         private string _warnColor;
 
         [JsonProperty("errorColor")]

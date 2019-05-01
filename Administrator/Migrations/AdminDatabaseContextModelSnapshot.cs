@@ -160,6 +160,22 @@ namespace Administrator.Migrations
                     b.ToTable("SpecialRoles");
                 });
 
+            modelBuilder.Entity("Administrator.Database.WarningPunishment", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("Count");
+
+                    b.Property<TimeSpan?>("Duration");
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("GuildId", "Count");
+
+                    b.ToTable("WarningPunishments");
+                });
+
             modelBuilder.Entity("Administrator.Database.Kick", b =>
                 {
                     b.HasBaseType("Administrator.Database.Punishment");
@@ -206,12 +222,20 @@ namespace Administrator.Migrations
                     b.Property<TimeSpan?>("Duration")
                         .HasColumnName("Mute_Duration");
 
+                    b.Property<decimal?>("PreviousChannelAllowValue")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal?>("PreviousChannelDenyValue")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
                     b.HasDiscriminator().HasValue("Mute");
                 });
 
             modelBuilder.Entity("Administrator.Database.Warning", b =>
                 {
                     b.HasBaseType("Administrator.Database.RevocablePunishment");
+
+                    b.Property<int?>("SecondaryPunishmentId");
 
                     b.HasDiscriminator().HasValue("Warning");
                 });

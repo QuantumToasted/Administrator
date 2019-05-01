@@ -228,13 +228,7 @@ namespace Administrator.Commands.Modules.Mail
         [Command("show", "thread")]
         [RequireLoggingChannel(LogType.Modmail, Group = "show")]
         [RequireContext(ContextType.DM, Group = "show")]
-        public ValueTask<AdminCommandResult> ShowModmailThread(int id)
-            => ShowModmailThreadAsync(id, 1);
-
-        [Command("show", "thread")]
-        [RequireLoggingChannel(LogType.Modmail, Group = "show")]
-        [RequireContext(ContextType.DM, Group = "show")]
-        public async ValueTask<AdminCommandResult> ShowModmailThreadAsync(int id, [MustBe(Operator.GreaterThan, 0)] int page)
+        public async ValueTask<AdminCommandResult> ShowModmailThreadAsync(int id, [MustBe(Operator.GreaterThan, 0)] int page = 1)
         {
             var modmail = await Context.Database.Modmails.Include(x => x.Messages).FirstOrDefaultAsync(x => x.Id == id);
             if (modmail is null)
@@ -248,9 +242,7 @@ namespace Administrator.Commands.Modules.Mail
 
             var split = modmail.Messages.OrderBy(x => x.Timestamp)
                 .ToList().SplitBy(10);
-            if (page > split.Count)
-                page = split.Count - 1;
-            else page--;
+            page = Math.Min(page, split.Count) - 1;
 
             var guild = Context.IsPrivate ? Context.Client.GetGuild(modmail.GuildId) : Context.Guild;
             var user = Context.Client.GetUser(modmail.UserId) ??

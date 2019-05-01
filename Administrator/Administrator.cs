@@ -7,6 +7,7 @@ using Administrator.Services;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using FluentScheduler;
 using Qmmands;
 
 namespace Administrator
@@ -30,6 +31,7 @@ namespace Administrator
                 .AddSingleton<CommandService>()
                 .AddSingleton<CancellationTokenSource>()
                 .AddSingleton<Random>()
+                .AddSingleton<Registry>()
                 .AddEntityFrameworkNpgsql()
                 .BuildServiceProvider();
 

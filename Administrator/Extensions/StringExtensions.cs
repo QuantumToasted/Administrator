@@ -6,6 +6,9 @@ namespace Administrator.Extensions
     {
         public static string TrimTo(this string str, int length, bool useEllipses = false)
         {
+            if (string.IsNullOrWhiteSpace(str))
+                return str;
+
             if (!useEllipses)
                 return str[..Math.Min(length, str.Length)];
 

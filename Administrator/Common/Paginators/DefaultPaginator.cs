@@ -22,8 +22,6 @@ namespace Administrator.Common
             _pages = pages;
             _currentPage = currentPage;
             _timer = new Timer(Expire, this, TimeSpan.FromSeconds(30), TimeSpan.FromMilliseconds(-1));
-            if (pages.Count > 1)
-                service?.AddPaginator(this);
         }
 
         public override ValueTask<Page> GetPageAsync(IUser user, IEmote emote)
@@ -48,7 +46,7 @@ namespace Administrator.Common
 
         public override Task CloseAsync()
         {
-             _ = Message.RemoveAllReactionsAsync();
+             _ = Message?.RemoveAllReactionsAsync();
              return Task.CompletedTask;
         }
 

@@ -11,5 +11,7 @@ namespace Administrator.Database
         }
 
         public TimeSpan? Duration { get; set; }
+
+        public bool IsExpired => Duration.HasValue && DateTimeOffset.UtcNow > CreatedAt + Duration.Value;
     }
 }

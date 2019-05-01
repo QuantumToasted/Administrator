@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Database;
@@ -8,10 +8,11 @@ using Administrator.Extensions;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using FluentScheduler;
 using Humanizer;
-using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TimeUnit = Humanizer.Localisation.TimeUnit;
 
 namespace Administrator.Services
 {
@@ -30,9 +31,24 @@ namespace Administrator.Services
             _logging = _provider.GetRequiredService<LoggingService>();
             _localization = _provider.GetRequiredService<LocalizationService>();
             _config = _provider.GetRequiredService<ConfigurationService>();
+            BannedUserIds = new List<ulong>();
+            KickedUserIds = new List<ulong>();
+            MutedUserIds = new List<ulong>();
+
+            var registry = _provider.GetRequiredService<Registry>();
+            registry.Schedule(async () => await HandleExpiredPunishmentsAsync())
+                .NonReentrant()
+                .ToRunEvery(10)
+                .Seconds();
         }
 
-        public async Task LogBanAsync(SocketUser target, SocketGuild guild, Ban ban)
+        public ICollection<ulong> BannedUserIds { get; }
+
+        public ICollection<ulong> KickedUserIds { get; }
+
+        public ICollection<ulong> MutedUserIds { get; }
+
+        public async Task LogBanAsync(IUser target, SocketGuild guild, Ban ban)
         {
             using (var ctx = new AdminDatabaseContext(_provider))
             {
@@ -74,7 +90,7 @@ namespace Administrator.Services
             }
         }
 
-        public async Task LogKickAsync(SocketUser target, SocketGuild guild, Kick kick)
+        public async Task LogKickAsync(IUser target, SocketGuild guild, Kick kick)
         {
             using (var ctx = new AdminDatabaseContext(_provider))
             {
@@ -116,7 +132,7 @@ namespace Administrator.Services
             }
         }
 
-        public async Task LogMuteAsync(SocketUser target, SocketGuild guild, IUser moderator, Mute mute)
+        public async Task LogMuteAsync(IUser target, SocketGuild guild, IUser moderator, Mute mute)
         {
             using (var ctx = new AdminDatabaseContext(_provider))
             {
@@ -136,7 +152,7 @@ namespace Administrator.Services
             }
         }
 
-        public async Task LogWarningAsync(SocketUser target, SocketGuild guild, IUser moderator, Warning warning)
+        public async Task LogWarningAsync(IUser target, SocketGuild guild, IUser moderator, Warning warning)
         {
             using (var ctx = new AdminDatabaseContext(_provider))
             {
@@ -156,7 +172,28 @@ namespace Administrator.Services
             }
         }
 
-        private async Task<IUserMessage> SendLoggingEmbedAsync(Punishment punishment, SocketUser target, IUser moderator, Punishment additionalPunishment, SocketTextChannel logChannel, LocalizedLanguage language)
+        public async Task LogAppealAsync(IUser target, SocketGuild guild, RevocablePunishment punishment)
+        {
+            using (var ctx = new AdminDatabaseContext(_provider))
+            {
+                var guildConfig = await ctx.GetOrCreateGuildAsync(guild.Id);
+                if (!guildConfig.Settings.HasFlag(GuildSettings.Punishments)) return;
+                if (!(await ctx.GetLoggingChannelAsync(guild.Id, LogType.Appeal) is SocketTextChannel logChannel))
+                    return;
+
+                await logChannel.SendMessageAsync(embed: new EmbedBuilder()
+                    .WithSuccessColor()
+                    .WithTitle(_localization.Localize(guildConfig.Language,
+                                   $"punishment_{punishment.GetType().Name.ToLower()}") +
+                               $" - {_localization.Localize(guildConfig.Language, "punishment_case", punishment.Id)}")
+                    .WithDescription(_localization.Localize(guildConfig.Language, "punishment_appeal_description_guild",
+                        target.Format()))
+                    .AddField("punishment_reason", punishment.AppealReason)
+                    .WithTimestamp(punishment.AppealedAt.Value).Build());
+            }
+        }
+
+        private async Task<IUserMessage> SendLoggingEmbedAsync(Punishment punishment, IUser target, IUser moderator, Punishment additionalPunishment, SocketTextChannel logChannel, LocalizedLanguage language)
         {
             var typeName = punishment.GetType().Name.ToLower();
             var builder = new EmbedBuilder()
@@ -184,12 +221,18 @@ namespace Administrator.Services
                 _ => builder
             };
 
+            if (punishment is Mute channelMute && channelMute.ChannelId.HasValue)
+            {
+                builder.AddField(_localization.Localize(language, "punishment_mute_channel"),
+                    _client.GetGuild(punishment.GuildId).GetTextChannel(channelMute.ChannelId.Value).Mention);
+            }
+
             if (punishment is Warning)
             {
                 using (var ctx = new AdminDatabaseContext(_provider))
                 {
                     var warningCount = await ctx.Punishments.OfType<Warning>().CountAsync(x =>
-                        x.TargetId == target.Id && x.GuildId == punishment.GuildId && !x.IsRevoked);
+                        x.TargetId == target.Id && x.GuildId == punishment.GuildId && !x.RevokedAt.HasValue);
                     builder.WithDescription(_localization.Localize(language, "punishment_warning_description_guild", $"**{target}** (`{target.Id}`)",
                         Format.Bold(warningCount.ToOrdinalWords(language.Culture))));
                 }
@@ -208,7 +251,7 @@ namespace Administrator.Services
             return await logChannel.SendMessageAsync(embed: builder.Build());
         }
 
-        private async Task SendLoggingRevocationEmbedAsync(RevocablePunishment punishment, SocketUser target, IUser moderator,
+        public async Task SendLoggingRevocationEmbedAsync(RevocablePunishment punishment, IUser target, IUser moderator,
             SocketTextChannel logChannel, LocalizedLanguage language)
         {
             var typeName = punishment.GetType().Name.ToLower();
@@ -223,10 +266,16 @@ namespace Administrator.Services
                     moderator.GetAvatarUrl() ?? moderator.GetDefaultAvatarUrl())
                 .WithTimestamp(punishment.RevokedAt ?? DateTimeOffset.UtcNow);
 
+            if (punishment is Mute channelMute && channelMute.ChannelId.HasValue)
+            {
+                builder.AddField(_localization.Localize(language, "punishment_mute_channel"),
+                    _client.GetGuild(punishment.GuildId).GetTextChannel(channelMute.ChannelId.Value)?.Mention ?? "???");
+            }
+
             await logChannel.SendMessageAsync(embed: builder.Build());
         }
 
-        private async Task SendTargetEmbedAsync(Punishment punishment, SocketUser target, Punishment additionalPunishment, LocalizedLanguage language)
+        private async Task SendTargetEmbedAsync(Punishment punishment, IUser target, Punishment additionalPunishment, LocalizedLanguage language)
         {
             var typeName = punishment.GetType().Name.ToLower();
             var builder = new EmbedBuilder().WithErrorColor()
@@ -246,14 +295,14 @@ namespace Administrator.Services
                 using (var ctx = new AdminDatabaseContext(_provider))
                 {
                     var warningCount = await ctx.Punishments.OfType<Warning>().CountAsync(x =>
-                        x.TargetId == target.Id && x.GuildId == punishment.GuildId && !x.IsRevoked);
-                    builder.WithDescription(_localization.Localize(language, "punishment_warning_description",
+                        x.TargetId == target.Id && x.GuildId == punishment.GuildId && !x.RevokedAt.HasValue);
+                    builder.WithDescription(_localization.Localize(language, "punishment_warning_description", _client.GetGuild(punishment.GuildId).Name,
                         Format.Bold(warningCount.ToOrdinalWords(language.Culture))));
                 }
             }
             else
             {
-                builder.WithDescription(_localization.Localize(language, $"punishnent_{typeName}_description",
+                builder.WithDescription(_localization.Localize(language, $"punishment_{typeName}_description",
                     _client.GetGuild(punishment.GuildId).Name));
             }
 
@@ -292,24 +341,37 @@ namespace Administrator.Services
                 }
             }
 
+            if (punishment is Mute channelMute && channelMute.ChannelId.HasValue)
+            {
+                builder.AddField(_localization.Localize(language, "punishment_mute_channel"),
+                    _client.GetGuild(punishment.GuildId).GetTextChannel(channelMute.ChannelId.Value).Mention);
+            }
+
             _ = target.SendMessageAsync(embed: builder.Build());
         }
 
-        private async Task SendTargetRevocationEmbedAsync(RevocablePunishment punishment, SocketUser target,
+        public Task SendTargetRevocationEmbedAsync(RevocablePunishment punishment, IUser target,
             LocalizedLanguage language)
         {
             var typeName = punishment.GetType().Name.ToLower();
             var builder = new EmbedBuilder().WithWarnColor()
                 .WithTitle(_localization.Localize(language, $"punishment_{typeName}") +
                            $" - {_localization.Localize(language, "punishment_case", punishment.Id)}")
-                .WithDescription(_localization.Localize(language, $"punishment_{typeName}_revoke_description"))
+                .WithDescription(_localization.Localize(language, $"punishment_{typeName}_revoke_description", _client.GetGuild(punishment.GuildId)?.Name))
                 .AddField(_localization.Localize(language, "punishment_reason"),
                     punishment.RevocationReason ?? _localization.Localize(language, "punishment_noreason"))
                 .WithTimestamp(punishment.RevokedAt ?? DateTimeOffset.UtcNow);
-            _ = target.SendMessageAsync(embed: builder.Build());
+
+            if (punishment is Mute channelMute && channelMute.ChannelId.HasValue)
+            {
+                builder.AddField(_localization.Localize(language, "punishment_mute_channel"),
+                    _client.GetGuild(punishment.GuildId).GetTextChannel(channelMute.ChannelId.Value).Mention);
+            }
+
+            return target.SendMessageAsync(embed: builder.Build());
         }
 
-        private EmbedFieldBuilder FormatAdditionalPunishment(Punishment punishment, LocalizedLanguage language)
+        public EmbedFieldBuilder FormatAdditionalPunishment(Punishment punishment, LocalizedLanguage language)
         {
             var field = new EmbedFieldBuilder()
                 .WithName(_localization.Localize(language, "punishment_warning_additional"));
@@ -331,11 +393,67 @@ namespace Administrator.Services
             return field;
         }
 
-        private string FormatAuditLogReason(Punishment punishment, IUser moderator, LocalizedLanguage language)
-            => new StringBuilder(punishment.Reason ?? _localization.Localize(language, "punishment_noreason"))
-                .Append($" | {_localization.Localize(language, "punishment_moderator", moderator.ToString())}")
-                .Append($" | {punishment.CreatedAt.ToString("g", language.Culture)} UTC")
-                .ToString();
+        private async Task HandleExpiredPunishmentsAsync()
+        {
+            using (var ctx = new AdminDatabaseContext(_provider))
+            {
+                var expiredMutes = await ctx.Punishments.OfType<Mute>()
+                    .Where(x => x.IsExpired && !x.RevokedAt.HasValue).ToListAsync();
+                var expiredBans = await ctx.Punishments.OfType<Ban>()
+                    .Where(x => x.IsExpired && !x.RevokedAt.HasValue).ToListAsync();
+                
+                foreach (var mute in expiredMutes)
+                {
+                    var guild = await ctx.GetOrCreateGuildAsync(mute.GuildId);
+                    mute.Revoke(_client.CurrentUser.Id, _localization.Localize(guild.Language, "punishment_mute_expired"));
+                    ctx.Punishments.Update(mute);
+
+                    var target = _client.GetUser(mute.TargetId)
+                                 ?? await _client.Rest.GetUserAsync(mute.TargetId) as IUser;
+                    if (await ctx.GetLoggingChannelAsync(mute.GuildId, LogType.Unmute) is SocketTextChannel logChannel)
+                    {
+                        await SendLoggingRevocationEmbedAsync(mute, target, _client.CurrentUser, logChannel,
+                            guild.Language);
+                    }
+
+                    var user = await ctx.GetOrCreateGlobalUserAsync(mute.TargetId);
+                    _ = SendTargetRevocationEmbedAsync(mute, target, user.Language);
+
+                    if (mute.ChannelId.HasValue &&
+                        _client.GetChannel(mute.ChannelId.Value) is SocketTextChannel muteChannel)
+                    {
+                        _ = muteChannel.RemovePermissionOverwriteAsync(target);
+                    }
+                    else if (_client.GetGuild(mute.GuildId).GetUser(mute.TargetId) is SocketGuildUser guildUser &&
+                             await ctx.GetSpecialRoleAsync(mute.GuildId, RoleType.Mute) is SocketRole muteRole)
+                    {
+                        _ = guildUser.RemoveRoleAsync(muteRole);
+                    }
+                }
+
+                foreach (var ban in expiredBans)
+                {
+                    var guild = await ctx.GetOrCreateGuildAsync(ban.GuildId);
+                    ban.Revoke(_client.CurrentUser.Id, _localization.Localize(guild.Language, "punishment_mute_expired"));
+                    ctx.Punishments.Update(ban);
+
+                    var target = _client.GetUser(ban.TargetId)
+                                 ?? await _client.Rest.GetUserAsync(ban.TargetId) as IUser;
+                    if (await ctx.GetLoggingChannelAsync(ban.GuildId, LogType.Unban) is SocketTextChannel logChannel)
+                    {
+                        await SendLoggingRevocationEmbedAsync(ban, target, _client.CurrentUser, logChannel,
+                            guild.Language);
+                    }
+
+                    var user = await ctx.GetOrCreateGlobalUserAsync(ban.TargetId);
+                    _ = SendTargetRevocationEmbedAsync(ban, target, user.Language);
+
+                    _ = _client.GetGuild(ban.GuildId).RemoveBanAsync(ban.TargetId);
+                }
+
+                await ctx.SaveChangesAsync();
+            }
+        }
 
         Task IService.InitializeAsync()
             => _logging.LogInfoAsync("Initialized.", "Punishments");

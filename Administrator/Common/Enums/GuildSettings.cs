@@ -6,6 +6,7 @@ namespace Administrator.Common
     public enum GuildSettings
     {
         Punishments = 1,
-        Modmail
+        Modmail = 2,
+        AutoPunishments = 4
     }
 }
