@@ -287,25 +287,25 @@
       "{0} был предупреждён."
     ],
     "timespanparser_nomatch": [
-      "Failed to match this text to a time span."
+      "Не удалось сопоставить этот текст с интервалом времени."
     ],
     "punishment_list_title": [
       "Punishments for {0}"
     ],
     "punishment_target": [
-      "Target: {0}"
+      "Цель: {0}"
     ],
     "punishment_target_title": [
-      "Target"
+      "Цель"
     ],
     "punishment_timestamp": [
-      "Timestamp: {0}"
+      "Время: {0}"
     ],
     "punishment_timestamp_title": [
-      "Timestamp"
+      "Время"
     ],
     "punishment_nopunishments_guild": [
-      "No punishments could be found for this server."
+      "Никаких наказаний в этом сервере не было найдено."
     ],
     "punishment_nopunishments_user": [
       "No punishments could be found for that user."
