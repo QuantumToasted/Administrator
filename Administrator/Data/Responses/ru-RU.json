@@ -203,7 +203,7 @@
       "Модератор: {0}"
     ],
     "punishment_moderator_title": [
-      "Moderator"
+      "Модератор"
     ],
     "modmail_send_success": [
       "Ваша мод-почта была успешно отправлена! Ваш ID — {0}."
@@ -254,19 +254,19 @@
       "Команда модераторов {0}"
     ],
     "moderation_ban": [
-      "{0} has been banned."
+      "{0} был забанен."
     ],
     "moderation_tempban": [
-      "{0} has been temporarily banned for {1}."
+      "{0} был временно забанен на {1}."
     ],
     "moderation_kick": [
-      "{0} has been kicked."
+      "{0} был кикнут."
     ],
     "moderation_mute": [
-      "{0} has been muted."
+      "{0} был заглушён."
     ],
     "moderation_mute_temporary": [
-      "{0} has been temporarily muted for {1}."
+      "{0} был временно заглушён на {1}."
     ],
     "moderation_block": [
       "{0} has been blocked from {1}."
@@ -284,7 +284,7 @@
       "Additional punishment from warning #{0}: {1}"
     ],
     "moderation_warn": [
-      "{0} has been warned."
+      "{0} был предупреждён."
     ],
     "timespanparser_nomatch": [
       "Failed to match this text to a time span."
