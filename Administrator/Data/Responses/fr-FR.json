@@ -203,7 +203,7 @@
       "Modérateur: {0}"
     ],
     "punishment_moderator_title": [
-      "Moderator"
+      "Modérateur"
     ],
     "modmail_send_success": [
       "Votre modmail a été envoyé avec succès! Votre ID est {0}."
@@ -254,127 +254,127 @@
       "Équipe de modération du serveur {0}"
     ],
     "moderation_ban": [
-      "{0} has been banned."
+      "{0} a été banni."
     ],
     "moderation_tempban": [
-      "{0} has been temporarily banned for {1}."
+      "{0} a été temporairement banni pour {1}."
     ],
     "moderation_kick": [
-      "{0} has been kicked."
+      "{0} a été exclu."
     ],
     "moderation_mute": [
-      "{0} has been muted."
+      "{0} a été mis en sourdine."
     ],
     "moderation_mute_temporary": [
-      "{0} has been temporarily muted for {1}."
+      "{0} a été mis en sourdine temporairement pour {1}."
     ],
     "moderation_block": [
-      "{0} has been blocked from {1}."
+      "{0} a été bloqué du canal {1}."
     ],
     "moderation_block_temporary": [
-      "{0} has been temporarily blocked from {1} for {2}."
+      "{0} a été bloqué temporairement du canal {1} pour {2}."
     ],
     "moderation_nomuterole": [
-      "The mute role was not set up or was deleted."
+      "Le role de mise en sourdine n'a pas été configuré ou a été supprimé."
     ],
     "moderation_alreadymuted": [
-      "This user was already muted."
+      "Cet utilisateur a déjà été mis en sourdine."
     ],
     "moderation_additional_punishment": [
-      "Additional punishment from warning #{0}: {1}"
+      "Sanction additionnelle pour l'avertissement #{0}: {1}"
     ],
     "moderation_warn": [
-      "{0} has been warned."
+      "{0} a été averti."
     ],
     "timespanparser_nomatch": [
-      "Failed to match this text to a time span."
+      "Je n'ai pas pu faire correspondre ce texte à un laps de temps."
     ],
     "punishment_list_title": [
-      "Punishments for {0}"
+      "Sanctions pour {0}"
     ],
     "punishment_target": [
-      "Target: {0}"
+      "Cible: {0}"
     ],
     "punishment_target_title": [
-      "Target"
+      "Cible"
     ],
     "punishment_timestamp": [
-      "Timestamp: {0}"
+      "Horodatage: {0}"
     ],
     "punishment_timestamp_title": [
-      "Timestamp"
+      "Horodatage"
     ],
     "punishment_nopunishments_guild": [
-      "No punishments could be found for this server."
+      "Aucune sanction n'a pu être trouvée pour ce serveur."
     ],
     "punishment_nopunishments_user": [
-      "No punishments could be found for that user."
+      "Aucune sanction n'a pu être trouvée pour cet utilisateur."
     ],
     "punishment_notfound_id": [
-      "No punishment could be found by that ID."
+      "Aucune sanction n'a pu être trouvée pour cet ID­."
     ],
     "punishment_revoked": [
-      "Revoked?"
+      "Révoquée?"
     ],
     "punishment_appealed": [
-      "Appealed?"
+      "Portée en appel?"
     ],
     "punishment_alreadyrevoked": [
-      "That punishment has already been revoked."
+      "Cette sanction a déjà été révoquée."
     ],
     "punishment_revoked_nounban": [
-      "Punishment successfully revoked, but the target is not currently banned."
+      "Sanction révoquée avec succès, mais la cible n'est pas actuellement bannie."
     ],
     "punishment_revoked_nounmute": [
-      "Punishment successfully revoked, but the target is not currently muted."
+      "Sanction révoquée avec succès, mais la cible n'est pas actuellement en sourdine."
     ],
     "punishment_revoked_success": [
-      "Punishment successfully revoked."
+      "Sanction révoquée avec succès."
     ],
     "punishment_reason_exists": [
-      "That punishment already has been given a reason."
+      "Cette sanction a déjà reçu une raison."
     ],
     "punishment_reason_missingmessage": [
-      "However, I could not find a message to modify with the reason."
+      "Cependant, je n'ai pas pu trouver un message à modifier avec la raison."
     ],
     "punishment_reason_success": [
-      "The reason for this punishment was successfully updated."
+      "La sanction pour cette sanction a été mise à jour avec succès."
     ],
     "warningpunishment_notfound_count": [
-      "No automatic punishment has been set to be given out at {0} warning(s)."
+      "Aucune sanction automatique a été configuré pour être donnée après {0} avertissement(s)."
     ],
     "warningpunishment_show": [
-      "Upon being warned {0} time(s), users will receive a {1}."
+      "Après avoir été averti {0} fois, les utilisateurs vont recevoir un(e) {1}."
     ],
     "warningpunishment_ban_duration": [
-      "ban for {0}"
+      "bannissement pour {0}"
     ],
     "warningpunishment_mute_duration": [
-      "mute for {0}"
+      "sourdine pour {0}"
     ],
     "warningpunishments_none": [
-      "No punishments have been set up for warnings."
+      "Aucune sanction a été configurée pour les avertissements."
     ],
     "warningpunishments_title": [
-      "Warning punishments for {0}"
+      "Sanctions automatiques pour {0}"
     ],
     "punishment_mute_channel": [
-      "Channel"
+      "Canal"
     ],
     "punishment_mute_expired": [
-      "Mute has expired."
+      "La mise en sourdine a expiré."
     ],
     "punishment_ban_expired": [
-      "Ban has expired."
+      "Le bannissement a expiré."
     ],
     "punishment_alreadyappealed": [
-      "That punishment has already been appealed."
+      "Cette sanction a déjà été portée en appel."
     ],
     "punishment_appeal_success": [
-      "Your punishment has been successfully appealed."
+      "Votre sanction a été portée en appel avec succès."
     ],
     "punishment_appeal_description_guild": [
-      "User {0} has appealed their {1}."
+      "L'utilisateur {0} a fait appel à leur {1}."
     ]
   }
 }
