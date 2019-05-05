@@ -1,7 +1,7 @@
 {
   "code": "en-US",
-  "englishName": "Cheeki Breeki Russian (RU)",
-  "nativeName": "English (US)",
+  "englishName": "Russian Cheeki Breeki (RU)",
+  "nativeName": "Русский Чики Брики (РФ)",
   "responses": {
     "test_hello": [
       "Hello, {0}!",
