@@ -269,7 +269,7 @@
       "{0} был временно заглушён на {1}."
     ],
     "moderation_block": [
-      "{0} has been blocked from {1}."
+      "{0} был заблокирован в {1}."
     ],
     "moderation_block_temporary": [
       "{0} has been temporarily blocked from {1} for {2}."
