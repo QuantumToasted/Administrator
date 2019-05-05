@@ -356,25 +356,25 @@
       "Никаких наказаний для предупреждений не было установлено."
     ],
     "warningpunishments_title": [
-      "Warning punishments for {0}"
+      "Наказания за предупреждения в {0}"
     ],
     "punishment_mute_channel": [
-      "Channel"
+      "Канал"
     ],
     "punishment_mute_expired": [
-      "Mute has expired."
+      "Cрок действия заглушки истёк."
     ],
     "punishment_ban_expired": [
-      "Ban has expired."
+      "Cрок действия бана истёк."
     ],
     "punishment_alreadyappealed": [
-      "That punishment has already been appealed."
+      "Это наказание уже было обжаловано."
     ],
     "punishment_appeal_success": [
-      "Your punishment has been successfully appealed."
+      "Ваше наказание было успешно обжаловано."
     ],
     "punishment_appeal_description_guild": [
-      "User {0} has appealed their {1}."
+      "Пользователь {0} обжаловал их {1}."
     ]
   }
 }
