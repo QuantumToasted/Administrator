@@ -332,28 +332,28 @@
       "Наказание успешно аннулировано."
     ],
     "punishment_reason_exists": [
-      "That punishment already has been given a reason."
+      "Этому наказанию уже была назначена причина."
     ],
     "punishment_reason_missingmessage": [
       "However, I could not find a message to modify with the reason."
     ],
     "punishment_reason_success": [
-      "The reason for this punishment was successfully updated."
+      "Причина для этого наказания была успешно обновлена."
     ],
     "warningpunishment_notfound_count": [
-      "No automatic punishment has been set to be given out at {0} warning(s)."
+      "Никаких автоматических наказаний для выдачи при {0} предупреждении(-ях) не было установлено."
     ],
     "warningpunishment_show": [
-      "Upon being warned {0} time(s), users will receive a {1}."
+      "При предупреждении {0} раз(-а) пользователи получат {1}."
     ],
     "warningpunishment_ban_duration": [
-      "ban for {0}"
+      "бан на {0}"
     ],
     "warningpunishment_mute_duration": [
-      "mute for {0}"
+      "заглушка на {0}"
     ],
     "warningpunishments_none": [
-      "No punishments have been set up for warnings."
+      "Никаких наказаний для предупреждений не было установлено."
     ],
     "warningpunishments_title": [
       "Warning punishments for {0}"
