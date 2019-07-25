@@ -122,21 +122,37 @@ namespace Administrator.Commands
                 });
             }
 
-            return CommandSuccessLocalized("permissions_add", args: new object[]
+            var filterText = filter switch
             {
-                Context.Localize($"permissions_{permission.Type.ToString().ToLower()}"),
-                Format.Code(permission.Name),
-                Format.Bold(Context.Localize($"permissions_{Context.Path[1]}d")),
-                Format.Bold(filter switch
-                {
-                    PermissionFilter.Global => Context.Localize("permissions_global"),
-                    PermissionFilter.Guild => Context.Guild.Name,
-                    PermissionFilter.Role => Context.Guild.GetRole(targetId.Value).Name,
-                    PermissionFilter.Channel => Context.Guild.GetTextChannel(targetId.Value).Mention,
-                    PermissionFilter.User => Context.Guild.GetUser(targetId.Value)?.ToString() ?? "???",
-                    _ => throw new ArgumentOutOfRangeException()
-                })
-            });
+                PermissionFilter.Global => Context.Localize("permissions_global"),
+                PermissionFilter.Guild => Context.Guild.Name,
+                PermissionFilter.Role => Context.Guild.GetRole(targetId.Value).Name,
+                PermissionFilter.Channel => Context.Guild.GetTextChannel(targetId.Value).Mention,
+                PermissionFilter.User => Context.Guild.GetUser(targetId.Value)?.ToString() ?? "???",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            switch (permission.Type)
+            {
+                case PermissionType.Command:
+                    return CommandSuccessLocalized(permission.IsEnabled
+                        ? "permissions_command_enabled"
+                        : "permissions_command_disabled", args: new object[]
+                    {
+                        Format.Code(permission.Name),
+                        Format.Bold(filterText)
+                    });
+                case PermissionType.Module:
+                    return CommandSuccessLocalized(permission.IsEnabled
+                        ? "permissions_module_enabled"
+                        : "permissions_module_disabled", args: new object[]
+                    {
+                        Format.Code(permission.Name),
+                        Format.Bold(filterText)
+                    });
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         [Command("", "list")]
