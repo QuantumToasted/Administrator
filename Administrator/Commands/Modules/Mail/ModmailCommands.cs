@@ -9,12 +9,12 @@ using Administrator.Extensions;
 using Administrator.Services;
 using Discord;
 using Discord.WebSocket;
-using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
-namespace Administrator.Commands.Modules.Mail
+namespace Administrator.Commands
 {
+    [Name("Modmail")]
     [Group("modmail", "mm")]
     public sealed class ModmailCommands : AdminModuleBase
     {

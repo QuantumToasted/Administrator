@@ -151,7 +151,11 @@ namespace Administrator.Services
 
         Task IService.InitializeAsync()
         {
-            var modules = _commands.AddModules(Assembly.GetEntryAssembly());
+            var modules = _commands.AddModules(Assembly.GetEntryAssembly(), action: builder =>
+            {
+                foreach (var command in CommandUtilities.GetAllCommands(builder))
+                    command.AddCheck(new RequirePermissionsAttribute());
+            });
 
             // TODO: Add TypeParsers
             _commands.AddTypeParser(new ChannelParser<SocketGuildChannel>());

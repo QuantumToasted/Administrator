@@ -4,19 +4,19 @@ using Administrator.Services;
 
 namespace Administrator.Database
 {
-    public sealed class GlobalUser
+    public sealed class GlobalUser : User
     {
-        private GlobalUser()
+        private GlobalUser(ulong id)
+            : base(id)
         { }
 
         public GlobalUser(ulong id, LocalizationService localization)
+            : base(id)
         {
             Id = id;
             Language = localization.Languages.First(x => x.CultureCode.Equals("en-US"));
         }
-        
-        public ulong Id { get; set; }
-        
+
         public LocalizedLanguage Language { get; set; }
     }
 }

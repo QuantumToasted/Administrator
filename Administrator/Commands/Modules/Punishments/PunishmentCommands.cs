@@ -15,8 +15,9 @@ using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
-namespace Administrator.Commands.Modules.Punishments
+namespace Administrator.Commands
 {
+    [Name("Punishments")]
     public class PunishmentCommands : AdminModuleBase
     {
         public PaginationService Pagination { get; set; }
@@ -44,19 +45,18 @@ namespace Administrator.Commands.Modules.Punishments
                     Context.Guild.Id, PunishmentListType.Guild);
                 var firstPage = await tempPaginator.BuildPageAsync();
 
+                var message = await Pagination.SendPaginatorAsync(Context.Channel, firstPage);
+                
                 if (split.Count > 1)
                 {
-                    var message = await Pagination.SendPaginatorAsync(Context.Channel, firstPage);
                     Pagination.AddPaginator(new PunishmentPaginator(message, split, Math.Min(page, split.Count) - 1,
                         Context, Context.Guild.Id, PunishmentListType.Guild, Pagination));
                     return CommandSuccess();
                 }
 
-                var embed = firstPage.Embed.ToEmbedBuilder()
+                return CommandSuccess(embed: firstPage.Embed.ToEmbedBuilder()
                     .WithFooter((string)null)
-                    .Build();
-
-                return CommandSuccess(embed: embed);
+                    .Build());
             }
 
             [Command("punishments", "cases")]
@@ -112,7 +112,7 @@ namespace Administrator.Commands.Modules.Punishments
                     .AddField(Context.Localize("punishment_moderator_title"), moderator?.Format(false) ?? "???", true)
                     .AddField(Context.Localize("punishment_timestamp_title"),
                         punishment.CreatedAt.ToString("g", Context.Language.Culture), true)
-                    .AddField(Context.Localize("punishment_reason"),
+                    .AddField(Context.Localize("title_reason"),
                         punishment.Reason ?? Context.Localize("punishment_noreason"));
 
                 switch (punishment)
@@ -275,7 +275,7 @@ namespace Administrator.Commands.Modules.Punishments
                 await message.ModifyAsync(x =>
                 {
                     var builder = message.Embeds.First().ToEmbedBuilder();
-                    var field = builder.Fields.FirstOrDefault(y => y.Name.Equals(Context.Localize("punishment_reason")));
+                    var field = builder.Fields.FirstOrDefault(y => y.Name.Equals(Context.Localize("title_reason")));
                     if (!(field is null))
                     {
                         builder.Fields.First(y => y.Name.Equals(field.Name)).Value = reason;
@@ -297,7 +297,7 @@ namespace Administrator.Commands.Modules.Punishments
             {
                 if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id, count) is WarningPunishment
                     punishment))
-                    return CommandErrorLocalized("warningpunishment_notfound_count", args: count);
+                    return CommandErrorLocalized("warningpunishment_notfound_count", args: count.ToOrdinalWords(Context.Language.Culture));
 
                 string text;
                 switch (punishment.Type)

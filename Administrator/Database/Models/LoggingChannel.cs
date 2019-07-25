@@ -7,9 +7,10 @@ namespace Administrator.Database
         private LoggingChannel()
         { }
 
-        public LoggingChannel(ulong id, LogType type)
+        public LoggingChannel(ulong id, ulong guildId, LogType type)
         {
             Id = id;
+            GuildId = guildId;
             Type = type;
         }
 

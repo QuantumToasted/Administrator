@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Administrator.Extensions;
@@ -54,6 +55,50 @@ namespace Administrator.Common
         {
             base.Dispose();
             _timer.Dispose();
+        }
+
+        public static List<Page> GeneratePages<T>(List<T> list, int maxLength = EmbedBuilder.MaxDescriptionLength,
+            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, Func<EmbedBuilder> embedFunc = null)
+        {
+            var pages = new List<Page>();
+
+            var builder = new StringBuilder();
+            for (var i = 0; i < list.Count; i++)
+            {
+                var entry = list[i];
+                var text = lineFunc?.Invoke(entry) ?? entry.ToString();
+                if (builder.Length + text.Length > maxLength)
+                {
+                    pages.Add(new Page(plaintextFunc?.Invoke(),
+                        (embedFunc?.Invoke() ?? new EmbedBuilder())
+                        .WithDescription(builder.ToString()).Build()));
+
+                    builder.Clear().AppendLine(text);
+                }
+                else if (i == list.Count - 1)
+                {
+                    pages.Add(new Page(plaintextFunc?.Invoke(),
+                        (embedFunc?.Invoke() ?? new EmbedBuilder())
+                        .WithDescription(builder.AppendLine(text).ToString())
+                        .Build()));
+                }
+                else
+                {
+                    builder.AppendLine(text);
+                }
+            }
+            
+            if (pages.Count > 1)
+            {
+                for (var i = 0; i < pages.Count; i++)
+                {
+                    var page = pages[i];
+                    pages[i] = new Page(page.Text,
+                        page.Embed.ToEmbedBuilder().WithFooter($"{i + 1}/{pages.Count}").Build());
+                }
+            }
+
+            return pages;
         }
 
         public static List<Page> GeneratePages<T>(List<T> list, int numberPerPage, Func<T, EmbedFieldBuilder> fieldFunc,

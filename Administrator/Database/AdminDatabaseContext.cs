@@ -20,7 +20,8 @@ namespace Administrator.Database
         private readonly DiscordSocketClient _client;
         private readonly LocalizationService _localization;
 
-        public AdminDatabaseContext() : this(null)
+        public AdminDatabaseContext() 
+            : this(null)
         { }
 
         public AdminDatabaseContext(IServiceProvider provider)
@@ -38,6 +39,8 @@ namespace Administrator.Database
         
         public DbSet<GlobalUser> GlobalUsers { get; set; }
 
+        public DbSet<GuildUser> GuildUsers { get; set; }
+        
         public DbSet<Punishment> Punishments { get; set; }
 
         public DbSet<LoggingChannel> LoggingChannels { get; set; }
@@ -50,9 +53,15 @@ namespace Administrator.Database
 
         public DbSet<WarningPunishment> WarningPunishments { get; set; }
 
+        public DbSet<Permission> Permissions { get; set; }
+
+        public DbSet<Suggestion> Suggestions { get; set; }
+
+        public DbSet<SpecialEmote> SpecialEmotes { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
-            if (await Guilds.FindAsync(guildId) is Guild guild)
+            if (await Guilds.FindAsync(guildId) is { } guild)
                 return guild;
 
             guild = new Guild(guildId, _localization);
@@ -63,7 +72,7 @@ namespace Administrator.Database
         
         public async Task<GlobalUser> GetOrCreateGlobalUserAsync(ulong userId)
         {
-            if (await GlobalUsers.FindAsync(userId) is GlobalUser user)
+            if (await GlobalUsers.FindAsync(userId) is { } user)
                 return user;
 
             user = new GlobalUser(userId, _localization);
@@ -72,9 +81,20 @@ namespace Administrator.Database
             return user;
         }
 
+        public async Task<GuildUser> GetOrCreateGuildUserAsync(ulong userId, ulong guildId)
+        {
+            if (await GuildUsers.FindAsync(userId, guildId) is { } user)
+                return user;
+
+            user = new GuildUser(userId, guildId);
+            GuildUsers.Add(user);
+            await SaveChangesAsync();
+            return user;
+        }
+
         public async Task<SocketTextChannel> GetLoggingChannelAsync(ulong guildId, LogType type)
         {
-            if (!(await LoggingChannels.FindAsync(guildId, type) is LoggingChannel logChannel))
+            if (!(await LoggingChannels.FindAsync(guildId, type) is { } logChannel))
                 return null;
 
             return _client.GetGuild(guildId).GetTextChannel(logChannel.Id);
@@ -82,7 +102,7 @@ namespace Administrator.Database
 
         public async Task<SocketRole> GetSpecialRoleAsync(ulong guildId, RoleType type)
         {
-            if (!(await SpecialRoles.FindAsync(guildId, type) is SpecialRole role))
+            if (!(await SpecialRoles.FindAsync(guildId, type) is { } role))
                 return null;
 
             return _client.GetGuild(guildId).GetRole(role.Id);
@@ -116,6 +136,15 @@ namespace Administrator.Database
                     .HasConversion(x => x.CultureCode,
                         x => _localization.Languages
                             .First(y => y.CultureCode.Equals(x)));
+                user.Property(x => x.PreviousNames)
+                    .HasDefaultValueSql("'{}'");
+            });
+
+            modelBuilder.Entity<GuildUser>(user =>
+            {
+                user.HasKey(x => new {x.Id, x.GuildId});
+                user.Property(x => x.PreviousNames)
+                    .HasDefaultValueSql("'{}'");
             });
 
             modelBuilder.Entity<Punishment>(punishment =>
@@ -177,6 +206,25 @@ namespace Administrator.Database
             modelBuilder.Entity<WarningPunishment>(punishment =>
             {
                 punishment.HasKey(x => new {x.GuildId, x.Count});
+            });
+
+            modelBuilder.Entity<Permission>(permission =>
+            {
+                permission.HasKey(x => x.Id);
+                permission.Property(x => x.Id).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<Suggestion>(suggestion =>
+            {
+                suggestion.HasKey(x => x.Id);
+                suggestion.Property(x => x.Id).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<SpecialEmote>(emote =>
+            {
+                emote.HasKey(x => new {x.GuildId, x.Type});
+                emote.Property(x => x.Emote).HasConversion(new EmoteConverter())
+                    .HasDefaultValueSql("''");
             });
         }
     }

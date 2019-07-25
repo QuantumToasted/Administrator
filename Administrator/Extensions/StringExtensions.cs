@@ -1,9 +1,20 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Administrator.Extensions
 {
     public static class StringExtensions
     {
+        public static readonly Regex LazyImageLinkRegex = new Regex(
+            @"(http|https):\/\/.{2,}(png|jpg|jpeg|gif)");
+
+        public static bool HasImageExtension(this string str)
+        {
+            if (string.IsNullOrWhiteSpace(str)) return false;
+            return str.EndsWith(".png") || str.EndsWith(".jpg") || str.EndsWith(".jpeg") || str.EndsWith(".gif") ||
+                   str.EndsWith(".bmp");
+        }
+
         public static string TrimTo(this string str, int length, bool useEllipses = false)
         {
             if (string.IsNullOrWhiteSpace(str))

@@ -114,7 +114,7 @@ namespace Administrator.Common
                                   (_context.Guild.GetTextChannel(mute.ChannelId.Value)?.Mention ?? "???"));
                 }
 
-                sb.AppendLine(_context.Localize("punishment_reason") + ": " + punishment.Reason.TrimTo(512))
+                sb.AppendLine(_context.Localize("title_reason") + ": " + punishment.Reason.TrimTo(512))
                     .AppendLine(_context.Localize("punishment_timestamp",
                         punishment.CreatedAt.ToString("g", _context.Language.Culture)));
 

@@ -10,6 +10,8 @@
         Warn,
         Unwarn, // TODO: Better name
         Modmail,
-        Appeal
+        Appeal,
+        Suggestion,
+        SuggestionArchive // TODO: Better name?
     }
 }

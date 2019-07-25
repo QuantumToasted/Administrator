@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Administrator.Migrations
 {
     [DbContext(typeof(AdminDatabaseContext))]
-    [Migration("20190410012630_Modmail_ClosedBy")]
-    partial class Modmail_ClosedBy
+    [Migration("20190724195554_Suggestions")]
+    partial class Suggestions
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -30,6 +30,16 @@ namespace Administrator.Migrations
 
                     b.Property<string>("Language");
 
+                    b.Property<DateTimeOffset>("LastLevelUp");
+
+                    b.Property<DateTimeOffset>("LastXpGain");
+
+                    b.Property<List<string>>("PreviousNames")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("'{}'");
+
+                    b.Property<int>("TotalXp");
+
                     b.HasKey("Id");
 
                     b.ToTable("GlobalUsers");
@@ -43,7 +53,7 @@ namespace Administrator.Migrations
 
                     b.Property<string>("BlacklistedModmailAuthors")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("'{}'");
+                        .HasDefaultValueSql("''");
 
                     b.Property<List<string>>("CustomPrefixes")
                         .ValueGeneratedOnAdd()
@@ -56,6 +66,29 @@ namespace Administrator.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Guilds");
+                });
+
+            modelBuilder.Entity("Administrator.Database.GuildUser", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<DateTimeOffset>("LastLevelUp");
+
+                    b.Property<DateTimeOffset>("LastXpGain");
+
+                    b.Property<List<string>>("PreviousNames")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("'{}'");
+
+                    b.Property<int>("TotalXp");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("GuildUsers");
                 });
 
             modelBuilder.Entity("Administrator.Database.LoggingChannel", b =>
@@ -98,11 +131,11 @@ namespace Administrator.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Text");
-
                     b.Property<int>("SourceId");
 
                     b.Property<int>("Target");
+
+                    b.Property<string>("Text");
 
                     b.Property<DateTimeOffset>("Timestamp");
 
@@ -111,6 +144,30 @@ namespace Administrator.Migrations
                     b.HasIndex("SourceId");
 
                     b.ToTable("ModmailMessages");
+                });
+
+            modelBuilder.Entity("Administrator.Database.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("Filter");
+
+                    b.Property<decimal?>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<bool>("IsEnabled");
+
+                    b.Property<string>("Name");
+
+                    b.Property<decimal?>("TargetId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("Administrator.Database.Punishment", b =>
@@ -147,6 +204,22 @@ namespace Administrator.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Punishment");
                 });
 
+            modelBuilder.Entity("Administrator.Database.SpecialEmote", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("Type");
+
+                    b.Property<string>("Emote")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("''");
+
+                    b.HasKey("GuildId", "Type");
+
+                    b.ToTable("SpecialEmotes");
+                });
+
             modelBuilder.Entity("Administrator.Database.SpecialRole", b =>
                 {
                     b.Property<decimal>("GuildId")
@@ -160,6 +233,45 @@ namespace Administrator.Migrations
                     b.HasKey("GuildId", "Type");
 
                     b.ToTable("SpecialRoles");
+                });
+
+            modelBuilder.Entity("Administrator.Database.Suggestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("MessageId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("Text");
+
+                    b.Property<DateTimeOffset>("Timestamp");
+
+                    b.Property<decimal>("UserId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Suggestions");
+                });
+
+            modelBuilder.Entity("Administrator.Database.WarningPunishment", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("Count");
+
+                    b.Property<TimeSpan?>("Duration");
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("GuildId", "Count");
+
+                    b.ToTable("WarningPunishments");
                 });
 
             modelBuilder.Entity("Administrator.Database.Kick", b =>
@@ -208,12 +320,20 @@ namespace Administrator.Migrations
                     b.Property<TimeSpan?>("Duration")
                         .HasColumnName("Mute_Duration");
 
+                    b.Property<decimal?>("PreviousChannelAllowValue")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal?>("PreviousChannelDenyValue")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
                     b.HasDiscriminator().HasValue("Mute");
                 });
 
             modelBuilder.Entity("Administrator.Database.Warning", b =>
                 {
                     b.HasBaseType("Administrator.Database.RevocablePunishment");
+
+                    b.Property<int?>("SecondaryPunishmentId");
 
                     b.HasDiscriminator().HasValue("Warning");
                 });

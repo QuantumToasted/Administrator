@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Administrator.Migrations
 {
     [DbContext(typeof(AdminDatabaseContext))]
-    [Migration("20190430191051_Mute_StoredOverwrites")]
-    partial class Mute_StoredOverwrites
+    [Migration("20190516140427_Reset")]
+    partial class Reset
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -29,6 +29,10 @@ namespace Administrator.Migrations
                         .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<string>("Language");
+
+                    b.Property<List<string>>("PreviousNames")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("'{}'");
 
                     b.HasKey("Id");
 
@@ -56,6 +60,23 @@ namespace Administrator.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Guilds");
+                });
+
+            modelBuilder.Entity("Administrator.Database.GuildUser", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<List<string>>("PreviousNames")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("'{}'");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("GuildUsers");
                 });
 
             modelBuilder.Entity("Administrator.Database.LoggingChannel", b =>
@@ -111,6 +132,30 @@ namespace Administrator.Migrations
                     b.HasIndex("SourceId");
 
                     b.ToTable("ModmailMessages");
+                });
+
+            modelBuilder.Entity("Administrator.Database.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("Filter");
+
+                    b.Property<decimal?>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<bool>("IsEnabled");
+
+                    b.Property<string>("Name");
+
+                    b.Property<decimal?>("TargetId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("Administrator.Database.Punishment", b =>

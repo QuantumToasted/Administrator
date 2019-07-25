@@ -13,7 +13,7 @@ using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
-namespace Administrator.Commands.Modules.Moderation
+namespace Administrator.Commands
 {
     [Name("Moderation")]
     [RequireContext(ContextType.Guild)]
@@ -52,6 +52,9 @@ namespace Administrator.Commands.Modules.Moderation
 
         private async ValueTask<AdminCommandResult> BanUserAsync(IUser target, string reason, Warning source = null)
         {
+            if (!(await Context.Guild.GetBanAsync(target) is null))
+                return CommandErrorLocalized("moderation_alreadybanned", args: Format.Bold(target.ToString()));
+
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             Ban ban = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
@@ -104,6 +107,9 @@ namespace Administrator.Commands.Modules.Moderation
 
         private async ValueTask<AdminCommandResult> TempbanUserAsync(IUser target, TimeSpan duration, string reason, Warning source = null)
         {
+            if (!(await Context.Guild.GetBanAsync(target) is null))
+                return CommandErrorLocalized("moderation_alreadybanned", args: Format.Bold(target.ToString()));
+
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             Ban ban = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
@@ -231,13 +237,21 @@ namespace Administrator.Commands.Modules.Moderation
 
             [Command]
             public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] SocketGuildUser target,
+                TimeSpan duration, [Remainder] string reason = null)
+                => BlockUserAsync(target, Context.Channel as SocketTextChannel, duration, reason);
+
+            [Command]
+            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] SocketGuildUser target,
                 SocketTextChannel channel, TimeSpan duration, [Remainder] string reason = null)
                 => BlockUserAsync(target, channel, duration, reason);
 
             private async ValueTask<AdminCommandResult> BlockUserAsync(SocketGuildUser target, SocketTextChannel channel,
                 TimeSpan? duration, string reason)
             {
-                channel ??= (SocketTextChannel) Context.Channel; 
+                channel ??= (SocketTextChannel) Context.Channel;
+
+                if (channel.PermissionOverwrites.Any(x => x.TargetId == target.Id))
+                    return CommandErrorLocalized("moderation_alreadyblocked", args: Format.Bold(target.ToString()));
 
                 var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
                 if (guild.Settings.HasFlag(GuildSettings.Punishments))
@@ -301,26 +315,20 @@ namespace Administrator.Commands.Modules.Moderation
 
             if (!(extraPunishment is null) && !(warning is null))
             {
-                reason = Context.Localize("moderation_additional_punishment", warning.Id,
-                    reason ?? Context.Localize("punishment_noreason"));
-                switch (extraPunishment.Type)
+                reason = warning.LogMessageId == default
+                    ? Context.Localize("moderation_additional_punishment", warning.Id)
+                    : Context.Localize("moderation_additional_punishment_link", warning.Id,
+                        $"https://discordapp.com/channels/{warning.GuildId}/{warning.LogMessageChannelId}/{warning.LogMessageId}");
+
+                return extraPunishment.Type switch
                 {
-                    case PunishmentType.Mute:
-                        await MuteUserAsync(target, extraPunishment.Duration, reason);
-                        break;
-                    case PunishmentType.Kick:
-                        await KickUserAsync(target, reason);
-                        break;
-                    case PunishmentType.Ban:
-                        if (extraPunishment.Duration.HasValue)
-                        {
-                            await TempbanUserAsync(target, extraPunishment.Duration.Value, reason);
-                        }
-                        else await BanUserAsync(target, reason);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    PunishmentType.Mute => await MuteUserAsync(target, extraPunishment.Duration, reason, warning),
+                    PunishmentType.Kick => await KickUserAsync(target, reason, warning),
+                    PunishmentType.Ban => extraPunishment.Duration.HasValue
+                        ? await TempbanUserAsync(target, extraPunishment.Duration.Value, reason, warning)
+                        : await BanUserAsync(target, reason, warning),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
 
             return CommandSuccess();

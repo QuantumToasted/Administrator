@@ -188,7 +188,7 @@ namespace Administrator.Services
                                $" - {_localization.Localize(guildConfig.Language, "punishment_case", punishment.Id)}")
                     .WithDescription(_localization.Localize(guildConfig.Language, "punishment_appeal_description_guild",
                         target.Format()))
-                    .AddField("punishment_reason", punishment.AppealReason)
+                    .AddField("title_reason", punishment.AppealReason)
                     .WithTimestamp(punishment.AppealedAt.Value).Build());
             }
         }
@@ -200,10 +200,10 @@ namespace Administrator.Services
                 .WithErrorColor()
                 .WithTitle(_localization.Localize(language, $"punishment_{typeName}") +
                            $" - {_localization.Localize(language, "punishment_case", punishment.Id)}")
-                .AddField(_localization.Localize(language, "punishment_reason"),
+                .AddField(_localization.Localize(language, "title_reason"),
                     punishment.Reason ?? _localization.Localize(language, "punishment_needsreason",
                         Format.Code(
-                            $"{_config.DefaultPrefix}reason {punishment.Id} [{_localization.Localize(language, "punishment_reason").ToLower()}]")))
+                            $"{_config.DefaultPrefix}reason {punishment.Id} [{_localization.Localize(language, "title_reason").ToLower()}]")))
                 .WithFooter(_localization.Localize(language, "punishment_moderator", moderator.ToString()),
                     moderator.GetAvatarUrl() ?? moderator.GetDefaultAvatarUrl())
                 .WithTimestamp(punishment.CreatedAt);
@@ -260,7 +260,7 @@ namespace Administrator.Services
                            $" - {_localization.Localize(language, "punishment_case", punishment.Id)}")
                 .WithDescription(_localization.Localize(language, $"punishment_{typeName}_revoke_description_guild",
                     $"**{target}** (`{target.Id}`)"))
-                .AddField(_localization.Localize(language, "punishment_reason"),
+                .AddField(_localization.Localize(language, "title_reason"),
                     punishment.RevocationReason ?? _localization.Localize(language, "punishment_noreason"))
                 .WithFooter(_localization.Localize(language, "punishment_moderator", moderator.ToString()),
                     moderator.GetAvatarUrl() ?? moderator.GetDefaultAvatarUrl())
@@ -281,7 +281,7 @@ namespace Administrator.Services
             var builder = new EmbedBuilder().WithErrorColor()
                 .WithTitle(_localization.Localize(language, $"punishment_{typeName}") +
                            $" - {_localization.Localize(language, "punishment_case", punishment.Id)}")
-                .AddField(_localization.Localize(language, "punishment_reason"),
+                .AddField(_localization.Localize(language, "title_reason"),
                     punishment.Reason ?? _localization.Localize(language, "punishment_noreason"))
                 .WithTimestamp(punishment.CreatedAt);
 
@@ -337,7 +337,7 @@ namespace Administrator.Services
                 {
                     return _localization.Localize(language, "punishment_appeal_instructions", 
                         Format.Code(punishment.Id.ToString()), 
-                        Format.Code($"{_config.DefaultPrefix}appeal {punishment.Id} [{_localization.Localize(language, "punishment_reason").ToLower()}]"));
+                        Format.Code($"{_config.DefaultPrefix}appeal {punishment.Id} [{_localization.Localize(language, "title_reason").ToLower()}]"));
                 }
             }
 
@@ -358,7 +358,7 @@ namespace Administrator.Services
                 .WithTitle(_localization.Localize(language, $"punishment_{typeName}") +
                            $" - {_localization.Localize(language, "punishment_case", punishment.Id)}")
                 .WithDescription(_localization.Localize(language, $"punishment_{typeName}_revoke_description", _client.GetGuild(punishment.GuildId)?.Name))
-                .AddField(_localization.Localize(language, "punishment_reason"),
+                .AddField(_localization.Localize(language, "title_reason"),
                     punishment.RevocationReason ?? _localization.Localize(language, "punishment_noreason"))
                 .WithTimestamp(punishment.RevokedAt ?? DateTimeOffset.UtcNow);
 
