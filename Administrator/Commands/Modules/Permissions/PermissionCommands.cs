@@ -105,23 +105,6 @@ namespace Administrator.Commands
             Context.Database.Permissions.Add(permission);
             await Context.Database.SaveChangesAsync();
 
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return CommandSuccessLocalized("permissions_add_all", args: new object[]
-                {
-                    Format.Bold(Context.Localize($"permissions_{Context.Path[1]}d")),
-                    Format.Bold(filter switch
-                    {
-                        PermissionFilter.Global => Context.Localize("permissions_global"),
-                        PermissionFilter.Guild => Context.Guild.Name,
-                        PermissionFilter.Role => Context.Guild.GetRole(targetId.Value).Name,
-                        PermissionFilter.Channel => Context.Guild.GetTextChannel(targetId.Value).Mention,
-                        PermissionFilter.User => Context.Guild.GetUser(targetId.Value)?.ToString() ?? "???",
-                        _ => throw new ArgumentOutOfRangeException()
-                    })
-                });
-            }
-
             var filterText = filter switch
             {
                 PermissionFilter.Global => Context.Localize("permissions_global"),
@@ -132,6 +115,13 @@ namespace Administrator.Commands
                 _ => throw new ArgumentOutOfRangeException()
             };
 
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return CommandSuccessLocalized(permission.IsEnabled
+                    ? "permissions_all_enabled"
+                    : "permissions_all_disabled", args: filterText);
+            }
+            
             switch (permission.Type)
             {
                 case PermissionType.Command:
