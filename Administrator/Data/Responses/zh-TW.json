@@ -94,6 +94,9 @@
     "guildparser_notfound": [
       "Server not found."
     ],
+    "emoteparser_notfound": [
+      "Emote not found."
+    ],
     "commanderror": [
       "指令執行錯誤"
     ],
@@ -181,8 +184,8 @@
     "punishment_permanent": [
       "Permanent"
     ],
-    "punishment_reason": [
-      "理由"
+    "title_reason": [
+      "Reason"
     ],
     "punishment_noreason": [
       "沒有提供理由"
@@ -253,6 +256,9 @@
     "modmail_modteam": [
       "{0} modteam"
     ],
+    "moderation_alreadybanned": [
+      "{0} has already been banned!"
+    ],
     "moderation_ban": [
       "{0} has been banned."
     ],
@@ -268,6 +274,9 @@
     "moderation_mute_temporary": [
       "{0} has been temporarily muted for {1}."
     ],
+    "moderation_alreadyblocked": [
+      "{0} may have already been blocked, so I did not try to block them again."
+    ],
     "moderation_block": [
       "{0} has been blocked from {1}."
     ],
@@ -281,7 +290,10 @@
       "This user was already muted."
     ],
     "moderation_additional_punishment": [
-      "Additional punishment from warning #{0}: {1}"
+      "Additional punishment from warning #{0}."
+    ],
+    "moderation_additional_punishment_link": [
+      "Additional punishment from [warning #{0}]({1})."
     ],
     "moderation_warn": [
       "{0} has been warned."
@@ -341,7 +353,7 @@
       "The reason for this punishment was successfully updated."
     ],
     "warningpunishment_notfound_count": [
-      "No automatic punishment has been set to be given out at {0} warning(s)."
+      "No automatic punishment has been set to be given out for the {0} warning."
     ],
     "warningpunishment_show": [
       "Upon being warned {0} time(s), users will receive a {1}."
@@ -375,6 +387,96 @@
     ],
     "punishment_appeal_description_guild": [
       "User {0} has appealed their {1}."
+    ],
+    "permissions_command_notfound": [
+      "No command could be found by that name."
+    ],
+    "permissions_module_notfound": [
+      "No module could be found by that name."
+    ],
+    "permissions_add": [
+      "{0} {1} has been {2} for {3}."
+    ],
+    "permissions_add_all": [
+      "All commands have been {0} for {1}."
+    ],
+    "permissions_list": [
+      "Command permissions for {0}"
+    ],
+    "permissions_command": [
+      "Command"
+    ],
+    "permissions_module": [
+      "Module"
+    ],
+    "permissions_enabled": [
+      "enabled"
+    ],
+    "permissions_disabled": [
+      "disabled"
+    ],
+    "permissions_global": [
+      "all servers."
+    ],
+    "permissions_none": [
+      "No command permissions could be found."
+    ],
+    "permissions_notfound": [
+      "No command permission could be found by that ID."
+    ],
+    "permissions_removed": [
+      "Command permissions successfully removed."
+    ],
+    "permissions_denied": [
+      "Command permission #{0} prevented you from using this command."
+    ],
+    "suggestion_nochannel": [
+      "The suggestion channel has not been set up or was deleted."
+    ],
+    "suggestion_id": [
+      "Suggestion ID: {0}"
+    ],
+    "suggestion_successful": [
+      "You've successfully made a suggestion! Your ID is {0}."
+    ],
+    "suggestion_notfound": [
+      "No suggestion could be found with that ID."
+    ],
+    "suggestion_removed": [
+      "Suggestion successfully removed."
+    ],
+    "suggestion_noarchive": [
+      "The suggestion archive channel has not been set up or was deleted."
+    ],
+    "suggestion_approved_title": [
+      "Suggestion #{0} by {1} was approved with {2} upvotes and {3} downvotes."
+    ],
+    "suggestion_denied_title": [
+      "Suggestion #{0} by {1} was denied with {2} upvotes and {3} downvotes."
+    ],
+    "suggestion_approved_footer": [
+      "Approved by: {0}"
+    ],
+    "suggestion_denied_footer": [
+      "Denied by: {0}"
+    ],
+    "suggestion_approved": [
+      "Suggestion successfully approved."
+    ],
+    "suggestion_denied": [
+      "Suggestion successfully denied."
+    ],
+    "suggestion_channel_updated": [
+      "The suggestion channel has been updated. Suggestions will now show in {0}."
+    ],
+    "suggestion_channel": [
+      "Suggestions are currently configured to show up in {0}."
+    ],
+    "suggestion_archive_updated": [
+      "The suggestion archive channel has been updated. Suggestions will now show in {0}."
+    ],
+    "suggestion_archive": [
+      "Suggestions are currently configured to be archived in {0}."
     ]
   }
 }
