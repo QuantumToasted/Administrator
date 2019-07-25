@@ -394,10 +394,19 @@
     "permissions_module_notfound": [
       "No module could be found by that name."
     ],
-    "permissions_add": [
-      "{0} {1} has been {2} for {3}."
+    "permissions_command_enabled": [
+      "Command {0} has been enabled for {1}."
     ],
-    "permissions_add_all": [
+    "permissions_command_disabled": [
+      "Command {0} has been disabled for {1}."
+    ],
+    "permissions_module_enabled": [
+      "Module {0} has been enabled for {1}."
+    ],
+    "permissions_module_disabled": [
+      "Module {0} has been disabled for {1}."
+    ],
+    "permissions_all": [
       "All commands have been {0} for {1}."
     ],
     "permissions_list": [
