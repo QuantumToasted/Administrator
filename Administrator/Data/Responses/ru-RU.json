@@ -95,7 +95,7 @@
       "Сервер не найден."
     ],
     "emoteparser_notfound": [
-      "Emote not found."
+      "Эмодзи не найден."
     ],
     "commanderror": [
       "Ошибка в команде"
@@ -185,7 +185,7 @@
       "Постоянный"
     ],
     "title_reason": [
-      "Reason"
+      "Причина"
     ],
     "punishment_noreason": [
       "Причина не указана."
