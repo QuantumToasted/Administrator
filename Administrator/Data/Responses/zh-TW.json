@@ -421,12 +421,6 @@
     "permissions_module": [
       "Module"
     ],
-    "permissions_enabled": [
-      "enabled"
-    ],
-    "permissions_disabled": [
-      "disabled"
-    ],
     "permissions_global": [
       "all servers."
     ],
