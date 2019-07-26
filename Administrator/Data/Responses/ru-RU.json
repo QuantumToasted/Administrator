@@ -347,7 +347,7 @@
       "Этому наказанию уже была назначена причина."
     ],
     "punishment_reason_missingmessage": [
-      "However, I could not find a message to modify with the reason."
+      "Однако я не могу найти сообщение с причиной для модификации."
     ],
     "punishment_reason_success": [
       "Причина для этого наказания была успешно обновлена."
