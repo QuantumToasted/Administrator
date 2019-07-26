@@ -431,64 +431,64 @@
       "all servers."
     ],
     "permissions_none": [
-      "No command permissions could be found."
+      "Никаких разрешений команд не было найдено."
     ],
     "permissions_notfound": [
-      "No command permission could be found by that ID."
+      "Никакого разрешения команд с таким ID не было найдено."
     ],
     "permissions_removed": [
-      "Command permissions successfully removed."
+      "Разрешения команд были успешно удалены."
     ],
     "permissions_denied": [
-      "Command permission #{0} prevented you from using this command."
+      "Разрешение команд #{0} не позволило вам использовать эту команду."
     ],
     "suggestion_nochannel": [
-      "The suggestion channel has not been set up or was deleted."
+      "Канал предложений не был настроен или был удалён."
     ],
     "suggestion_id": [
-      "Suggestion ID: {0}"
+      "ID предложения: {0}"
     ],
     "suggestion_successful": [
-      "You've successfully made a suggestion! Your ID is {0}."
+      "Вы успешно внесли предложение! Ваш ID — {0}."
     ],
     "suggestion_notfound": [
-      "No suggestion could be found with that ID."
+      "Никакого предложения с таким ID не было найдено."
     ],
     "suggestion_removed": [
-      "Suggestion successfully removed."
+      "Предложение успешно удалено."
     ],
     "suggestion_noarchive": [
-      "The suggestion archive channel has not been set up or was deleted."
+      "Канал архива предложений не был настроен или был удалён."
     ],
     "suggestion_approved_title": [
-      "Suggestion #{0} by {1} was approved with {2} upvotes and {3} downvotes."
+      "Предложенное #{0}, внесённое {1}, было одобрено с {2} положительными и {3} отрицательными голосами."
     ],
     "suggestion_denied_title": [
-      "Suggestion #{0} by {1} was denied with {2} upvotes and {3} downvotes."
+      "Предложенное #{0}, внесённое {1}, было отклонено с {2} положительными и {3} отрицательными голосами."
     ],
     "suggestion_approved_footer": [
-      "Approved by: {0}"
+      "Одобрил: {0}"
     ],
     "suggestion_denied_footer": [
-      "Denied by: {0}"
+      "Отклонил: {0}"
     ],
     "suggestion_approved": [
-      "Suggestion successfully approved."
+      "Предложение успешно одобрено."
     ],
     "suggestion_denied": [
-      "Suggestion successfully denied."
+      "Предложение успешно отклонено."
     ],
     "suggestion_channel_updated": [
-      "The suggestion channel has been updated. Suggestions will now show in {0}."
+      "Канал предложений был обновлён. Предложения теперь будут показаны в {0}."
     ],
     "suggestion_channel": [
-      "Suggestions are currently configured to show up in {0}."
+      "Предложения в настоящее время настроены на отображение в {0}."
     ],
     "suggestion_archive_updated": [
-      "The suggestion archive channel has been updated. Suggestions will now show in {0}."
+      "Канал архива предложений был обновлён. Предложения теперь будут показаны в {0}."
     ],
     "suggestion_archive": [
-      "Suggestions are currently configured to be archived in {0}."
+      "Предложения в настоящее время настроены на архивирование в {0}."
     ]
   }
 }
