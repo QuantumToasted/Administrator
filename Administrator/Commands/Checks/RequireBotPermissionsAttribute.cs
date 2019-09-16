@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Administrator.Common;
+using Administrator.Commands;
 using Discord;
 using Humanizer;
+using Administrator.Common;
 using Qmmands;
 
 namespace Administrator.Commands

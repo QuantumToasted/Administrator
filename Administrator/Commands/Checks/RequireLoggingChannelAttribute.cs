@@ -25,7 +25,7 @@ namespace Administrator.Commands
 
             var context = (AdminCommandContext) ctx;
 
-            if (!(await context.Database.GetLoggingChannelAsync(context.Guild.Id, RequiredLogType) is SocketTextChannel channel))
+            if (!(await context.Database.GetLoggingChannelAsync(context.Guild.Id, RequiredLogType) is { } channel))
                 return CheckResult.Unsuccessful(context.Localize("requireloggingchannel_notfound", RequiredLogType));
 
             return channel.Id != context.Channel.Id

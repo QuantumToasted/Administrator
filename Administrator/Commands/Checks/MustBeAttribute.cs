@@ -33,41 +33,34 @@ namespace Administrator.Commands
         {
             var context = (AdminCommandContext) ctx;
 
+            string result;
             if (_isOperator)
             {
                 var value = (int) argument;
-                return Operator switch
+                result = Operator switch
                 {
-                    Operator.GreaterThan => value < Value
-                        ? CheckResult.Unsuccessful(context.Localize("operator_greaterthan", Value))
-                        : CheckResult.Successful,
-                    Operator.EqualTo => value != Value
-                        ? CheckResult.Unsuccessful(context.Localize("operator_equalto", Value))
-                        : CheckResult.Successful,
-                    Operator.LessThan => value > Value
-                        ? CheckResult.Unsuccessful(context.Localize("operator_lessthan", Value))
-                        : CheckResult.Successful,
-                    Operator.DivisibleBy => value % Value != 0
-                        ? CheckResult.Unsuccessful(context.Localize("operator_divisibleby", Value))
-                        : CheckResult.Successful,
-                        _ => throw new ArgumentOutOfRangeException(nameof(Operator))
+                    Operator.GreaterThan when value < Value => "operator_greaterthan",
+                    Operator.EqualTo when value != Value => "operator_equalto",
+                    Operator.LessThan when value > Value => "operator_lessthan",
+                    Operator.DivisibleBy when value % Value != 0 => "operator_divisibleby",
+                    _ => string.Empty
                 };
             }
-
-            var str = (string) argument;
-            return StringLength switch
+            else
             {
-                StringLength.LongerThan => str.Length < Value
-                    ? CheckResult.Unsuccessful(context.Localize("stringvalue_longerthan", Value))
-                    : CheckResult.Successful,
-                StringLength.Exactly => str.Length != Value
-                    ? CheckResult.Unsuccessful(context.Localize("stringvalue_exactly", Value))
-                    : CheckResult.Successful,
-                StringLength.ShorterThan => str.Length > Value
-                    ? CheckResult.Unsuccessful(context.Localize("stringvalue_shorterthan", Value))
-                    : CheckResult.Successful,
-                _ => throw new ArgumentOutOfRangeException(nameof(StringLength))
-            };
+                var str = (string)argument;
+                result = StringLength switch
+                {
+                    StringLength.LongerThan when str.Length < Value => "stringvalue_longerthan",
+                    StringLength.Exactly when str.Length != Value => "stringvalue_exactly",
+                    StringLength.ShorterThan when str.Length > Value => "stringvalue_shorterthan",
+                    _ => string.Empty
+                };
+            }
+            
+            return !string.IsNullOrWhiteSpace(result)
+                ? CheckResult.Unsuccessful(context.Localize(result, Value))
+                : CheckResult.Successful;
         }
     }
 }

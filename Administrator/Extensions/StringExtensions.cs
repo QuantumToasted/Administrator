@@ -26,7 +26,7 @@ namespace Administrator.Extensions
             if (length > str.Length)
                 return str;
 
-            return str[..length - 1] + '…';
+            return str[..(length - 1)] + '…';
         }
 
         public static string FixateTo(this string str, ref int center, int truncateTo)

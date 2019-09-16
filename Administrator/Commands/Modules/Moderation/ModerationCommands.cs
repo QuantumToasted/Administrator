@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Database;
+using Administrator.Extensions;
 using Administrator.Services;
 using Discord;
 using Discord.Rest;
@@ -132,7 +133,7 @@ namespace Administrator.Commands
                 args: new object[]
                 {
                     Format.Bold(target.ToString()),
-                    duration.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Minute)
+                    duration.HumanizeFormatted(Context, TimeUnit.Second)
                 });
         }
 
@@ -209,7 +210,7 @@ namespace Administrator.Commands
                 ? CommandSuccessLocalized("moderation_mute_temporary", args: new object[]
                 {
                     Format.Bold(target.ToString()),
-                    duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Minute)
+                    duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
                 })
                 : CommandSuccessLocalized("moderation_mute", args: Format.Bold(target.ToString()));
         }
@@ -275,7 +276,7 @@ namespace Administrator.Commands
                     {
                         Format.Bold(target.ToString()),
                         channel.Mention,
-                        duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Minute)
+                        duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
                     })
                     : CommandSuccessLocalized("moderation_block", args: new object[]
                     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Qmmands;
 
@@ -13,8 +14,8 @@ namespace Administrator.Commands
             var guild = (SocketGuild) argument;
             var context = (AdminCommandContext) ctx;
 
-            return !(guild.GetUser(context.User.Id) is SocketUser _)
-                ? CheckResult.Unsuccessful(context.Localize("requiremember", guild.Name))
+            return guild.GetUser(context.User.Id) is null
+                ? CheckResult.Unsuccessful(context.Localize("requiremember", Format.Bold(guild.Name)))
                 : CheckResult.Successful;
         }
     }

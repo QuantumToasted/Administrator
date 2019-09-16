@@ -483,6 +483,126 @@
     ],
     "suggestion_archive": [
       "Suggestions are currently configured to be archived in {0}."
-    ]
+    ],
+    "info_id": [
+      "ID"
+    ],
+    "info_mention": [
+      "Mention"
+    ],
+    "info_created": [
+      "Created"
+    ],
+    "info_ago": [
+      "{0} ago"
+    ],
+    "info_now": [
+      "Just now"
+    ],
+    "info_none": [
+      "None"
+    ],
+    "info_position": [
+      "Position"
+    ],
+    "role_info_above_below": [
+      "{0}/{1}, above {2} but below {3}"
+    ],
+    "role_info_above": [
+      "{0}/{1}, above all other roles"
+    ],
+    "role_info_below": [
+      "{0}/{1}, below all other roles"
+    ],
+    "role_info_color": [
+      "Color"
+    ],
+    "role_info_title": [
+      "Information for role {0}"
+    ],
+    "role_info_members": [
+      "Members ({0})"
+    ],
+    "role_info_permissions": [
+      "Permissions"
+    ],
+    "colorparser_invalid": [
+      "The supplied color was invalid.\nSupported color values are hex codes (#000000-#FFFFFF) or R,G,B values from 0-255 (105,190,20)."
+    ],
+    "role_create_success": [
+      "Role {0} has been successfully created!"
+    ],
+    "role_create_success_color": [
+      "Role {0} with color {1} has been successfully created!"
+    ],
+    "role_color_default": [
+      "Role {0}'s color is currently set to the default color."
+    ],
+    "role_color": [
+      "Role {0}'s color is currently set to {1}."
+    ],
+    "role_color_modified_default": [
+      "Role {0}'s color has been reset to the default color."
+    ],
+    "role_color_modified": [
+      "Role {0}'s color has been changed to {1}."
+    ],
+    "role_give_role_exists": [
+      "{0} already has that role!"
+    ],
+    "role_give_success": [
+      "{0} has been given the {1} role."
+    ],
+    "role_give_success_multiple": [
+      "{0} has been given the following roles:\n{1}"
+    ],
+    "role_remove_role_exists": [
+      "{0} doesn't have that role!"
+    ],
+    "role_remove_success": [
+      "{0} has had role {1} removed."
+    ],
+    "role_remove_success_multiple": [
+      "{0} has had the following roles removed:\n{1}"
+    ],
+    "role_delete_success": [
+      "Role {0} has been successfully deleted."
+    ],
+    "role_unassignable_self": [
+      "The role {0} is either my highest role or above it so I am not able to give it to others."
+    ],
+    "role_unassignable_user": [
+      "The role {0} is either your highest role or above it so I will not give it to others."
+    ],
+    "role_move_below_everyone": [
+      "The @\u200Beveryone role cannot be moved or have a role moved below it."
+    ],
+    "role_move_below_unable_self": [
+      "The role {0} is either my highest role or above it so I am not able to move {1} below it."
+    ],
+    "role_move_below_unable_user": [
+      "The role {0} is either your highest role or above it so I will not move {1} below it."
+    ],
+    "role_move_below_success": [
+      "The role {0} has been moved below {1}."
+    ],
+    "role_move_above_everyone": [
+      "The @\u200Beveryone role cannot be moved above any other role."
+    ],
+    "role_move_above_unable_self": [
+      "The role {0} is either my highest role or above it so I am not able to move {1} above it."
+    ],
+    "role_move_above_unable_user": [
+      "The role {0} is either your highest role or above it so I will not move {1} above it."
+    ],
+    "role_move_above_success": [
+      "The role {0} has been moved above {1}."
+    ],
+    "role_rename_success": [
+      "The role {0} has been renamed to {1}."
+    ],
+    "role_id": [
+      "The role {0} has an ID of {1}."
+    ] 
   }
 }

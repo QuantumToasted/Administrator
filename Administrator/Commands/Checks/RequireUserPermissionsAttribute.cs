@@ -47,9 +47,8 @@ namespace Administrator.Commands
                     : CheckResult.Successful;
             }
 
-            return !user.GetPermissions(context.Channel as IGuildChannel)
-                .Has(RequiredChannelPermissions)
-                ? CheckResult.Unsuccessful(context.Localize("requireuserpermissions_channel",
+            return !user.GuildPermissions.Has(RequiredGuildPermissions)
+                ? CheckResult.Unsuccessful(context.Localize("requireuserpermissions_guild",
                     Format.Bold(RequiredChannelPermissions.Humanize(LetterCasing.Title))))
                 : CheckResult.Successful;
         }

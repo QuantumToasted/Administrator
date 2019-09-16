@@ -20,12 +20,9 @@ namespace Administrator.Commands
             var context = (AdminCommandContext) ctx;
             var contextType = context.IsPrivate ? ContextType.DM : ContextType.Guild;
 
-            if (RequiredContext == contextType)
-                return CheckResult.Successful;
-
-            return CheckResult.Unsuccessful(RequiredContext == ContextType.DM
-                ? context.Localize("requirecontext_dm")
-                : context.Localize("requirecontext_guild"));
+            return RequiredContext != contextType
+                ? CheckResult.Unsuccessful(context.Localize($"requirecontext_{RequiredContext.ToString().ToLower()}"))
+                : CheckResult.Successful;
         }
     }
 }

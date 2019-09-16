@@ -121,7 +121,7 @@ namespace Administrator.Commands
                     ? "permissions_all_enabled"
                     : "permissions_all_disabled", args: filterText);
             }
-            
+
             switch (permission.Type)
             {
                 case PermissionType.Command:

@@ -93,23 +93,23 @@ namespace Administrator.Services
             var builder = new StringBuilder();
             switch (failedResult)
             {
-                case ArgumentParseFailedResult argumentParseResult:
-                    if (argumentParseResult.Position.HasValue)
+                case ArgumentParseFailedResult argumentResult when argumentResult.ParserResult is DefaultArgumentParserResult parserResult:
+                    if (parserResult.FailurePosition.HasValue)
                     {
                         var path = string.Join(' ', context.Path);
-                        var center = context.Prefix.Length + path.Length + argumentParseResult.Position.Value;
-                        var fullString = $"{context.Prefix}{path} {argumentParseResult.RawArguments}"
+                        var center = context.Prefix.Length + path.Length + parserResult.FailurePosition.Value;
+                        var fullString = $"{context.Prefix}{path} {argumentResult.RawArguments}"
                             .FixateTo(ref center, 30 - (context.Prefix.Length + path.Length));
                         builder.AppendLine(Format.Code($"{fullString}\n{"↑".PadLeft(center + 2)}"));
                     }
-                    builder.AppendLine(argumentParseResult.ArgumentParserFailure switch
+                    builder.AppendLine(parserResult.Failure.GetValueOrDefault() switch
                     {
-                        ArgumentParserFailure.TooFewArguments => context.Localize("commanderror_toofewarguments",
-                            argumentParseResult.Command.Parameters.Count),
-                        ArgumentParserFailure.TooManyArguments => context.Localize("commanderror_toomanyarguments",
-                            argumentParseResult.Command.Parameters.Count),
+                        DefaultArgumentParserFailure.TooFewArguments => context.Localize("commanderror_toofewarguments",
+                            argumentResult.Command.Parameters.Count),
+                        DefaultArgumentParserFailure.TooManyArguments => context.Localize("commanderror_toomanyarguments",
+                            argumentResult.Command.Parameters.Count),
                         // TODO: Localize the rest of the errors.
-                        _ => argumentParseResult.Reason
+                        _ => argumentResult.Reason
                     });
                     break;
                 case ChecksFailedResult checkResult:
@@ -153,7 +153,7 @@ namespace Administrator.Services
         {
             var modules = _commands.AddModules(Assembly.GetEntryAssembly(), action: builder =>
             {
-                foreach (var command in CommandUtilities.GetAllCommands(builder))
+                foreach (var command in CommandUtilities.EnumerateAllCommands(builder))
                     command.AddCheck(new RequirePermissionsAttribute());
             });
 
@@ -167,6 +167,7 @@ namespace Administrator.Services
             _commands.AddTypeParser(new UserParser<SocketGuildUser>());
             _commands.AddTypeParser(new GuildParser());
             _commands.AddTypeParser(new TimeSpanParser());
+            _commands.AddTypeParser(new ColorParser());
 
             return _logging.LogInfoAsync(modules.SelectMany(x => x.Commands).Count(), "CommandHandler");
         }

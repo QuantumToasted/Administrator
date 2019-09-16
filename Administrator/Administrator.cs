@@ -22,7 +22,8 @@ namespace Administrator
             var client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 100,
-                LogLevel = LogSeverity.Info
+                LogLevel = LogSeverity.Info,
+                ExclusiveBulkDelete = true
             });
 
             var provider = new ServiceCollection()

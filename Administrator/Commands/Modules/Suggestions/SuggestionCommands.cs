@@ -11,7 +11,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using Qmmands;
 
-namespace Administrator.Commands.Modules.Suggestions
+namespace Administrator.Commands
 {
     [Name("Suggestions")]
     [Group("suggestions", "suggestion")]

@@ -120,7 +120,7 @@ namespace Administrator.Commands
                     case Ban ban:
                         builder.AddField(Context.Localize("punishment_duration"),
                             ban.Duration.HasValue
-                                ? ban.Duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Second)
+                                ? ban.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
                                 : Context.Localize("punishment_permanent"));
                         break;
                     case Mute mute:
@@ -131,7 +131,7 @@ namespace Administrator.Commands
                         }
                         builder.AddField(Context.Localize("punishment_duration"),
                             mute.Duration.HasValue
-                                ? mute.Duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Second)
+                                ? mute.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
                                 : Context.Localize("punishment_permanent"));
                         break;
                     case Warning warning when warning.SecondaryPunishmentId.HasValue:
@@ -305,7 +305,7 @@ namespace Administrator.Commands
                     case PunishmentType.Mute:
                         text = punishment.Duration.HasValue
                             ? Context.Localize("warningpunishment_mute_duration",
-                                punishment.Duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Second))
+                                punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                             : Context.Localize("punishment_mute").ToLower();
                         break;
                     case PunishmentType.Kick:
@@ -314,7 +314,7 @@ namespace Administrator.Commands
                     case PunishmentType.Ban:
                         text = punishment.Duration.HasValue
                             ? Context.Localize("warningpunishment_ban_duration",
-                                punishment.Duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Second))
+                                punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                             : Context.Localize("punishment_ban").ToLower();
                         break;
                     default:
@@ -348,7 +348,7 @@ namespace Administrator.Commands
                     case PunishmentType.Mute:
                         text = duration.HasValue
                             ? Context.Localize("warningpunishment_mute_duration",
-                                duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Second))
+                                duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                             : Context.Localize("punishment_mute").ToLower();
                         break;
                     case PunishmentType.Kick:
@@ -357,7 +357,7 @@ namespace Administrator.Commands
                     case PunishmentType.Ban:
                         text = duration.HasValue
                             ? Context.Localize("warningpunishment_ban_duration",
-                                duration.Value.Humanize(4, Context.Language.Culture, minUnit: TimeUnit.Second))
+                                duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                             : Context.Localize("punishment_ban").ToLower();
                         break;
                     default:
@@ -391,8 +391,7 @@ namespace Administrator.Commands
                         case PunishmentType.Mute:
                             text = punishment.Duration.HasValue
                                 ? Context.Localize("warningpunishment_mute_duration",
-                                    punishment.Duration.Value.Humanize(4, Context.Language.Culture,
-                                        minUnit: TimeUnit.Second))
+                                    punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                                 : Context.Localize("punishment_mute").ToLower(Context.Language.Culture);
                             break;
                         case PunishmentType.Kick:
@@ -401,8 +400,7 @@ namespace Administrator.Commands
                         case PunishmentType.Ban:
                             text = punishment.Duration.HasValue
                                 ? Context.Localize("warningpunishment_ban_duration",
-                                    punishment.Duration.Value.Humanize(4, Context.Language.Culture,
-                                        minUnit: TimeUnit.Second))
+                                    punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                                 : Context.Localize("punishment_ban").ToLower(Context.Language.Culture);
                             break;
                         default:

@@ -209,7 +209,7 @@ namespace Administrator.Commands
         [Command("blacklist", "toggleblacklist")]
         [RequireLoggingChannel(LogType.Modmail)]
         [Priority(0)]
-        private async ValueTask<AdminCommandResult> ToggleModmailBlacklistAsync(ulong userId)
+        public async ValueTask<AdminCommandResult> ToggleModmailBlacklistAsync(ulong userId)
         {
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             if (!guild.BlacklistedModmailAuthors.Remove(userId))
