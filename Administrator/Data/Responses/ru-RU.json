@@ -569,19 +569,19 @@
       "Роль {0} была успешно удалена."
     ],
     "role_unassignable_self": [
-      "The role {0} is either my highest role or above it so I am not able to give it to others."
+      "{0} - либо моя наивысшая роль, либо роль выше неё, поэтому я не могу выдать её другим."
     ],
     "role_unassignable_user": [
-      "The role {0} is either your highest role or above it so I will not give it to others."
+      "{0} - либо ваша наивысшая роль, либо роль выше неё, поэтому я не буду выдавать её другим."
     ],
     "role_move_below_everyone": [
       "Роль @​everyone не может быть перемещена, а также никакая роль не может находится ниже её."
     ],
     "role_move_below_unable_self": [
-      "The role {0} is either my highest role or above it so I am not able to move {1} below it."
+      "{0} - либо моя наивысшая роль, либо роль выше неё, поэтому я не могу переместить {1} ниже неё."
     ],
     "role_move_below_unable_user": [
-      "The role {0} is either your highest role or above it so I will not move {1} below it."
+      "Роль {0} является вашей наивысшей ролью либо ролью выше неё, поэтому я не буду перемещать {1} ниже неё."
     ],
     "role_move_below_success": [
       "Роль {0} была перемещена ниже {1}."
@@ -590,19 +590,19 @@
       "Роль @​everyone не может перемещена выше любой другой роли."
     ],
     "role_move_above_unable_self": [
-      "The role {0} is either my highest role or above it so I am not able to move {1} above it."
+      "{0} - либо моя наивысшая роль, либо роль выше неё, поэтому я не могу переместить {1} выше неё."
     ],
     "role_move_above_unable_user": [
-      "The role {0} is either your highest role or above it so I will not move {1} above it."
+      "{0} - либо ваша наивысшая роль, либо роль выше неё, поэтому я не буду перемещать {1} выше неё."
     ],
     "role_move_above_success": [
-      "The role {0} has been moved above {1}."
+      "Роль {0} была перемещена выше {1}."
     ],
     "role_rename_success": [
-      "The role {0} has been renamed to {1}."
+      "Роль {0} была переименована в {1}."
     ],
     "role_id": [
-      "The role {0} has an ID of {1}."
+      "Роль {0} имеет ID {1}."
     ]
   }
 }
