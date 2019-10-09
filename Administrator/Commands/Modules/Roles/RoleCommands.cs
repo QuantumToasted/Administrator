@@ -103,7 +103,7 @@ namespace Administrator.Commands
                 if (direction == Direction.Below)
                 {
                     if (target.IsEveryone || move.IsEveryone)
-                        return CommandErrorLocalized("role_move_below_everyone");
+                        return CommandErrorLocalized("role_move_below_everyone", args: "@\u200Beveryone");
 
                     if (Context.Guild.CurrentUser.GetHighestRole().Position < move.Position)
                         return CommandErrorLocalized("role_move_below_unable_self",
@@ -118,7 +118,7 @@ namespace Administrator.Commands
                 }
 
                 if (target.IsEveryone)
-                    return CommandErrorLocalized("role_move_above_everyone");
+                    return CommandErrorLocalized("role_move_above_everyone", args: "@\u200Beveryone");
 
                 if (Context.Guild.CurrentUser.GetHighestRole().Position < move.Position)
                     return CommandErrorLocalized("role_move_above_unable_self",

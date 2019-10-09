@@ -32,15 +32,17 @@ namespace Administrator.Services
         private readonly DiscordSocketClient _client;
         private readonly ConfigurationService _config;
         private readonly HttpClient _http;
+        private readonly IServiceProvider _provider;
 
-        public LevelService(LocalizationService localization, LoggingService logging, DiscordSocketClient client, 
-            ConfigurationService config, HttpClient http)
+        public LevelService(LocalizationService localization, LoggingService logging, DiscordSocketClient client,
+            ConfigurationService config, HttpClient http, IServiceProvider provider)
         {
             _localization = localization;
             _logging = logging;
             _client = client;
             _config = config;
             _http = http;
+            _provider = provider;
         }
 
         public async Task<Stream> CreateXpImageAsync(AdminCommandContext context, IUser target)
@@ -274,7 +276,7 @@ namespace Administrator.Services
                 message.Resolve()?.Length < MINIMUM_MESSAGE_LENGTH ||
                 !(message.Channel is SocketTextChannel channel)) return;
 
-            using var ctx = new AdminDatabaseContext();
+            using var ctx = new AdminDatabaseContext(_provider);
 
             var now = DateTimeOffset.UtcNow;
             var guild = await ctx.GetOrCreateGuildAsync(channel.Guild.Id);

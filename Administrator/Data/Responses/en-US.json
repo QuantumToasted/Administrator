@@ -578,7 +578,7 @@
       "The role {0} is either your highest role or above it so I will not give it to others."
     ],
     "role_move_below_everyone": [
-      "The @\u200Beveryone role cannot be moved or have a role moved below it."
+      "The {0} role cannot be moved or have a role moved below it."
     ],
     "role_move_below_unable_self": [
       "The role {0} is either my highest role or above it so I am not able to move {1} below it."
@@ -590,7 +590,7 @@
       "The role {0} has been moved below {1}."
     ],
     "role_move_above_everyone": [
-      "The @\u200Beveryone role cannot be moved above any other role."
+      "The {0} role cannot be moved above any other role."
     ],
     "role_move_above_unable_self": [
       "The role {0} is either my highest role or above it so I am not able to move {1} above it."
