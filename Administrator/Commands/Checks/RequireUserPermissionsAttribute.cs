@@ -30,9 +30,9 @@ namespace Administrator.Commands
 
         public ChannelPermission RequiredChannelPermissions { get; }
 
-        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx, IServiceProvider provider)
+        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx)
         {
-            var baseCheck = await base.CheckAsync(ctx, provider);
+            var baseCheck = await base.CheckAsync(ctx);
             if (!baseCheck.IsSuccessful)
                 return baseCheck;
 

@@ -38,7 +38,7 @@ namespace Administrator.Services
                 }
                 catch (Exception ex)
                 {
-                    await _logging.LogErrorAsync(ex.InnerException, "TaskQueue");
+                    await _logging.LogErrorAsync(ex/*.InnerException*/, "TaskQueue");
                 }
             }
 

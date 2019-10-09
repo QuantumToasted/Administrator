@@ -18,5 +18,19 @@ namespace Administrator.Database
         }
 
         public LocalizedLanguage Language { get; set; }
+
+        public override bool Equals(object obj)
+            => (obj as GlobalUser)?.Id == Id;
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = 17;
+                return hash * 31 + Id.GetHashCode();
+            }
+        }
+
+        public LevelUpNotification LevelUpPreferences { get; set; }
     }
 }

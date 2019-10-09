@@ -41,26 +41,25 @@ namespace Administrator.Services
                 {_config.DefaultPrefix, $"<@{_client.CurrentUser.Id}> ", $"<@!{_client.CurrentUser.Id}> "};
 
             LocalizedLanguage language;
-            using (var ctx = new AdminDatabaseContext(_provider))
+            using var ctx = new AdminDatabaseContext(_provider);
+
+            if (userMessage.Channel is IGuildChannel guildChannel)
             {
-                if (userMessage.Channel is IGuildChannel guildChannel)
-                {
-                    var guild = await ctx.GetOrCreateGuildAsync(guildChannel.GuildId);
-                    prefixes.AddRange(guild.CustomPrefixes);
-                    language = guild.Language;
-                }
-                else
-                {
-                    var user = await ctx.GetOrCreateGlobalUserAsync(userMessage.Author.Id);
-                    language = user.Language;
-                }
+                var guild = await ctx.GetOrCreateGuildAsync(guildChannel.GuildId);
+                prefixes.AddRange(guild.CustomPrefixes);
+                language = guild.Language;
             }
-            
+            else
+            {
+                var user = await ctx.GetOrCreateGlobalUserAsync(userMessage.Author.Id);
+                language = user.Language;
+            }
+
             if (!CommandUtilities.HasAnyPrefix(userMessage.Content, prefixes, StringComparison.OrdinalIgnoreCase,
                 out var prefix, out var input)) return false;
             
             var context = new AdminCommandContext(userMessage, prefix, language, _provider);
-            var result = await _commands.ExecuteAsync(input, context, _provider);
+            var result = await _commands.ExecuteAsync(input, context);
 
             if (!(result is FailedResult failedResult)) return true;
 
@@ -72,13 +71,14 @@ namespace Administrator.Services
         }
 
         public async Task SendCommandResultAsync(Command command, AdminCommandResult result,
-            AdminCommandContext context, IServiceProvider provider)
+            AdminCommandContext context)
         {
             // TODO: Log stuff
-            if (!(result.File is null))
+            if (result.File is { })
             {
                 await context.Channel.SendFileAsync(result.File.Stream, result.File.Filename,
                     result.Text ?? string.Empty, embed: result.Embed);
+                // result.File.Dispose();
                 return;
             }
 
@@ -168,6 +168,7 @@ namespace Administrator.Services
             _commands.AddTypeParser(new GuildParser());
             _commands.AddTypeParser(new TimeSpanParser());
             _commands.AddTypeParser(new ColorParser());
+            _commands.AddTypeParser(new RegexParser());
 
             return _logging.LogInfoAsync(modules.SelectMany(x => x.Commands).Count(), "CommandHandler");
         }

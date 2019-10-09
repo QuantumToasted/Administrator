@@ -53,7 +53,7 @@ namespace Administrator.Commands
                 .WithAuthor(new EmbedAuthorBuilder
                 {
                     IconUrl =
-                        modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                        modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarOrDefault(),
                     Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString()
                 })
                 .WithDescription(message)
@@ -119,7 +119,7 @@ namespace Administrator.Commands
                     .WithAuthor(new EmbedAuthorBuilder
                     {
                         IconUrl =
-                            modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                            modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarOrDefault(),
                         Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString()
                     })
                     .WithDescription(message)
@@ -136,8 +136,7 @@ namespace Administrator.Commands
                 {
                     try
                     {
-                        var user = Context.Client.GetUser(modmail.UserId) ??
-                                   await Context.Client.Rest.GetUserAsync(modmail.UserId) as IUser;
+                        var user = await Context.Client.GetOrDownloadUserAsync(modmail.UserId);
                         await user.SendMessageAsync(embed: new EmbedBuilder()
                             .WithColor(new Color(0x8ED0FF))
                             .WithAuthor(new EmbedAuthorBuilder
@@ -245,8 +244,7 @@ namespace Administrator.Commands
             page = Math.Min(page, split.Count) - 1;
 
             var guild = Context.IsPrivate ? Context.Client.GetGuild(modmail.GuildId) : Context.Guild;
-            var user = Context.Client.GetUser(modmail.UserId) ??
-                       await Context.Client.Rest.GetUserAsync(modmail.UserId) as IUser;
+            var user = await Context.Client.GetOrDownloadUserAsync(modmail.UserId);
 
             var sb = new StringBuilder();
             var lastTarget = ModmailTarget.User;

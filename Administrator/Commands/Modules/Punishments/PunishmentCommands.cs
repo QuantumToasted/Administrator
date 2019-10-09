@@ -99,10 +99,8 @@ namespace Administrator.Commands
                     return CommandErrorLocalized("punishment_notfound_id");
 
 
-                var target = Context.Client.GetUser(punishment.TargetId)
-                             ?? await Context.Client.Rest.GetUserAsync(punishment.TargetId) as IUser;
-                var moderator = Context.Client.GetUser(punishment.ModeratorId)
-                             ?? await Context.Client.Rest.GetUserAsync(punishment.ModeratorId) as IUser;
+                var target = await Context.Client.GetOrDownloadUserAsync(punishment.TargetId);
+                var moderator = await Context.Client.GetOrDownloadUserAsync(punishment.ModeratorId);
 
                 var builder = new EmbedBuilder()
                     .WithSuccessColor()
@@ -150,8 +148,7 @@ namespace Administrator.Commands
                     }
 
                     var revoker = revocable.RevokedAt.HasValue
-                        ? Context.Client.GetUser(revocable.RevokerId) ??
-                          await Context.Client.Rest.GetUserAsync(revocable.RevokerId) as IUser
+                        ? await Context.Client.GetOrDownloadUserAsync(revocable.RevokerId)
                         : default;
 
                     builder.AddField(Context.Localize("punishment_revoked"), revocable.RevokedAt.HasValue
@@ -236,10 +233,8 @@ namespace Administrator.Commands
 
                 if (await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, type) is SocketTextChannel logChannel)
                 {
-                    var target = Context.Client.GetUser(punishment.TargetId)
-                                 ?? await Context.Client.Rest.GetUserAsync(punishment.TargetId) as IUser;
-                    var moderator = Context.Client.GetUser(punishment.RevokerId)
-                                    ?? await Context.Client.Rest.GetUserAsync(punishment.RevokerId) as IUser;
+                    var target = await Context.Client.GetOrDownloadUserAsync(punishment.TargetId);
+                    var moderator = await Context.Client.GetOrDownloadUserAsync(punishment.RevokerId);
                     await Punishments.SendLoggingRevocationEmbedAsync(punishment, target, moderator, logChannel,
                         Context.Language);
                     _ = Punishments.SendTargetRevocationEmbedAsync(punishment, target, Context.Language);

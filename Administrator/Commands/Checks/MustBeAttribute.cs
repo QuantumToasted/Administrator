@@ -29,7 +29,7 @@ namespace Administrator.Commands
 
         public int Value { get; }
 
-        public override ValueTask<CheckResult> CheckAsync(object argument, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<CheckResult> CheckAsync(object argument, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
 

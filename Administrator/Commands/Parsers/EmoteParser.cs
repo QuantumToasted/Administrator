@@ -9,7 +9,7 @@ namespace Administrator.Commands
     public sealed class EmoteParser<TEmote> : TypeParser<TEmote>
         where TEmote : IEmote
     {
-        public override ValueTask<TypeParserResult<TEmote>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TEmote>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             return EmoteTools.TryParse(value, out var result)

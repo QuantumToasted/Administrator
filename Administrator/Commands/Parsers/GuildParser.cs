@@ -8,7 +8,7 @@ namespace Administrator.Commands
 {
     public sealed class GuildParser : TypeParser<SocketGuild>
     {
-        public override ValueTask<TypeParserResult<SocketGuild>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<SocketGuild>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
 

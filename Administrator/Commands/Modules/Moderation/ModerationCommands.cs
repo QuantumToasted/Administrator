@@ -36,7 +36,7 @@ namespace Administrator.Commands
         {
             if (Context.Guild.GetUser(targetId) is SocketGuildUser target)
             {
-                var result = await new RequireHierarchyAttribute().CheckAsync(target, Context, null);
+                var result = await new RequireHierarchyAttribute().CheckAsync(target, Context);
                 if (!result.IsSuccessful)
                 {
                     return CommandError(result.Reason);
@@ -90,7 +90,7 @@ namespace Administrator.Commands
         {
             if (Context.Guild.GetUser(targetId) is SocketGuildUser target)
             {
-                var result = await new RequireHierarchyAttribute().CheckAsync(target, Context, null);
+                var result = await new RequireHierarchyAttribute().CheckAsync(target, Context);
                 if (!result.IsSuccessful)
                 {
                     return CommandError(result.Reason);

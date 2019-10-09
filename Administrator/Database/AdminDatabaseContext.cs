@@ -127,6 +127,8 @@ namespace Administrator.Database
                 guild.Property(x => x.BlacklistedModmailAuthors)
                     .HasConversion(new SnowflakeCollectionConverter())
                     .HasDefaultValueSql("''");
+                guild.Property(x => x.LevelUpEmote)
+                    .HasConversion(x => x.ToString(), x => EmoteTools.Parse(x));
             });
 
             modelBuilder.Entity<GlobalUser>(user =>

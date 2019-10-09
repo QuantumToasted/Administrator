@@ -13,9 +13,9 @@ namespace Administrator.Commands
             : base(ContextType.Guild)
         { }
 
-        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx, IServiceProvider provider)
+        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx)
         {
-            var baseResult = await base.CheckAsync(ctx, provider);
+            var baseResult = await base.CheckAsync(ctx);
             if (!baseResult.IsSuccessful)
                 return baseResult;
 

@@ -10,7 +10,7 @@ namespace Administrator.Commands
     public sealed class UserParser<TUser> : TypeParser<TUser>
         where TUser : SocketUser
     {
-        public override ValueTask<TypeParserResult<TUser>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TUser>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)

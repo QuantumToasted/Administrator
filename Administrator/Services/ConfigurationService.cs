@@ -37,6 +37,9 @@ namespace Administrator.Services
         [JsonProperty("owners")]
         public ICollection<ulong> OwnerIds { get; private set; }
 
+        [JsonProperty("emoteServers")]
+        public ICollection<ulong> EmoteServerIds { get; private set; }
+
         [JsonIgnore]
         public Color SuccessColor => new Color(uint.Parse(_successColor, NumberStyles.HexNumber));
         
@@ -89,6 +92,7 @@ namespace Administrator.Services
             DefaultPrefix = config.DefaultPrefix;
             PostgresConnectionString = config.PostgresConnectionString;
             OwnerIds = config.OwnerIds;
+            EmoteServerIds = config.EmoteServerIds;
             _successColor = config._successColor;
             _warnColor = config._warnColor;
             _errorColor = config._errorColor;
@@ -105,6 +109,25 @@ namespace Administrator.Services
                 {
                     app.Owner.Id
                 };
+            }
+
+            if (EmoteServerIds.Count == 0)
+            {
+                await _logging.LogWarningAsync("No emote servers were defined. Some services (profiles) will break!",
+                    "Configuration");
+            }
+
+            foreach (var id in EmoteServerIds)
+            {
+                var guild = await _restClient.GetGuildAsync(id);
+                if (guild is null)
+                {
+                    await _logging.LogCriticalAsync($"Emote server with ID {id} could not be found or I'm not a member!", "Configuration");
+                    Console.ReadKey();
+                    Environment.Exit(-1);
+                }
+
+                await _logging.LogDebugAsync($"Emote server with ID {id} found: {guild.Name}", "Configuration");
             }
 
             using (var ctx = new AdminDatabaseContext(null))

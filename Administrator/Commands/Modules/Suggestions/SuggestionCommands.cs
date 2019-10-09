@@ -155,18 +155,17 @@ namespace Administrator.Commands
                 catch { /* ignored */ }
             }
 
-            var author = Context.Client.GetUser(suggestion.UserId) ??
-                         await Context.Client.Rest.GetUserAsync(suggestion.UserId) as IUser;
+            var author = await Context.Client.GetOrDownloadUserAsync(suggestion.UserId);
             var builder = new EmbedBuilder()
                 .WithAuthor(Context.Localize(Context.Alias.Equals("approve")
                         ? "suggestion_approved_title"
                         : "suggestion_denied_title", suggestion.Id, author.ToString(), upvotes, downvotes),
-                    author.GetAvatarUrl() ?? author.GetDefaultAvatarUrl())
+                    author.GetAvatarOrDefault())
                 .WithDescription(suggestion.Text)
                 .WithFooter(Context.Localize(Context.Alias.Equals("approve")
                         ? "suggestion_approved_footer"
                         : "suggestion_denied_footer", Context.User.ToString()),
-                    Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl());
+                    Context.User.GetAvatarOrDefault());
             if (Context.Alias.Equals("approve"))
                 builder.WithSuccessColor();
             else builder.WithErrorColor();

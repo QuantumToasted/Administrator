@@ -14,6 +14,7 @@ namespace Administrator.Commands
         private readonly LocalizationService _localization;
 
         public AdminCommandContext(SocketUserMessage message, string prefix, LocalizedLanguage langage, IServiceProvider provider)
+            : base(provider)
         {
             _localization = provider.GetRequiredService<LocalizationService>();
             Client = provider.GetRequiredService<DiscordSocketClient>();

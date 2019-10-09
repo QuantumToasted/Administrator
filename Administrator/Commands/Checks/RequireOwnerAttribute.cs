@@ -7,7 +7,7 @@ namespace Administrator.Commands
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class RequireOwnerAttribute : CheckAttribute
     {
-        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx, IServiceProvider provider)
+        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             var app = await context.Client.GetApplicationInfoAsync();

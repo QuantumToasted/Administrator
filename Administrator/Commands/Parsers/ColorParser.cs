@@ -8,7 +8,7 @@ namespace Administrator.Commands
 {
     public sealed class ColorParser : TypeParser<Color>
     {
-        public override ValueTask<TypeParserResult<Color>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<Color>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext)ctx;
 

@@ -10,7 +10,7 @@ namespace Administrator.Commands
     public sealed class RoleParser<TRole> : TypeParser<TRole>
         where TRole : SocketRole
     {
-        public override ValueTask<TypeParserResult<TRole>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TRole>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)

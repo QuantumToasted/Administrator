@@ -15,7 +15,7 @@ namespace Administrator.Commands
 
         public ContextType RequiredContext { get; }
 
-        public override ValueTask<CheckResult> CheckAsync(CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<CheckResult> CheckAsync(CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             var contextType = context.IsPrivate ? ContextType.DM : ContextType.Guild;

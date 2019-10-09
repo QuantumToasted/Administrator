@@ -11,7 +11,7 @@ namespace Administrator.Commands
 {
     public sealed class RequirePermissionsAttribute : CheckAttribute
     {
-        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx, IServiceProvider provider)
+        public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             var permissions = context.IsPrivate

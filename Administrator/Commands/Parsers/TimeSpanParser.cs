@@ -11,7 +11,7 @@ namespace Administrator.Commands
             @"(\d+)(w(?:eeks|eek?)?|d(?:ays|ay?)?|h(?:ours|rs|r?)|m(?:inutes|ins|in?)?|s(?:econds|econd|ecs|ec?)?)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public override ValueTask<TypeParserResult<TimeSpan>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TimeSpan>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
 

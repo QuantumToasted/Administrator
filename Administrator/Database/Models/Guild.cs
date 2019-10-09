@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Administrator.Common;
 using Administrator.Services;
+using Discord;
 
 namespace Administrator.Database
 {
@@ -25,5 +27,13 @@ namespace Administrator.Database
         public List<ulong> BlacklistedModmailAuthors { get; set; } = new List<ulong>();
 
         public GuildSettings Settings { get; set; }
+
+        public TimeSpan XpGainInterval { get; set; } = LevelService.XpGainInterval;
+
+        public int XpRate { get; set; } = LevelService.XP_RATE;
+
+        public LevelUpNotification LevelUpWhitelist { get; set; } = LevelUpNotification.Reaction;
+
+        public IEmote LevelUpEmote { get; set; } = EmoteTools.Tada;
     }
 }

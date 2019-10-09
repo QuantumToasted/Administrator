@@ -23,6 +23,7 @@ namespace Administrator.Services
         private readonly CommandHandlerService _commandHandler;
         private readonly PaginationService _pagination;
         private readonly PunishmentService _punishments;
+        private readonly LevelService _levels;
         private bool _firstReady;
 
         public EventDispatcherService(IServiceProvider provider)
@@ -36,6 +37,7 @@ namespace Administrator.Services
             _commandHandler = _provider.GetRequiredService<CommandHandlerService>();
             _pagination = _provider.GetRequiredService<PaginationService>();
             _punishments = _provider.GetRequiredService<PunishmentService>();
+            _levels = _provider.GetRequiredService<LevelService>();
         }
 
         private async Task HandleUserBannedAsync(SocketUser user, SocketGuild guild)
@@ -75,14 +77,18 @@ namespace Administrator.Services
         private async Task HandleMessageReceivedAsync(SocketMessage message)
         {
             if (!(message is SocketUserMessage userMessage)) return;
-            await _commandHandler.TryExecuteCommandAsync(userMessage);
+            var executed = await _commandHandler.TryExecuteCommandAsync(userMessage);
+
+            if (!executed)
+            {
+                await _levels.IncrementXpAsync(userMessage);
+            }
         }
 
-        private async Task HandleCommandExecutedAsync(CommandResult result, CommandContext context,
-            IServiceProvider provider)
+        private async Task HandleCommandExecutedAsync(CommandResult result, CommandContext context)
         {
             await _commandHandler.SendCommandResultAsync(result.Command, (AdminCommandResult) result,
-                (AdminCommandContext) context, provider);
+                (AdminCommandContext) context);
         }
 
         private Task HandleClientLog(LogMessage message)
@@ -135,7 +141,7 @@ namespace Administrator.Services
                 => _queue.Enqueue(() => HandleClientLog(message));
 
             _commands.CommandExecuted += args
-                => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context, args.Provider));
+                => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context));
 
             return _logging.LogInfoAsync("Initialized.", "Dispatcher");
         }

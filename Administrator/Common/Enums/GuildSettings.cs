@@ -7,6 +7,7 @@ namespace Administrator.Common
     {
         Punishments = 1,
         Modmail = 2,
-        AutoPunishments = 4
+        AutoPunishments = 4,
+        XpTracking = 8
     }
 }

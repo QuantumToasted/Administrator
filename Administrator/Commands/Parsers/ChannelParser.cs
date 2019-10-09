@@ -11,7 +11,7 @@ namespace Administrator.Commands
     public sealed class ChannelParser<TChannel> : TypeParser<TChannel>
         where TChannel : SocketGuildChannel
     {
-        public override ValueTask<TypeParserResult<TChannel>> ParseAsync(Parameter parameter, string value, CommandContext ctx, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<TChannel>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)

@@ -3,6 +3,7 @@
   "prefix": "!!",
   "connectionString": "",
   "owners": [],
+  "emoteServers": [], 
   "successColor": "8650AC",
   "errorColor": "EB4B4B",
   "warningColor": "FFD700"

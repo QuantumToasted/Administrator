@@ -15,23 +15,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Core" Version="2.2.0-dev-20190730.2" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.2.0-dev-20190730.2" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20190730.2" />
+    <PackageReference Include="Discord.Net.Core" Version="2.2.0-dev-20191003.3" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.2.0-dev-20191003.3" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20191003.3" />
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
-    <PackageReference Include="Humanizer" Version="2.6.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.0">
+    <PackageReference Include="Humanizer" Version="2.7.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
-    <PackageReference Include="Qmmands" Version="3.0.0-nightly-00205" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.0.1" />
+    <PackageReference Include="Qmmands" Version="3.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002988" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-dev002988" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="Data\Config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Images\01.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Data\Responses\cs-CZ.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -68,7 +73,7 @@
   <ItemGroup>
     <Folder Include="Commands\Modules\Channels\" />
     <Folder Include="Commands\Modules\Guild\" />
-    <Folder Include="Commands\Modules\Users\" />
+    <Folder Include="Data\Images\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties data_4responses_4en-us_1json__JsonSchema="http://json.schemastore.org/grunt-copy-task" /></VisualStudio></ProjectExtensions>

@@ -19,16 +19,16 @@ namespace Administrator.Extensions
             switch (minimum)
             {
                 case TimeUnit.Second:
-                    belowMinimum = ts > TimeSpan.FromSeconds(1);
+                    belowMinimum = ts < TimeSpan.FromSeconds(1);
                     break;
                 case TimeUnit.Minute:
-                    belowMinimum = ts > TimeSpan.FromMinutes(1);
+                    belowMinimum = ts < TimeSpan.FromMinutes(1);
                     break;
                 case TimeUnit.Hour:
-                    belowMinimum = ts > TimeSpan.FromHours(1);
+                    belowMinimum = ts < TimeSpan.FromHours(1);
                     break;
                 case TimeUnit.Day:
-                    belowMinimum = ts > TimeSpan.FromDays(1);
+                    belowMinimum = ts < TimeSpan.FromDays(1);
                     break;
             }
 

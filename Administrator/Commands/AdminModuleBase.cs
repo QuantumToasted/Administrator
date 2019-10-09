@@ -29,6 +29,9 @@ namespace Administrator.Commands
             => new AdminCommandResult(_watch.Elapsed, Localization.Localize(Context.Language, key, args), embed, file,
                 false);
 
+        protected string Localize(string key, params object[] args)
+            => Context.Localize(key, args);
+
         public void Dispose()
         {
             _watch.Stop();

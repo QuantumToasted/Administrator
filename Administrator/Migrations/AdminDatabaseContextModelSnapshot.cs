@@ -17,7 +17,7 @@ namespace Administrator.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
-                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("Administrator.Database.GlobalUser", b =>
@@ -31,6 +31,8 @@ namespace Administrator.Migrations
                     b.Property<DateTimeOffset>("LastLevelUp");
 
                     b.Property<DateTimeOffset>("LastXpGain");
+
+                    b.Property<int>("LevelUpPreferences");
 
                     b.Property<List<string>>("PreviousNames")
                         .ValueGeneratedOnAdd()
@@ -59,7 +61,15 @@ namespace Administrator.Migrations
 
                     b.Property<string>("Language");
 
+                    b.Property<string>("LevelUpEmote");
+
+                    b.Property<int>("LevelUpWhitelist");
+
                     b.Property<int>("Settings");
+
+                    b.Property<TimeSpan>("XpGainInterval");
+
+                    b.Property<int>("XpRate");
 
                     b.HasKey("Id");
 

@@ -77,8 +77,7 @@ namespace Administrator.Common
             var titleName = _context.Guild.Name;
             if (_type == PunishmentListType.User)
             {
-                var target = _context.Client.GetUser(_targetId)
-                             ?? await _context.Client.Rest.GetUserAsync(_targetId) as IUser;
+                var target = await _context.Client.GetOrDownloadUserAsync(_targetId);
                 titleName = target?.Format() ?? "???";
             }
 
@@ -91,15 +90,13 @@ namespace Administrator.Common
             {
                 var target = _cachedUsers.TryGetValue(punishment.TargetId, out var cached)
                     ? cached
-                    : _cachedUsers[punishment.TargetId] = _context.Client.GetUser(punishment.TargetId) ??
-                                                          await _context.Client.Rest.GetUserAsync(punishment
-                                                              .TargetId) as IUser;
+                    : _cachedUsers[punishment.TargetId] = await _context.Client
+                        .GetOrDownloadUserAsync(punishment.TargetId);
 
                 var moderator = _cachedUsers.TryGetValue(punishment.ModeratorId, out cached)
                     ? cached
-                    : _cachedUsers[punishment.ModeratorId] = _context.Client.GetUser(punishment.ModeratorId) ??
-                                                             await _context.Client.Rest.GetUserAsync(punishment
-                                                                 .ModeratorId) as IUser;
+                    : _cachedUsers[punishment.ModeratorId] = await _context.Client
+                        .GetOrDownloadUserAsync(punishment.ModeratorId);
 
                 var name = _context.Localize($"punishment_{punishment.GetType().Name.ToLower()}") +
                            $" - {_context.Localize("punishment_case", punishment.Id)}";
@@ -129,8 +126,7 @@ namespace Administrator.Common
                     }
 
                     var revoker = revocable.RevokedAt.HasValue
-                        ? _context.Client.GetUser(revocable.RevokerId) ??
-                          await _context.Client.Rest.GetUserAsync(revocable.RevokerId) as IUser
+                        ? await _context.Client.GetOrDownloadUserAsync(revocable.RevokerId)
                         : default;
 
                     sb.AppendLine(_context.Localize("punishment_revoked") + ' ' + (revocable.RevokedAt.HasValue
