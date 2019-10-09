@@ -97,6 +97,9 @@
     "emoteparser_notfound": [
       "Эмодзи не найден."
     ],
+    "regexparser_invalid": [
+      "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."
+    ],
     "commanderror": [
       "Ошибка в команде"
     ],
@@ -601,8 +604,83 @@
     "role_rename_success": [
       "Роль {0} была переименована в {1}."
     ],
-    "role_id": [
-      "Роль {0} имеет ID {1}."
+    "user_nickname": [
+      "{0} goes by the nickname {1}."
+    ],
+    "user_no_nickname": [
+      "{0} does not have a nickname set."
+    ],
+    "user_nickname_updated": [
+      "Nickname updated."
+    ],
+    "user_nickname_reset": [
+      "Nickname reset."
+    ],
+    "user_info_title": [
+      "Information for user {0}"
+    ],
+    "user_info_created": [
+      "Joined Discord"
+    ],
+    "user_info_joined": [
+      "Joined {0}"
+    ],
+    "user_info_nickname": [
+      "Nickname"
+    ],
+    "user_info_roles": [
+      "Roles ({0})"
+    ],
+    "user_info_playing": [
+      "Playing {0}"
+    ],
+    "user_info_listening": [
+      "Listening to \"{0}\" by {1} on Spotify"
+    ],
+    "user_info_streaming": [
+      "Streaming {0} on Twitch: \"{1}\""
+    ],
+    "user_info_status": [
+      "Status"
+    ],
+    "user_info_online": [
+      "Online"
+    ],
+    "user_info_idle": [
+      "Idle"
+    ],
+    "user_info_dnd": [
+      "Do Not Disturb"
+    ],
+    "user_info_offline": [
+      "Offline"
+    ],
+    "user_search_no_results": [
+      "No users could be found with a name similar to \"{0}\"."
+    ],
+    "user_search_results": [
+      "Users found with a name similar to \"{0}\":"
+    ],
+    "user_search_format": [
+      "{0}, also known as {1} ({2})"
+    ],
+    "user_searchregex_no_results": [
+      "No users could be found matching the regex `{0}`."
+    ],
+    "user_searchregex_results": [
+      "Users found matching the regex:"
+    ],
+    "user_searchregex_timeout": [
+      "Your search was canceled due to taking longer than three seconds.\nTry a simpler regex instead."
+    ],
+    "user_levelup_global": [
+      "Global level up!"
+    ],
+    "user_levelup_guild": [
+      "Server level up!"
+    ],
+    "user_levelup": [
+      "Nice job leveling up, {0}! You're now Tier {1}, Level {2}."
     ]
   }
 }
