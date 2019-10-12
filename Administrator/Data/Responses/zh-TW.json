@@ -44,10 +44,10 @@
       "This command can only be used by members of {0}."
     ],
     "requireloggingchannel_notfound": [
-      "The {0} channel could not be found, or was not set up."
+      "找不到或尚未設置{0}頻道。"
     ],
     "requireloggingchannel": [
-      "This command can only be used in the {0} channel."
+      "此指令只能用在{0}頻道中。"
     ],
     "operator_greaterthan": [
       "您輸入的數字必須大於{0}。"
@@ -173,10 +173,10 @@
       "使用者 {0} 已被警告，這是他們的第 {1} 個警告。"
     ],
     "punishment_warning_revoke_description": [
-      "Your warning has been revoked in {0}."
+      "您在{0}中的警告已被撤銷。"
     ],
     "punishment_warning_revoke_description_guild": [
-      "User {0} has had their warning revoked."
+      "使用者{0}的警告已被撤銷。"
     ],
     "punishment_warning_additional": [
       "額外處罰"
