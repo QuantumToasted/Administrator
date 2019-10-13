@@ -61,7 +61,7 @@ namespace Administrator.Commands
                 [RequireHierarchy] params SocketRole[] roles)
             {
                 if (roles.Length == 0)
-                    throw new ArgumentOutOfRangeException(); // TODO: ask quahu how params T[] works
+                    throw new ArgumentOutOfRangeException();
 
                 if (roles.Length == 1 && target.Roles.Any(x => x.Id == roles[0].Id))
                     return CommandErrorLocalized("role_give_role_exists", args: Format.Bold(target.ToString()));
@@ -80,7 +80,7 @@ namespace Administrator.Commands
                 [RequireHierarchy] params SocketRole[] roles)
             {
                 if (roles.Length == 0)
-                    throw new ArgumentOutOfRangeException(); // TODO: ask quahu how params T[] works
+                    throw new ArgumentOutOfRangeException();
 
                 if (roles.Length == 1 && target.Roles.All(x => x.Id != roles[0].Id))
                     return CommandErrorLocalized("role_remove_role_exists", args: Format.Bold(target.ToString()));

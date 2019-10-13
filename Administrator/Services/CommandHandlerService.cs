@@ -169,6 +169,9 @@ namespace Administrator.Services
             _commands.AddTypeParser(new TimeSpanParser());
             _commands.AddTypeParser(new ColorParser());
             _commands.AddTypeParser(new RegexParser());
+            _commands.AddTypeParser(new MassPunishmentParser<MassWarning>());
+            _commands.AddTypeParser(new MassPunishmentParser<MassMute>());
+            _commands.AddTypeParser(new MassPunishmentParser<MassBan>());
 
             return _logging.LogInfoAsync(modules.SelectMany(x => x.Commands).Count(), "CommandHandler");
         }

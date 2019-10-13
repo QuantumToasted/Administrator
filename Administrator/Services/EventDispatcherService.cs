@@ -143,7 +143,12 @@ namespace Administrator.Services
             _commands.CommandExecuted += args
                 => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context));
 
+            _commands.CommandExecutionFailed += HandleCommandExecutionFailed;
+
             return _logging.LogInfoAsync("Initialized.", "Dispatcher");
         }
+
+        private Task HandleCommandExecutionFailed(CommandExecutionFailedEventArgs e)
+            => _logging.LogErrorAsync(e.Result.Exception, "Test");
     }
 }

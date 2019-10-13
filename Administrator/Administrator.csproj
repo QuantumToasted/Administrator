@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.6.0" />
     <PackageReference Include="Discord.Net.Core" Version="2.2.0-dev-20191003.3" />
     <PackageReference Include="Discord.Net.Rest" Version="2.2.0-dev-20191003.3" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20191003.3" />

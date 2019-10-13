@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Database;
@@ -135,6 +138,194 @@ namespace Administrator.Commands
                     Format.Bold(target.ToString()),
                     duration.HumanizeFormatted(Context, TimeUnit.Second)
                 });
+        }
+
+        [Command("massban"), RunMode(RunMode.Parallel)]
+        [RequireBotPermissions(GuildPermission.BanMembers)]
+        [RequireUserPermissions(GuildPermission.BanMembers)]
+        public async ValueTask<AdminCommandResult> MassBanAsync(MassBan arguments = null)
+        {
+            arguments ??= new MassBan {IsInteractive = false};
+
+            TimeSpan? duration = null;
+            if (!string.IsNullOrWhiteSpace(arguments.DurationString))
+            {
+                duration = arguments.GetDuration(Context.Language.Culture);
+                if (!duration.HasValue)
+                    return CommandErrorLocalized("timespanparser_invalid");
+            }
+
+            if (arguments.IsInteractive)
+                return await MassBanInteractiveAsync(arguments);
+
+            List<IUser> targets;
+            try
+            {
+                targets = await GetTargetsAsync(arguments);
+            }
+            catch (Exception ex)
+            {
+                return CommandError(ex.Message); // TODO: Shitty error handling
+            }
+
+            if (targets is null)
+                return await MassBanInteractiveAsync(arguments);
+
+            if (targets.Count == 0)
+                return CommandErrorLocalized("moderation_massban_notargets");
+
+            var targetString = new StringBuilder()
+                .AppendLine()
+                .AppendJoin('\n', targets.Select(x => x.ToString()))
+                .ToString();
+
+            var password = Guid.NewGuid().ToString()[..4];
+            if (targetString.Length > 1500)
+            {
+                using var stream = new MemoryStream();
+                using var writer = new StreamWriter(stream);
+                await writer.WriteAsync(targetString);
+                await writer.FlushAsync();
+
+                await Context.Channel.SendFileAsync(stream, "targets.txt",
+                    string.Join('\n', Localize("moderation_massban_target_count", targets.Count),
+                        Format.Code(targetString),
+                        Localize("moderation_masspunishment_confirmation",
+                            Format.Code(password))));
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync(string.Join('\n', targets.Count > 1
+                        ? Localize("moderation_massban_target_count", targets.Count)
+                        : Localize("moderation_massban_target_single"), Format.Code(targetString),
+                    Localize("moderation_masspunishment_confirmation",
+                        Format.Code(password))));
+            }
+
+            var response = await GetNextMessageAsync();
+            if (response?.Content.Equals(password, StringComparison.OrdinalIgnoreCase) != true)
+            {
+                return CommandErrorLocalized("info_timeout_password");
+            }
+
+            var counter = 0;
+            var invoker = (SocketGuildUser) Context.User;
+            foreach (var target in targets)
+            {
+                if (await Context.Guild.GetBanAsync(target.Id) is { })
+                {
+                    if (arguments.IsVerbose)
+                        await Context.Channel.SendMessageAsync(
+                            Localize("moderation_massban_alreadybanned", target.Format()));
+                    continue;
+                }
+
+                if (Context.Guild.GetUser(target.Id) is { } guildTarget)
+                {
+                    if (Context.Guild.CurrentUser.Hierarchy <= guildTarget.Hierarchy)
+                    {
+                        if (arguments.IsVerbose)
+                            await Context.Channel.SendMessageAsync(Localize("moderation_massban_botpermissions", target.Format()));
+                        continue;
+                    }
+
+                    if (invoker.Hierarchy <= guildTarget.Hierarchy)
+                    {
+                        if (arguments.IsVerbose)
+                            await Context.Channel.SendMessageAsync(Localize("moderation_massban_userpermissions",
+                                target.Format()));
+                        continue;
+                    }
+                }
+
+                if (arguments.CreateCases)
+                {
+                    var result = duration.HasValue
+                        ? await TempbanUserAsync(target.Id, duration.Value, arguments.Reason)
+                        : await BanUserAsync(target.Id, arguments.Reason);
+                    await Context.Channel.SendMessageAsync(result.Text);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync(duration.HasValue
+                        ? Localize("moderation_tempban", target.Format(),
+                            duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                        : Localize("moderation_ban", target.Format()));
+                }
+
+                await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
+                counter++;
+            }
+
+            if (counter == 0)
+                return CommandSuccessLocalized("moderation_massban_none");
+
+            return counter > 1
+                ? CommandSuccessLocalized("moderation_massban_multiple", args: counter)
+                : CommandSuccessLocalized("moderation_massban");
+        }
+
+        private async ValueTask<AdminCommandResult> MassBanInteractiveAsync(MassBan arguments)
+        {
+            await Context.Channel.SendMessageAsync(Localize("moderation_masspunishment_interactive_prompt"));
+            var invoker = (SocketGuildUser)Context.User;
+            var duration = arguments.GetDuration(Context.Language.Culture);
+
+            var response = await GetNextMessageAsync(timeout: TimeSpan.FromSeconds(10));
+
+            while (!string.IsNullOrWhiteSpace(response?.Content))
+            {
+                if (!ulong.TryParse(response.Content, out var id))
+                    break;
+
+                var target = await Context.Client.GetOrDownloadUserAsync(id);
+
+                var successful = true;
+                if (await Context.Guild.GetBanAsync(target.Id) is { })
+                {
+                    await Context.Channel.SendMessageAsync(
+                            Localize("moderation_massban_alreadybanned", target.Format()));
+                    successful = false;
+                }
+                else if (Context.Guild.GetUser(target.Id) is { } guildTarget)
+                {
+                    if (Context.Guild.CurrentUser.Hierarchy <= guildTarget.Hierarchy)
+                    {
+                        await Context.Channel.SendMessageAsync(Localize("moderation_massban_botpermissions", target.Format()));
+                        successful = false;
+                    }
+                    else if (invoker.Hierarchy <= guildTarget.Hierarchy)
+                    {
+                        await Context.Channel.SendMessageAsync(Localize("moderation_massban_userpermissions",
+                                target.Format()));
+                        successful = false;
+                    }
+                }
+                
+                if (successful)
+                {
+                    if (arguments.CreateCases)
+                    {
+                        var result = duration.HasValue
+                            ? await TempbanUserAsync(target.Id, duration.Value, arguments.Reason)
+                            : await BanUserAsync(target.Id, arguments.Reason);
+                        await Context.Channel.SendMessageAsync(result.Text);
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync(duration.HasValue
+                            ? Localize("moderation_tempban", target.Format(),
+                                duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                            : Localize("moderation_ban", target.Format()));
+                    }
+
+                    await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
+                }
+
+                response = await GetNextMessageAsync(timeout: TimeSpan.FromSeconds(10));
+            }
+
+            return CommandSuccessLocalized("moderation_masspunishment_interactive_canceled");
         }
 
         [Command("kick")]
@@ -340,5 +531,61 @@ namespace Administrator.Commands
                 .Append($" | {Context.Localize("punishment_moderator", moderator.ToString())}")
                 .Append($" | {timestamp.ToString("g", Context.Language.Culture)} UTC")
                 .ToString();
+
+        private async ValueTask<List<IUser>> GetTargetsAsync(MassPunishment arguments)
+        {
+            var targets = new List<IUser>();
+            if (!string.IsNullOrWhiteSpace(arguments.RegexString))
+            {
+                Regex regex;
+                try
+                {
+                    regex = new Regex(arguments.RegexString);
+                }
+                catch (FormatException)
+                {
+                    throw new Exception(Localize("regexparser_invalid", arguments.RegexString));
+                }
+
+                var delay = Task.Delay(TimeSpan.FromSeconds(5));
+                var task = Task.Run(() =>
+                {
+                    targets = Context.Guild.Users.Where(MatchesRegex)
+                        .OrderByDescending(x => x.JoinedAt ?? DateTimeOffset.UtcNow)
+                        .Cast<IUser>()
+                        .ToList();
+                });
+
+                using var _ = Context.Channel.EnterTypingState();
+                var timeoutTask = await Task.WhenAny(delay, task);
+                if (timeoutTask == delay)
+                    throw new Exception(Localize("user_searchregex_timeout"));
+
+                bool MatchesRegex(SocketGuildUser target)
+                {
+                    if (string.IsNullOrWhiteSpace(target.Username)) return false;
+
+                    if (string.IsNullOrWhiteSpace(target.Nickname))
+                        return regex.IsMatch(target.Username);
+
+                    return regex.IsMatch(target.Nickname) || regex.IsMatch(target.Username);
+                }
+            }
+            else if (arguments.Targets?.Length > 0)
+            {
+                foreach (var id in arguments.Targets)
+                {
+                    var target = await Context.Client.GetOrDownloadUserAsync(id);
+                    if (target is { })
+                        targets.Add(target);
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+            return targets;
+        }
     }
 }

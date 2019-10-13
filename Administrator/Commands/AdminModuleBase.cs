@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Services;
 using Discord;
+using Discord.WebSocket;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -31,6 +33,34 @@ namespace Administrator.Commands
 
         protected string Localize(string key, params object[] args)
             => Context.Localize(key, args);
+
+        protected async Task<SocketUserMessage> GetNextMessageAsync(Func<SocketUserMessage, bool> func = null,
+            TimeSpan? timeout = null)
+        {
+            func ??= x => x.Channel.Id == Context.Channel.Id && x.Author.Id == Context.User.Id;
+
+            var completionSource = new TaskCompletionSource<SocketUserMessage>();
+            
+            Context.Client.MessageReceived += HandleMessageReceived;
+
+            var sourceTask = completionSource.Task;
+            var delay = Task.Delay(timeout ?? TimeSpan.FromSeconds(30));
+            var task = await Task.WhenAny(sourceTask, delay);
+
+            Context.Client.MessageReceived -= HandleMessageReceived;
+
+            return task == sourceTask
+                ? await sourceTask
+                : null;
+
+            Task HandleMessageReceived(SocketMessage message)
+            {
+                if (message is SocketUserMessage userMessage && func(userMessage))
+                    completionSource.SetResult(userMessage);
+
+                return Task.CompletedTask;
+            }
+        }
 
         public void Dispose()
         {
