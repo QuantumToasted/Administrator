@@ -100,6 +100,12 @@
     "regexparser_invalid": [
       "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."
     ],
+    "masspunishmentparser_errors": [
+      "The mass punishment arguments were formatted incorrectly. Try using the --help argument."
+    ],
+    "timespanparser_invalid": [
+      "The supplied time span was invalid."
+    ],
     "commanderror": [
       "Fehler bei Befehlsausführung"
     ],
@@ -264,6 +270,45 @@
     ],
     "moderation_ban": [
       "{0} has been banned."
+    ],
+    "moderation_masspunishment_interactive": [
+      "Entering interactive mode."
+    ],
+    "moderation_masspunishment_confirmation": [
+      "To confirm this action, please type {0}."
+    ],
+    "moderation_masspunishment_interactive_prompt": [
+      "Enter a user ID, or anything else to quit."
+    ],
+    "moderation_masspunishment_interactive_canceled": [
+      "Successfully quit out of the interactive session."
+    ],
+    "moderation_massban_notargets": [
+      "No targets were availble for banning."
+    ],
+    "moderation_massban_target_single": [
+      "1 user has been selected to be banned:"
+    ],
+    "moderation_massban_target_count": [
+      "{0} users have been selected to be banned:"
+    ],
+    "moderation_massban_alreadybanned": [
+      "{0} is already banned."
+    ],
+    "moderation_massban_userpermissions": [
+      "{0} has higher permission than you, so they were not banned."
+    ],
+    "moderation_massban_botpermissions": [
+      "{0} has higher permission than me, so they were not banned."
+    ],
+    "moderation_massban": [
+      "1 user was successfully banned."
+    ],
+    "moderation_massban_multiple": [
+      "{0} users were successfully banned."
+    ],
+    "moderation_massban_none": [
+      "No users could be banned."
     ],
     "moderation_tempban": [
       "{0} has been temporarily banned for {1}."
@@ -507,6 +552,9 @@
     ],
     "info_position": [
       "Position"
+    ],
+    "info_timeout_password": [
+      "You took too long to respond, or your password didn't match."
     ],
     "role_info_above_below": [
       "{0}/{1}, above {2} but below {3}"
