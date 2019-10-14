@@ -101,10 +101,10 @@
       "Указанный регекс `{0}` неверен.\nВы можете использовать https://regex101.com/ для того, чтобы убедиться, что ваш регекс правильный."
     ],
     "masspunishmentparser_errors": [
-      "The mass punishment arguments were formatted incorrectly. Try using the --help argument."
+      "Аргументы массового наказания были неверно отформатированы. Попробуйте использовать аргумент --help."
     ],
     "timespanparser_invalid": [
-      "The supplied time span was invalid."
+      "Указанный интервал времени недействителен."
     ],
     "commanderror": [
       "Ошибка в команде"
@@ -272,43 +272,43 @@
       "{0} был забанен."
     ],
     "moderation_masspunishment_interactive": [
-      "Entering interactive mode."
+      "Вход в интерактивный режим."
     ],
     "moderation_masspunishment_confirmation": [
-      "To confirm this action, please type {0}."
+      "Чтобы подтвердить это действие, пожалуйста, введите {0}."
     ],
     "moderation_masspunishment_interactive_prompt": [
-      "Enter a user ID, or anything else to quit."
+      "Введите ID пользователя или что-либо другое для выхода."
     ],
     "moderation_masspunishment_interactive_canceled": [
-      "Successfully quit out of the interactive session."
+      "Успешный выход из интерактивного сеанса."
     ],
     "moderation_massban_notargets": [
-      "No targets were availble for banning."
+      "Ни одна цель для бана не была доступна."
     ],
     "moderation_massban_target_single": [
-      "1 user has been selected to be banned:"
+      "1 пользователь был выбран для бана:"
     ],
     "moderation_massban_target_count": [
-      "{0} users have been selected to be banned:"
+      "{0} пользователей были выбраны для бана:"
     ],
     "moderation_massban_alreadybanned": [
-      "{0} is already banned."
+      "{0} уже забанен."
     ],
     "moderation_massban_userpermissions": [
-      "{0} has higher permission than you, so they were not banned."
+      "У пользователя {0} больше прав, чем у вас, поэтому он не был забанен."
     ],
     "moderation_massban_botpermissions": [
-      "{0} has higher permission than me, so they were not banned."
+      "У пользователя {0} больше прав, чем у меня, поэтому он не был забанен."
     ],
     "moderation_massban": [
-      "1 user was successfully banned."
+      "1 пользователь был успешно забанен."
     ],
     "moderation_massban_multiple": [
-      "{0} users were successfully banned."
+      "{0} пользователей были успешно забанены."
     ],
     "moderation_massban_none": [
-      "No users could be banned."
+      "Невозможно было забанить ни одного пользователя."
     ],
     "moderation_tempban": [
       "{0} был временно забанен на {1}."
@@ -554,7 +554,7 @@
       "Позиция"
     ],
     "info_timeout_password": [
-      "You took too long to respond, or your password didn't match."
+      "Вы слишком долго отвечали, либо ваш пароль не совпал."
     ],
     "role_info_above_below": [
       "{0}/{1}, выше {2} но ниже {3}"
