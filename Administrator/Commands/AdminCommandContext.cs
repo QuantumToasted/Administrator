@@ -13,37 +13,33 @@ namespace Administrator.Commands
     {
         private readonly LocalizationService _localization;
 
-        public AdminCommandContext(SocketUserMessage message, string prefix, LocalizedLanguage langage, IServiceProvider provider)
+        public AdminCommandContext(SocketUserMessage message, string prefix, LocalizedLanguage language, IServiceProvider provider)
             : base(provider)
         {
             _localization = provider.GetRequiredService<LocalizationService>();
             Client = provider.GetRequiredService<DiscordSocketClient>();
-            User = message.Author;
-            Guild = (message.Channel as SocketGuildChannel)?.Guild;
             Message = message;
-            Channel = message.Channel;
-            IsPrivate = message.Channel is IPrivateChannel;
             Prefix = prefix;
-            Language = langage;
             Database = new AdminDatabaseContext(provider);
+            Language = language;
         }
-        
-        public DiscordSocketClient Client { get; }
-        
-        public SocketUser User { get; }
 
-        public SocketGuild Guild { get; }
-        
+        public DiscordSocketClient Client { get; }
+
+        public SocketUser User => Message.Author;
+
+        public SocketGuild Guild => (Message.Channel as SocketGuildChannel)?.Guild;
+
         public SocketUserMessage Message { get; }
 
-        public ISocketMessageChannel Channel { get; }
+        public ISocketMessageChannel Channel => Message.Channel;
 
-        public bool IsPrivate { get; }
-        
+        public bool IsPrivate => Message.Channel is IPrivateChannel;
+
         public string Prefix { get; }
 
         public AdminDatabaseContext Database { get; }
-        
+
         public LocalizedLanguage Language { get; }
 
         public string Localize(string key, params object[] args)
