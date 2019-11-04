@@ -11,7 +11,7 @@
       "Пока, {0}!"
     ],
     "available_languages": [
-      "Available languages:"
+      "Доступные языки:"
     ],
     "requirecontext_guild": [
       "Эта команда может быть использована только на серверах."
@@ -110,10 +110,10 @@
       "Указанный интервал времени недействителен."
     ],
     "moduleparser_notfound": [
-      "No command module could be found with that name."
+      "Никакого модуля команд с таким названием не было найдено."
     ],
     "languageparser_notfound": [
-      "No language could be found with that name or code."
+      "Никакого языка с таким названием или кодом не было найдено."
     ],
     "commanderror": [
       "Ошибка в команде"
@@ -128,10 +128,10 @@
       "Одно или несколько требований для этой команды не были выполнены:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It expects at least {0}."
+      "Вы ввели недостаточно параметров для этой команды. Требуется хотя бы {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It expects {0} or less."
+      "Вы ввели слишком много параметров для этой команды. Требуется {0} или меньше."
     ],
     "commanderror_overloadsfailed": [
       "Не удалось выполнить ни один вариант этой команды:\n{0}"
@@ -878,7 +878,7 @@
       "Give an existing role to a user on your server."
     ],
     "info_command_role_remove": [
-      "Remove an existing role form a user on your server."
+      "Remove an existing role from a user on your server."
     ],
     "info_command_role_move": [
       "Move an existing role above or below another."
