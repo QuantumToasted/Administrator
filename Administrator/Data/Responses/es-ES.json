@@ -878,7 +878,7 @@
       "Give an existing role to a user on your server."
     ],
     "info_command_role_remove": [
-      "Remove an existing role form a user on your server."
+      "Remove an existing role from a user on your server."
     ],
     "info_command_role_move": [
       "Move an existing role above or below another."
