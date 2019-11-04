@@ -809,31 +809,31 @@
       "Отобразить историю сообщений для темы мод-почты."
     ],
     "info_command_ban": [
-      "Ban a user from your server."
+      "Бан пользователя на вашем сервере."
     ],
     "info_command_tempban": [
-      "Temporarily ban a user from your server."
+      "Временный бан пользователя на вашем сервере."
     ],
     "info_command_massban": [
-      "Ban a large number of users from your server at once."
+      "Бан большого количества пользователей на вашем сервере за раз."
     ],
     "info_command_kick": [
-      "Kick a user from your server."
+      "Кик пользователя с вашего сервера."
     ],
     "info_command_mute": [
-      "Mute a user from sending messages or talking in your server."
+      "Запрет пользователю отправлять сообщения или разговаривать на вашем сервере."
     ],
     "info_command_warn": [
-      "Warn a user in your server.\nAdditional punishments may automatically be added depending on your server configuration."
+      "Предупреждение пользователя на вашем сервере.\nДополнительные наказания могут быть автоматически добавлены в зависимости от конфигурации сервера."
     ],
     "info_command_block": [
-      "Block a user from sending messages or adding reactions in a text channel."
+      "Запрет пользователю отправлять сообщения или добавлять реакции в текстовом канале."
     ],
     "info_command_permissions": [
-      "List all custom command permissions."
+      "Перечисление всех пользовательских разрешений команд."
     ],
     "info_command_permissions_remove": [
-      "Remove a custom command permission."
+      "Удаление пользовательского разрешения команды."
     ],
     "info_command_permissions_enable_command": [
       "Включить или отключить одну команду или модуль."
@@ -857,91 +857,91 @@
       "Добавление причины к наказанию, у которого её нет."
     ],
     "info_command_warningpunishment": [
-      "View or set a specific warning punishment."
+      "Просмотр или установка конкретного наказания за предупреждение."
     ],
     "info_command_warningpunishments": [
-      "View all current warning punishments."
+      "Просмотр всех наказаний за предупреждения."
     ],
     "info_command_role": [
-      "View information about a role."
+      "Отображение информации о роли."
     ],
     "info_command_role_color": [
-      "Modify the color of an existing role."
+      "Редактирование цвета существующей роли."
     ],
     "info_command_role_create": [
-      "Create a new role."
+      "Создание новой роли."
     ],
     "info_command_role_delete": [
-      "Delete an existing role."
+      "Удаление существующей роли."
     ],
     "info_command_role_give": [
-      "Give an existing role to a user on your server."
+      "Выдача существующей роли пользователю на вашем сервере."
     ],
     "info_command_role_remove": [
       "Remove an existing role from a user on your server."
     ],
     "info_command_role_move": [
-      "Move an existing role above or below another."
+      "Перемещение существующей роли выше или ниже другой."
     ],
     "info_command_role_rename": [
-      "Rename an existing role."
+      "Переименование существующей роли."
     ],
     "info_command_suggestions_create": [
-      "Create a new server suggestion."
+      "Создание нового предложения сервера."
     ],
     "info_command_suggestions_remove": [
-      "Remove an existing server suggestion."
+      "Удаление существующего предложения сервера."
     ],
     "info_command_suggestions_approve": [
-      "Approve or deny an existing server suggestion."
+      "Одобрение или отклонение существующего предложения сервера."
     ],
     "info_command_suggestions_channel": [
-      "View or set the channel suggestions are posted to."
+      "Просмотр или установка канала, в который будут отправляться предложения."
     ],
     "info_command_suggestions_archive": [
-      "View or set the channel suggestions are archived to when they are approved or denied."
+      "Просмотр или установка канала, в котором предложения будут архивироваться при одобрении или отклонении."
     ],
     "info_command_user": [
-      "View information about a user."
+      "Просмотр информации о пользователе."
     ],
     "info_command_user_xp": [
-      "View a user's XP stats."
+      "Просмотр статистики опыта пользователя."
     ],
     "info_command_user_language": [
-      "View or set your personal bot response language."
+      "Просмотр или установка вашего личного языка ответа бота."
     ],
     "info_command_user_languages": [
-      "View available response languages."
+      "Просмотр доступных языков ответов."
     ],
     "info_command_user_search": [
-      "Search for a user on the server."
+      "Поиск пользователя на сервере."
     ],
     "info_command_user_searchregex": [
-      "Search for a user on this server using RegEx."
+      "Поиск пользователя на этом сервере с помощью регулярного выражения."
     ],
     "info_command_user_nickname": [
-      "View a user's nickname on this server."
+      "Просмотр ника пользователя на этом сервере."
     ],
     "info_command_user_nickname_set": [
-      "Set a user's nickname, or your own."
+      "Задать никнейм пользователя или ваш собственный."
     ],
     "info_command_user_nickname_reset": [
-      "Reset (remove) a user's nickname."
+      "Сброс (удаление) никнейма пользователя."
     ],
     "info_command_modules": [
-      "List available command modules."
+      "Перечисление доступных командных модулей."
     ],
     "info_command_commands": [
-      "List available commands for a module."
+      "Перечисление доступных команд в модуле."
     ],
     "info_command_help": [
-      "View available help for a specific command, or get the bot help message."
+      "Просмотр справки по конкретной команде или получить справку о боте."
     ],
     "info_command_guild_language": [
-      "View or set the server's bot response language."
+      "Просмотр или установка языка ответа бота на сервере."
     ],
     "info_command_guild_languages": [
-      "View available response languages."
+      "Просмотр доступных языков ответов."
     ]
   }
 }
