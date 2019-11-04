@@ -72,10 +72,20 @@ namespace Administrator.Services
                     ? 45
                     : 0;
 
-                using var background = Image.Load(new FileStream("./Data/Images/01.png", FileMode.Open));
-                using var avatar = Image.Load(await _http.GetStreamAsync(target.GetAvatarOrDefault()));
+                using var background = Image.Load<Rgba32>(new FileStream("./Data/Images/01.png", FileMode.Open));
+                using var avatarStream = await _http.GetStreamAsync(target.GetAvatarOrDefault());
+                using var avatar = Image.Load<Rgba32>(avatarStream);
                 using var canvas = new Image<Rgba32>(Configuration.Default, 450, 300);
+                using var currentLevelStream = await _http.GetStreamAsync(EmoteTools.GetUrl(GetLevelEmote(user)));
+                using var currentLevel = Image.Load<Rgba32>(currentLevelStream);
+                currentLevel.Mutate(x => x.Resize(45 / currentLevel.Height * currentLevel.Width, 45));
 
+                Stream currentGuildLevelStream = null;
+                if (guildUser is { })
+                {
+                    currentGuildLevelStream = await _http.GetStreamAsync(EmoteTools.GetUrl(GetLevelEmote(guildUser)));
+                }
+                
                 canvas.Mutate(cnvs =>
                 {
                     var sb = new StringBuilder();
@@ -123,11 +133,6 @@ namespace Administrator.Services
                     cnvs.DrawImage(avatar.Clone(x => x.Resize(50, 50)),
                         new Point(385, 215 - guildOffset), PixelColorBlendingMode.Normal,
                         PixelAlphaCompositionMode.SrcOver, 1);
-                    /*
-                    cnvs.DrawImage(avatar.Clone(x => x.Resize(50, 50)),
-                        PixelColorBlendingMode.Normal, 1,
-                        new Point(385, 215 - guildReduction));
-                    */
 
                     // Draw avatar bounding box outline
                     cnvs.DrawPolygon(Rgba32.WhiteSmoke, 2,
@@ -180,12 +185,11 @@ namespace Administrator.Services
                         Rgba32.WhiteSmoke,
                         new PointF(255, 273 - guildOffset));
 
-
-                    /* Draw current level
+                    // Draw current level
                     cnvs.DrawImage(
                         currentLevel.Clone(x => x.Resize(45 / currentLevel.Height * currentLevel.Width, 45)),
-                        PixelColorBlendingMode.Normal, 1,
-                        new Point(45, 285 - guildOffset), Justification.BottomCenter); */
+                        ImageTools.Justify(new Point(45, 285 - guildOffset), currentLevel, Justification.BottomCenter),
+                        PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcOver, 1);
 
                     // Write current global position
                     cnvs.DrawText(new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center},
@@ -194,7 +198,7 @@ namespace Administrator.Services
                         Rgba32.WhiteSmoke,
                         new PointF(255, 248 - guildOffset));
 
-                    if (guildUser is {} && guildOffset > 0)
+                    if (guildUser is { } && guildOffset > 0)
                     {
                         // Draw guild bounding box
                         // 270
@@ -235,21 +239,22 @@ namespace Administrator.Services
                             new PointF(255, 278));
 
                         // using (var guildLevel = Image.Load(guildLevelStream))
-                        using (var guildImage = Image.Load(guildIcon))
-                        {
-                            /* Draw current guild level
-                            cnvs.DrawImage(guildLevel.Clone(x => x.Resize(40 / guildLevel.Height * guildLevel.Width, 40)),
-                                PixelColorBlendingMode.Normal, 1,
-                                new Point(45, 292),
-                                Justification.BottomCenter); */
+                        using var guildImage = Image.Load<Rgba32>(guildIcon);
+                        using var currentGuildLevel = Image.Load<Rgba32>(currentGuildLevelStream);
+                        currentGuildLevel.Mutate(x =>
+                            x.Resize(40 / currentGuildLevel.Height * currentGuildLevel.Width, 40));
 
-                            // Draw current guild icon
-                            guildImage.Mutate(img => img.Resize(18, 18));
-                            cnvs.DrawImage(guildImage,
-                                ImageTools.Justify(new Point(435, 255), guildImage, Justification.TopRight),
-                                PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.Dest, 1f);
-                        }
-                        
+                        // Draw current guild level
+                        cnvs.DrawImage(currentGuildLevel,
+                            ImageTools.Justify(new Point(45, 292), currentGuildLevel, Justification.BottomCenter),
+                            PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcOver, 1);
+
+                        // Draw current guild icon
+                        guildImage.Mutate(img => img.Resize(18, 18));
+                        cnvs.DrawImage(guildImage,
+                            ImageTools.Justify(new Point(435, 255), guildImage, Justification.TopRight),
+                            PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.Dest, 1f);
+
                         // Write current guild position
                         cnvs.DrawText(new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center},
                             $"Guild position #{guildPosition}",

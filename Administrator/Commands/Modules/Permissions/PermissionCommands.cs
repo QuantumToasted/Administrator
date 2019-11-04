@@ -108,10 +108,10 @@ namespace Administrator.Commands
             var filterText = filter switch
             {
                 PermissionFilter.Global => Context.Localize("permissions_global"),
-                PermissionFilter.Guild => Context.Guild.Name,
-                PermissionFilter.Role => Context.Guild.GetRole(targetId.Value).Name,
+                PermissionFilter.Guild => Context.Guild.Name.Sanitize(),
+                PermissionFilter.Role => Context.Guild.GetRole(targetId.Value).Name.Sanitize(),
                 PermissionFilter.Channel => Context.Guild.GetTextChannel(targetId.Value).Mention,
-                PermissionFilter.User => Context.Guild.GetUser(targetId.Value)?.ToString() ?? "???",
+                PermissionFilter.User => Context.Guild.GetUser(targetId.Value)?.ToString().Sanitize() ?? "???",
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -145,7 +145,7 @@ namespace Administrator.Commands
             }
         }
 
-        [Command("", "list")]
+        [Command("", "list"), RunMode(RunMode.Parallel)]
         public async ValueTask<AdminCommandResult> ListPermissionAsync([MustBe(Operator.GreaterThan, 0)] int page = 1)
         {
             var permissions = await Context.Database.Permissions.Where(x => x.GuildId == Context.Guild.Id)
@@ -156,7 +156,7 @@ namespace Administrator.Commands
                 return CommandErrorLocalized("permissions_none");
 
             var pages = DefaultPaginator.GeneratePages(permissions, lineFunc: Format,
-                embedFunc: () => new EmbedBuilder()
+                embedFunc: builder => builder
                 .WithSuccessColor()
                 .WithTitle(Context.Localize("permissions_list", Context.Guild?.Name)));
 
@@ -166,7 +166,8 @@ namespace Administrator.Commands
 
             if (pages.Count > 1)
             {
-                Pagination.AddPaginator(new DefaultPaginator(message, pages, page));
+                await using var paginator = new DefaultPaginator(message, pages, page, Pagination);
+                await paginator.WaitForExpiryAsync();
             }
 
             return CommandSuccess();
@@ -182,9 +183,9 @@ namespace Administrator.Commands
                     .Append($"{permission.Name ?? "all"} ")
                     .Append(permission.Filter switch
                     {
-                        PermissionFilter.Role => Context.Guild.GetRole(permission.TargetId.Value)?.Name ?? "???",
+                        PermissionFilter.Role => Context.Guild.GetRole(permission.TargetId.Value)?.Name.Sanitize() ?? "???",
                         PermissionFilter.Channel => Context.Guild.GetTextChannel(permission.TargetId.Value)?.Mention ?? "???",
-                        PermissionFilter.User => Context.Guild.GetUser(permission.TargetId.Value)?.ToString() ?? "???",
+                        PermissionFilter.User => Context.Guild.GetUser(permission.TargetId.Value)?.ToString().Sanitize() ?? "???",
                         _ => string.Empty
                     })
                     .Append('`');

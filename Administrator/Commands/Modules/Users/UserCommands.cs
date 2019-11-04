@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Administrator.Common;
@@ -12,15 +12,7 @@ using Discord;
 using Discord.WebSocket;
 using Humanizer.Localisation;
 using Qmmands;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.ColorSpaces;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Processors;
-using SixLabors.Primitives;
 using Color = Discord.Color;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace Administrator.Commands.Modules.Users
 {
@@ -31,7 +23,7 @@ namespace Administrator.Commands.Modules.Users
         public ConfigurationService Config { get; set; }
 
         public PaginationService Pagination { get; set; }
-        
+
         public LevelService Levels { get; set; }
 
         public HttpClient Http { get; set; }
@@ -53,7 +45,8 @@ namespace Administrator.Commands.Modules.Users
         private AdminCommandResult GetUserInfo(IUser target)
         {
             var builder = new EmbedBuilder()
-                .WithTitle(Localize("user_info_title", target.ToString().Sanitize()))
+                .WithTitle(Localize(target.IsBot ? "user_info_title_bot" : "user_info_title",
+                    target.ToString().Sanitize()))
                 .AddField(Localize("info_id"), target.Id, true)
                 .AddField(Localize("info_mention"), target.Mention, true)
                 .WithThumbnailUrl(target.GetAvatarOrDefault(size: 256));
@@ -101,7 +94,7 @@ namespace Administrator.Commands.Modules.Users
                 if (roles.Count > 0)
                 {
                     builder.AddField(Localize("user_info_roles", roles.Count),
-                        string.Join(", ", roles.Select(x => x.Name)).TrimTo(1024, true));
+                        string.Join(", ", roles.Select(x => x.Name.Sanitize())).TrimTo(1024, true));
                 }
             }
 
@@ -147,7 +140,7 @@ namespace Administrator.Commands.Modules.Users
                     return string.IsNullOrWhiteSpace(target.Nickname)
                         ? CommandSuccessLocalized("user_no_nickname", args: Format.Bold(target.ToString().Sanitize()))
                         : CommandSuccessLocalized("user_nickname",
-                            args: new object[] { Format.Bold(target.ToString()), Format.Bold(target.Nickname.Sanitize()) });
+                            args: new object[] { Format.Bold(target.ToString().Sanitize()), Format.Bold(target.Nickname.Sanitize()) });
                 }
 
                 [Command("set")]
@@ -195,6 +188,8 @@ namespace Administrator.Commands.Modules.Users
             }
 
             [Command("search"), RunMode(RunMode.Parallel)]
+            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
+            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
             public async ValueTask<AdminCommandResult> SearchUsersAsync(
                 [Remainder, MustBe(StringLength.ShorterThan, 33)] string input)
             {
@@ -225,15 +220,18 @@ namespace Administrator.Commands.Modules.Users
                 matches = matches.OrderBy(x => x.Item1).ToList();
 
                 var pages = DefaultPaginator.GeneratePages(matches, 1024, x => FormatUser(x.Item2),
-                    embedFunc: () =>
-                        new EmbedBuilder().WithSuccessColor().WithTitle(Localize("user_search_results", input)));
+                    embedFunc: builder =>
+                        builder.WithSuccessColor().WithTitle(Localize("user_search_results", input)));
 
                 var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[0]);
-                Pagination.AddPaginator(new DefaultPaginator(message, pages, 0));
+                await using var paginator = new DefaultPaginator(message, pages, 0, Pagination);
+                await paginator.WaitForExpiryAsync();
                 return CommandSuccess();
             }
 
             [Command("searchregex"), RunMode(RunMode.Parallel)]
+            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
+            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
             public async ValueTask<AdminCommandResult> RegexSearchUsersAsync([Remainder] Regex regex)
             {
                 var matches = new List<SocketGuildUser>();
@@ -253,11 +251,12 @@ namespace Administrator.Commands.Modules.Users
                 if (matches.Count == 0)
                     return CommandErrorLocalized("user_searchregex_no_results", args: regex.ToString());
 
-                var pages = DefaultPaginator.GeneratePages(matches, 1024, FormatUser, embedFunc: () =>
-                        new EmbedBuilder().WithSuccessColor().WithTitle(Localize("user_searchregex_results")));
+                var pages = DefaultPaginator.GeneratePages(matches, 1024, FormatUser, embedFunc: builder =>
+                        builder.WithSuccessColor().WithTitle(Localize("user_searchregex_results")));
 
                 var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[0]);
-                Pagination.AddPaginator(new DefaultPaginator(message, pages, 0));
+                await using var paginator = new DefaultPaginator(message, pages, 0, Pagination);
+                await paginator.WaitForExpiryAsync();
                 return CommandSuccess();
 
                 bool MatchesRegex(SocketGuildUser target)
@@ -282,7 +281,7 @@ namespace Administrator.Commands.Modules.Users
         }
 
         [Command("xp"), RunMode(RunMode.Parallel)]
-        public async ValueTask<AdminCommandResult> GetUserXp([Remainder] SocketGuildUser target = null)
+        public async ValueTask<AdminCommandResult> GetUserXpAsync([Remainder] SocketGuildUser target = null)
         {
             using var _ = Context.Channel.EnterTypingState();
             var image = await Levels.CreateXpImageAsync(Context, target ?? Context.User);
@@ -290,15 +289,33 @@ namespace Administrator.Commands.Modules.Users
             return CommandSuccess(file: new MessageFile(image, "xp.png"));
         }
 
-        [Command("increment")]
-        public async ValueTask<AdminCommandResult> IncrementXp()
+        [Command("language")]
+        public async ValueTask<AdminCommandResult> GetLanguageAsync()
         {
             var user = await Context.Database.GetOrCreateGlobalUserAsync(Context.User.Id);
-            user.TotalXp += 10;
+            return CommandSuccessLocalized("user_language", args:
+                $"{Format.Bold(user.Language.NativeName)} ({user.Language.EnglishName}, `{user.Language.CultureCode}`)");
+        }
+
+        [Command("language")]
+        public async ValueTask<AdminCommandResult> SetLanguageAsync([Remainder] LocalizedLanguage newLanguage)
+        {
+            var user = await Context.Database.GetOrCreateGlobalUserAsync(Context.User.Id);
+            user.Language = newLanguage;
             Context.Database.GlobalUsers.Update(user);
             await Context.Database.SaveChangesAsync();
+            Context.Language = newLanguage;
 
-            return CommandSuccess($"gottem moron, ur xp is now {user.TotalXp}");
+            return CommandSuccessLocalized("user_language_set", args:
+                $"{Format.Bold(user.Language.NativeName)} ({user.Language.EnglishName}, `{user.Language.CultureCode}`)");
         }
+
+        [Command("languages")]
+        public AdminCommandResult GetLanguages()
+            => CommandSuccess(new StringBuilder()
+                .AppendLine(Localize("available_languages"))
+                .AppendJoin('\n',
+                    Localization.Languages.Select(
+                        x => Format.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());
     }
 }

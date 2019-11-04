@@ -26,7 +26,7 @@ namespace Administrator.Database
 
         public List<ulong> BlacklistedModmailAuthors { get; set; } = new List<ulong>();
 
-        public GuildSettings Settings { get; set; }
+        public GuildSettings Settings { get; set; } = GuildSettings.Punishments | GuildSettings.XpTracking;
 
         public TimeSpan XpGainInterval { get; set; } = LevelService.XpGainInterval;
 

@@ -76,15 +76,19 @@ namespace Administrator.Services
                 ctx.Punishments.Add(ban);
                 await ctx.SaveChangesAsync();
             }
+            else
+            {
+                moderator = await _client.GetOrDownloadUserAsync(ban.ModeratorId);
+            }
 
-            if (!(await ctx.GetLoggingChannelAsync(guild.Id, LogType.Ban) is SocketTextChannel logChannel))
-                return;
-
-            var message =
-                await SendLoggingEmbedAsync(ban, target, moderator, null, logChannel, guildConfig.Language);
-            ban.SetLogMessage(message);
-            ctx.Punishments.Update(ban);
-            await ctx.SaveChangesAsync();
+            if (await ctx.GetLoggingChannelAsync(guild.Id, LogType.Ban) is SocketTextChannel logChannel)
+            {
+                var message =
+                    await SendLoggingEmbedAsync(ban, target, moderator, null, logChannel, guildConfig.Language);
+                ban.SetLogMessage(message);
+                ctx.Punishments.Update(ban);
+                await ctx.SaveChangesAsync();
+            }
 
             await SendTargetEmbedAsync(ban, target, null, (await ctx.GetOrCreateGlobalUserAsync(target.Id)).Language);
         }
@@ -117,15 +121,19 @@ namespace Administrator.Services
                 ctx.Punishments.Add(kick);
                 await ctx.SaveChangesAsync();
             }
+            else
+            {
+                moderator = await _client.GetOrDownloadUserAsync(kick.ModeratorId);
+            }
 
-            if (!(await ctx.GetLoggingChannelAsync(guild.Id, LogType.Kick) is SocketTextChannel logChannel))
-                return;
-
-            var message =
-                await SendLoggingEmbedAsync(kick, target, moderator, null, logChannel, guildConfig.Language);
-            kick.SetLogMessage(message);
-            ctx.Punishments.Update(kick);
-            await ctx.SaveChangesAsync();
+            if (await ctx.GetLoggingChannelAsync(guild.Id, LogType.Kick) is SocketTextChannel logChannel)
+            {
+                var message =
+                    await SendLoggingEmbedAsync(kick, target, moderator, null, logChannel, guildConfig.Language);
+                kick.SetLogMessage(message);
+                ctx.Punishments.Update(kick);
+                await ctx.SaveChangesAsync();
+            }
 
             await SendTargetEmbedAsync(kick, target, null, (await ctx.GetOrCreateGlobalUserAsync(target.Id)).Language);
         }
@@ -156,14 +164,14 @@ namespace Administrator.Services
             var guildConfig = await ctx.GetOrCreateGuildAsync(guild.Id);
             if (!guildConfig.Settings.HasFlag(GuildSettings.Punishments)) return;
 
-            if (!(await ctx.GetLoggingChannelAsync(guild.Id, LogType.Warn) is SocketTextChannel logChannel))
-                return;
-
-            var message =
-                await SendLoggingEmbedAsync(warning, target, moderator, null, logChannel, guildConfig.Language);
-            warning.SetLogMessage(message);
-            ctx.Punishments.Update(warning);
-            await ctx.SaveChangesAsync();
+            if (await ctx.GetLoggingChannelAsync(guild.Id, LogType.Warn) is SocketTextChannel logChannel)
+            {
+                var message =
+                    await SendLoggingEmbedAsync(warning, target, moderator, null, logChannel, guildConfig.Language);
+                warning.SetLogMessage(message);
+                ctx.Punishments.Update(warning);
+                await ctx.SaveChangesAsync();
+            }
 
             await SendTargetEmbedAsync(warning, target, null, (await ctx.GetOrCreateGlobalUserAsync(target.Id)).Language);
         }
@@ -287,7 +295,7 @@ namespace Administrator.Services
             if (punishment is Warning)
             {
                 using var ctx = new AdminDatabaseContext(_provider);
-                
+
                 var warningCount = await ctx.Punishments.OfType<Warning>().CountAsync(x =>
                     x.TargetId == target.Id && x.GuildId == punishment.GuildId && !x.RevokedAt.HasValue);
                 builder.WithDescription(_localization.Localize(language, "punishment_warning_description", _client.GetGuild(punishment.GuildId).Name,
@@ -328,8 +336,8 @@ namespace Administrator.Services
 
                 string GetAppealInstructions()
                 {
-                    return _localization.Localize(language, "punishment_appeal_instructions", 
-                        Format.Code(punishment.Id.ToString()), 
+                    return _localization.Localize(language, "punishment_appeal_instructions",
+                        Format.Code(punishment.Id.ToString()),
                         Format.Code($"{_config.DefaultPrefix}appeal {punishment.Id} [{_localization.Localize(language, "title_reason").ToLower()}]"));
                 }
             }

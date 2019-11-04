@@ -40,7 +40,7 @@ namespace Administrator.Commands
 
         public AdminDatabaseContext Database { get; }
 
-        public LocalizedLanguage Language { get; }
+        public LocalizedLanguage Language { get; set; }
 
         public string Localize(string key, params object[] args)
             => _localization.Localize(Language, key, args);

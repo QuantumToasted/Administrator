@@ -73,7 +73,6 @@
 
   <ItemGroup>
     <Folder Include="Commands\Modules\Channels\" />
-    <Folder Include="Commands\Modules\Guild\" />
     <Folder Include="Data\Images\" />
   </ItemGroup>
 

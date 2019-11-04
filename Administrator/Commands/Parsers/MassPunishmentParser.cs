@@ -24,9 +24,9 @@ namespace Administrator.Commands
                 .WithParsed(x => punishment = x)
                 .WithNotParsed(_ => punishment = default);
 
-            return punishment is null
-                ? TypeParserResult<TPunishment>.Unsuccessful(context.Localize("masspunishmentparser_errors"))
-                : TypeParserResult<TPunishment>.Successful(punishment);
+            return punishment is { }
+                ? TypeParserResult<TPunishment>.Successful(punishment)
+                : TypeParserResult<TPunishment>.Unsuccessful(context.Localize("masspunishmentparser_errors"));
         }
     }
 }

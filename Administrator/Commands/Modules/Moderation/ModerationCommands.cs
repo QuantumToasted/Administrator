@@ -12,7 +12,6 @@ using Administrator.Services;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Humanizer;
 using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
@@ -25,7 +24,7 @@ namespace Administrator.Commands
     {
         public PunishmentService Punishments { get; set; }
 
-        [Command("ban", "b")]
+        [Command("ban")]
         [RequireBotPermissions(GuildPermission.BanMembers)]
         [RequireUserPermissions(GuildPermission.BanMembers)]
         public ValueTask<AdminCommandResult> BanUser([RequireHierarchy] SocketGuildUser target,
@@ -75,7 +74,8 @@ namespace Administrator.Commands
                 FormatAuditLogReason(reason ?? Context.Localize("punishment_noreason"), ban?.CreatedAt ?? DateTimeOffset.UtcNow, Context.User));
 
             Punishments.BannedUserIds.Add(target.Id);
-            return CommandSuccessLocalized("moderation_ban", args: Format.Bold(target.ToString()));
+            return CommandSuccessLocalized("moderation_ban",
+                args: (ban is { } ? $"`[#{ban.Id}]` " : string.Empty) + target.Format());
         }
 
         [Command("tempban")]
@@ -135,7 +135,7 @@ namespace Administrator.Commands
             return CommandSuccessLocalized("moderation_tempban",
                 args: new object[]
                 {
-                    Format.Bold(target.ToString()),
+                    (ban is { } ? $"`[#{ban.Id}]` " : string.Empty) + target.Format(),
                     duration.HumanizeFormatted(Context, TimeUnit.Second)
                 });
         }
@@ -247,13 +247,13 @@ namespace Administrator.Commands
                 }
                 else
                 {
+                    await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
                     await Context.Channel.SendMessageAsync(duration.HasValue
                         ? Localize("moderation_tempban", target.Format(),
                             duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                         : Localize("moderation_ban", target.Format()));
                 }
 
-                await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
                 counter++;
             }
 
@@ -313,13 +313,12 @@ namespace Administrator.Commands
                     }
                     else
                     {
+                        await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
                         await Context.Channel.SendMessageAsync(duration.HasValue
                             ? Localize("moderation_tempban", target.Format(),
                                 duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
                             : Localize("moderation_ban", target.Format()));
                     }
-
-                    await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
                 }
 
                 response = await GetNextMessageAsync(timeout: TimeSpan.FromSeconds(10));
@@ -339,9 +338,10 @@ namespace Administrator.Commands
             Warning source = null)
         {
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+            Kick kick = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
             {
-                var kick = Context.Database.Punishments
+                kick = Context.Database.Punishments
                     .Add(new Kick(Context.Guild.Id, target.Id, Context.User.Id, reason)).Entity as Kick;
                 await Context.Database.SaveChangesAsync();
                 await Punishments.LogKickAsync(target, Context.Guild, kick);
@@ -354,7 +354,7 @@ namespace Administrator.Commands
             Punishments.KickedUserIds.Add(target.Id);
 
             return CommandSuccessLocalized("moderation_kick",
-                args: Format.Bold(target.ToString()));
+                args: (kick is { } ? $"`[#{kick.Id}]` " : string.Empty) + target.Format());
         }
 
         [Command("mute")]
@@ -383,10 +383,11 @@ namespace Administrator.Commands
                 return CommandErrorLocalized("moderation_alreadymuted");
             
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+            Mute mute = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
             {
-                var mute = new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, null);
-                Context.Database.Punishments.Add(mute);
+                mute = Context.Database.Punishments
+                    .Add(new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, null)).Entity as Mute;
                 await Context.Database.SaveChangesAsync();
                 await Punishments.LogMuteAsync(target, Context.Guild, Context.User, mute);
 
@@ -400,10 +401,11 @@ namespace Administrator.Commands
             return duration.HasValue
                 ? CommandSuccessLocalized("moderation_mute_temporary", args: new object[]
                 {
-                    Format.Bold(target.ToString()),
+                    (mute is { } ? $"`[#{mute.Id}]` " : string.Empty) + target.Format(),
                     duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
                 })
-                : CommandSuccessLocalized("moderation_mute", args: Format.Bold(target.ToString()));
+                : CommandSuccessLocalized("moderation_mute",
+                    args: (mute is { } ? $"`[#{mute.Id}]` " : string.Empty) + target.Format());
         }
 
         [Group("block", "channelmute")]
@@ -446,15 +448,16 @@ namespace Administrator.Commands
                     return CommandErrorLocalized("moderation_alreadyblocked", args: Format.Bold(target.ToString()));
 
                 var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                Mute mute = null;
                 if (guild.Settings.HasFlag(GuildSettings.Punishments))
                 {
-                    var mute = new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, channel.Id);
+                    mute = new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, channel.Id);
                     if (channel.PermissionOverwrites.FirstOrDefault(x => x.TargetId == target.Id) is Overwrite overwrite)
                     {
                         mute.StoreOverwrite(overwrite);
                         await channel.RemovePermissionOverwriteAsync(target);
                     }
-                    Context.Database.Punishments.Add(mute);
+                    mute = Context.Database.Punishments.Add(mute).Entity as Mute;
                     await Context.Database.SaveChangesAsync();
                     await Punishments.LogMuteAsync(target, Context.Guild, Context.User, mute);
                 }
@@ -465,13 +468,13 @@ namespace Administrator.Commands
                 return duration.HasValue
                     ? CommandSuccessLocalized("moderation_block_temporary", args: new object[]
                     {
-                        Format.Bold(target.ToString()),
+                        (mute is { } ? $"`[#{mute.Id}]` " : string.Empty) + target.Format(),
                         channel.Mention,
                         duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
                     })
                     : CommandSuccessLocalized("moderation_block", args: new object[]
                     {
-                        Format.Bold(target.ToString()),
+                        (mute is { } ? $"`[#{mute.Id}]` " : string.Empty) + target.Format(),
                         channel.Mention
                     });
             }
@@ -503,7 +506,8 @@ namespace Administrator.Commands
                 await Punishments.LogWarningAsync(target, Context.Guild, Context.User, warning);
             }
 
-            await Context.Channel.SendMessageAsync(Context.Localize("moderation_warn", Format.Bold(target.ToString())));
+            await Context.Channel.SendMessageAsync(Context.Localize("moderation_warn",
+                (warning is { } ? $"`[#{warning.Id}]` " : string.Empty) + target.Format()));
 
             if (!(extraPunishment is null) && !(warning is null))
             {

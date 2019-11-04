@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,6 +14,7 @@ using Administrator.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Qmmands;
 
 namespace Administrator.Services
@@ -23,6 +26,7 @@ namespace Administrator.Services
         private readonly DiscordSocketClient _client;
         private readonly ConfigurationService _config;
         private readonly LoggingService _logging;
+        private readonly LocalizationService _localization;
 
         public CommandHandlerService(IServiceProvider provider)
         {
@@ -31,6 +35,7 @@ namespace Administrator.Services
             _client = _provider.GetRequiredService<DiscordSocketClient>();
             _config = _provider.GetRequiredService<ConfigurationService>();
             _logging = _provider.GetRequiredService<LoggingService>();
+            _localization = _provider.GetRequiredService<LocalizationService>();
         }
 
         public async Task<bool> TryExecuteCommandAsync(SocketUserMessage userMessage)
@@ -105,7 +110,7 @@ namespace Administrator.Services
                     builder.AppendLine(parserResult.Failure.GetValueOrDefault() switch
                     {
                         DefaultArgumentParserFailure.TooFewArguments => context.Localize("commanderror_toofewarguments",
-                            argumentResult.Command.Parameters.Count),
+                            argumentResult.Command.Parameters.Count(x => !x.IsOptional)),
                         DefaultArgumentParserFailure.TooManyArguments => context.Localize("commanderror_toomanyarguments",
                             argumentResult.Command.Parameters.Count),
                         // TODO: Localize the rest of the errors.
@@ -138,7 +143,7 @@ namespace Administrator.Services
                     break;
                 case TypeParseFailedResult typeParseResult:
                     builder.AppendLine(Format.Code(
-                            $"{context.Prefix}{string.Join(' ', context.Path)}{typeParseResult.Parameter.Command.FormatArguments()}"))
+                            $"{context.Prefix}{string.Join(' ', context.Path)} {typeParseResult.Parameter.Command.FormatArguments()}"))
                         .AppendLine($"\n{Format.Code(typeParseResult.Parameter.Name)}: {typeParseResult.Reason}");
                     break;
             }
@@ -149,12 +154,14 @@ namespace Administrator.Services
                 : null;
         }
 
-        Task IService.InitializeAsync()
+        async Task IService.InitializeAsync()
         {
             var modules = _commands.AddModules(Assembly.GetEntryAssembly(), action: builder =>
             {
                 foreach (var command in CommandUtilities.EnumerateAllCommands(builder))
+                {
                     command.AddCheck(new RequirePermissionsAttribute());
+                }
             });
 
             // TODO: Add TypeParsers
@@ -172,8 +179,31 @@ namespace Administrator.Services
             _commands.AddTypeParser(new MassPunishmentParser<MassWarning>());
             _commands.AddTypeParser(new MassPunishmentParser<MassMute>());
             _commands.AddTypeParser(new MassPunishmentParser<MassBan>());
+            _commands.AddTypeParser(new ModuleParser());
+            _commands.AddTypeParser(new LanguageParser());
 
-            return _logging.LogInfoAsync(modules.SelectMany(x => x.Commands).Count(), "CommandHandler");
+            // TODO: A better place to put this? A better way to do this?
+            var set = new HashSet<string>();
+            foreach (var command in _commands.GetAllCommands())
+            {
+                set.Add($"info_command_{command.FullAliases[0].Replace(' ', '_')}");
+            }
+
+            var language =
+                JsonConvert.DeserializeObject<LocalizedLanguage>(
+                    await File.ReadAllTextAsync("./Data/Responses/en-US.json"));
+            var responses = language.Responses.ToDictionary(x => x.Key, x => x.Value);
+            foreach (var key in set)
+            {
+                if (responses.TryAdd(key, new[] {""}.ToImmutableArray()))
+                {
+                    await _logging.LogDebugAsync($"Added key {key}.", "CommandHandler");
+                }
+            }
+            language.UpdateResponses(responses);
+            await File.WriteAllTextAsync("./Data/Responses/en-US.json", JsonConvert.SerializeObject(language, Formatting.Indented));
+
+            await _logging.LogInfoAsync(modules.SelectMany(x => x.Commands).Count(), "CommandHandler");
         }
     }
 }

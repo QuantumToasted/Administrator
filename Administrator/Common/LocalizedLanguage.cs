@@ -34,5 +34,11 @@ namespace Administrator.Common
                 }
             }
         }
+
+        // Most reasonable way to manually add and update responses
+        public void UpdateResponses(IDictionary<string, ImmutableArray<string>> newResponses)
+        {
+            Responses = (IReadOnlyDictionary<string, ImmutableArray<string>>) newResponses;
+        }
     }
 }

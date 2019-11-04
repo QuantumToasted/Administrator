@@ -12,7 +12,6 @@ using Discord;
 namespace Administrator.Common
 {
     public sealed class PunishmentPaginator : Paginator
-        //where TPunishment : Punishment
     {
         private static readonly Emoji Left = new Emoji("⬅");
         private static readonly Emoji Right = new Emoji("➡");
@@ -23,10 +22,11 @@ namespace Administrator.Common
         private readonly Timer _timer;
         private readonly ulong _targetId;
         private readonly PunishmentListType _type;
+        private readonly CancellationTokenSource _expiryToken;
         private int _currentPage;
 
         public PunishmentPaginator(IUserMessage message, List<List<Punishment>> pages, int currentPage,
-            AdminCommandContext context, ulong targetId, PunishmentListType type, PaginationService service = null) 
+            AdminCommandContext context, ulong targetId, PunishmentListType type, PaginationService service) 
             : base(message, new IEmote[] {Left, Right}, service)
         {
             _cachedUsers = new Dictionary<ulong, IUser>();
@@ -36,6 +36,7 @@ namespace Administrator.Common
             _context = context;
             _targetId = targetId;
             _type = type;
+            _expiryToken = new CancellationTokenSource();
         }
 
         public override async ValueTask<Page> GetPageAsync(IUser user, IEmote emote)
@@ -61,16 +62,25 @@ namespace Administrator.Common
         }
 
         public override Task CloseAsync()
-            => Task.CompletedTask;
-
-        public override void Dispose()
         {
-            base.Dispose();
-            _timer.Dispose();
+            _ = Message?.RemoveAllReactionsAsync();
+            return Task.CompletedTask;
         }
 
-        private void Expire(object state)
-            => Dispose();
+        public override async ValueTask DisposeAsync()
+        {
+            await _timer.DisposeAsync();
+            await base.DisposeAsync();
+        }
+
+        public Task WaitForExpiryAsync()
+            => Task.Delay(-1, _expiryToken.Token);
+
+        private void Expire(object _)
+        {
+            _expiryToken.Cancel();
+            _ = CloseAsync();
+        }
 
         public async ValueTask<Page> BuildPageAsync()
         {

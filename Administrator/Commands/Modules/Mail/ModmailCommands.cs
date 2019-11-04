@@ -54,7 +54,7 @@ namespace Administrator.Commands
                 {
                     IconUrl =
                         modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarOrDefault(),
-                    Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString()
+                    Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString().Sanitize()
                 })
                 .WithDescription(message)
                 .WithTitle(Context.Localize("modmail_title", modmail.Id))
@@ -120,7 +120,7 @@ namespace Administrator.Commands
                     {
                         IconUrl =
                             modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarOrDefault(),
-                        Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString()
+                        Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString().Sanitize()
                     })
                     .WithDescription(message)
                     .WithTitle(Context.Localize("modmail_title", modmail.Id))
@@ -134,28 +134,21 @@ namespace Administrator.Commands
             {
                 _ = Task.Run(async () =>
                 {
-                    try
-                    {
-                        var user = await Context.Client.GetOrDownloadUserAsync(modmail.UserId);
-                        await user.SendMessageAsync(embed: new EmbedBuilder()
-                            .WithColor(new Color(0x8ED0FF))
-                            .WithAuthor(new EmbedAuthorBuilder
-                            {
-                                IconUrl = Context.Guild.IconUrl,
-                                Name = $"{Context.Guild.Name} modteam"
-                            })
-                            .WithDescription(message)
-                            .WithTitle(Context.Localize("modmail_title", modmail.Id))
-                            .WithFooter(Context.Localize("modmail_reply_command",
-                                Format.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
-                                Format.Code($"{Context.Prefix}mm close {modmail.Id}")))
-                            .WithTimestamp(DateTimeOffset.UtcNow)
-                            .Build());
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
+                    var user = await Context.Client.GetOrDownloadUserAsync(modmail.UserId);
+                    _ = user.SendMessageAsync(embed: new EmbedBuilder()
+                        .WithColor(new Color(0x8ED0FF))
+                        .WithAuthor(new EmbedAuthorBuilder
+                        {
+                            IconUrl = Context.Guild.IconUrl,
+                            Name = $"{Context.Guild.Name} modteam"
+                        })
+                        .WithDescription(message)
+                        .WithTitle(Context.Localize("modmail_title", modmail.Id))
+                        .WithFooter(Context.Localize("modmail_reply_command",
+                            Format.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
+                            Format.Code($"{Context.Prefix}mm close {modmail.Id}")))
+                        .WithTimestamp(DateTimeOffset.UtcNow)
+                        .Build());
                 });
             }
 
@@ -268,15 +261,15 @@ namespace Administrator.Commands
                         if (Context.IsPrivate)
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? Context.User.Username
-                                    : Context.Localize("modmail_modteam", guild.Name),
+                                    ? Context.User.Username.Sanitize()
+                                    : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
                         else
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username
-                                    : Context.Localize("modmail_modteam", guild.Name),
+                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username.Sanitize()
+                                    : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
 
@@ -295,15 +288,15 @@ namespace Administrator.Commands
                         if (Context.IsPrivate)
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? Context.User.Username
-                                    : Context.Localize("modmail_modteam", guild.Name),
+                                    ? Context.User.Username.Sanitize()
+                                    : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
                         else
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username
-                                    : Context.Localize("modmail_modteam", guild.Name),
+                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username.Sanitize()
+                                    : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
                     }
@@ -315,7 +308,8 @@ namespace Administrator.Commands
             if (split.Count > 1)
             {
                 var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[page]);
-                Pagination.AddPaginator(new DefaultPaginator(message, pages, page));
+                await using var paginator = new DefaultPaginator(message, pages, page, Pagination);
+                await paginator.WaitForExpiryAsync();
                 return CommandSuccess();
             }
 

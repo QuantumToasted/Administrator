@@ -15,14 +15,16 @@ namespace Administrator.Common
         private static readonly Emoji Right = new Emoji("➡");
         private readonly List<Page> _pages;
         private readonly Timer _timer;
+        private readonly CancellationTokenSource _expiryToken;
         private int _currentPage;
 
-        public DefaultPaginator(IUserMessage message, List<Page> pages, int currentPage, PaginationService service = null)
+        public DefaultPaginator(IUserMessage message, List<Page> pages, int currentPage, PaginationService service)
             : base(message, new IEmote[] {Left, Right}, service)
         {
             _pages = pages;
             _currentPage = currentPage;
             _timer = new Timer(Expire, this, TimeSpan.FromSeconds(30), TimeSpan.FromMilliseconds(-1));
+            _expiryToken = new CancellationTokenSource();
         }
 
         public override ValueTask<Page> GetPageAsync(IUser user, IEmote emote)
@@ -47,22 +49,26 @@ namespace Administrator.Common
 
         public override Task CloseAsync()
         {
-             _ = Message?.RemoveAllReactionsAsync();
-             return Task.CompletedTask;
+            _ = Message?.RemoveAllReactionsAsync();
+            return Task.CompletedTask;
         }
 
-        public override void Dispose()
+        public override async ValueTask DisposeAsync()
         {
-            base.Dispose();
-            _timer.Dispose();
+            await _timer.DisposeAsync();
+            await base.DisposeAsync();
         }
+
+        public Task WaitForExpiryAsync()
+            => Task.Delay(-1, _expiryToken.Token);
 
         public static List<Page> GeneratePages<T>(List<T> list, int maxLength = EmbedBuilder.MaxDescriptionLength,
-            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, Func<EmbedBuilder> embedFunc = null)
+            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, Func<EmbedBuilder, EmbedBuilder> embedFunc = null)
         {
             var pages = new List<Page>();
 
             var builder = new StringBuilder();
+            var embedBuilder = embedFunc?.Invoke(new EmbedBuilder()) ?? new EmbedBuilder();
             for (var i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
@@ -70,7 +76,7 @@ namespace Administrator.Common
                 if (builder.Length + text.Length > maxLength)
                 {
                     pages.Add(new Page(plaintextFunc?.Invoke(),
-                        (embedFunc?.Invoke() ?? new EmbedBuilder())
+                        embedBuilder
                         .WithDescription(builder.ToString()).Build()));
 
                     builder.Clear().AppendLine(text);
@@ -78,7 +84,7 @@ namespace Administrator.Common
                 else if (i == list.Count - 1)
                 {
                     pages.Add(new Page(plaintextFunc?.Invoke(),
-                        (embedFunc?.Invoke() ?? new EmbedBuilder())
+                        embedBuilder
                         .WithDescription(builder.AppendLine(text).ToString())
                         .Build()));
                 }
@@ -102,14 +108,14 @@ namespace Administrator.Common
         }
 
         public static List<Page> GeneratePages<T>(List<T> list, int numberPerPage, Func<T, EmbedFieldBuilder> fieldFunc,
-            Func<string> plaintextFunc = null, Func<EmbedBuilder> embedFunc = null)
+            Func<string> plaintextFunc = null, Func<EmbedBuilder, EmbedBuilder> embedFunc = null)
         {
             var pages = new List<Page>();
             var split = list.SplitBy(numberPerPage);
+            var builder = embedFunc?.Invoke(new EmbedBuilder()) ?? new EmbedBuilder();
             foreach (var group in split)
             {
                 var text = plaintextFunc?.Invoke() ?? string.Empty;
-                var builder = embedFunc?.Invoke() ?? new EmbedBuilder();
                 foreach (var item in group)
                 {
                     builder.AddField(fieldFunc(item));
@@ -118,10 +124,23 @@ namespace Administrator.Common
                 pages.Add(new Page(text, builder.Build()));
             }
 
+            if (pages.Count > 1)
+            {
+                for (var i = 0; i < pages.Count; i++)
+                {
+                    var page = pages[i];
+                    pages[i] = new Page(page.Text,
+                        page.Embed.ToEmbedBuilder().WithFooter($"{i + 1}/{pages.Count}").Build());
+                }
+            }
+
             return pages;
         }
 
-        private void Expire(object state)
-            => Dispose();
+        private void Expire(object _)
+        {
+            _expiryToken.Cancel();
+            _ = CloseAsync();
+        }
     }
 }

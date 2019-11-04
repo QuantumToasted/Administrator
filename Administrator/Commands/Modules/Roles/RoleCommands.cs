@@ -64,12 +64,12 @@ namespace Administrator.Commands
                     throw new ArgumentOutOfRangeException();
 
                 if (roles.Length == 1 && target.Roles.Any(x => x.Id == roles[0].Id))
-                    return CommandErrorLocalized("role_give_role_exists", args: Format.Bold(target.ToString()));
+                    return CommandErrorLocalized("role_give_role_exists", args: Format.Bold(target.ToString().Sanitize()));
 
                 await target.AddRolesAsync(roles);
                 return roles.Length == 1
                     ? CommandSuccessLocalized("role_give_success",
-                        args: new object[] { Format.Bold(target.ToString()), roles[0].Format() })
+                        args: new object[] { Format.Bold(target.ToString().Sanitize()), roles[0].Format() })
                     : CommandSuccessLocalized("role_give_success_multiple",
                         args: new object[]
                             {Format.Bold(target.ToString()), string.Join(", ", roles.Select(x => x.Format()))});
@@ -83,12 +83,12 @@ namespace Administrator.Commands
                     throw new ArgumentOutOfRangeException();
 
                 if (roles.Length == 1 && target.Roles.All(x => x.Id != roles[0].Id))
-                    return CommandErrorLocalized("role_remove_role_exists", args: Format.Bold(target.ToString()));
+                    return CommandErrorLocalized("role_remove_role_exists", args: Format.Bold(target.ToString().Sanitize()));
 
                 await target.RemoveRolesAsync(roles);
                 return roles.Length == 1
                     ? CommandSuccessLocalized("role_remove_success",
-                        args: new object[] { Format.Bold(target.ToString()), roles[0].Format() })
+                        args: new object[] { Format.Bold(target.ToString().Sanitize()), roles[0].Format() })
                     : CommandSuccessLocalized("role_remove_success_multiple",
                         args: new object[]
                             {Format.Bold(target.ToString()), string.Join(", ", roles.Select(x => x.Format()))});
@@ -151,7 +151,7 @@ namespace Administrator.Commands
 
             return CommandSuccess(embed: new EmbedBuilder()
                 .WithColor(color)
-                .WithTitle(Context.Localize("role_info_title", role.Name))
+                .WithTitle(Context.Localize("role_info_title", role.Name.Sanitize()))
                 .AddField(Context.Localize("info_id"), role.Id, true)
                 .AddField(Context.Localize("info_mention"), role.Mention, true)
                 .AddField(Context.Localize("role_info_color"),
