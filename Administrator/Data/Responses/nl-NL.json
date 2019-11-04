@@ -10,6 +10,9 @@
     "test_goodbye": [
       "Seeya, {0}!"
     ],
+    "available_languages": [
+      "Available languages:"
+    ],
     "requirecontext_guild": [
       "This command can only be used in a server."
     ],
@@ -106,6 +109,12 @@
     "timespanparser_invalid": [
       "The supplied time span was invalid."
     ],
+    "moduleparser_notfound": [
+      "No command module could be found with that name."
+    ],
+    "languageparser_notfound": [
+      "No language could be found with that name or code."
+    ],
     "commanderror": [
       "Command error"
     ],
@@ -119,10 +128,10 @@
       "One or more requirements for this command were not met:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It needs {0}."
+      "You did not provide enough parameters for this command. It expects at least {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It only needs {0}."
+      "You provided too many parameters for this command. It expects {0} or less."
     ],
     "commanderror_overloadsfailed": [
       "All variations of this command failed:\n{0}"
@@ -667,6 +676,9 @@
     "user_info_title": [
       "Information for user {0}"
     ],
+    "user_info_title_bot": [
+      "Information for bot {0}"
+    ],
     "user_info_created": [
       "Joined Discord"
     ],
@@ -729,6 +741,207 @@
     ],
     "user_levelup": [
       "Nice job leveling up, {0}! You're now Tier {1}, Level {2}."
+    ],
+    "user_language": [
+      "Your personal response language is currently set to {0}."
+    ],
+    "user_language_set": [
+      "Your personal response language has been updated to {0}."
+    ],
+    "info_modules_title": [
+      "Available command modules:"
+    ],
+    "info_modules_info": [
+      "Commands to get information about the bot or help with commands."
+    ],
+    "info_modules_modmail": [
+      "Commands to communicate with users who have submitted mail to your server."
+    ],
+    "info_modules_moderation": [
+      "Commands to ban, kick, mute, or warn users."
+    ],
+    "info_modules_permissions": [
+      "Commands to modify module and command permissions to restrict their usage."
+    ],
+    "info_modules_punishments": [
+      "Commands to manage punishments created by the Moderation module."
+    ],
+    "info_modules_roles": [
+      "Commands to view, create, and modify server roles."
+    ],
+    "info_modules_suggestions": [
+      "Commands to create, approve, or deny server suggestions."
+    ],
+    "info_modules_users": [
+      "Commands to view information about and search for users, or modify your own personal settings."
+    ],
+    "info_module_commands": [
+      "List of commands for {0} module:"
+    ],
+    "info_module_reference": [
+      "Module: {0}"
+    ],
+    "info_help_notfound": [
+      "No command could be found with that name or path."
+    ],
+    "info_help_multiple": [
+      "Multiple commands were found with that name."
+    ],
+    "guild_language": [
+      "The server response language is currently set to {0}."
+    ],
+    "guild_language_set": [
+      "The server response language has been updated to {0}."
+    ],
+    "info_command_modmail": [
+      "Open a new modmail thread."
+    ],
+    "info_command_modmail_reply": [
+      "Reply to an open modmail thread."
+    ],
+    "info_command_modmail_close": [
+      "Close an open modmail thread."
+    ],
+    "info_command_modmail_blacklist": [
+      "Blacklist a user or modmail thread author from opening new threads."
+    ],
+    "info_command_modmail_show": [
+      "Display message history for a modmail thread."
+    ],
+    "info_command_ban": [
+      "Ban a user from your server."
+    ],
+    "info_command_tempban": [
+      "Temporarily ban a user from your server."
+    ],
+    "info_command_massban": [
+      "Ban a large number of users from your server at once."
+    ],
+    "info_command_kick": [
+      "Kick a user from your server."
+    ],
+    "info_command_mute": [
+      "Mute a user from sending messages or talking in your server."
+    ],
+    "info_command_warn": [
+      "Warn a user in your server.\nAdditional punishments may automatically be added depending on your server configuration."
+    ],
+    "info_command_block": [
+      "Block a user from sending messages or adding reactions in a text channel."
+    ],
+    "info_command_permissions": [
+      "List all custom command permissions."
+    ],
+    "info_command_permissions_remove": [
+      "Remove a custom command permission."
+    ],
+    "info_command_permissions_enable_command": [
+      "Enable or disable a single command or module."
+    ],
+    "info_command_permissions_enable_all": [
+      "Enable or disable ALL commands."
+    ],
+    "info_command_appeal": [
+      "Appeal an existing punishment."
+    ],
+    "info_command_punishments": [
+      "List all punishments on this server, starting with the most recent."
+    ],
+    "info_command_punishment": [
+      "List detailed information about a punishment."
+    ],
+    "info_command_revoke": [
+      "Revoke an existing punishment."
+    ],
+    "info_command_reason": [
+      "Add a reason to a punishment which does not have one."
+    ],
+    "info_command_warningpunishment": [
+      "View or set a specific warning punishment."
+    ],
+    "info_command_warningpunishments": [
+      "View all current warning punishments."
+    ],
+    "info_command_role": [
+      "View information about a role."
+    ],
+    "info_command_role_color": [
+      "Modify the color of an existing role."
+    ],
+    "info_command_role_create": [
+      "Create a new role."
+    ],
+    "info_command_role_delete": [
+      "Delete an existing role."
+    ],
+    "info_command_role_give": [
+      "Give an existing role to a user on your server."
+    ],
+    "info_command_role_remove": [
+      "Remove an existing role form a user on your server."
+    ],
+    "info_command_role_move": [
+      "Move an existing role above or below another."
+    ],
+    "info_command_role_rename": [
+      "Rename an existing role."
+    ],
+    "info_command_suggestions_create": [
+      "Create a new server suggestion."
+    ],
+    "info_command_suggestions_remove": [
+      "Remove an existing server suggestion."
+    ],
+    "info_command_suggestions_approve": [
+      "Approve or deny an existing server suggestion."
+    ],
+    "info_command_suggestions_channel": [
+      "View or set the channel suggestions are posted to."
+    ],
+    "info_command_suggestions_archive": [
+      "View or set the channel suggestions are archived to when they are approved or denied."
+    ],
+    "info_command_user": [
+      "View information about a user."
+    ],
+    "info_command_user_xp": [
+      "View a user's XP stats."
+    ],
+    "info_command_user_language": [
+      "View or set your personal bot response language."
+    ],
+    "info_command_user_languages": [
+      "View available response languages."
+    ],
+    "info_command_user_search": [
+      "Search for a user on the server."
+    ],
+    "info_command_user_searchregex": [
+      "Search for a user on this server using RegEx."
+    ],
+    "info_command_user_nickname": [
+      "View a user's nickname on this server."
+    ],
+    "info_command_user_nickname_set": [
+      "Set a user's nickname, or your own."
+    ],
+    "info_command_user_nickname_reset": [
+      "Reset (remove) a user's nickname."
+    ],
+    "info_command_modules": [
+      "List available command modules."
+    ],
+    "info_command_commands": [
+      "List available commands for a module."
+    ],
+    "info_command_help": [
+      "View available help for a specific command, or get the bot help message."
+    ],
+    "info_command_guild_language": [
+      "View or set the server's bot response language.'"
+    ],
+    "info_command_guild_languages": [
+      "View available response languages."
     ]
   }
 }
