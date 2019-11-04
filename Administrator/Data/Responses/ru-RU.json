@@ -677,7 +677,7 @@
       "Информация о пользователе {0}"
     ],
     "user_info_title_bot": [
-      "Information for bot {0}"
+      "Информация о боте {0}"
     ],
     "user_info_created": [
       "Присоединился к Discord"
@@ -743,70 +743,70 @@
       "Отличное повышение уровня, {0}! Теперь ваш ранг — {1}, а уровень — {2}."
     ],
     "user_language": [
-      "Your personal response language is currently set to {0}."
+      "Ваш личный язык ответа в настоящее время установлен на {0}."
     ],
     "user_language_set": [
-      "Your personal response language has been updated to {0}."
+      "Ваш язык ответа был установлен на {0}."
     ],
     "info_modules_title": [
-      "Available command modules:"
+      "Доступные модули команд:"
     ],
     "info_modules_info": [
-      "Commands to get information about the bot or help with commands."
+      "Команды для получения информации о боте или помощи с командами."
     ],
     "info_modules_modmail": [
-      "Commands to communicate with users who have submitted mail to your server."
+      "Команды для общения с пользователями, отправивших почту на ваш сервер."
     ],
     "info_modules_moderation": [
-      "Commands to ban, kick, mute, or warn users."
+      "Команды для бана, кика, заглушения или предупреждения пользователей."
     ],
     "info_modules_permissions": [
-      "Commands to modify module and command permissions to restrict their usage."
+      "Команды для изменения модулей и прав команд для ограничения их использования."
     ],
     "info_modules_punishments": [
-      "Commands to manage punishments created by the Moderation module."
+      "Команды для управления наказаниями, созданными модулем Модерация."
     ],
     "info_modules_roles": [
-      "Commands to view, create, and modify server roles."
+      "Команды для просмотра, создания и изменения ролей сервера."
     ],
     "info_modules_suggestions": [
-      "Commands to create, approve, or deny server suggestions."
+      "Команды для создания, одобрения или отклонения предложений сервера."
     ],
     "info_modules_users": [
-      "Commands to view information about and search for users, or modify your own personal settings."
+      "Команды для просмотра информации о пользователях и их поиске или изменению ваших личных настроек."
     ],
     "info_module_commands": [
-      "List of commands for {0} module:"
+      "Список команд для модуля {0}:"
     ],
     "info_module_reference": [
-      "Module: {0}"
+      "Модуль: {0}"
     ],
     "info_help_notfound": [
-      "No command could be found with that name or path."
+      "Не удалось найти команду с таким именем или путём."
     ],
     "info_help_multiple": [
-      "Multiple commands were found with that name."
+      "Было найдено несколько команд с таким именем."
     ],
     "guild_language": [
-      "The server response language is currently set to {0}."
+      "Язык ответа сервера в настоящее время установлен на {0}."
     ],
     "guild_language_set": [
-      "The server response language has been updated to {0}."
+      "Язык ответа сервера был установлен на {0}."
     ],
     "info_command_modmail": [
-      "Open a new modmail thread."
+      "Открыть новую тему мод-почты."
     ],
     "info_command_modmail_reply": [
-      "Reply to an open modmail thread."
+      "Ответить на тему мод-почты."
     ],
     "info_command_modmail_close": [
-      "Close an open modmail thread."
+      "Закрыть тему мод-почты."
     ],
     "info_command_modmail_blacklist": [
-      "Blacklist a user or modmail thread author from opening new threads."
+      "Запретить пользователю или автору темы мод-почты создавать новые темы."
     ],
     "info_command_modmail_show": [
-      "Display message history for a modmail thread."
+      "Отобразить историю сообщений для темы мод-почты."
     ],
     "info_command_ban": [
       "Ban a user from your server."
@@ -836,25 +836,25 @@
       "Remove a custom command permission."
     ],
     "info_command_permissions_enable_command": [
-      "Enable or disable a single command or module."
+      "Включить или отключить одну команду или модуль."
     ],
     "info_command_permissions_enable_all": [
-      "Enable or disable ALL commands."
+      "Включить или отключить ВСЕ команды."
     ],
     "info_command_appeal": [
-      "Appeal an existing punishment."
+      "Обжалование существующего наказания."
     ],
     "info_command_punishments": [
-      "List all punishments on this server, starting with the most recent."
+      "Перечисление всех наказаний на этом сервере, начиная с самых последних."
     ],
     "info_command_punishment": [
-      "List detailed information about a punishment."
+      "Отображение подробной информации о наказании."
     ],
     "info_command_revoke": [
-      "Revoke an existing punishment."
+      "Аннулирование существующего наказания."
     ],
     "info_command_reason": [
-      "Add a reason to a punishment which does not have one."
+      "Добавление причины к наказанию, у которого её нет."
     ],
     "info_command_warningpunishment": [
       "View or set a specific warning punishment."
