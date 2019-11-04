@@ -11,7 +11,7 @@
       "À plus tard, {0}!"
     ],
     "available_languages": [
-      "Available languages:"
+      "Langues disponibles:"
     ],
     "requirecontext_guild": [
       "Cette commande ne peut être utilisée que dans un serveur."
@@ -98,22 +98,22 @@
       "Serveur introuvable."
     ],
     "emoteparser_notfound": [
-      "Emote not found."
+      "Emoji introuvable."
     ],
     "regexparser_invalid": [
-      "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."
+      "Le regex fourni {0} est invalide. Vous pouvez utiliser https://regex101.com/ pour valider votre regex."
     ],
     "masspunishmentparser_errors": [
-      "The mass punishment arguments were formatted incorrectly. Try using the --help argument."
+      "Les arguments de sanction massive n'ont pas été formatés correctement. Vous pouvez utiliser l'argument --help."
     ],
     "timespanparser_invalid": [
-      "The supplied time span was invalid."
+      "La durée fournie est invalide."
     ],
     "moduleparser_notfound": [
-      "No command module could be found with that name."
+      "Aucun module de commande n'a pu être trouvé pour ce nom."
     ],
     "languageparser_notfound": [
-      "No language could be found with that name or code."
+      "Aucune langue n'a pu être trouvée pour ce nom ou code."
     ],
     "commanderror": [
       "Erreur de commande"
@@ -128,10 +128,10 @@
       "Une ou plusieurs exigences pour cette commande n'ont pas été respectées:\n{0}"
     ],
     "commanderror_toofewarguments": [
-      "You did not provide enough parameters for this command. It expects at least {0}."
+      "Vous n'avez pas fournis suffisamment de paramètres pour cette commande. Elle en nécessite au moins {0}."
     ],
     "commanderror_toomanyarguments": [
-      "You provided too many parameters for this command. It expects {0} or less."
+      "Vous avez fournis trop de paramètres pour cette commande. Elle nécessite {0} ou moins."
     ],
     "commanderror_overloadsfailed": [
       "Toutes les variations de cette commande ont échouées:\n{0}"
@@ -203,7 +203,7 @@
       "Permanente"
     ],
     "title_reason": [
-      "Reason"
+      "Raison"
     ],
     "punishment_noreason": [
       "Aucune raison fournie."
@@ -275,49 +275,49 @@
       "Équipe de modération du serveur {0}"
     ],
     "moderation_alreadybanned": [
-      "{0} has already been banned!"
+      "{0} a déjà été banni!"
     ],
     "moderation_ban": [
       "{0} a été banni."
     ],
     "moderation_masspunishment_interactive": [
-      "Entering interactive mode."
+      "Mode interactif activé."
     ],
     "moderation_masspunishment_confirmation": [
-      "To confirm this action, please type {0}."
+      "Pour confirmer cette action, veuillez taper {0}."
     ],
     "moderation_masspunishment_interactive_prompt": [
-      "Enter a user ID, or anything else to quit."
+      "Entrez un ID d'utilisateur, ou un élément quelconque pour quitter."
     ],
     "moderation_masspunishment_interactive_canceled": [
-      "Successfully quit out of the interactive session."
+      "Vous avez quitté la session interactive avec succès."
     ],
     "moderation_massban_notargets": [
-      "No targets were availble for banning."
+      "Aucune cible disponible pour bannir."
     ],
     "moderation_massban_target_single": [
-      "1 user has been selected to be banned:"
+      "1 utilisateur a été sélectionné pour être banni:"
     ],
     "moderation_massban_target_count": [
-      "{0} users have been selected to be banned:"
+      "{0} utilisateurs ont été sélectionnés pour être bannis:"
     ],
     "moderation_massban_alreadybanned": [
-      "{0} is already banned."
+      "{0} est déjà banni."
     ],
     "moderation_massban_userpermissions": [
-      "{0} has higher permission than you, so they were not banned."
+      "{0} possède une autorisation plus élevée que vous, donc il n'y a pas eu bannissement."
     ],
     "moderation_massban_botpermissions": [
-      "{0} has higher permission than me, so they were not banned."
+      "{0} a une autorisation supérieure à la mienne, donc il n'y a pas eu bannissement."
     ],
     "moderation_massban": [
-      "1 user was successfully banned."
+      "1 utilisateur banni avec succès."
     ],
     "moderation_massban_multiple": [
-      "{0} users were successfully banned."
+      "{0} utilisateurs bannis avec succès."
     ],
     "moderation_massban_none": [
-      "No users could be banned."
+      "Aucun utilisateur n'a pu être banni."
     ],
     "moderation_tempban": [
       "{0} a été temporairement banni pour {1}."
@@ -332,7 +332,7 @@
       "{0} a été mis en sourdine temporairement pour {1}."
     ],
     "moderation_alreadyblocked": [
-      "{0} may have already been blocked, so I did not try to block them again."
+      "{0} a peut-être déjà été bloqué, donc je n'ai pas essayé de les bloquer à nouveau."
     ],
     "moderation_block": [
       "{0} a été bloqué du canal {1}."
@@ -347,10 +347,10 @@
       "Cet utilisateur a déjà été mis en sourdine."
     ],
     "moderation_additional_punishment": [
-      "Additional punishment from warning #{0}."
+      "Sanction additionnelle pour l'avertissement #{0}."
     ],
     "moderation_additional_punishment_link": [
-      "Additional punishment from [warning #{0}]({1})."
+      "Sanction additionnelle pour [avertissement #{0}]({1})."
     ],
     "moderation_warn": [
       "{0} a été averti."
@@ -410,7 +410,7 @@
       "La sanction pour cette sanction a été mise à jour avec succès."
     ],
     "warningpunishment_notfound_count": [
-      "No automatic punishment has been set to be given out for the {0} warning."
+      "Aucune sanction automatique a été configuré pour être donnée après le {0} avertissement."
     ],
     "warningpunishment_show": [
       "Après avoir été averti {0} fois, les utilisateurs vont recevoir un(e) {1}."
@@ -446,55 +446,55 @@
       "L'utilisateur {0} a fait appel à leur {1}."
     ],
     "permissions_command_notfound": [
-      "No command could be found by that name."
+      "Aucune commande n'a pu être trouvée pour ce nom."
     ],
     "permissions_module_notfound": [
-      "No module could be found by that name."
+      "Aucun module n'a pu être trouvé pour ce nom."
     ],
     "permissions_command_enabled": [
-      "Command {0} has been enabled for {1}."
+      "La commande {0} a été activée pour {1}."
     ],
     "permissions_command_disabled": [
-      "Command {0} has been disabled for {1}."
+      "La commande {0} a été désactivée pour {1}."
     ],
     "permissions_module_enabled": [
-      "Module {0} has been enabled for {1}."
+      "Le module {0} a été activé pour {1}."
     ],
     "permissions_module_disabled": [
-      "Module {0} has been disabled for {1}."
+      "Le module {0} a été désactivé pour {1}."
     ],
     "permissions_all_enabled": [
-      "All commands have been enabled for {1}."
+      "Toutes les commandes ont été activées pour {1}."
     ],
     "permissions_all_disabled": [
-      "All commands have been disabled for {1}."
+      "Toutes les commandes ont été désactivées pour {1}."
     ],
     "permissions_list": [
-      "Command permissions for {0}"
+      "Permissions de commande requises pour {0}"
     ],
     "permissions_command": [
-      "Command"
+      "Commande"
     ],
     "permissions_module": [
       "Module"
     ],
     "permissions_global": [
-      "all servers."
+      "tous les serveurs."
     ],
     "permissions_none": [
-      "No command permissions could be found."
+      "Aucune permission de commande n'a pu être trouvée."
     ],
     "permissions_notfound": [
-      "No command permission could be found by that ID."
+      "Aucune permission de commande n'a pu être trouvée pour cet ID."
     ],
     "permissions_removed": [
-      "Command permissions successfully removed."
+      "Permissions de commande supprimées avec succès."
     ],
     "permissions_denied": [
-      "Command permission #{0} prevented you from using this command."
+      "La permission de commande #{0} vous a empêché d'utiliser cette commande."
     ],
     "suggestion_nochannel": [
-      "The suggestion channel has not been set up or was deleted."
+      "Le canal de suggestion n'a pas été configuré ou a été supprimé."
     ],
     "suggestion_id": [
       "Suggestion ID: {0}"
