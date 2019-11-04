@@ -1,7 +1,7 @@
 {
   "code": "fr-FR",
   "englishName": "French (FR)",
-  "nativeName": "English (US)",
+  "nativeName": "Français (FR)",
   "responses": {
     "test_hello": [
       "Salut, {0}!",
@@ -647,154 +647,154 @@
       "Le rôle {0} a été déplacé sous {1}."
     ],
     "role_move_above_everyone": [
-      "The {0} role cannot be moved above any other role."
+      "Le rôle {0} ne peut pas être déplacé au-dessus d'un autre rôle."
     ],
     "role_move_above_unable_self": [
-      "The role {0} is either my highest role or above it so I am not able to move {1} above it."
+      "Le rôle {0} est soit mon rôle le plus élevé ou supérieur à celui-ci donc je ne suis pas capable de déplacer {1} au-dessus."
     ],
     "role_move_above_unable_user": [
-      "The role {0} is either your highest role or above it so I will not move {1} above it."
+      "Le rôle {0} est soit votre rôle le plus élevé ou supérieur à celui-ci donc je ne suis pas capable de déplacer {1} au-dessus."
     ],
     "role_move_above_success": [
-      "The role {0} has been moved above {1}."
+      "Le rôle {0} a été déplacé au-dessus de {1}."
     ],
     "role_rename_success": [
-      "The role {0} has been renamed to {1}."
+      "Le rôle {0} a été renommé {1}."
     ],
     "user_nickname": [
-      "{0} goes by the nickname {1}."
+      "{0} a pour surnom {1}."
     ],
     "user_no_nickname": [
-      "{0} does not have a nickname set."
+      "{0} n'a pas de surnom configuré."
     ],
     "user_nickname_updated": [
-      "Nickname updated."
+      "Surnom mis à jour."
     ],
     "user_nickname_reset": [
-      "Nickname reset."
+      "Surnom réinitialisé."
     ],
     "user_info_title": [
-      "Information for user {0}"
+      "Information pour l'utilisateur {0}"
     ],
     "user_info_title_bot": [
-      "Information for bot {0}"
+      "Information pour le bot {0}"
     ],
     "user_info_created": [
-      "Joined Discord"
+      "A rejoint Discord le"
     ],
     "user_info_joined": [
-      "Joined {0}"
+      "Rejoint {0} le"
     ],
     "user_info_nickname": [
-      "Nickname"
+      "Surnom"
     ],
     "user_info_roles": [
-      "Roles ({0})"
+      "Rôles ({0})"
     ],
     "user_info_playing": [
-      "Playing {0}"
+      "Joue à {0}"
     ],
     "user_info_listening": [
-      "Listening to \"{0}\" by {1} on Spotify"
+      "Écoute \"{0}\" par {1} sur Spotify"
     ],
     "user_info_streaming": [
-      "Streaming {0} on Twitch: \"{1}\""
+      "Diffuse {0} sur Twitch: \"{1}\""
     ],
     "user_info_status": [
-      "Status"
+      "Statut"
     ],
     "user_info_online": [
-      "Online"
+      "En ligne"
     ],
     "user_info_idle": [
-      "Idle"
+      "Inactif"
     ],
     "user_info_dnd": [
-      "Do Not Disturb"
+      "Ne Pas Déranger"
     ],
     "user_info_offline": [
-      "Offline"
+      "Hors ligne"
     ],
     "user_search_no_results": [
-      "No users could be found with a name similar to \"{0}\"."
+      "Aucun utilisateur n'a pu être trouvé avec un nom similaire à \"{0}\"."
     ],
     "user_search_results": [
-      "Users found with a name similar to \"{0}\":"
+      "Utilisateurs avec un nom similaire à \"{0}\":"
     ],
     "user_search_format": [
-      "{0}, also known as {1} ({2})"
+      "{0}, également connu sous le nom de {1} ({2})"
     ],
     "user_searchregex_no_results": [
-      "No users could be found matching the regex `{0}`."
+      "Aucun utilisateur n'a pu être trouvé correspondant au regex `{0}`."
     ],
     "user_searchregex_results": [
-      "Users found matching the regex:"
+      "Utilisateurs trouvés correspondant au regex:"
     ],
     "user_searchregex_timeout": [
-      "Your search was canceled due to taking longer than three seconds.\nTry a simpler regex instead."
+      "Votre recherche a été annulée car elle a duré plus de trois secondes. Essayez plutôt un regex plus simple."
     ],
     "user_levelup_global": [
-      "Global level up!"
+      "Niveau supérieur atteint globalement!"
     ],
     "user_levelup_guild": [
-      "Server level up!"
+      "Niveau supérieur atteint pour le serveur!"
     ],
     "user_levelup": [
-      "Nice job leveling up, {0}! You're now Tier {1}, Level {2}."
+      "Félicitation pour avoir atteint le niveau supérieur, {0}! Vous êtes maintenant en division {1}, niveau {2}."
     ],
     "user_language": [
-      "Your personal response language is currently set to {0}."
+      "Votre langue de réponse personnelle est actuellement configurée en {0}."
     ],
     "user_language_set": [
-      "Your personal response language has been updated to {0}."
+      "Votre langue de réponse personnelle a été mise à jour pour être {0}."
     ],
     "info_modules_title": [
-      "Available command modules:"
+      "Modules de commandes disponibles:"
     ],
     "info_modules_info": [
-      "Commands to get information about the bot or help with commands."
+      "Commandes pour obtenir de l'information sur le bot ou de l'aide avec les commandes."
     ],
     "info_modules_modmail": [
-      "Commands to communicate with users who have submitted mail to your server."
+      "Commandes pour communiquer avec les utilisateurs qui ont envoyé du courrier à votre serveur."
     ],
     "info_modules_moderation": [
-      "Commands to ban, kick, mute, or warn users."
+      "Commandes pour bannir, expulser, mettre en sourdine ou donner des avertissements aux utilisateurs."
     ],
     "info_modules_permissions": [
-      "Commands to modify module and command permissions to restrict their usage."
+      "Commandes pour modifier les permissions des commandes et modules pour restreindre leur usage."
     ],
     "info_modules_punishments": [
-      "Commands to manage punishments created by the Moderation module."
+      "Commandes pour administrer les sanctions créées par le module Modération."
     ],
     "info_modules_roles": [
-      "Commands to view, create, and modify server roles."
+      "Commande pour voir, créer, et modifier des rôles du serveur."
     ],
     "info_modules_suggestions": [
-      "Commands to create, approve, or deny server suggestions."
+      "Commandes pour créer, approuver ou rejeter des suggestions."
     ],
     "info_modules_users": [
-      "Commands to view information about and search for users, or modify your own personal settings."
+      "Commandes pour voir ou rechercher de l'information sur les utilisateurs, ou modifier vos propres paramètres personnels."
     ],
     "info_module_commands": [
-      "List of commands for {0} module:"
+      "Liste de commandes pour le module {0}:"
     ],
     "info_module_reference": [
       "Module: {0}"
     ],
     "info_help_notfound": [
-      "No command could be found with that name or path."
+      "Aucune commande n'a pu être trouvée avec ce nom ou ce chemin."
     ],
     "info_help_multiple": [
-      "Multiple commands were found with that name."
+      "Plusieurs commandes ont été trouvées pour ce nom."
     ],
     "guild_language": [
-      "The server response language is currently set to {0}."
+      "La langue de réponse du serveur est actuellement configurée en {0}."
     ],
     "guild_language_set": [
-      "The server response language has been updated to {0}."
+      "La langue de réponse du serveur a été mise à jour pour être {0}."
     ],
     "info_command_modmail": [
-      "Open a new modmail thread."
+      "Ouvrir un nouveau modmail."
     ],
     "info_command_modmail_reply": [
       "Répondre à un modmail."
