@@ -10,8 +10,11 @@
     "test_goodbye": [
       "Пока, {0}!"
     ],
+    "available_languages": [
+      "Доступные языки:"
+    ],
     "requirecontext_guild": [
-      "Эта команда может быть использована только на сервере."
+      "Эта команда может быть использована только на серверах."
     ],
     "requirecontext_dm": [
       "Эта команда может быть использована только в Личных Сообщениях."
@@ -39,6 +42,15 @@
     ],
     "requireguildowner": [
       "Эта команда может быть использована только владельцем сервера."
+    ],
+    "requiremember": [
+      "Эта команда может быть использована только участниками сервера {0}."
+    ],
+    "requireloggingchannel_notfound": [
+      "Канал {0} не был найден или не был настроен."
+    ],
+    "requireloggingchannel": [
+      "Эта команда может быть использована только в канале {0}."
     ],
     "operator_greaterthan": [
       "Указанное число должно быть больше числа {0}."
@@ -78,6 +90,858 @@
     ],
     "channelparser_notfound": [
       "Канал не найден."
+    ],
+    "guildparser_multiple": [
+      "Было найдено несколько серверов с таким именем."
+    ],
+    "guildparser_notfound": [
+      "Сервер не найден."
+    ],
+    "emoteparser_notfound": [
+      "Эмодзи не найден."
+    ],
+    "regexparser_invalid": [
+      "Указанный регекс `{0}` неверен.\nВы можете использовать https://regex101.com/ для того, чтобы убедиться, что ваш регекс правильный."
+    ],
+    "masspunishmentparser_errors": [
+      "Аргументы массового наказания были неверно отформатированы. Попробуйте использовать аргумент --help."
+    ],
+    "timespanparser_invalid": [
+      "Указанный интервал времени недействителен."
+    ],
+    "moduleparser_notfound": [
+      "Никакого модуля команд с таким названием не было найдено."
+    ],
+    "languageparser_notfound": [
+      "Никакого языка с таким названием или кодом не было найдено."
+    ],
+    "commanderror": [
+      "Ошибка в команде"
+    ],
+    "commanderror_exception": [
+      "Произошла непредвиденная ошибка при попытке использовать эту команду. Пожалуйста, сообщите о следующем тексте на [сервере поддержки]({0}):\n{1}"
+    ],
+    "commanderror_paramchecks": [
+      "Одно или несколько требований к параметрам в этой команде не были выполнены:\n{0}"
+    ],
+    "commanderror_checks": [
+      "Одно или несколько требований для этой команды не были выполнены:\n{0}"
+    ],
+    "commanderror_toofewarguments": [
+      "Вы ввели недостаточно параметров для этой команды. Требуется хотя бы {0}."
+    ],
+    "commanderror_toomanyarguments": [
+      "Вы ввели слишком много параметров для этой команды. Требуется {0} или меньше."
+    ],
+    "commanderror_overloadsfailed": [
+      "Не удалось выполнить ни один вариант этой команды:\n{0}"
+    ],
+    "punishment_case": [
+      "Дело #{0}"
+    ],
+    "punishment_ban": [
+      "Бан"
+    ],
+    "punishment_ban_description": [
+      "Вы были забанены в {0}."
+    ],
+    "punishment_ban_description_guild": [
+      "Пользователь {0} был забанен."
+    ],
+    "punishment_ban_revoke_description": [
+      "Вы были разбанены в {0}."
+    ],
+    "punishment_ban_revoke_description_guild": [
+      "Пользователь {0} был разбанен."
+    ],
+    "punishment_kick": [
+      "Кик"
+    ],
+    "punishment_kick_description": [
+      "Вы были кикнуты из {0}."
+    ],
+    "punishment_kick_description_guild": [
+      "Пользователь {0} был кикнут."
+    ],
+    "punishment_mute": [
+      "Заглушить"
+    ],
+    "punishment_mute_description": [
+      "Вы были заглушены в {0}."
+    ],
+    "punishment_mute_description_guild": [
+      "Пользователь {0} был заглушён."
+    ],
+    "punishment_mute_revoke_description": [
+      "Вы были размучены в {0}."
+    ],
+    "punishment_mute_revoke_description_guild": [
+      "Пользователь {0} был размучен."
+    ],
+    "punishment_warning": [
+      "Предупреждение"
+    ],
+    "punishment_warning_description": [
+      "Вам было выдано предупреждение в {0}. Это ваше {1}-е предупреждение."
+    ],
+    "punishment_warning_description_guild": [
+      "{0} пользователь были предупреждён. Это их {1}-е предупреждение."
+    ],
+    "punishment_warning_revoke_description": [
+      "Ваше предупреждение было аннулировано в {0}."
+    ],
+    "punishment_warning_revoke_description_guild": [
+      "Предупреждение пользователя {0} было аннулировано."
+    ],
+    "punishment_warning_additional": [
+      "Дополнительное наказание"
+    ],
+    "punishment_duration": [
+      "Длительность"
+    ],
+    "punishment_permanent": [
+      "Постоянный"
+    ],
+    "title_reason": [
+      "Причина"
+    ],
+    "punishment_noreason": [
+      "Причина не указана."
+    ],
+    "punishment_needsreason": [
+      "Модератор: используйте {0}, чтобы дать причину этому наказанию."
+    ],
+    "punishment_appeal": [
+      "Инструкции по обжалованию"
+    ],
+    "punishment_tooshort": [
+      "Из-за длины вашего наказания ({0}), оно не может быть обжаловано."
+    ],
+    "punishment_appeal_instructions": [
+      "Номер вашего дела - {0}. Чтобы обжаловать его, используйте команду {1} и оно будет рассмотрено модераторами сервера."
+    ],
+    "punishment_moderator": [
+      "Модератор: {0}"
+    ],
+    "punishment_moderator_title": [
+      "Модератор"
+    ],
+    "modmail_send_success": [
+      "Ваша мод-почта была успешно отправлена! Ваш ID — {0}."
+    ],
+    "modmail_reply_command": [
+      "Вы можете ответить на эту ветку командой {0}, и закрыть её с помощью {1}."
+    ],
+    "modmail_exists": [
+      "У вас уже есть открытая ветка мод-почты в {0}. Ответьте на неё командой {1}, или закройте её с помощью {2}."
+    ],
+    "modmail_title": [
+      "Новое сообщение в ветке мод-почты #{0}"
+    ],
+    "modmail_notfound": [
+      "Не удалось найти мод-почту по этому ID."
+    ],
+    "modmail_closed_user": [
+      "Вы не можете ответить на эту мод-почту, потому что Вы закрыли её."
+    ],
+    "modmail_closed_user_guild": [
+      "Вы не можете ответить на эту мод-почту, потому что пользователь закрыл её."
+    ],
+    "modmail_closed_guild": [
+      "Вы не можете ответить на эту мод-почту, потому что команда модераторов закрыла её."
+    ],
+    "modmail_reply_success": [
+      "Вы успешно ответили на эту мод-почту."
+    ],
+    "modmail_alreadyclosed": [
+      "Эта мод-почта уже была закрыта."
+    ],
+    "modmail_closed_success": [
+      "Вы успешно закрыли эту мод-почту."
+    ],
+    "modmail_blacklist_added": [
+      "Этот пользователь был добавлен в черный список мод-почты."
+    ],
+    "modmail_blacklist_removed": [
+      "Этот пользователь был удалён из чёрного списка мод-почты."
+    ],
+    "modmail_anonymous": [
+      "Неизвестно"
+    ],
+    "modmail_message_title": [
+      "Сообщения в ветке мод-почты #{0}"
+    ],
+    "modmail_modteam": [
+      "Команда модераторов {0}"
+    ],
+    "moderation_alreadybanned": [
+      "{0} уже был забанен!"
+    ],
+    "moderation_ban": [
+      "{0} был забанен."
+    ],
+    "moderation_masspunishment_interactive": [
+      "Вход в интерактивный режим."
+    ],
+    "moderation_masspunishment_confirmation": [
+      "Чтобы подтвердить это действие, пожалуйста, введите {0}."
+    ],
+    "moderation_masspunishment_interactive_prompt": [
+      "Введите ID пользователя или что-либо другое для выхода."
+    ],
+    "moderation_masspunishment_interactive_canceled": [
+      "Успешный выход из интерактивного сеанса."
+    ],
+    "moderation_massban_notargets": [
+      "Ни одна цель для бана не была доступна."
+    ],
+    "moderation_massban_target_single": [
+      "1 пользователь был выбран для бана:"
+    ],
+    "moderation_massban_target_count": [
+      "{0} пользователей были выбраны для бана:"
+    ],
+    "moderation_massban_alreadybanned": [
+      "{0} уже забанен."
+    ],
+    "moderation_massban_userpermissions": [
+      "У пользователя {0} больше прав, чем у вас, поэтому он не был забанен."
+    ],
+    "moderation_massban_botpermissions": [
+      "У пользователя {0} больше прав, чем у меня, поэтому он не был забанен."
+    ],
+    "moderation_massban": [
+      "1 пользователь был успешно забанен."
+    ],
+    "moderation_massban_multiple": [
+      "{0} пользователей были успешно забанены."
+    ],
+    "moderation_massban_none": [
+      "Невозможно было забанить ни одного пользователя."
+    ],
+    "moderation_tempban": [
+      "{0} был временно забанен на {1}."
+    ],
+    "moderation_kick": [
+      "{0} был кикнут."
+    ],
+    "moderation_mute": [
+      "{0} был заглушён."
+    ],
+    "moderation_mute_temporary": [
+      "{0} был временно заглушён на {1}."
+    ],
+    "moderation_alreadyblocked": [
+      "{0} возможно уже заблокирован, поэтому я не попыталась заблокировать их снова."
+    ],
+    "moderation_block": [
+      "{0} был заблокирован в {1}."
+    ],
+    "moderation_block_temporary": [
+      "{0} был временно заблокирован в {1} на {2}."
+    ],
+    "moderation_nomuterole": [
+      "Роль заглушки не была настроена или была удалена."
+    ],
+    "moderation_alreadymuted": [
+      "Этот пользователь уже был заглушён."
+    ],
+    "moderation_additional_punishment": [
+      "Дополнительное наказание из предупреждения #{0}."
+    ],
+    "moderation_additional_punishment_link": [
+      "Дополнительное наказание из [предупреждения #{0}]({1})."
+    ],
+    "moderation_warn": [
+      "{0} был предупреждён."
+    ],
+    "timespanparser_nomatch": [
+      "Не удалось сопоставить этот текст с интервалом времени."
+    ],
+    "punishment_list_title": [
+      "Наказания в {0}"
+    ],
+    "punishment_target": [
+      "Цель: {0}"
+    ],
+    "punishment_target_title": [
+      "Цель"
+    ],
+    "punishment_timestamp": [
+      "Время: {0}"
+    ],
+    "punishment_timestamp_title": [
+      "Время"
+    ],
+    "punishment_nopunishments_guild": [
+      "Никаких наказаний для этого сервера не было найдено."
+    ],
+    "punishment_nopunishments_user": [
+      "Никаких наказаний для этого пользователя не было найдено."
+    ],
+    "punishment_notfound_id": [
+      "Никаких наказаний с этим ID не было найдено."
+    ],
+    "punishment_revoked": [
+      "Аннулировано?"
+    ],
+    "punishment_appealed": [
+      "Обжаловано?"
+    ],
+    "punishment_alreadyrevoked": [
+      "Это наказание уже было аннулировано."
+    ],
+    "punishment_revoked_nounban": [
+      "Наказание успешно аннулировано, но цель в настоящее время не забанена."
+    ],
+    "punishment_revoked_nounmute": [
+      "Наказание успешно аннулировано, но цель в настоящее время не заглушена."
+    ],
+    "punishment_revoked_success": [
+      "Наказание успешно аннулировано."
+    ],
+    "punishment_reason_exists": [
+      "Этому наказанию уже была назначена причина."
+    ],
+    "punishment_reason_missingmessage": [
+      "Однако я не могу найти сообщение с причиной для модификации."
+    ],
+    "punishment_reason_success": [
+      "Причина для этого наказания была успешно обновлена."
+    ],
+    "warningpunishment_notfound_count": [
+      "Никаких автоматических наказаний для выдачи за {0}-е предупреждение не было установлено."
+    ],
+    "warningpunishment_show": [
+      "При предупреждении {0} раз(-а) пользователи получат {1}."
+    ],
+    "warningpunishment_ban_duration": [
+      "бан на {0}"
+    ],
+    "warningpunishment_mute_duration": [
+      "заглушка на {0}"
+    ],
+    "warningpunishments_none": [
+      "Никаких наказаний для предупреждений не было установлено."
+    ],
+    "warningpunishments_title": [
+      "Наказания за предупреждения в {0}"
+    ],
+    "punishment_mute_channel": [
+      "Канал"
+    ],
+    "punishment_mute_expired": [
+      "Cрок действия заглушки истёк."
+    ],
+    "punishment_ban_expired": [
+      "Cрок действия бана истёк."
+    ],
+    "punishment_alreadyappealed": [
+      "Это наказание уже было обжаловано."
+    ],
+    "punishment_appeal_success": [
+      "Ваше наказание было успешно обжаловано."
+    ],
+    "punishment_appeal_description_guild": [
+      "Пользователь {0} обжаловал их {1}."
+    ],
+    "permissions_command_notfound": [
+      "Никакой команды с таким названием не было найдено."
+    ],
+    "permissions_module_notfound": [
+      "Никакого модуля с таким названием не было найдено."
+    ],
+    "permissions_command_enabled": [
+      "Команда {0} была включена для {1}."
+    ],
+    "permissions_command_disabled": [
+      "Команда {0} была отключена для {1}."
+    ],
+    "permissions_module_enabled": [
+      "Модуль {0} был включен для {1}."
+    ],
+    "permissions_module_disabled": [
+      "Модуль {0} был отключен для {1}."
+    ],
+    "permissions_all_enabled": [
+      "Все команды были включены для {1}."
+    ],
+    "permissions_all_disabled": [
+      "Все команды были отключены для {1}."
+    ],
+    "permissions_list": [
+      "Разрешения команд для {0}"
+    ],
+    "permissions_command": [
+      "Команда"
+    ],
+    "permissions_module": [
+      "Модуль"
+    ],
+    "permissions_global": [
+      "всех серверов."
+    ],
+    "permissions_none": [
+      "Никаких разрешений команд не было найдено."
+    ],
+    "permissions_notfound": [
+      "Никакого разрешения команд с таким ID не было найдено."
+    ],
+    "permissions_removed": [
+      "Разрешения команд были успешно удалены."
+    ],
+    "permissions_denied": [
+      "Разрешение команд #{0} не позволило вам использовать эту команду."
+    ],
+    "suggestion_nochannel": [
+      "Канал предложений не был настроен или был удалён."
+    ],
+    "suggestion_id": [
+      "ID предложения: {0}"
+    ],
+    "suggestion_successful": [
+      "Вы успешно внесли предложение! Ваш ID — {0}."
+    ],
+    "suggestion_notfound": [
+      "Никакого предложения с таким ID не было найдено."
+    ],
+    "suggestion_removed": [
+      "Предложение успешно удалено."
+    ],
+    "suggestion_noarchive": [
+      "Канал архива предложений не был настроен или был удалён."
+    ],
+    "suggestion_approved_title": [
+      "Предложенное #{0}, внесённое {1}, было одобрено с {2} положительными и {3} отрицательными голосами."
+    ],
+    "suggestion_denied_title": [
+      "Предложенное #{0}, внесённое {1}, было отклонено с {2} положительными и {3} отрицательными голосами."
+    ],
+    "suggestion_approved_footer": [
+      "Одобрил: {0}"
+    ],
+    "suggestion_denied_footer": [
+      "Отклонил: {0}"
+    ],
+    "suggestion_approved": [
+      "Предложение успешно одобрено."
+    ],
+    "suggestion_denied": [
+      "Предложение успешно отклонено."
+    ],
+    "suggestion_channel_updated": [
+      "Канал предложений был обновлён. Предложения теперь будут показаны в {0}."
+    ],
+    "suggestion_channel": [
+      "Предложения в настоящее время настроены на отображение в {0}."
+    ],
+    "suggestion_archive_updated": [
+      "Канал архива предложений был обновлён. Предложения теперь будут показаны в {0}."
+    ],
+    "suggestion_archive": [
+      "Предложения в настоящее время настроены на архивирование в {0}."
+    ],
+    "info_id": [
+      "ID"
+    ],
+    "info_mention": [
+      "Упоминание"
+    ],
+    "info_created": [
+      "Создан"
+    ],
+    "info_ago": [
+      "{0} назад"
+    ],
+    "info_now": [
+      "Только что"
+    ],
+    "info_none": [
+      "Нет"
+    ],
+    "info_position": [
+      "Позиция"
+    ],
+    "info_timeout_password": [
+      "Вы слишком долго отвечали, либо ваш пароль не совпал."
+    ],
+    "role_info_above_below": [
+      "{0}/{1}, выше {2} но ниже {3}"
+    ],
+    "role_info_above": [
+      "{0}/{1}, выше всех других ролей"
+    ],
+    "role_info_below": [
+      "{0}/{1}, ниже всех других ролей"
+    ],
+    "role_info_color": [
+      "Цвет"
+    ],
+    "role_info_title": [
+      "Информация о роли {0}"
+    ],
+    "role_info_members": [
+      "Участники ({0})"
+    ],
+    "role_info_permissions": [
+      "Разрешения"
+    ],
+    "colorparser_invalid": [
+      "Указанный цвет неверен.\nПоддерживаемые цвета являются шестнадцатеричными кодами (#000000-#FFFFFF) или R,G,B значениями с диапазоном 0-255 (105,190,20)."
+    ],
+    "role_create_success": [
+      "Роль {0} была успешно создана!"
+    ],
+    "role_create_success_color": [
+      "Роль {0} с цветом {1} была успешно создана!"
+    ],
+    "role_color_default": [
+      "Цвет роли {0} в настоящее время установлен на цвет по умолчанию."
+    ],
+    "role_color": [
+      "Цвет роли {0} в настоящее время установлен на {1}."
+    ],
+    "role_color_modified_default": [
+      "Цвет роли {0} был сброшен на цвет по умолчанию."
+    ],
+    "role_color_modified": [
+      "Цвет роли {0} был изменён на {1}."
+    ],
+    "role_give_role_exists": [
+      "У пользователя {0} уже есть эта роль!"
+    ],
+    "role_give_success": [
+      "Пользователю {0} была выдана {1} роль."
+    ],
+    "role_give_success_multiple": [
+      "Пользователю {0} были выданы следующие роли:\n{1}"
+    ],
+    "role_remove_role_exists": [
+      "У пользователя {0} нет этой роли!"
+    ],
+    "role_remove_success": [
+      "С пользователя {0} была снята роль {1}."
+    ],
+    "role_remove_success_multiple": [
+      "С пользователя {0} были сняты следующие роли:\n{1}"
+    ],
+    "role_delete_success": [
+      "Роль {0} была успешно удалена."
+    ],
+    "role_unassignable_self": [
+      "{0} - либо моя наивысшая роль, либо роль выше неё, поэтому я не могу выдать её другим."
+    ],
+    "role_unassignable_user": [
+      "{0} - либо ваша наивысшая роль, либо роль выше неё, поэтому я не буду выдавать её другим."
+    ],
+    "role_move_below_everyone": [
+      "Роль {0} не может быть перемещена, а также никакая роль не может находится ниже её."
+    ],
+    "role_move_below_unable_self": [
+      "{0} - либо моя наивысшая роль, либо роль выше неё, поэтому я не могу переместить {1} ниже неё."
+    ],
+    "role_move_below_unable_user": [
+      "Роль {0} является вашей наивысшей ролью либо ролью выше неё, поэтому я не буду перемещать {1} ниже неё."
+    ],
+    "role_move_below_success": [
+      "Роль {0} была перемещена ниже {1}."
+    ],
+    "role_move_above_everyone": [
+      "Роль {0} не может перемещена выше любой другой роли."
+    ],
+    "role_move_above_unable_self": [
+      "{0} - либо моя наивысшая роль, либо роль выше неё, поэтому я не могу переместить {1} выше неё."
+    ],
+    "role_move_above_unable_user": [
+      "{0} - либо ваша наивысшая роль, либо роль выше неё, поэтому я не буду перемещать {1} выше неё."
+    ],
+    "role_move_above_success": [
+      "Роль {0} была перемещена выше {1}."
+    ],
+    "role_rename_success": [
+      "Роль {0} была переименована в {1}."
+    ],
+    "user_nickname": [
+      "{0} идёт под никнейном {1}."
+    ],
+    "user_no_nickname": [
+      "У {0} нет никнейма."
+    ],
+    "user_nickname_updated": [
+      "Никнейм обновлён."
+    ],
+    "user_nickname_reset": [
+      "Никнейм сброшен."
+    ],
+    "user_info_title": [
+      "Информация о пользователе {0}"
+    ],
+    "user_info_title_bot": [
+      "Информация о боте {0}"
+    ],
+    "user_info_created": [
+      "Присоединился к Discord"
+    ],
+    "user_info_joined": [
+      "Присоединился к {0}"
+    ],
+    "user_info_nickname": [
+      "Никнейм"
+    ],
+    "user_info_roles": [
+      "Роли ({0})"
+    ],
+    "user_info_playing": [
+      "Играет в {0}"
+    ],
+    "user_info_listening": [
+      "Слушает \"{0}\" от исполнителя {1} в Spotify"
+    ],
+    "user_info_streaming": [
+      "Транслирует {0} на Twitch: \"{1}\""
+    ],
+    "user_info_status": [
+      "Статус"
+    ],
+    "user_info_online": [
+      "В сети"
+    ],
+    "user_info_idle": [
+      "Отошёл"
+    ],
+    "user_info_dnd": [
+      "Не беспокоить"
+    ],
+    "user_info_offline": [
+      "Не в сети"
+    ],
+    "user_search_no_results": [
+      "Пользователей с именем, похожим на \"{0}\", не было найдено."
+    ],
+    "user_search_results": [
+      "Пользователи, найденные с именем, похожим на \"{0}\":"
+    ],
+    "user_search_format": [
+      "{0}, также известный как {1} ({2})"
+    ],
+    "user_searchregex_no_results": [
+      "Не удалось найти пользователей, соответствующих регексу `{0}`."
+    ],
+    "user_searchregex_results": [
+      "Пользователи, найденные в соответствии с указанным регексом:"
+    ],
+    "user_searchregex_timeout": [
+      "Ваш запрос занял больше трёх секунд, поэтому был отменен.\nПопробуйте регекс попроще."
+    ],
+    "user_levelup_global": [
+      "Повышение глобального уровня!"
+    ],
+    "user_levelup_guild": [
+      "Повышение серверного уровня!"
+    ],
+    "user_levelup": [
+      "Отличное повышение уровня, {0}! Теперь ваш ранг — {1}, а уровень — {2}."
+    ],
+    "user_language": [
+      "Ваш личный язык ответа в настоящее время установлен на {0}."
+    ],
+    "user_language_set": [
+      "Ваш язык ответа был установлен на {0}."
+    ],
+    "info_modules_title": [
+      "Доступные модули команд:"
+    ],
+    "info_modules_info": [
+      "Команды для получения информации о боте или помощи с командами."
+    ],
+    "info_modules_modmail": [
+      "Команды для общения с пользователями, отправивших почту на ваш сервер."
+    ],
+    "info_modules_moderation": [
+      "Команды для бана, кика, заглушения или предупреждения пользователей."
+    ],
+    "info_modules_permissions": [
+      "Команды для изменения модулей и прав команд для ограничения их использования."
+    ],
+    "info_modules_punishments": [
+      "Команды для управления наказаниями, созданными модулем Модерация."
+    ],
+    "info_modules_roles": [
+      "Команды для просмотра, создания и изменения ролей сервера."
+    ],
+    "info_modules_suggestions": [
+      "Команды для создания, одобрения или отклонения предложений сервера."
+    ],
+    "info_modules_users": [
+      "Команды для просмотра информации о пользователях и их поиске или изменению ваших личных настроек."
+    ],
+    "info_module_commands": [
+      "Список команд для модуля {0}:"
+    ],
+    "info_module_reference": [
+      "Модуль: {0}"
+    ],
+    "info_help_notfound": [
+      "Не удалось найти команду с таким именем или путём."
+    ],
+    "info_help_multiple": [
+      "Было найдено несколько команд с таким именем."
+    ],
+    "guild_language": [
+      "Язык ответа сервера в настоящее время установлен на {0}."
+    ],
+    "guild_language_set": [
+      "Язык ответа сервера был установлен на {0}."
+    ],
+    "info_command_modmail": [
+      "Открыть новую тему мод-почты."
+    ],
+    "info_command_modmail_reply": [
+      "Ответить на тему мод-почты."
+    ],
+    "info_command_modmail_close": [
+      "Закрыть тему мод-почты."
+    ],
+    "info_command_modmail_blacklist": [
+      "Запретить пользователю или автору темы мод-почты создавать новые темы."
+    ],
+    "info_command_modmail_show": [
+      "Отобразить историю сообщений для темы мод-почты."
+    ],
+    "info_command_ban": [
+      "Ban a user from your server."
+    ],
+    "info_command_tempban": [
+      "Temporarily ban a user from your server."
+    ],
+    "info_command_massban": [
+      "Ban a large number of users from your server at once."
+    ],
+    "info_command_kick": [
+      "Kick a user from your server."
+    ],
+    "info_command_mute": [
+      "Mute a user from sending messages or talking in your server."
+    ],
+    "info_command_warn": [
+      "Warn a user in your server.\nAdditional punishments may automatically be added depending on your server configuration."
+    ],
+    "info_command_block": [
+      "Block a user from sending messages or adding reactions in a text channel."
+    ],
+    "info_command_permissions": [
+      "List all custom command permissions."
+    ],
+    "info_command_permissions_remove": [
+      "Remove a custom command permission."
+    ],
+    "info_command_permissions_enable_command": [
+      "Включить или отключить одну команду или модуль."
+    ],
+    "info_command_permissions_enable_all": [
+      "Включить или отключить ВСЕ команды."
+    ],
+    "info_command_appeal": [
+      "Обжалование существующего наказания."
+    ],
+    "info_command_punishments": [
+      "Перечисление всех наказаний на этом сервере, начиная с самых последних."
+    ],
+    "info_command_punishment": [
+      "Отображение подробной информации о наказании."
+    ],
+    "info_command_revoke": [
+      "Аннулирование существующего наказания."
+    ],
+    "info_command_reason": [
+      "Добавление причины к наказанию, у которого её нет."
+    ],
+    "info_command_warningpunishment": [
+      "View or set a specific warning punishment."
+    ],
+    "info_command_warningpunishments": [
+      "View all current warning punishments."
+    ],
+    "info_command_role": [
+      "View information about a role."
+    ],
+    "info_command_role_color": [
+      "Modify the color of an existing role."
+    ],
+    "info_command_role_create": [
+      "Create a new role."
+    ],
+    "info_command_role_delete": [
+      "Delete an existing role."
+    ],
+    "info_command_role_give": [
+      "Give an existing role to a user on your server."
+    ],
+    "info_command_role_remove": [
+      "Remove an existing role from a user on your server."
+    ],
+    "info_command_role_move": [
+      "Move an existing role above or below another."
+    ],
+    "info_command_role_rename": [
+      "Rename an existing role."
+    ],
+    "info_command_suggestions_create": [
+      "Create a new server suggestion."
+    ],
+    "info_command_suggestions_remove": [
+      "Remove an existing server suggestion."
+    ],
+    "info_command_suggestions_approve": [
+      "Approve or deny an existing server suggestion."
+    ],
+    "info_command_suggestions_channel": [
+      "View or set the channel suggestions are posted to."
+    ],
+    "info_command_suggestions_archive": [
+      "View or set the channel suggestions are archived to when they are approved or denied."
+    ],
+    "info_command_user": [
+      "View information about a user."
+    ],
+    "info_command_user_xp": [
+      "View a user's XP stats."
+    ],
+    "info_command_user_language": [
+      "View or set your personal bot response language."
+    ],
+    "info_command_user_languages": [
+      "View available response languages."
+    ],
+    "info_command_user_search": [
+      "Search for a user on the server."
+    ],
+    "info_command_user_searchregex": [
+      "Search for a user on this server using RegEx."
+    ],
+    "info_command_user_nickname": [
+      "View a user's nickname on this server."
+    ],
+    "info_command_user_nickname_set": [
+      "Set a user's nickname, or your own."
+    ],
+    "info_command_user_nickname_reset": [
+      "Reset (remove) a user's nickname."
+    ],
+    "info_command_modules": [
+      "List available command modules."
+    ],
+    "info_command_commands": [
+      "List available commands for a module."
+    ],
+    "info_command_help": [
+      "View available help for a specific command, or get the bot help message."
+    ],
+    "info_command_guild_language": [
+      "View or set the server's bot response language."
+    ],
+    "info_command_guild_languages": [
+      "View available response languages."
     ]
   }
 }

@@ -1,0 +1,380 @@
+{
+  "code": "en-US",
+  "englishName": "English (US)",
+  "nativeName": "English (US)",
+  "responses": {
+    "test_hello": [
+      "Hello, {0}!",
+      "Greetings, {0}!"
+    ],
+    "test_goodbye": [
+      "Seeya, {0}!"
+    ],
+    "requirecontext_guild": [
+      "This command can only be used in a server."
+    ],
+    "requirecontext_dm": [
+      "This command can only be used in DMs."
+    ],
+    "requireowner": [
+      "This command can only be used by one of my owners."
+    ],
+    "requirehierarchy_self": [
+      "The role hierarchy doesn't allow me to do that."
+    ],
+    "requirehierarchy_user": [
+      "The role hierarchy doesn't allow you to do that."
+    ],
+    "requirebotpermissions_guild": [
+      "This command requires me to have the following server permissions: {0}"
+    ],
+    "requirebotpermissions_channel": [
+      "This command requires me to have the following channel permissions: {0}"
+    ],
+    "requireuserpermissions_guild": [
+      "This command requires you to have the following server permissions: {0}"
+    ],
+    "requireuserpermissions_channel": [
+      "This command requires you to have the following channel permissions: {0}"
+    ],
+    "requireguildowner": [
+      "This command can only used by the server owner."
+    ],
+    "requiremember": [
+      "This command can only be used by members of {0}."
+    ],
+    "requireloggingchannel_notfound": [
+      "The {0} channel could not be found, or was not set up."
+    ],
+    "requireloggingchannel": [
+      "This command can only be used in the {0} channel."
+    ],
+    "operator_greaterthan": [
+      "The number supplied must be greater than {0}."
+    ],
+    "operator_equalto": [
+      "The number supplied must be equal to {0}."
+    ],
+    "operator_lessthan": [
+      "The number supplied must be less than {0}."
+    ],
+    "operator_divisibleby": [
+      "The number supplied must be divisible by {0}."
+    ],
+    "stringvalue_longerthan": [
+      "The supplied text must be longer than {0} characters."
+    ],
+    "stringvalue_exactly": [
+      "The supplied text must be exactly {0} characters."
+    ],
+    "stringvalue_shorterthan": [
+      "The supplied text must be shorter than {0} characters."
+    ],
+    "userparser_multiple": [
+      "Multiple users were found with that username or nickname."
+    ],
+    "userparser_notfound": [
+      "User not found."
+    ],
+    "roleparser_multiple": [
+      "Multiple roles were found with that name."
+    ],
+    "roleparser_notfound": [
+      "Role not found."
+    ],
+    "channelparser_multiple": [
+      "Multiple channels were found by that name."
+    ],
+    "channelparser_notfound": [
+      "Channel not found."
+    ],
+    "guildparser_multiple": [
+      "Multiple servers were found by that name."
+    ],
+    "guildparser_notfound": [
+      "Server not found."
+    ],
+    "commanderror": [
+      "Command error"
+    ],
+    "commanderror_exception": [
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
+    ],
+    "commanderror_paramchecks": [
+      "One or more requirements for the parameters in this command were not met:\n{0}"
+    ],
+    "commanderror_checks": [
+      "One or more requirements for this command were not met:\n{0}"
+    ],
+    "commanderror_toofewarguments": [
+      "You did not provide enough parameters for this command. It needs {0}."
+    ],
+    "commanderror_toomanyarguments": [
+      "You provided too many parameters for this command. It only needs {0}."
+    ],
+    "commanderror_overloadsfailed": [
+      "All variations of this command failed:\n{0}"
+    ],
+    "punishment_case": [
+      "Case #{0}"
+    ],
+    "punishment_ban": [
+      "Ban"
+    ],
+    "punishment_ban_description": [
+      "You have been banned from {0}."
+    ],
+    "punishment_ban_description_guild": [
+      "User {0} has been banned."
+    ],
+    "punishment_ban_revoke_description": [
+      "You have been unbanned from {0}."
+    ],
+    "punishment_ban_revoke_description_guild": [
+      "User {0} has been unbanned."
+    ],
+    "punishment_kick": [
+      "Kick"
+    ],
+    "punishment_kick_description": [
+      "You have been kicked out of {0}."
+    ],
+    "punishment_kick_description_guild": [
+      "User {0} has been kicked."
+    ],
+    "punishment_mute": [
+      "Mute"
+    ],
+    "punishment_mute_description": [
+      "You have been muted in {0}."
+    ],
+    "punishment_mute_description_guild": [
+      "User {0} has been muted."
+    ],
+    "punishment_mute_revoke_description": [
+      "You have been unmuted in {0}."
+    ],
+    "punishment_mute_revoke_description_guild": [
+      "User {0} has been unmuted."
+    ],
+    "punishment_warning": [
+      "Warning"
+    ],
+    "punishment_warning_description": [
+      "You have been given a warning in {0}. This is your {1} warning."
+    ],
+    "punishment_warning_description_guild": [
+      "User {0} has been warned. This is their {1} warning."
+    ],
+    "punishment_warning_revoke_description": [
+      "Your warning has been revoked in {0}."
+    ],
+    "punishment_warning_revoke_description_guild": [
+      "User {0} has had their warning revoked."
+    ],
+    "punishment_warning_additional": [
+      "Additional punishment"
+    ],
+    "punishment_duration": [
+      "Duration"
+    ],
+    "punishment_permanent": [
+      "Permanent"
+    ],
+    "punishment_reason": [
+      "Reason"
+    ],
+    "punishment_noreason": [
+      "No reason provided."
+    ],
+    "punishment_needsreason": [
+      "Moderator: use {0} to give this punishment a reason."
+    ],
+    "punishment_appeal": [
+      "Appeal instructions"
+    ],
+    "punishment_tooshort": [
+      "Due to the length of your punishment ({0}), it cannot be appealed."
+    ],
+    "punishment_appeal_instructions": [
+      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+    ],
+    "punishment_moderator": [
+      "Moderator: {0}"
+    ],
+    "punishment_moderator_title": [
+      "Moderator"
+    ],
+    "modmail_send_success": [
+      "Your modmail has been successfully sent! Your ID is {0}."
+    ],
+    "modmail_reply_command": [
+      "You can reply to this thread with the command {0}, and close it with {1}."
+    ],
+    "modmail_exists": [
+      "You already have an open modmail thread with {0}. Reply to it with the command {1}, or close it with {2}."
+    ],
+    "modmail_title": [
+      "New message in modmail thread #{0}"
+    ],
+    "modmail_notfound": [
+      "Could not find any modmail by that ID."
+    ],
+    "modmail_closed_user": [
+      "You cannot reply to this modmail because you closed it."
+    ],
+    "modmail_closed_user_guild": [
+      "You cannot reply to this modmail because the user closed it."
+    ],
+    "modmail_closed_guild": [
+      "You cannot reply to this modmail because the modteam closed it."
+    ],
+    "modmail_reply_success": [
+      "You've successfully replied to this modmail."
+    ],
+    "modmail_alreadyclosed": [
+      "This modmail has already been closed."
+    ],
+    "modmail_closed_success": [
+      "You've successfully closed this modmail."
+    ],
+    "modmail_blacklist_added": [
+      "This user has been added to the modmail blacklist."
+    ],
+    "modmail_blacklist_removed": [
+      "This user has been removed from the modmail blacklist."
+    ],
+    "modmail_anonymous": [
+      "Anonymous"
+    ],
+    "modmail_message_title": [
+      "Messages for modmail thread #{0}"
+    ],
+    "modmail_modteam": [
+      "{0} modteam"
+    ],
+    "moderation_ban": [
+      "{0} has been banned."
+    ],
+    "moderation_tempban": [
+      "{0} has been temporarily banned for {1}."
+    ],
+    "moderation_kick": [
+      "{0} has been kicked."
+    ],
+    "moderation_mute": [
+      "{0} has been muted."
+    ],
+    "moderation_mute_temporary": [
+      "{0} has been temporarily muted for {1}."
+    ],
+    "moderation_block": [
+      "{0} has been blocked from {1}."
+    ],
+    "moderation_block_temporary": [
+      "{0} has been temporarily blocked from {1} for {2}."
+    ],
+    "moderation_nomuterole": [
+      "The mute role was not set up or was deleted."
+    ],
+    "moderation_alreadymuted": [
+      "This user was already muted."
+    ],
+    "moderation_additional_punishment": [
+      "Additional punishment from warning #{0}: {1}"
+    ],
+    "moderation_warn": [
+      "{0} has been warned."
+    ],
+    "timespanparser_nomatch": [
+      "Failed to match this text to a time span."
+    ],
+    "punishment_list_title": [
+      "Punishments for {0}"
+    ],
+    "punishment_target": [
+      "Target: {0}"
+    ],
+    "punishment_target_title": [
+      "Target"
+    ],
+    "punishment_timestamp": [
+      "Timestamp: {0}"
+    ],
+    "punishment_timestamp_title": [
+      "Timestamp"
+    ],
+    "punishment_nopunishments_guild": [
+      "No punishments could be found for this server."
+    ],
+    "punishment_nopunishments_user": [
+      "No punishments could be found for that user."
+    ],
+    "punishment_notfound_id": [
+      "No punishment could be found by that ID."
+    ],
+    "punishment_revoked": [
+      "Revoked?"
+    ],
+    "punishment_appealed": [
+      "Appealed?"
+    ],
+    "punishment_alreadyrevoked": [
+      "That punishment has already been revoked."
+    ],
+    "punishment_revoked_nounban": [
+      "Punishment successfully revoked, but the target is not currently banned."
+    ],
+    "punishment_revoked_nounmute": [
+      "Punishment successfully revoked, but the target is not currently muted."
+    ],
+    "punishment_revoked_success": [
+      "Punishment successfully revoked."
+    ],
+    "punishment_reason_exists": [
+      "That punishment already has been given a reason."
+    ],
+    "punishment_reason_missingmessage": [
+      "However, I could not find a message to modify with the reason."
+    ],
+    "punishment_reason_success": [
+      "The reason for this punishment was successfully updated."
+    ],
+    "warningpunishment_notfound_count": [
+      "No automatic punishment has been set to be given out at {0} warning(s)."
+    ],
+    "warningpunishment_show": [
+      "Upon being warned {0} time(s), users will receive a {1}."
+    ],
+    "warningpunishment_ban_duration": [
+      "ban for {0}"
+    ],
+    "warningpunishment_mute_duration": [
+      "mute for {0}"
+    ],
+    "warningpunishments_none": [
+      "No punishments have been set up for warnings."
+    ],
+    "warningpunishments_title": [
+      "Warning punishments for {0}"
+    ],
+    "punishment_mute_channel": [
+      "Channel"
+    ],
+    "punishment_mute_expired": [
+      "Mute has expired."
+    ],
+    "punishment_ban_expired": [
+      "Ban has expired."
+    ],
+    "punishment_alreadyappealed": [
+      "That punishment has already been appealed."
+    ],
+    "punishment_appeal_success": [
+      "Your punishment has been successfully appealed."
+    ],
+    "punishment_appeal_description_guild": [
+      "User {0} has appealed their {1}."
+    ]
+  }
+}

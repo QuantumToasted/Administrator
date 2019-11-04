@@ -1,95 +1,95 @@
 {
-  "code": "zh-TW",
-  "englishName": "Chinese (Traditional)",
-  "nativeName": "中文 (台灣)",
+  "code": "en-US",
+  "englishName": "English (US)",
+  "nativeName": "English (US)",
   "responses": {
     "test_hello": [
-      "嗨，{0}！",
-      "您好，{0}！"
+      "Hello, {0}!",
+      "Greetings, {0}!"
     ],
     "test_goodbye": [
-      "掰啦，{0}！"
+      "Seeya, {0}!"
     ],
     "available_languages": [
       "Available languages:"
     ],
     "requirecontext_guild": [
-      "此指令只能用在伺服器中。"
+      "This command can only be used in a server."
     ],
     "requirecontext_dm": [
-      "此指令只能用在私訊中。"
+      "This command can only be used in DMs."
     ],
     "requireowner": [
-      "此指令只能由我的主人使用。"
+      "This command can only be used by one of my owners."
     ],
     "requirehierarchy_self": [
-      "我在此伺服器身分組階級不足。"
+      "The role hierarchy doesn't allow me to do that."
     ],
     "requirehierarchy_user": [
-      "您在此伺服器身分組階級不足。"
+      "The role hierarchy doesn't allow you to do that."
     ],
     "requirebotpermissions_guild": [
-      "我需要該伺服器的 {0} 的權限"
+      "This command requires me to have the following server permissions: {0}"
     ],
     "requirebotpermissions_channel": [
-      "我需要該頻道的 {0} 的權限"
+      "This command requires me to have the following channel permissions: {0}"
     ],
     "requireuserpermissions_guild": [
-      "您需要該伺服器的 {0} 的權限"
+      "This command requires you to have the following server permissions: {0}"
     ],
     "requireuserpermissions_channel": [
-      "您需要該頻道的 {0} 的權限"
+      "This command requires you to have the following channel permissions: {0}"
     ],
     "requireguildowner": [
-      "此指令僅能由該伺服器之擁有者使用。"
+      "This command can only used by the server owner."
     ],
     "requiremember": [
       "This command can only be used by members of {0}."
     ],
     "requireloggingchannel_notfound": [
-      "找不到或尚未設置{0}頻道。"
+      "The {0} channel could not be found, or was not set up."
     ],
     "requireloggingchannel": [
-      "此指令只能用在{0}頻道中。"
+      "This command can only be used in the {0} channel."
     ],
     "operator_greaterthan": [
-      "您輸入的數字必須大於{0}。"
+      "The number supplied must be greater than {0}."
     ],
     "operator_equalto": [
-      "您輸入的數字必須等於{0}。"
+      "The number supplied must be equal to {0}."
     ],
     "operator_lessthan": [
-      "您輸入的數字必須小於{0}。"
+      "The number supplied must be less than {0}."
     ],
     "operator_divisibleby": [
-      "您輸入的數字必須可被 {0} 整除。"
+      "The number supplied must be divisible by {0}."
     ],
     "stringvalue_longerthan": [
-      "您輸入的字元數需大於 {0}。"
+      "The supplied text must be longer than {0} characters."
     ],
     "stringvalue_exactly": [
-      "您輸入的字元數需等於 {0}。"
+      "The supplied text must be exactly {0} characters."
     ],
     "stringvalue_shorterthan": [
-      "您輸入的字元數需小於 {0}。"
+      "The supplied text must be shorter than {0} characters."
     ],
     "userparser_multiple": [
-      "發現多個具有此名稱或匿名之成員。"
+      "Multiple users were found with that username or nickname."
     ],
     "userparser_notfound": [
-      "找不到此成員。"
+      "User not found."
     ],
     "roleparser_multiple": [
-      "發現多個具有此名稱之身分組。"
+      "Multiple roles were found with that name."
     ],
     "roleparser_notfound": [
-      "找不到此身分組。"
+      "Role not found."
     ],
     "channelparser_multiple": [
-      "發現多個具有此名稱之頻道。"
+      "Multiple channels were found by that name."
     ],
     "channelparser_notfound": [
-      "找不到此頻道。"
+      "Channel not found."
     ],
     "guildparser_multiple": [
       "Multiple servers were found by that name."
@@ -116,16 +116,16 @@
       "No language could be found with that name or code."
     ],
     "commanderror": [
-      "指令執行錯誤"
+      "Command error"
     ],
     "commanderror_exception": [
-      "嘗試使用此指令時出現意外錯誤，請於我們的[支援伺服器]({0})中通報以下訊息：\n{1}"
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
     ],
     "commanderror_paramchecks": [
-      "無法滿足該指令其中一個或多項參數的條件:\n{0}"
+      "One or more requirements for the parameters in this command were not met:\n{0}"
     ],
     "commanderror_checks": [
-      "無法滿足該指令其中一個或多項條件:\n{0}"
+      "One or more requirements for this command were not met:\n{0}"
     ],
     "commanderror_toofewarguments": [
       "You did not provide enough parameters for this command. It expects at least {0}."
@@ -134,19 +134,19 @@
       "You provided too many parameters for this command. It expects {0} or less."
     ],
     "commanderror_overloadsfailed": [
-      "無法執行任何符合條件的指令:\n{0}"
+      "All variations of this command failed:\n{0}"
     ],
     "punishment_case": [
-      "案例 #{0}"
+      "Case #{0}"
     ],
     "punishment_ban": [
-      "封鎖"
+      "Ban"
     ],
     "punishment_ban_description": [
-      "您已被 {0} 伺服器封鎖。"
+      "You have been banned from {0}."
     ],
     "punishment_ban_description_guild": [
-      "使用者 {0} 已被封鎖。"
+      "User {0} has been banned."
     ],
     "punishment_ban_revoke_description": [
       "You have been unbanned from {0}."
@@ -155,22 +155,22 @@
       "User {0} has been unbanned."
     ],
     "punishment_kick": [
-      "踢除"
+      "Kick"
     ],
     "punishment_kick_description": [
-      "您已被 {0} 伺服器踢除。"
+      "You have been kicked out of {0}."
     ],
     "punishment_kick_description_guild": [
-      "使用者 {0} 已被踢除。"
+      "User {0} has been kicked."
     ],
     "punishment_mute": [
-      "禁言"
+      "Mute"
     ],
     "punishment_mute_description": [
-      "你已被 {0} 伺服器禁言。"
+      "You have been muted in {0}."
     ],
     "punishment_mute_description_guild": [
-      "使用者 {0} 已被禁言。"
+      "User {0} has been muted."
     ],
     "punishment_mute_revoke_description": [
       "You have been unmuted in {0}."
@@ -179,22 +179,22 @@
       "User {0} has been unmuted."
     ],
     "punishment_warning": [
-      "警告"
+      "Warning"
     ],
     "punishment_warning_description": [
-      "您已被 {0} 伺服器警告，這是你的第 {1} 支警告。"
+      "You have been given a warning in {0}. This is your {1} warning."
     ],
     "punishment_warning_description_guild": [
-      "使用者 {0} 已被警告，這是他們的第 {1} 個警告。"
+      "User {0} has been warned. This is their {1} warning."
     ],
     "punishment_warning_revoke_description": [
-      "您在{0}中的警告已被撤銷。"
+      "Your warning has been revoked in {0}."
     ],
     "punishment_warning_revoke_description_guild": [
-      "使用者{0}的警告已被撤銷。"
+      "User {0} has had their warning revoked."
     ],
     "punishment_warning_additional": [
-      "額外處罰"
+      "Additional punishment"
     ],
     "punishment_duration": [
       "Duration"
@@ -206,22 +206,22 @@
       "Reason"
     ],
     "punishment_noreason": [
-      "沒有提供理由"
+      "No reason provided."
     ],
     "punishment_needsreason": [
-      "管理員: 請使用 {0} 添加懲罰原因"
+      "Moderator: use {0} to give this punishment a reason."
     ],
     "punishment_appeal": [
-      "反駁指示"
+      "Appeal instructions"
     ],
     "punishment_tooshort": [
-      "由於您的處罰時間過長 ({0})，無法反駁。"
+      "Due to the length of your punishment ({0}), it cannot be appealed."
     ],
     "punishment_appeal_instructions": [
-      "您的案件編號為 {0}。若要反駁，請使用 {1}。您的案件將由伺服器版主進行審核。"
+      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
     ],
     "punishment_moderator": [
-      "管理員: {0}"
+      "Moderator: {0}"
     ],
     "punishment_moderator_title": [
       "Moderator"

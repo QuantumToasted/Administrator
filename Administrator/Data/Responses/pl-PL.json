@@ -10,8 +10,11 @@
     "test_goodbye": [
       "Na razie, {0}!"
     ],
+    "available_languages": [
+      "Available languages:"
+    ],
     "requirecontext_guild": [
-      "Ta komenda może zostać użyta jedynie w gildii."
+      "Ta komenda może zostać użyta jedynie na serwerze."
     ],
     "requirecontext_dm": [
       "Ta komenda może zostać użyta jedynie w kanale prywatnym."
@@ -26,19 +29,28 @@
       "Hierarchia ról ci na to nie pozwala."
     ],
     "requirebotpermissions_guild": [
-      "Ta komenda wymaga ode mnie następujących uprawnień w tej gildii: {0}"
+      "Ta komenda wymaga ode mnie następujących uprawnień na serwerze: {0}"
     ],
     "requirebotpermissions_channel": [
       "Ta komenda wymaga ode mnie następujących uprawnień w tym kanale: {0}"
     ],
     "requireuserpermissions_guild": [
-      "Ta komenda wymaga od ciebie następujących uprawnień w tej gildii: {0}"
+      "Ta komenda wymaga od ciebie następujących uprawnień na serwerze: {0}"
     ],
     "requireuserpermissions_channel": [
       "Ta komenda wymaga od ciebie następujących uprawnień w tym kanale: {0}"
     ],
     "requireguildowner": [
-      "Ta komenda może zostać użyta jedynie przez właściciela gildii."
+      "Ta komenda może zostać użyta jedynie przez właściciela serwera."
+    ],
+    "requiremember": [
+      "This command can only be used by members of {0}."
+    ],
+    "requireloggingchannel_notfound": [
+      "The {0} channel could not be found, or was not set up."
+    ],
+    "requireloggingchannel": [
+      "This command can only be used in the {0} channel."
     ],
     "operator_greaterthan": [
       "Podana liczba musi być większa niż {0}."
@@ -78,6 +90,858 @@
     ],
     "channelparser_notfound": [
       "Nie znaleziono kanału."
+    ],
+    "guildparser_multiple": [
+      "Multiple servers were found by that name."
+    ],
+    "guildparser_notfound": [
+      "Server not found."
+    ],
+    "emoteparser_notfound": [
+      "Emote not found."
+    ],
+    "regexparser_invalid": [
+      "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."
+    ],
+    "masspunishmentparser_errors": [
+      "The mass punishment arguments were formatted incorrectly. Try using the --help argument."
+    ],
+    "timespanparser_invalid": [
+      "The supplied time span was invalid."
+    ],
+    "moduleparser_notfound": [
+      "No command module could be found with that name."
+    ],
+    "languageparser_notfound": [
+      "No language could be found with that name or code."
+    ],
+    "commanderror": [
+      "Błąd komendy"
+    ],
+    "commanderror_exception": [
+      "Nieoczekiwany błąd nastąpił podczas próby użycia tej komendy. Proszę zgłosić następujący tekst na [serwerze wsparcia]({0}): {1}"
+    ],
+    "commanderror_paramchecks": [
+      "Nie spełniono jednego lub więcej wymagań dla parametrów tej komendy:\n{0}"
+    ],
+    "commanderror_checks": [
+      "Nie spełniono jednego lub więcej wymagań dla tej komendy:\n{0}"
+    ],
+    "commanderror_toofewarguments": [
+      "You did not provide enough parameters for this command. It expects at least {0}."
+    ],
+    "commanderror_toomanyarguments": [
+      "You provided too many parameters for this command. It expects {0} or less."
+    ],
+    "commanderror_overloadsfailed": [
+      "Żadna z wariacji tej komendy się nie powiodła:\n{0}"
+    ],
+    "punishment_case": [
+      "Sprawa #{0}"
+    ],
+    "punishment_ban": [
+      "Ban"
+    ],
+    "punishment_ban_description": [
+      "Zostałeś zbanowany na {0}."
+    ],
+    "punishment_ban_description_guild": [
+      "Użytkownik {0} został zbanowany."
+    ],
+    "punishment_ban_revoke_description": [
+      "You have been unbanned from {0}."
+    ],
+    "punishment_ban_revoke_description_guild": [
+      "User {0} has been unbanned."
+    ],
+    "punishment_kick": [
+      "Wyrzucenie"
+    ],
+    "punishment_kick_description": [
+      "Zostałeś wyrzucony z {0}."
+    ],
+    "punishment_kick_description_guild": [
+      "Użytkownik {0} został wyrzucony."
+    ],
+    "punishment_mute": [
+      "Wyciszenie"
+    ],
+    "punishment_mute_description": [
+      "Zostałeś wyciszony na {0}."
+    ],
+    "punishment_mute_description_guild": [
+      "Użytkownik {0} został wyciszony."
+    ],
+    "punishment_mute_revoke_description": [
+      "You have been unmuted in {0}."
+    ],
+    "punishment_mute_revoke_description_guild": [
+      "User {0} has been unmuted."
+    ],
+    "punishment_warning": [
+      "Ostrzeżenie"
+    ],
+    "punishment_warning_description": [
+      "Otrzymałeś ostrzeżenie na {0}. To jest twoje {1} ostrzeżenie."
+    ],
+    "punishment_warning_description_guild": [
+      "Użytkownik {0} został ostrzeżony. To jest ich {1} ostrzeżenie."
+    ],
+    "punishment_warning_revoke_description": [
+      "Your warning has been revoked in {0}."
+    ],
+    "punishment_warning_revoke_description_guild": [
+      "User {0} has had their warning revoked."
+    ],
+    "punishment_warning_additional": [
+      "Dodatkowa kara"
+    ],
+    "punishment_duration": [
+      "Duration"
+    ],
+    "punishment_permanent": [
+      "Permanent"
+    ],
+    "title_reason": [
+      "Reason"
+    ],
+    "punishment_noreason": [
+      "Nie podano powodu."
+    ],
+    "punishment_needsreason": [
+      "Moderatorze: użyj {0}, aby przypisać tej karze powód."
+    ],
+    "punishment_appeal": [
+      "Instrukcje odwołania"
+    ],
+    "punishment_tooshort": [
+      "Ze względu na czas trwania twojej kary ({0}), nie możesz się od niej odwołać."
+    ],
+    "punishment_appeal_instructions": [
+      "Twój numer sprawy to {0}. Aby odwołać się od niej, użyj komendy {1} i zostanie to rozpatrzone przez moderatorów serwera."
+    ],
+    "punishment_moderator": [
+      "Moderator: {0}"
+    ],
+    "punishment_moderator_title": [
+      "Moderator"
+    ],
+    "modmail_send_success": [
+      "Your modmail has been successfully sent! Your ID is {0}."
+    ],
+    "modmail_reply_command": [
+      "You can reply to this thread with the command {0}, and close it with {1}."
+    ],
+    "modmail_exists": [
+      "You already have an open modmail thread with {0}. Reply to it with the command {1}, or close it with {2}."
+    ],
+    "modmail_title": [
+      "New message in modmail thread #{0}"
+    ],
+    "modmail_notfound": [
+      "Could not find any modmail by that ID."
+    ],
+    "modmail_closed_user": [
+      "You cannot reply to this modmail because you closed it."
+    ],
+    "modmail_closed_user_guild": [
+      "You cannot reply to this modmail because the user closed it."
+    ],
+    "modmail_closed_guild": [
+      "You cannot reply to this modmail because the modteam closed it."
+    ],
+    "modmail_reply_success": [
+      "You've successfully replied to this modmail."
+    ],
+    "modmail_alreadyclosed": [
+      "This modmail has already been closed."
+    ],
+    "modmail_closed_success": [
+      "You've successfully closed this modmail."
+    ],
+    "modmail_blacklist_added": [
+      "This user has been added to the modmail blacklist."
+    ],
+    "modmail_blacklist_removed": [
+      "This user has been removed from the modmail blacklist."
+    ],
+    "modmail_anonymous": [
+      "Anonymous"
+    ],
+    "modmail_message_title": [
+      "Messages for modmail thread #{0}"
+    ],
+    "modmail_modteam": [
+      "{0} modteam"
+    ],
+    "moderation_alreadybanned": [
+      "{0} has already been banned!"
+    ],
+    "moderation_ban": [
+      "{0} has been banned."
+    ],
+    "moderation_masspunishment_interactive": [
+      "Entering interactive mode."
+    ],
+    "moderation_masspunishment_confirmation": [
+      "To confirm this action, please type {0}."
+    ],
+    "moderation_masspunishment_interactive_prompt": [
+      "Enter a user ID, or anything else to quit."
+    ],
+    "moderation_masspunishment_interactive_canceled": [
+      "Successfully quit out of the interactive session."
+    ],
+    "moderation_massban_notargets": [
+      "No targets were availble for banning."
+    ],
+    "moderation_massban_target_single": [
+      "1 user has been selected to be banned:"
+    ],
+    "moderation_massban_target_count": [
+      "{0} users have been selected to be banned:"
+    ],
+    "moderation_massban_alreadybanned": [
+      "{0} is already banned."
+    ],
+    "moderation_massban_userpermissions": [
+      "{0} has higher permission than you, so they were not banned."
+    ],
+    "moderation_massban_botpermissions": [
+      "{0} has higher permission than me, so they were not banned."
+    ],
+    "moderation_massban": [
+      "1 user was successfully banned."
+    ],
+    "moderation_massban_multiple": [
+      "{0} users were successfully banned."
+    ],
+    "moderation_massban_none": [
+      "No users could be banned."
+    ],
+    "moderation_tempban": [
+      "{0} has been temporarily banned for {1}."
+    ],
+    "moderation_kick": [
+      "{0} has been kicked."
+    ],
+    "moderation_mute": [
+      "{0} has been muted."
+    ],
+    "moderation_mute_temporary": [
+      "{0} has been temporarily muted for {1}."
+    ],
+    "moderation_alreadyblocked": [
+      "{0} may have already been blocked, so I did not try to block them again."
+    ],
+    "moderation_block": [
+      "{0} has been blocked from {1}."
+    ],
+    "moderation_block_temporary": [
+      "{0} has been temporarily blocked from {1} for {2}."
+    ],
+    "moderation_nomuterole": [
+      "The mute role was not set up or was deleted."
+    ],
+    "moderation_alreadymuted": [
+      "This user was already muted."
+    ],
+    "moderation_additional_punishment": [
+      "Additional punishment from warning #{0}."
+    ],
+    "moderation_additional_punishment_link": [
+      "Additional punishment from [warning #{0}]({1})."
+    ],
+    "moderation_warn": [
+      "{0} has been warned."
+    ],
+    "timespanparser_nomatch": [
+      "Failed to match this text to a time span."
+    ],
+    "punishment_list_title": [
+      "Punishments for {0}"
+    ],
+    "punishment_target": [
+      "Target: {0}"
+    ],
+    "punishment_target_title": [
+      "Target"
+    ],
+    "punishment_timestamp": [
+      "Timestamp: {0}"
+    ],
+    "punishment_timestamp_title": [
+      "Timestamp"
+    ],
+    "punishment_nopunishments_guild": [
+      "No punishments could be found for this server."
+    ],
+    "punishment_nopunishments_user": [
+      "No punishments could be found for that user."
+    ],
+    "punishment_notfound_id": [
+      "No punishment could be found by that ID."
+    ],
+    "punishment_revoked": [
+      "Revoked?"
+    ],
+    "punishment_appealed": [
+      "Appealed?"
+    ],
+    "punishment_alreadyrevoked": [
+      "That punishment has already been revoked."
+    ],
+    "punishment_revoked_nounban": [
+      "Punishment successfully revoked, but the target is not currently banned."
+    ],
+    "punishment_revoked_nounmute": [
+      "Punishment successfully revoked, but the target is not currently muted."
+    ],
+    "punishment_revoked_success": [
+      "Punishment successfully revoked."
+    ],
+    "punishment_reason_exists": [
+      "That punishment already has been given a reason."
+    ],
+    "punishment_reason_missingmessage": [
+      "However, I could not find a message to modify with the reason."
+    ],
+    "punishment_reason_success": [
+      "The reason for this punishment was successfully updated."
+    ],
+    "warningpunishment_notfound_count": [
+      "No automatic punishment has been set to be given out for the {0} warning."
+    ],
+    "warningpunishment_show": [
+      "Upon being warned {0} time(s), users will receive a {1}."
+    ],
+    "warningpunishment_ban_duration": [
+      "ban for {0}"
+    ],
+    "warningpunishment_mute_duration": [
+      "mute for {0}"
+    ],
+    "warningpunishments_none": [
+      "No punishments have been set up for warnings."
+    ],
+    "warningpunishments_title": [
+      "Warning punishments for {0}"
+    ],
+    "punishment_mute_channel": [
+      "Channel"
+    ],
+    "punishment_mute_expired": [
+      "Mute has expired."
+    ],
+    "punishment_ban_expired": [
+      "Ban has expired."
+    ],
+    "punishment_alreadyappealed": [
+      "That punishment has already been appealed."
+    ],
+    "punishment_appeal_success": [
+      "Your punishment has been successfully appealed."
+    ],
+    "punishment_appeal_description_guild": [
+      "User {0} has appealed their {1}."
+    ],
+    "permissions_command_notfound": [
+      "No command could be found by that name."
+    ],
+    "permissions_module_notfound": [
+      "No module could be found by that name."
+    ],
+    "permissions_command_enabled": [
+      "Command {0} has been enabled for {1}."
+    ],
+    "permissions_command_disabled": [
+      "Command {0} has been disabled for {1}."
+    ],
+    "permissions_module_enabled": [
+      "Module {0} has been enabled for {1}."
+    ],
+    "permissions_module_disabled": [
+      "Module {0} has been disabled for {1}."
+    ],
+    "permissions_all_enabled": [
+      "All commands have been enabled for {1}."
+    ],
+    "permissions_all_disabled": [
+      "All commands have been disabled for {1}."
+    ],
+    "permissions_list": [
+      "Command permissions for {0}"
+    ],
+    "permissions_command": [
+      "Command"
+    ],
+    "permissions_module": [
+      "Module"
+    ],
+    "permissions_global": [
+      "all servers."
+    ],
+    "permissions_none": [
+      "No command permissions could be found."
+    ],
+    "permissions_notfound": [
+      "No command permission could be found by that ID."
+    ],
+    "permissions_removed": [
+      "Command permissions successfully removed."
+    ],
+    "permissions_denied": [
+      "Command permission #{0} prevented you from using this command."
+    ],
+    "suggestion_nochannel": [
+      "The suggestion channel has not been set up or was deleted."
+    ],
+    "suggestion_id": [
+      "Suggestion ID: {0}"
+    ],
+    "suggestion_successful": [
+      "You've successfully made a suggestion! Your ID is {0}."
+    ],
+    "suggestion_notfound": [
+      "No suggestion could be found with that ID."
+    ],
+    "suggestion_removed": [
+      "Suggestion successfully removed."
+    ],
+    "suggestion_noarchive": [
+      "The suggestion archive channel has not been set up or was deleted."
+    ],
+    "suggestion_approved_title": [
+      "Suggestion #{0} by {1} was approved with {2} upvotes and {3} downvotes."
+    ],
+    "suggestion_denied_title": [
+      "Suggestion #{0} by {1} was denied with {2} upvotes and {3} downvotes."
+    ],
+    "suggestion_approved_footer": [
+      "Approved by: {0}"
+    ],
+    "suggestion_denied_footer": [
+      "Denied by: {0}"
+    ],
+    "suggestion_approved": [
+      "Suggestion successfully approved."
+    ],
+    "suggestion_denied": [
+      "Suggestion successfully denied."
+    ],
+    "suggestion_channel_updated": [
+      "The suggestion channel has been updated. Suggestions will now show in {0}."
+    ],
+    "suggestion_channel": [
+      "Suggestions are currently configured to show up in {0}."
+    ],
+    "suggestion_archive_updated": [
+      "The suggestion archive channel has been updated. Suggestions will now show in {0}."
+    ],
+    "suggestion_archive": [
+      "Suggestions are currently configured to be archived in {0}."
+    ],
+    "info_id": [
+      "ID"
+    ],
+    "info_mention": [
+      "Mention"
+    ],
+    "info_created": [
+      "Created"
+    ],
+    "info_ago": [
+      "{0} ago"
+    ],
+    "info_now": [
+      "Just now"
+    ],
+    "info_none": [
+      "None"
+    ],
+    "info_position": [
+      "Position"
+    ],
+    "info_timeout_password": [
+      "You took too long to respond, or your password didn't match."
+    ],
+    "role_info_above_below": [
+      "{0}/{1}, above {2} but below {3}"
+    ],
+    "role_info_above": [
+      "{0}/{1}, above all other roles"
+    ],
+    "role_info_below": [
+      "{0}/{1}, below all other roles"
+    ],
+    "role_info_color": [
+      "Color"
+    ],
+    "role_info_title": [
+      "Information for role {0}"
+    ],
+    "role_info_members": [
+      "Members ({0})"
+    ],
+    "role_info_permissions": [
+      "Permissions"
+    ],
+    "colorparser_invalid": [
+      "The supplied color was invalid.\nSupported color values are hex codes (#000000-#FFFFFF) or R,G,B values from 0-255 (105,190,20)."
+    ],
+    "role_create_success": [
+      "Role {0} has been successfully created!"
+    ],
+    "role_create_success_color": [
+      "Role {0} with color {1} has been successfully created!"
+    ],
+    "role_color_default": [
+      "Role {0}'s color is currently set to the default color."
+    ],
+    "role_color": [
+      "Role {0}'s color is currently set to {1}."
+    ],
+    "role_color_modified_default": [
+      "Role {0}'s color has been reset to the default color."
+    ],
+    "role_color_modified": [
+      "Role {0}'s color has been changed to {1}."
+    ],
+    "role_give_role_exists": [
+      "{0} already has that role!"
+    ],
+    "role_give_success": [
+      "{0} has been given the {1} role."
+    ],
+    "role_give_success_multiple": [
+      "{0} has been given the following roles:\n{1}"
+    ],
+    "role_remove_role_exists": [
+      "{0} doesn't have that role!"
+    ],
+    "role_remove_success": [
+      "{0} has had role {1} removed."
+    ],
+    "role_remove_success_multiple": [
+      "{0} has had the following roles removed:\n{1}"
+    ],
+    "role_delete_success": [
+      "Role {0} has been successfully deleted."
+    ],
+    "role_unassignable_self": [
+      "The role {0} is either my highest role or above it so I am not able to give it to others."
+    ],
+    "role_unassignable_user": [
+      "The role {0} is either your highest role or above it so I will not give it to others."
+    ],
+    "role_move_below_everyone": [
+      "The {0} role cannot be moved or have a role moved below it."
+    ],
+    "role_move_below_unable_self": [
+      "The role {0} is either my highest role or above it so I am not able to move {1} below it."
+    ],
+    "role_move_below_unable_user": [
+      "The role {0} is either your highest role or above it so I will not move {1} below it."
+    ],
+    "role_move_below_success": [
+      "The role {0} has been moved below {1}."
+    ],
+    "role_move_above_everyone": [
+      "The {0} role cannot be moved above any other role."
+    ],
+    "role_move_above_unable_self": [
+      "The role {0} is either my highest role or above it so I am not able to move {1} above it."
+    ],
+    "role_move_above_unable_user": [
+      "The role {0} is either your highest role or above it so I will not move {1} above it."
+    ],
+    "role_move_above_success": [
+      "The role {0} has been moved above {1}."
+    ],
+    "role_rename_success": [
+      "The role {0} has been renamed to {1}."
+    ],
+    "user_nickname": [
+      "{0} goes by the nickname {1}."
+    ],
+    "user_no_nickname": [
+      "{0} does not have a nickname set."
+    ],
+    "user_nickname_updated": [
+      "Nickname updated."
+    ],
+    "user_nickname_reset": [
+      "Nickname reset."
+    ],
+    "user_info_title": [
+      "Information for user {0}"
+    ],
+    "user_info_title_bot": [
+      "Information for bot {0}"
+    ],
+    "user_info_created": [
+      "Joined Discord"
+    ],
+    "user_info_joined": [
+      "Joined {0}"
+    ],
+    "user_info_nickname": [
+      "Nickname"
+    ],
+    "user_info_roles": [
+      "Roles ({0})"
+    ],
+    "user_info_playing": [
+      "Playing {0}"
+    ],
+    "user_info_listening": [
+      "Listening to \"{0}\" by {1} on Spotify"
+    ],
+    "user_info_streaming": [
+      "Streaming {0} on Twitch: \"{1}\""
+    ],
+    "user_info_status": [
+      "Status"
+    ],
+    "user_info_online": [
+      "Online"
+    ],
+    "user_info_idle": [
+      "Idle"
+    ],
+    "user_info_dnd": [
+      "Do Not Disturb"
+    ],
+    "user_info_offline": [
+      "Offline"
+    ],
+    "user_search_no_results": [
+      "No users could be found with a name similar to \"{0}\"."
+    ],
+    "user_search_results": [
+      "Users found with a name similar to \"{0}\":"
+    ],
+    "user_search_format": [
+      "{0}, also known as {1} ({2})"
+    ],
+    "user_searchregex_no_results": [
+      "No users could be found matching the regex `{0}`."
+    ],
+    "user_searchregex_results": [
+      "Users found matching the regex:"
+    ],
+    "user_searchregex_timeout": [
+      "Your search was canceled due to taking longer than three seconds.\nTry a simpler regex instead."
+    ],
+    "user_levelup_global": [
+      "Global level up!"
+    ],
+    "user_levelup_guild": [
+      "Server level up!"
+    ],
+    "user_levelup": [
+      "Nice job leveling up, {0}! You're now Tier {1}, Level {2}."
+    ],
+    "user_language": [
+      "Your personal response language is currently set to {0}."
+    ],
+    "user_language_set": [
+      "Your personal response language has been updated to {0}."
+    ],
+    "info_modules_title": [
+      "Available command modules:"
+    ],
+    "info_modules_info": [
+      "Commands to get information about the bot or help with commands."
+    ],
+    "info_modules_modmail": [
+      "Commands to communicate with users who have submitted mail to your server."
+    ],
+    "info_modules_moderation": [
+      "Commands to ban, kick, mute, or warn users."
+    ],
+    "info_modules_permissions": [
+      "Commands to modify module and command permissions to restrict their usage."
+    ],
+    "info_modules_punishments": [
+      "Commands to manage punishments created by the Moderation module."
+    ],
+    "info_modules_roles": [
+      "Commands to view, create, and modify server roles."
+    ],
+    "info_modules_suggestions": [
+      "Commands to create, approve, or deny server suggestions."
+    ],
+    "info_modules_users": [
+      "Commands to view information about and search for users, or modify your own personal settings."
+    ],
+    "info_module_commands": [
+      "List of commands for {0} module:"
+    ],
+    "info_module_reference": [
+      "Module: {0}"
+    ],
+    "info_help_notfound": [
+      "No command could be found with that name or path."
+    ],
+    "info_help_multiple": [
+      "Multiple commands were found with that name."
+    ],
+    "guild_language": [
+      "The server response language is currently set to {0}."
+    ],
+    "guild_language_set": [
+      "The server response language has been updated to {0}."
+    ],
+    "info_command_modmail": [
+      "Open a new modmail thread."
+    ],
+    "info_command_modmail_reply": [
+      "Reply to an open modmail thread."
+    ],
+    "info_command_modmail_close": [
+      "Close an open modmail thread."
+    ],
+    "info_command_modmail_blacklist": [
+      "Blacklist a user or modmail thread author from opening new threads."
+    ],
+    "info_command_modmail_show": [
+      "Display message history for a modmail thread."
+    ],
+    "info_command_ban": [
+      "Ban a user from your server."
+    ],
+    "info_command_tempban": [
+      "Temporarily ban a user from your server."
+    ],
+    "info_command_massban": [
+      "Ban a large number of users from your server at once."
+    ],
+    "info_command_kick": [
+      "Kick a user from your server."
+    ],
+    "info_command_mute": [
+      "Mute a user from sending messages or talking in your server."
+    ],
+    "info_command_warn": [
+      "Warn a user in your server.\nAdditional punishments may automatically be added depending on your server configuration."
+    ],
+    "info_command_block": [
+      "Block a user from sending messages or adding reactions in a text channel."
+    ],
+    "info_command_permissions": [
+      "List all custom command permissions."
+    ],
+    "info_command_permissions_remove": [
+      "Remove a custom command permission."
+    ],
+    "info_command_permissions_enable_command": [
+      "Enable or disable a single command or module."
+    ],
+    "info_command_permissions_enable_all": [
+      "Enable or disable ALL commands."
+    ],
+    "info_command_appeal": [
+      "Appeal an existing punishment."
+    ],
+    "info_command_punishments": [
+      "List all punishments on this server, starting with the most recent."
+    ],
+    "info_command_punishment": [
+      "List detailed information about a punishment."
+    ],
+    "info_command_revoke": [
+      "Revoke an existing punishment."
+    ],
+    "info_command_reason": [
+      "Add a reason to a punishment which does not have one."
+    ],
+    "info_command_warningpunishment": [
+      "View or set a specific warning punishment."
+    ],
+    "info_command_warningpunishments": [
+      "View all current warning punishments."
+    ],
+    "info_command_role": [
+      "View information about a role."
+    ],
+    "info_command_role_color": [
+      "Modify the color of an existing role."
+    ],
+    "info_command_role_create": [
+      "Create a new role."
+    ],
+    "info_command_role_delete": [
+      "Delete an existing role."
+    ],
+    "info_command_role_give": [
+      "Give an existing role to a user on your server."
+    ],
+    "info_command_role_remove": [
+      "Remove an existing role from a user on your server."
+    ],
+    "info_command_role_move": [
+      "Move an existing role above or below another."
+    ],
+    "info_command_role_rename": [
+      "Rename an existing role."
+    ],
+    "info_command_suggestions_create": [
+      "Create a new server suggestion."
+    ],
+    "info_command_suggestions_remove": [
+      "Remove an existing server suggestion."
+    ],
+    "info_command_suggestions_approve": [
+      "Approve or deny an existing server suggestion."
+    ],
+    "info_command_suggestions_channel": [
+      "View or set the channel suggestions are posted to."
+    ],
+    "info_command_suggestions_archive": [
+      "View or set the channel suggestions are archived to when they are approved or denied."
+    ],
+    "info_command_user": [
+      "View information about a user."
+    ],
+    "info_command_user_xp": [
+      "View a user's XP stats."
+    ],
+    "info_command_user_language": [
+      "View or set your personal bot response language."
+    ],
+    "info_command_user_languages": [
+      "View available response languages."
+    ],
+    "info_command_user_search": [
+      "Search for a user on the server."
+    ],
+    "info_command_user_searchregex": [
+      "Search for a user on this server using RegEx."
+    ],
+    "info_command_user_nickname": [
+      "View a user's nickname on this server."
+    ],
+    "info_command_user_nickname_set": [
+      "Set a user's nickname, or your own."
+    ],
+    "info_command_user_nickname_reset": [
+      "Reset (remove) a user's nickname."
+    ],
+    "info_command_modules": [
+      "List available command modules."
+    ],
+    "info_command_commands": [
+      "List available commands for a module."
+    ],
+    "info_command_help": [
+      "View available help for a specific command, or get the bot help message."
+    ],
+    "info_command_guild_language": [
+      "View or set the server's bot response language."
+    ],
+    "info_command_guild_languages": [
+      "View available response languages."
     ]
   }
 }
