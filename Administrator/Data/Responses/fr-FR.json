@@ -1,7 +1,7 @@
 {
   "code": "fr-FR",
   "englishName": "French (FR)",
-  "nativeName": "Français (FR)",
+  "nativeName": "English (US)",
   "responses": {
     "test_hello": [
       "Salut, {0}!",
@@ -497,49 +497,49 @@
       "Le canal de suggestion n'a pas été configuré ou a été supprimé."
     ],
     "suggestion_id": [
-      "Suggestion ID: {0}"
+      "ID de la suggestion: {0}"
     ],
     "suggestion_successful": [
-      "You've successfully made a suggestion! Your ID is {0}."
+      "Vous avez créé une suggestion avec succès! Son ID est {0}."
     ],
     "suggestion_notfound": [
-      "No suggestion could be found with that ID."
+      "Aucune suggestion n'a pu être trouvée pour cet ID."
     ],
     "suggestion_removed": [
-      "Suggestion successfully removed."
+      "Suggestion supprimée avec succès."
     ],
     "suggestion_noarchive": [
-      "The suggestion archive channel has not been set up or was deleted."
+      "Le canal d'archive des suggestions n'a pas été configuré ou a été supprimé."
     ],
     "suggestion_approved_title": [
-      "Suggestion #{0} by {1} was approved with {2} upvotes and {3} downvotes."
+      "Suggestion #{0} par {1} a été approuvée avec {2} vote(s) pour et {3} vote(s) contre."
     ],
     "suggestion_denied_title": [
-      "Suggestion #{0} by {1} was denied with {2} upvotes and {3} downvotes."
+      "Suggestion #{0} par {1} a été refusée avec {2} vote(s) pour et {3} vote(s) contre."
     ],
     "suggestion_approved_footer": [
-      "Approved by: {0}"
+      "Approuvée par: {0}"
     ],
     "suggestion_denied_footer": [
-      "Denied by: {0}"
+      "Rejetée par: {0}"
     ],
     "suggestion_approved": [
-      "Suggestion successfully approved."
+      "Suggestion approuvée avec succès."
     ],
     "suggestion_denied": [
-      "Suggestion successfully denied."
+      "Suggestion rejetée avec succès."
     ],
     "suggestion_channel_updated": [
-      "The suggestion channel has been updated. Suggestions will now show in {0}."
+      "Le canal de suggestion a été mis à jour. Les suggestions vont désormais apparaître dans le canal {0}."
     ],
     "suggestion_channel": [
-      "Suggestions are currently configured to show up in {0}."
+      "Les suggestions sont actuellement configurées pour s'afficher dans le canal {0}."
     ],
     "suggestion_archive_updated": [
-      "The suggestion archive channel has been updated. Suggestions will now show in {0}."
+      "Le canal d'archive des suggestions a été mis à jour. Les suggestions vont maintenant apparaître dans le canal {0}."
     ],
     "suggestion_archive": [
-      "Suggestions are currently configured to be archived in {0}."
+      "Les suggestions sont actuellement configurées pour être archivées dans le canal {0}."
     ],
     "info_id": [
       "ID"
@@ -548,103 +548,103 @@
       "Mention"
     ],
     "info_created": [
-      "Created"
+      "Créé"
     ],
     "info_ago": [
-      "{0} ago"
+      "Il y a {0}"
     ],
     "info_now": [
-      "Just now"
+      "Maintenant"
     ],
     "info_none": [
-      "None"
+      "Aucun"
     ],
     "info_position": [
       "Position"
     ],
     "info_timeout_password": [
-      "You took too long to respond, or your password didn't match."
+      "Vous avez mis trop de temps à répondre, ou votre mot de passe ne correspond pas."
     ],
     "role_info_above_below": [
-      "{0}/{1}, above {2} but below {3}"
+      "{0}/{1}, au-dessus de {2}, mais en dessous de {3}"
     ],
     "role_info_above": [
-      "{0}/{1}, above all other roles"
+      "{0}/{1}, au-dessus de tous les autres rôles"
     ],
     "role_info_below": [
-      "{0}/{1}, below all other roles"
+      "{0}/{1}, en dessous de tous les autres rôles"
     ],
     "role_info_color": [
-      "Color"
+      "Couleur"
     ],
     "role_info_title": [
-      "Information for role {0}"
+      "Information pour le rôle {0}"
     ],
     "role_info_members": [
-      "Members ({0})"
+      "Membres ({0})"
     ],
     "role_info_permissions": [
       "Permissions"
     ],
     "colorparser_invalid": [
-      "The supplied color was invalid.\nSupported color values are hex codes (#000000-#FFFFFF) or R,G,B values from 0-255 (105,190,20)."
+      "La couleur fournie est invalide.\nLes valeurs de couleur supportées sont des codes hex (#000000-#FFFFFFFF) ou R,G,B de 0-255 (105,190,20)."
     ],
     "role_create_success": [
-      "Role {0} has been successfully created!"
+      "Le rôle {0} a été créé avec succès!"
     ],
     "role_create_success_color": [
-      "Role {0} with color {1} has been successfully created!"
+      "Le rôle {0} avec la couleur {1} a été créé avec succès!"
     ],
     "role_color_default": [
-      "Role {0}'s color is currently set to the default color."
+      "La couleur du rôle {0} est actuellement la couleur par défaut."
     ],
     "role_color": [
-      "Role {0}'s color is currently set to {1}."
+      "La couleur du rôle {0} est {1}."
     ],
     "role_color_modified_default": [
-      "Role {0}'s color has been reset to the default color."
+      "La couleur du rôle {0} a été réinitialisée pour être la couleur de défaut."
     ],
     "role_color_modified": [
-      "Role {0}'s color has been changed to {1}."
+      "La couleur du rôle {0} a été modifiée pour être {1}."
     ],
     "role_give_role_exists": [
-      "{0} already has that role!"
+      "{0} a déjà ce rôle !"
     ],
     "role_give_success": [
-      "{0} has been given the {1} role."
+      "{0} a reçu le rôle {1}."
     ],
     "role_give_success_multiple": [
-      "{0} has been given the following roles:\n{1}"
+      "{0} a reçu les rôles suivants: {1}"
     ],
     "role_remove_role_exists": [
-      "{0} doesn't have that role!"
+      "{0} n'a pas ce rôle!"
     ],
     "role_remove_success": [
-      "{0} has had role {1} removed."
+      "{0} ne possède plus le rôle {1}."
     ],
     "role_remove_success_multiple": [
-      "{0} has had the following roles removed:\n{1}"
+      "{0} ne possède plus les rôles suivants: {1}"
     ],
     "role_delete_success": [
-      "Role {0} has been successfully deleted."
+      "Le rôle {0} a été supprimé avec succès."
     ],
     "role_unassignable_self": [
-      "The role {0} is either my highest role or above it so I am not able to give it to others."
+      "Le role {0} est soit mon rôle le plus élevé ou au-dessus du mien donc je ne peux pas le donner aux autres."
     ],
     "role_unassignable_user": [
-      "The role {0} is either your highest role or above it so I will not give it to others."
+      "Le rôle {0} est soit votre rôle le plus élevé ou au-dessus du vôtre donc je ne vais pas le donner aux autres."
     ],
     "role_move_below_everyone": [
-      "The {0} role cannot be moved or have a role moved below it."
+      "Le rôle {0} ne peut pas être déplacé ou avoir un rôle en dessous de celui-ci."
     ],
     "role_move_below_unable_self": [
-      "The role {0} is either my highest role or above it so I am not able to move {1} below it."
+      "Le rôle {0} est soit mon rôle le plus élevé ou supérieur à celui-ci donc je ne suis pas capable de déplacer {1} en dessous."
     ],
     "role_move_below_unable_user": [
-      "The role {0} is either your highest role or above it so I will not move {1} below it."
+      "Le rôle {0} est soit votre rôle le plus élevé ou supérieur à celui-ci donc je ne suis pas capable de déplacer {1} en dessous."
     ],
     "role_move_below_success": [
-      "The role {0} has been moved below {1}."
+      "Le rôle {0} a été déplacé sous {1}."
     ],
     "role_move_above_everyone": [
       "The {0} role cannot be moved above any other role."
@@ -797,151 +797,151 @@
       "Open a new modmail thread."
     ],
     "info_command_modmail_reply": [
-      "Reply to an open modmail thread."
+      "Répondre à un modmail."
     ],
     "info_command_modmail_close": [
-      "Close an open modmail thread."
+      "Fermer un modmail."
     ],
     "info_command_modmail_blacklist": [
-      "Blacklist a user or modmail thread author from opening new threads."
+      "Ajouter un utilisateur ou un auteur de modmail à la liste noire pour l'empêcher d'ouvrir d'autres modmails dans le futur."
     ],
     "info_command_modmail_show": [
-      "Display message history for a modmail thread."
+      "Afficher l'historique des messages pour un modmail."
     ],
     "info_command_ban": [
-      "Ban a user from your server."
+      "Bannir un membre du serveur."
     ],
     "info_command_tempban": [
-      "Temporarily ban a user from your server."
+      "Bannir un utilisateur de votre serveur temporairement."
     ],
     "info_command_massban": [
-      "Ban a large number of users from your server at once."
+      "Bannir un grande nombre d'utilisateurs de votre serveur en même temps."
     ],
     "info_command_kick": [
-      "Kick a user from your server."
+      "Expulser un utilisateur de votre serveur."
     ],
     "info_command_mute": [
-      "Mute a user from sending messages or talking in your server."
+      "Mettre en sourdine un utilisateur pour l'empêcher d'envoyer des messages ou de parler dans votre serveur."
     ],
     "info_command_warn": [
-      "Warn a user in your server.\nAdditional punishments may automatically be added depending on your server configuration."
+      "Avertir un utilisateur de votre serveur.\nDes sanctions additionnelles peuvent être ajoutées automatiquement selon la configuration de votre serveur."
     ],
     "info_command_block": [
-      "Block a user from sending messages or adding reactions in a text channel."
+      "Empêche un utilisateur d'envoyer des messages ou ajouter des réactions dans un canal."
     ],
     "info_command_permissions": [
-      "List all custom command permissions."
+      "Liste de toutes les autorisations de commandes personalisées."
     ],
     "info_command_permissions_remove": [
-      "Remove a custom command permission."
+      "Retirer une autorisation de commande personalisée."
     ],
     "info_command_permissions_enable_command": [
-      "Enable or disable a single command or module."
+      "Activer ou désactiver une seule commande ou module."
     ],
     "info_command_permissions_enable_all": [
-      "Enable or disable ALL commands."
+      "Activer ou désactiver TOUTES les commandes."
     ],
     "info_command_appeal": [
-      "Appeal an existing punishment."
+      "Contester une sanction existante."
     ],
     "info_command_punishments": [
-      "List all punishments on this server, starting with the most recent."
+      "Liste de toutes les sanctions sur ce serveur, commençant par les plus récentes."
     ],
     "info_command_punishment": [
-      "List detailed information about a punishment."
+      "Liste des informations détaillées sur une sanction."
     ],
     "info_command_revoke": [
-      "Revoke an existing punishment."
+      "Révoquer une sanction existante."
     ],
     "info_command_reason": [
-      "Add a reason to a punishment which does not have one."
+      "Ajoutez une raison à une sanction qui n'en a pas."
     ],
     "info_command_warningpunishment": [
-      "View or set a specific warning punishment."
+      "Voir ou configurer une sanction d'avertissement spécifique."
     ],
     "info_command_warningpunishments": [
-      "View all current warning punishments."
+      "Voir toutes les sanctions d'avertissements."
     ],
     "info_command_role": [
-      "View information about a role."
+      "Voir de l'information sur un rôle."
     ],
     "info_command_role_color": [
-      "Modify the color of an existing role."
+      "Modifier la couleur d'un rôle existant."
     ],
     "info_command_role_create": [
-      "Create a new role."
+      "Créer un nouveau rôle."
     ],
     "info_command_role_delete": [
-      "Delete an existing role."
+      "Supprimer un rôle existant."
     ],
     "info_command_role_give": [
-      "Give an existing role to a user on your server."
+      "Donner un rôle existant à un utilisateur sur votre serveur."
     ],
     "info_command_role_remove": [
-      "Remove an existing role from a user on your server."
+      "Retirer un rôle existant d'un utilisateur sur votre serveur."
     ],
     "info_command_role_move": [
-      "Move an existing role above or below another."
+      "Déplacer un rôle existant au-dessus ou au-dessous d'un autre."
     ],
     "info_command_role_rename": [
-      "Rename an existing role."
+      "Renommer un rôle existant."
     ],
     "info_command_suggestions_create": [
-      "Create a new server suggestion."
+      "Créer une nouvelle suggestion de serveur."
     ],
     "info_command_suggestions_remove": [
-      "Remove an existing server suggestion."
+      "Supprimer une suggestion de serveur existante."
     ],
     "info_command_suggestions_approve": [
-      "Approve or deny an existing server suggestion."
+      "Approuver ou rejeter une suggestion de serveur existante."
     ],
     "info_command_suggestions_channel": [
-      "View or set the channel suggestions are posted to."
+      "Voir ou configurer le canal où les suggestions sont affichées."
     ],
     "info_command_suggestions_archive": [
-      "View or set the channel suggestions are archived to when they are approved or denied."
+      "Voir ou configurer le canal où les suggestions sont archivées lorsqu'elles sont approuvées ou rejetées."
     ],
     "info_command_user": [
-      "View information about a user."
+      "Voir de l'information sur un utilisateur."
     ],
     "info_command_user_xp": [
-      "View a user's XP stats."
+      "Voir les statistiques d'XP d'un utilisateur."
     ],
     "info_command_user_language": [
-      "View or set your personal bot response language."
+      "Afficher ou configurer votre langue de réponse personnelle."
     ],
     "info_command_user_languages": [
-      "View available response languages."
+      "Voir les langues de réponse disponibles."
     ],
     "info_command_user_search": [
-      "Search for a user on the server."
+      "Rechercher un utilisateur sur le serveur."
     ],
     "info_command_user_searchregex": [
-      "Search for a user on this server using RegEx."
+      "Rechercher un utilisateur sur ce serveur en utilisant RegEx."
     ],
     "info_command_user_nickname": [
-      "View a user's nickname on this server."
+      "Voir le surnom pour un utilisateur de ce serveur."
     ],
     "info_command_user_nickname_set": [
-      "Set a user's nickname, or your own."
+      "Configuration le surnom pour un utilisateur, ou le vôtre."
     ],
     "info_command_user_nickname_reset": [
-      "Reset (remove) a user's nickname."
+      "Réinitialiser (retirer) le surnom pour un utilisateur."
     ],
     "info_command_modules": [
-      "List available command modules."
+      "Liste des modules de commandes disponibles."
     ],
     "info_command_commands": [
-      "List available commands for a module."
+      "Liste des commandes disponibles pour un module."
     ],
     "info_command_help": [
-      "View available help for a specific command, or get the bot help message."
+      "Voir l'aide disponible pour une commande spécifique, ou obtient le message d'aide du bot."
     ],
     "info_command_guild_language": [
-      "View or set the server's bot response language."
+      "Afficher ou configurer la langue de réponse du bot pour ce serveur."
     ],
     "info_command_guild_languages": [
-      "View available response languages."
+      "Voir les langues de réponse disponibles."
     ]
   }
 }
