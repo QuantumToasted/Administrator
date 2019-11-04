@@ -938,7 +938,7 @@
       "View available help for a specific command, or get the bot help message."
     ],
     "info_command_guild_language": [
-      "View or set the server's bot response language.'"
+      "View or set the server's bot response language."
     ],
     "info_command_guild_languages": [
       "View available response languages."
