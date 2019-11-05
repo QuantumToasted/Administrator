@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Humanizer;
 using Qmmands;
 
 namespace Administrator.Extensions
@@ -12,7 +13,7 @@ namespace Administrator.Extensions
             {
                 builder.Append(' ')
                     .Append(parameter.IsOptional ? '[' : '<')
-                    .Append(parameter.Name)
+                    .Append(parameter.Name.Humanize().ToLower()) // TODO: possible localized parameters
                     .Append(parameter.IsRemainder ? "..." : string.Empty)
                     .Append(parameter.IsOptional ? ']' : '>')
                     .Append(parameter.IsMultiple ? "[]" : string.Empty);

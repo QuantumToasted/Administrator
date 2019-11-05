@@ -99,6 +99,6 @@ namespace Administrator.Extensions
         }
 
         public static string Sanitize(this string str)
-            => Format.Sanitize(str);
+            => Format.Sanitize(str); // TODO: options for what to sanitize.
     }
 }

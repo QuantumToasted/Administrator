@@ -9,6 +9,8 @@ namespace Administrator.Database
 {
     public sealed class Guild
     {
+        public const int MAX_CUSTOM_PREFIXES = 5;
+
         private Guild()
         { }
         

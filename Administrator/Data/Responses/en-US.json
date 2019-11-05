@@ -562,6 +562,12 @@
     "info_position": [
       "Position"
     ],
+    "info_enabled": [
+      "Enabled"
+    ],
+    "info_disabled": [
+      "Disabled"
+    ],
     "info_timeout_password": [
       "You took too long to respond, or your password didn't match."
     ],
@@ -792,6 +798,57 @@
     ],
     "guild_language_set": [
       "The server response language has been updated to {0}."
+    ],
+    "guild_settings": [
+      "Server settings for {0}:"
+    ],
+    "guild_settings_enabled": [
+      "Setting {0} has been **enabled** for this server."
+    ],
+    "guild_settings_disabled": [
+      "Setting {0} has been **disabled** for this server."
+    ],
+    "guild_prefixes_none": [
+      "This server does not have any custom bot prefixes set!"
+    ],
+    "guild_prefixes": [
+      "Custom bot prefixes for {0}:"
+    ],
+    "guild_prefixes_maximum": [
+      "You have reached the maximum amount of custom bot prefixes.\nRemove another prefix before adding this one."
+    ],
+    "guild_prefixes_exists": [
+      "That custom bot prefix already exists, so it was not added."
+    ],
+    "guild_prefixes_notfound": [
+      "That custom bot prefix could not be found, so it was not removed."
+    ],
+    "guild_prefixes_added": [
+      "{0} has been added as a custom bot prefix."
+    ],
+    "guild_prefixes_removed": [
+      "{0} has been removed from the list of custom bot prefixes."
+    ],
+    "guild_prefixes_cleared": [
+      "All custom bot prefixes have been cleared."
+    ],
+    "guild_xp": [
+      "Users are currently able to gain {0} server XP every {1}."
+    ],
+    "guild_xp_set": [
+      "Users will now be able to gain {0} server XP every {1}."
+    ],
+    "guild_levelemote": [
+      "The custom level-up emote is currently set to {0}."
+    ],
+    "guild_levelemote_set": [
+      "The custom level-up emote has now been set to {0}."
+    ],
+    "guild_levelwhitelist": [
+      "Custom level-up notifications for {0}:" 
+    ],
+    "guild_levelwhitelist_set": [
+      "New custom level-up notifications for {0}:"
     ],
     "info_command_modmail": [
       "Open a new modmail thread."
