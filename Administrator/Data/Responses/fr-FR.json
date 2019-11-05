@@ -680,10 +680,10 @@
       "Information pour le bot {0}"
     ],
     "user_info_created": [
-      "A rejoint Discord le"
+      "Rejoint Discord"
     ],
     "user_info_joined": [
-      "Rejoint {0} le"
+      "Rejoint {0}"
     ],
     "user_info_nickname": [
       "Surnom"
