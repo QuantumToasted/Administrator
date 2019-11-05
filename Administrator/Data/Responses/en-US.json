@@ -845,7 +845,7 @@
       "The custom level-up emote has now been set to {0}."
     ],
     "guild_levelwhitelist": [
-      "Custom level-up notifications for {0}:" 
+      "Custom level-up notifications for {0}:"
     ],
     "guild_levelwhitelist_set": [
       "New custom level-up notifications for {0}:"
@@ -999,6 +999,33 @@
     ],
     "info_command_guild_languages": [
       "View available response languages."
+    ],
+    "info_command_guild_xprate": [
+      "View or set the server's custom XP gain rate."
+    ],
+    "info_command_guild_levelemote": [
+      "View or set the server's custom level-up emote."
+    ],
+    "info_command_guild_levelwhitelist": [
+      "View or set the server's custom level-up notification whitelist, choosing what happens when a user levels up."
+    ],
+    "info_command_guild_settings": [
+      "View the custom settings enabled or disabled for this server."
+    ],
+    "info_command_guild_settings_enable": [
+      "Enable or disable a specific setting for this server."
+    ],
+    "info_command_guild_prefixes": [
+      "View custom bot prefixes for this server."
+    ],
+    "info_command_guild_prefixes_add": [
+      "Add a new custom bot prefix to this server."
+    ],
+    "info_command_guild_prefixes_remove": [
+      "Remove a custom bot prefix from this server."
+    ],
+    "info_command_guild_prefixes_clear": [
+      "Clear all currently set custom bot prefixes."
     ]
   }
 }
