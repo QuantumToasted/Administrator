@@ -563,10 +563,10 @@
       "Позиция"
     ],
     "info_enabled": [
-      "Enabled"
+      "Включено"
     ],
     "info_disabled": [
-      "Disabled"
+      "Отключено"
     ],
     "info_timeout_password": [
       "Вы слишком долго отвечали, либо ваш пароль не совпал."
@@ -800,37 +800,37 @@
       "Язык ответа сервера был установлен на {0}."
     ],
     "guild_settings": [
-      "Server settings for {0}:"
+      "Настройки для сервера {0}:"
     ],
     "guild_settings_enabled": [
-      "Setting {0} has been **enabled** for this server."
+      "Настройка {0} была **включена** для этого сервера."
     ],
     "guild_settings_disabled": [
-      "Setting {0} has been **disabled** for this server."
+      "Настройка {0} была **отключена** для этого сервера."
     ],
     "guild_prefixes_none": [
-      "This server does not have any custom bot prefixes set!"
+      "Пользовательские префиксы бота не установлены на этом сервере!"
     ],
     "guild_prefixes": [
-      "Custom bot prefixes for {0}:"
+      "Пользовательские префиксы бота для {0}:"
     ],
     "guild_prefixes_maximum": [
-      "You have reached the maximum amount of custom bot prefixes.\nRemove another prefix before adding this one."
+      "Вы достигли максимального количества пользовательских префиксов ботов.\nУдалите другой префикс перед добавлением этого."
     ],
     "guild_prefixes_exists": [
-      "That custom bot prefix already exists, so it was not added."
+      "Такой пользовательский префикс бота уже существует, поэтому он не был добавлен."
     ],
     "guild_prefixes_notfound": [
-      "That custom bot prefix could not be found, so it was not removed."
+      "Такой пользовательский префикс бота не был найден, поэтому он был удалён."
     ],
     "guild_prefixes_added": [
-      "{0} has been added as a custom bot prefix."
+      "{0} был добавлен в качестве пользовательского префикса бота."
     ],
     "guild_prefixes_removed": [
-      "{0} has been removed from the list of custom bot prefixes."
+      "{0} был удалён из списка пользовательских префиксов бота."
     ],
     "guild_prefixes_cleared": [
-      "All custom bot prefixes have been cleared."
+      "Все пользовательские префиксы бота были очищены."
     ],
     "guild_xp": [
       "Users are currently able to gain {0} server XP every {1}."
@@ -839,16 +839,16 @@
       "Users will now be able to gain {0} server XP every {1}."
     ],
     "guild_levelemote": [
-      "The custom level-up emote is currently set to {0}."
+      "Пользовательский смайлик для повышения уровня сейчас установлен на {0}."
     ],
     "guild_levelemote_set": [
-      "The custom level-up emote has now been set to {0}."
+      "Пользовательский смайлик для повышения уровня был установлен на {0}."
     ],
     "guild_levelwhitelist": [
-      "Custom level-up notifications for {0}:"
+      "Пользовательские уведомления о повышении уровня для {0}:"
     ],
     "guild_levelwhitelist_set": [
-      "New custom level-up notifications for {0}:"
+      "Новые пользовательские уведомления о повышении уровня для {0}:"
     ],
     "info_command_modmail": [
       "Открыть новую тему мод-почты."
@@ -1001,31 +1001,31 @@
       "Просмотр доступных языков ответов."
     ],
     "info_command_guild_xprate": [
-      "View or set the server's custom XP gain rate."
+      "Просмотр или установка пользовательского прироста опыта."
     ],
     "info_command_guild_levelemote": [
-      "View or set the server's custom level-up emote."
+      "Просмотр или настройка пользовательского смайлика для повышения уровня."
     ],
     "info_command_guild_levelwhitelist": [
-      "View or set the server's custom level-up notification whitelist, choosing what happens when a user levels up."
+      "Просмотр или установка белого списка пользовательских уведомлений сервера, выбирая действие, происходящее, когда уровень пользователя повышается."
     ],
     "info_command_guild_settings": [
-      "View the custom settings enabled or disabled for this server."
+      "Просмотр пользовательских настроек, включенных или отключенных на этом сервере."
     ],
     "info_command_guild_settings_enable": [
-      "Enable or disable a specific setting for this server."
+      "Включить или отключить определенную настройку на этом сервере."
     ],
     "info_command_guild_prefixes": [
-      "View custom bot prefixes for this server."
+      "Просмотреть пользовательские префиксы бота для этого сервера."
     ],
     "info_command_guild_prefixes_add": [
-      "Add a new custom bot prefix to this server."
+      "Добавить новый префикс пользовательского бота для этого сервера."
     ],
     "info_command_guild_prefixes_remove": [
-      "Remove a custom bot prefix from this server."
+      "Удалить пользовательский префикс бота с этого сервера."
     ],
     "info_command_guild_prefixes_clear": [
-      "Clear all currently set custom bot prefixes."
+      "Очистить все текущие пользовательские префиксы бота."
     ]
   }
 }
