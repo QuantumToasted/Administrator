@@ -40,31 +40,25 @@ namespace Administrator.Commands
 
 
                 var split = punishments.SplitBy(10);
+                page = Math.Min(page, punishments.Count) - 1;
 
-                var tempPaginator = new PunishmentPaginator(null, split, Math.Min(page, split.Count) - 1, Context,
-                    Context.Guild.Id, PunishmentListType.Guild, Pagination);
-                var firstPage = await tempPaginator.BuildPageAsync();
-
+                var paginator = new PunishmentPaginator(split, page, Context.Guild.Id, PunishmentListType.Guild, Context);
+                var firstPage = await paginator.BuildPageAsync();
                 if (split.Count > 1)
                 {
-                    var message = await Pagination.SendPaginatorAsync(Context.Channel, firstPage);
-                    await using var paginator = new PunishmentPaginator(message, split, Math.Min(page, split.Count) - 1,
-                        Context, Context.Guild.Id, PunishmentListType.Guild, Pagination);
-                    await paginator.WaitForExpiryAsync();
+                    await Pagination.SendPaginatorAsync(Context.Channel, paginator, firstPage);
                     return CommandSuccess();
                 }
 
-                return CommandSuccess(embed: firstPage.Embed.ToEmbedBuilder()
-                    .WithFooter((string) null)
-                    .Build());
+                return CommandSuccess(embed: firstPage.Embed.ToEmbedBuilder().WithFooter((string) null).Build());
             }
 
             [Command("punishments", "cases"), RunMode(RunMode.Parallel)]
-            public async ValueTask<AdminCommandResult> ListPunishmentsAsync(SocketGuildUser target,
+            public async ValueTask<AdminCommandResult> ListPunishmentsAsync(ulong targetId,
                 [MustBe(Operator.GreaterThan, 0)] int page = 1)
             {
                 var punishments =
-                    await Context.Database.Punishments.Where(x => x.GuildId == Context.Guild.Id && x.TargetId == target.Id)
+                    await Context.Database.Punishments.Where(x => x.GuildId == Context.Guild.Id && x.TargetId == targetId)
                         .OrderByDescending(x => x.Id)
                         .ToListAsync();
 
@@ -72,21 +66,17 @@ namespace Administrator.Commands
                     return CommandErrorLocalized("punishment_nopunishments_user");
 
                 var split = punishments.SplitBy(10);
+                page = Math.Min(page, punishments.Count) - 1;
 
-                var tempPaginator = new PunishmentPaginator(null, split, Math.Min(page, split.Count) - 1, Context,
-                    Context.Guild.Id, PunishmentListType.Guild, Pagination); // TODO: Did IAsyncDisposable changes break this?
-                var firstPage = await tempPaginator.BuildPageAsync();
-
+                var paginator = new PunishmentPaginator(split, page, targetId, PunishmentListType.User, Context);
+                var firstPage = await paginator.BuildPageAsync();
                 if (split.Count > 1)
                 {
-                    var message = await Pagination.SendPaginatorAsync(Context.Channel, firstPage);
-                    await using var paginator = new PunishmentPaginator(message, split, Math.Min(page, split.Count) - 1,
-                        Context, Context.Guild.Id, PunishmentListType.Guild, Pagination);
-                    await paginator.WaitForExpiryAsync();
+                    await Pagination.SendPaginatorAsync(Context.Channel, paginator, firstPage);
                     return CommandSuccess();
                 }
 
-                return CommandSuccess(embed: firstPage.Embed);
+                return CommandSuccess(embed: firstPage.Embed.ToEmbedBuilder().WithFooter((string)null).Build());
             }
 
             [Command("punishment", "case")]

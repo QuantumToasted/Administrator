@@ -18,6 +18,8 @@ namespace Administrator.Common
         public static readonly IEmote Level = new Emoji("❓");
         public static readonly IEmote LevelUp = new Emoji("🌐");
         public static readonly IEmote Tada = new Emoji("🎉");
+        public static readonly IEmote Left = new Emoji("⬅");
+        public static readonly IEmote Right = new Emoji("➡");
 
         public static IEmote Parse(string input)
             => TryParse(input, out var result) ? result : throw new FormatException("Failed to parse IEmote.");

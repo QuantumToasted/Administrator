@@ -223,10 +223,13 @@ namespace Administrator.Commands.Modules.Users
                     embedFunc: builder =>
                         builder.WithSuccessColor().WithTitle(Localize("user_search_results", input)));
 
-                var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[0]);
-                await using var paginator = new DefaultPaginator(message, pages, 0, Pagination);
-                await paginator.WaitForExpiryAsync();
-                return CommandSuccess();
+                if (pages.Count > 1)
+                {
+                    await Pagination.SendPaginatorAsync(Context.Channel, new DefaultPaginator(pages, 0), pages[0]);
+                    return CommandSuccess();
+                }
+
+                return CommandSuccess(embed: pages[0].Embed);
             }
 
             [Command("searchregex"), RunMode(RunMode.Parallel)]
@@ -254,10 +257,13 @@ namespace Administrator.Commands.Modules.Users
                 var pages = DefaultPaginator.GeneratePages(matches, 1024, FormatUser, embedFunc: builder =>
                         builder.WithSuccessColor().WithTitle(Localize("user_searchregex_results")));
 
-                var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[0]);
-                await using var paginator = new DefaultPaginator(message, pages, 0, Pagination);
-                await paginator.WaitForExpiryAsync();
-                return CommandSuccess();
+                if (pages.Count > 1)
+                {
+                    await Pagination.SendPaginatorAsync(Context.Channel, new DefaultPaginator(pages, 0), pages[0]);
+                    return CommandSuccess();
+                }
+
+                return CommandSuccess(embed: pages[0].Embed);
 
                 bool MatchesRegex(SocketGuildUser target)
                 {

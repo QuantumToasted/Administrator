@@ -7,6 +7,47 @@ namespace Administrator.Common
 {
     public abstract class Paginator : IAsyncDisposable
     {
+        private protected bool _isPrivateMessage;
+        private protected PaginationService _service;
+
+        protected Paginator(IEmote[] emotes)
+        {
+            Emotes = emotes;
+        }
+
+        public Paginator WithMessage(IUserMessage message)
+        {
+            Message = message;
+            _isPrivateMessage = Message.Channel is IPrivateChannel;
+            return this;
+        }
+
+        public Paginator WithService(PaginationService service)
+        {
+            _service = service;
+            return this;
+        }
+
+        public async Task AddReactionAsync()
+        {
+            for (var i = 0; i < Emotes.Length; i++)
+            {
+                await Message.AddReactionAsync(Emotes[i]);
+            }
+        }
+
+        public IEmote[] Emotes { get; }
+
+        public IUserMessage Message { get; private set; }
+
+        public abstract ValueTask<Page> GetPageAsync(IEmote emote, IUser user);
+
+        public abstract ValueTask DisposeAsync();
+
+        public override bool Equals(object obj)
+            => (obj as Paginator)?.Message.Id == Message.Id;
+
+        /*
         private readonly PaginationService _service;
 
         protected Paginator(IUserMessage message, IEmote[] emotes, PaginationService service)
@@ -39,5 +80,6 @@ namespace Administrator.Common
             _service.RemovePaginator(this);
             return new ValueTask(CloseAsync());
         }
+        */
     }
 }

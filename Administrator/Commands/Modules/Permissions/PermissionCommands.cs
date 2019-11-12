@@ -162,15 +162,13 @@ namespace Administrator.Commands
 
             page = Math.Min(page, pages.Count) - 1;
 
-            var message = await Context.Channel.SendMessageAsync(embed: pages[page].Embed);
-
             if (pages.Count > 1)
             {
-                await using var paginator = new DefaultPaginator(message, pages, page, Pagination);
-                await paginator.WaitForExpiryAsync();
+                await Pagination.SendPaginatorAsync(Context.Channel, new DefaultPaginator(pages, page), pages[page]);
+                return CommandSuccess();
             }
 
-            return CommandSuccess();
+            return CommandSuccess(embed: pages[0].Embed);
 
             string Format(Permission permission)
             {

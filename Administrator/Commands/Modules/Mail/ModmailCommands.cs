@@ -307,9 +307,7 @@ namespace Administrator.Commands
 
             if (split.Count > 1)
             {
-                var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[page]);
-                await using var paginator = new DefaultPaginator(message, pages, page, Pagination);
-                await paginator.WaitForExpiryAsync();
+                await Pagination.SendPaginatorAsync(Context.Channel, new DefaultPaginator(pages, page), pages[page]);
                 return CommandSuccess();
             }
 

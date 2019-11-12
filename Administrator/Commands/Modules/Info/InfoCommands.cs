@@ -40,7 +40,7 @@ namespace Administrator.Commands.Modules.Info
                 .Build());
         }
 
-        [Command("commands", "module"), RunMode(RunMode.Parallel)]
+        [Command("commands", "module")]
         public async ValueTask<AdminCommandResult> GetCommandsAsync(Module module)
         {
             var commands = GetAllCommands(module);
@@ -63,9 +63,7 @@ namespace Administrator.Commands.Modules.Info
 
             if (pages.Count > 1)
             {
-                var message = await Pagination.SendPaginatorAsync(Context.Channel, pages[0]);
-                await using var paginator = new DefaultPaginator(message, pages, 0, Pagination);
-                await paginator.WaitForExpiryAsync();
+                await Pagination.SendPaginatorAsync(Context.Channel, new DefaultPaginator(pages, 0), pages[0]);
                 return CommandSuccess();
             }
 
