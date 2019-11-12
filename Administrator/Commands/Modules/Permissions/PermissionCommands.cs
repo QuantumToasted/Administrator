@@ -145,7 +145,7 @@ namespace Administrator.Commands
             }
         }
 
-        [Command("", "list"), RunMode(RunMode.Parallel)]
+        [Command("", "list")]
         public async ValueTask<AdminCommandResult> ListPermissionAsync([MustBe(Operator.GreaterThan, 0)] int page = 1)
         {
             var permissions = await Context.Database.Permissions.Where(x => x.GuildId == Context.Guild.Id)

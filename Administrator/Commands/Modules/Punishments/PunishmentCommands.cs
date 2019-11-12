@@ -27,7 +27,7 @@ namespace Administrator.Commands
         [RequireUserPermissions(GuildPermission.ManageMessages)]
         public sealed class MainCommands : PunishmentCommands
         {
-            [Command("punishments", "cases"), RunMode(RunMode.Parallel)]
+            [Command("punishments", "cases")]
             public async ValueTask<AdminCommandResult> ListPunishmentsAsync([MustBe(Operator.GreaterThan, 0)] int page = 1)
             {
                 var punishments =
@@ -53,7 +53,7 @@ namespace Administrator.Commands
                 return CommandSuccess(embed: firstPage.Embed.ToEmbedBuilder().WithFooter((string) null).Build());
             }
 
-            [Command("punishments", "cases"), RunMode(RunMode.Parallel)]
+            [Command("punishments", "cases")]
             public async ValueTask<AdminCommandResult> ListPunishmentsAsync(ulong targetId,
                 [MustBe(Operator.GreaterThan, 0)] int page = 1)
             {
