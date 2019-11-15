@@ -59,6 +59,8 @@ namespace Administrator.Database
 
         public DbSet<SpecialEmote> SpecialEmotes { get; set; }
 
+        public DbSet<Highlight> Highlights { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
             if (await Guilds.FindAsync(guildId) is { } guild)
@@ -140,6 +142,9 @@ namespace Administrator.Database
                             .First(y => y.CultureCode.Equals(x)));
                 user.Property(x => x.PreviousNames)
                     .HasDefaultValueSql("'{}'");
+                user.Property(x => x.HighlightBlacklist)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
             });
 
             modelBuilder.Entity<GuildUser>(user =>
@@ -227,6 +232,13 @@ namespace Administrator.Database
                 emote.HasKey(x => new {x.GuildId, x.Type});
                 emote.Property(x => x.Emote).HasConversion(new EmoteConverter())
                     .HasDefaultValueSql("''");
+            });
+
+            modelBuilder.Entity<Highlight>(highlight =>
+            {
+                highlight.HasKey(x => x.Id);
+                highlight.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
             });
         }
     }

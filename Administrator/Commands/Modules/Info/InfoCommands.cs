@@ -10,7 +10,7 @@ using Administrator.Services;
 using Discord;
 using Qmmands;
 
-namespace Administrator.Commands.Modules.Info
+namespace Administrator.Commands
 {
     [Name("Info")]
     public sealed class InfoCommands : AdminModuleBase
@@ -43,13 +43,13 @@ namespace Administrator.Commands.Modules.Info
         [Command("commands", "module")]
         public async ValueTask<AdminCommandResult> GetCommandsAsync(Module module)
         {
-            var commands = GetAllCommands(module);
+            var commands = CommandUtilities.EnumerateAllCommands(module);
             var groups = commands.GroupBy(x => x.FullAliases[0]).ToList();
 
             var pages = DefaultPaginator.GeneratePages(groups, lineFunc: group => new StringBuilder()
                     .Append(Format.Bold(FormatCommands(group)))
                     .AppendLine(Localize($"info_command_{group.Key.Replace(' ', '_')}")).ToString(),
-                embedFunc: builder => builder.WithSuccessColor()
+                builder: new EmbedBuilder().WithSuccessColor()
                     .WithTitle(Localize("info_module_commands", Format.Code(module.Name))));
             /*
             var pages = DefaultPaginator.GeneratePages(groups, 15, group => new EmbedFieldBuilder()
@@ -68,18 +68,6 @@ namespace Administrator.Commands.Modules.Info
             }
 
             return CommandSuccess(embed: pages[0].Embed);
-
-            static List<Command> GetAllCommands(Module innerModule)
-            {
-                var innerCommands = innerModule.Commands.ToList();
-
-                foreach (var submodule in innerModule.Submodules)
-                {
-                    innerCommands.AddRange(GetAllCommands(submodule));
-                }
-
-                return innerCommands;
-            }
         }
 
         [Command("help")]
@@ -143,7 +131,7 @@ namespace Administrator.Commands.Modules.Info
                 if (aliases.Contains(""))
                 {
                     var temp = builder.ToString();
-                    builder.AppendLine($" {command.FormatArguments()}`")
+                    builder.AppendLine($"{command.FormatArguments()}`")
                         .Append(temp);
 
                     aliases.Remove("");
@@ -156,7 +144,7 @@ namespace Administrator.Commands.Modules.Info
                         : aliases[0]);
                 }
 
-                builder.AppendLine($" {command.FormatArguments()}`");
+                builder.AppendLine($"{command.FormatArguments()}`");
 
                 //builder.AppendLine(Format.Code(Config.DefaultPrefix + group.Key +
                 //                               command.FormatArguments()));

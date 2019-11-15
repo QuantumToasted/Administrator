@@ -156,7 +156,7 @@ namespace Administrator.Commands
                 return CommandErrorLocalized("permissions_none");
 
             var pages = DefaultPaginator.GeneratePages(permissions, lineFunc: Format,
-                embedFunc: builder => builder
+                builder: new EmbedBuilder()
                 .WithSuccessColor()
                 .WithTitle(Context.Localize("permissions_list", Context.Guild?.Name)));
 

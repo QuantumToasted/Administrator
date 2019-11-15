@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Administrator.Extensions
 {
@@ -23,5 +24,9 @@ namespace Administrator.Extensions
 
             return newList;
         }
+
+        public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> enumerable, Func<T, TKey> keySelector)
+            => enumerable.GroupBy(keySelector).Select(x => x.FirstOrDefault());
+
     }
 }

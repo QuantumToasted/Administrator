@@ -220,8 +220,7 @@ namespace Administrator.Commands.Modules.Users
                 matches = matches.OrderBy(x => x.Item1).ToList();
 
                 var pages = DefaultPaginator.GeneratePages(matches, 1024, x => FormatUser(x.Item2),
-                    embedFunc: builder =>
-                        builder.WithSuccessColor().WithTitle(Localize("user_search_results", input)));
+                    builder: new EmbedBuilder().WithSuccessColor().WithTitle(Localize("user_search_results", input)));
 
                 if (pages.Count > 1)
                 {
@@ -254,8 +253,8 @@ namespace Administrator.Commands.Modules.Users
                 if (matches.Count == 0)
                     return CommandErrorLocalized("user_searchregex_no_results", args: regex.ToString());
 
-                var pages = DefaultPaginator.GeneratePages(matches, 1024, FormatUser, embedFunc: builder =>
-                        builder.WithSuccessColor().WithTitle(Localize("user_searchregex_results")));
+                var pages = DefaultPaginator.GeneratePages(matches, 1024, FormatUser, builder: new EmbedBuilder()
+                    .WithSuccessColor().WithTitle(Localize("user_searchregex_results")));
 
                 if (pages.Count > 1)
                 {

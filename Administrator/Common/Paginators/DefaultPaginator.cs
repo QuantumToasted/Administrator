@@ -58,12 +58,12 @@ namespace Administrator.Common
         }
 
         public static List<Page> GeneratePages<T>(List<T> list, int maxLength = EmbedBuilder.MaxDescriptionLength,
-            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, Func<EmbedBuilder, EmbedBuilder> embedFunc = null)
+            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, EmbedBuilder builder = null)
         {
             var pages = new List<Page>();
 
-            var builder = new StringBuilder();
-            var embedBuilder = embedFunc?.Invoke(new EmbedBuilder()) ?? new EmbedBuilder();
+            var sb = new StringBuilder();
+            builder ??= new EmbedBuilder();
             for (var i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
@@ -71,21 +71,21 @@ namespace Administrator.Common
                 if (builder.Length + text.Length + 1 > maxLength) // +1 to account for \n
                 {
                     pages.Add(new Page(plaintextFunc?.Invoke(),
-                        embedBuilder
+                        builder
                         .WithDescription(builder.ToString()).Build()));
 
-                    builder.Clear().AppendLine(text);
+                    sb.Clear().AppendLine(text);
                 }
                 else if (i == list.Count - 1)
                 {
                     pages.Add(new Page(plaintextFunc?.Invoke(),
-                        embedBuilder
-                        .WithDescription(builder.AppendLine(text).ToString())
+                        builder
+                        .WithDescription(sb.AppendLine(text).ToString())
                         .Build()));
                 }
                 else
                 {
-                    builder.AppendLine(text);
+                    sb.AppendLine(text);
                 }
             }
             
@@ -103,11 +103,11 @@ namespace Administrator.Common
         }
 
         public static List<Page> GeneratePages<T>(List<T> list, int numberPerPage, Func<T, EmbedFieldBuilder> fieldFunc,
-            Func<string> plaintextFunc = null, Func<EmbedBuilder, EmbedBuilder> embedFunc = null)
+            Func<string> plaintextFunc = null, EmbedBuilder builder = null)
         {
             var pages = new List<Page>();
             var split = list.SplitBy(numberPerPage);
-            var builder = embedFunc?.Invoke(new EmbedBuilder()) ?? new EmbedBuilder();
+            builder ??= new EmbedBuilder();
             foreach (var group in split)
             {
                 var text = plaintextFunc?.Invoke() ?? string.Empty;

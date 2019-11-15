@@ -16,14 +16,24 @@ namespace Administrator.Services
         {
             _semaphore = new SemaphoreSlim(1, 1);
         }
-        
+
         public Task LogCriticalAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
-            => LogMessageAsync(value, source, "CRIT", ConsoleColor.Red, textColor);
+        {
+            if (value is Exception ex)
+                LogException(ex, source);
+
+            return LogMessageAsync(value, source, "CRIT", ConsoleColor.Red, textColor);
+        }
 
         public Task LogErrorAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
-            => LogMessageAsync(value, source, "ERRO", ConsoleColor.Yellow, textColor);
+        {
+            if (value is Exception ex)
+                LogException(ex, source);
+
+            return LogMessageAsync(value, source, "ERRO", ConsoleColor.Yellow, textColor);
+        }
 
         public Task LogWarningAsync(object value, string source,
             ConsoleColor textColor = ConsoleColor.Gray)
@@ -82,6 +92,15 @@ namespace Administrator.Services
             }
             
             _semaphore.Release();
+        }
+
+        private static void LogException(Exception ex, string source)
+        {
+            var now = DateTimeOffset.UtcNow;
+            Directory.CreateDirectory("./Logs/");
+            using var writer = File.AppendText($"./Logs/{now:MMddyyyy}.log");
+            writer.WriteLine($"[{now:g}|{source}]:{ex}");
+            writer.WriteLine();
         }
 
         Task IService.InitializeAsync()

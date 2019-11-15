@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Administrator.Common;
 using Administrator.Services;
@@ -19,6 +20,10 @@ namespace Administrator.Database
 
         public LocalizedLanguage Language { get; set; }
 
+        public LevelUpNotification LevelUpPreferences { get; set; }
+
+        public List<ulong> HighlightBlacklist { get; set; }
+
         public override bool Equals(object obj)
             => (obj as GlobalUser)?.Id == Id;
 
@@ -30,7 +35,5 @@ namespace Administrator.Database
                 return hash * 31 + Id.GetHashCode();
             }
         }
-
-        public LevelUpNotification LevelUpPreferences { get; set; }
     }
 }

@@ -24,6 +24,7 @@ namespace Administrator.Services
         private readonly PaginationService _pagination;
         private readonly PunishmentService _punishments;
         private readonly LevelService _levels;
+        private readonly HighlightService _highlights;
         private bool _firstReady;
 
         public EventDispatcherService(IServiceProvider provider)
@@ -38,6 +39,7 @@ namespace Administrator.Services
             _pagination = _provider.GetRequiredService<PaginationService>();
             _punishments = _provider.GetRequiredService<PunishmentService>();
             _levels = _provider.GetRequiredService<LevelService>();
+            _highlights = _provider.GetRequiredService<HighlightService>();
         }
 
         private async Task HandleUserBannedAsync(SocketUser user, SocketGuild guild)
@@ -81,6 +83,7 @@ namespace Administrator.Services
 
             if (!executed)
             {
+                await _highlights.HighlightUsersAsync(userMessage);
                 await _levels.IncrementXpAsync(userMessage);
             }
         }
