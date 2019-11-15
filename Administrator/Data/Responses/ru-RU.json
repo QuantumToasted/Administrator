@@ -559,6 +559,9 @@
     "info_none": [
       "Нет"
     ],
+    "info_jumpmessage": [
+      "Click to jump"
+    ],
     "info_position": [
       "Позиция"
     ],
@@ -1026,6 +1029,81 @@
     ],
     "info_command_guild_prefixes_clear": [
       "Очистить все текущие пользовательские префиксы бота."
+    ],
+    "highlight_list_none_global": [
+      "You don't have any global highlights set!"
+    ],
+    "highlight_list_none_server": [
+      "You don't have any highlights set in {0}!"
+    ],
+    "highlight_list_global": [
+      "Your highlights for all servers:"
+    ],
+    "highlight_list_guild": [
+      "Your highlights for {0}:"
+    ],
+    "highlight_add_exists": [
+      "You already have a highlight for that!"
+    ],
+    "highlight_add_global": [
+      "{0} New global highlight created."
+    ],
+    "highlight_add_guild": [
+      "{0} New highlight created for {1}."
+    ],
+    "highlight_blacklist_notmember": [
+      "You are not a member of that server, so you cannot blacklist that channel."
+    ],
+    "highlight_blacklist_add": [
+      "{0} will no longer trigger highlights for you."
+    ],
+    "highlight_blacklist_remove": [
+      "{0} will now trigger highlights for you again."
+    ],
+    "highlight_blacklist": [
+      "Users and channels that will not trip your highlights:"
+    ],
+    "highlight_blacklist_empty": [
+      "Your highlight blacklist is empty!"
+    ],
+    "highlight_remove_notfound": [
+      "You don't have a highlight matching that text here!"
+    ],
+    "highlight_remove_global": [
+      "Global highlight removed."
+    ],
+    "highlight_remove_guild": [
+      "Highlight removed from {0}."
+    ],
+    "highlight_cleared": [
+      "Highlights cleared."
+    ],
+    "highlight_trigger_text": [
+      "You've been highlighted in {0}!"
+    ],
+    "highlight_trigger_author": [
+      "{0} - in {1}"
+    ],
+    "info_command_highlights": [
+      "View your highlights for this server. If used in DMs, view your global highlights."
+    ],
+    "info_command_highlights_add": [
+      "Add a new highlight."
+    ],
+    "info_command_highlights_remove": [
+      "Remove an existing highlight."
+    ],
+    "info_command_highlights_clear": [
+      "Clear all highlights in this server. If used in DMs, clears all global highlights."
+    ],
+    "info_command_highlights_blacklist": [
+      "View users and channels who will not trip your highlights."
+    ],
+    "info_command_highlights_blacklist_add": [
+      "Add a channel or user to your highlight blacklist."
+    ],
+    "info_command_highlights_blacklist_remove": [
+      "Remove a channel or user from your highlight blacklist."
     ]
   }
 }
