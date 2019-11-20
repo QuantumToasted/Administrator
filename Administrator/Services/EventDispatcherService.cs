@@ -140,6 +140,9 @@ namespace Administrator.Services
             _client.UserLeft += user
                 => _queue.Enqueue(() => HandleUserLeftAsync(user));
 
+            _client.UserJoined += user
+                => _queue.Enqueue(() => HandleUserJoinedAsync(user));
+
             _restClient.Log += message
                 => _queue.Enqueue(() => HandleClientLog(message));
 
@@ -149,6 +152,11 @@ namespace Administrator.Services
             _commands.CommandExecutionFailed += HandleCommandExecutionFailed;
 
             return _logging.LogInfoAsync("Initialized.", "Dispatcher");
+        }
+
+        private async Task HandleUserJoinedAsync(SocketGuildUser user)
+        {
+            await _punishments.HandleMuteEvasionAsync(user);
         }
 
         private Task HandleCommandExecutionFailed(CommandExecutionFailedEventArgs e)

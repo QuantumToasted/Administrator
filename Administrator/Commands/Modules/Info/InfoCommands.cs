@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,6 +27,9 @@ namespace Administrator.Commands
 
             foreach (var module in Commands.TopLevelModules.OrderBy(x => x.Name))
             {
+                if (module.Checks.OfType<RequireOwnerAttribute>().Any() && 
+                    !Config.OwnerIds.Contains(Context.User.Id)) continue;
+
                 builder.AppendLine(Format.Bold(Format.Code(module.Name)))
                     .AppendLine(Localize($"info_modules_{module.Name.ToLower()}"))
                     .AppendLine();
@@ -108,26 +110,53 @@ namespace Administrator.Commands
                 {
                     if (topModule.Aliases.Count > 0)
                     {
+                        if (topModule.Aliases.Count > 1)
+                        {
+                            list.Add($"({string.Join('|', topModule.Aliases)})");
+                        }
+                        else if (!string.IsNullOrWhiteSpace(topModule.Aliases[0]))
+                        {
+                            list.Add(topModule.Aliases[0]);
+                        }
+                        /*
                         list.Add(topModule.Aliases.Count > 1
                             ? $"({string.Join('|', topModule.Aliases)})"
                             : topModule.Aliases[0]);
+                        */
                     }
                     else if (topModule.Attributes.OfType<GroupAttribute>().FirstOrDefault() is { } groupAttribute)
                     {
+                        if (groupAttribute.Aliases.Length > 1)
+                        {
+                            list.Add($"({string.Join('|', groupAttribute.Aliases)})");
+                        }
+                        else if (!string.IsNullOrWhiteSpace(groupAttribute.Aliases[0]))
+                        {
+                            list.Add(groupAttribute.Aliases[0]);
+                        }
+
+                        /*
                         list.Add(groupAttribute.Aliases.Length > 1
                                  ? $"({string.Join('|', groupAttribute.Aliases)})"
                                  : groupAttribute.Aliases[0]);
+                        */
                     }
 
                     topModule = topModule.Parent;
                 }
 
+                var aliases = command.Aliases.ToList();
+
                 for (var i = list.Count - 1; i >= 0; i--)
                 {
-                    builder.Append($"{list[i]} ");
+                    var entry = list[i];
+                    builder.Append(entry);
+
+                    if (!aliases.Contains(""))
+                        builder.Append(' ');
                 }
 
-                var aliases = command.Aliases.ToList();
+
                 if (aliases.Contains(""))
                 {
                     var temp = builder.ToString();
@@ -145,9 +174,6 @@ namespace Administrator.Commands
                 }
 
                 builder.AppendLine($"{command.FormatArguments()}`");
-
-                //builder.AppendLine(Format.Code(Config.DefaultPrefix + group.Key +
-                //                               command.FormatArguments()));
             }
 
             return builder.ToString();

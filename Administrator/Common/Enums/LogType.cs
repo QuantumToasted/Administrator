@@ -2,6 +2,7 @@
 {
     public enum LogType
     {
+        Disable,
         Ban,
         Unban,
         Kick,

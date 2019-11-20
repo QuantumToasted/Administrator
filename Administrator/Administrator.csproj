@@ -21,6 +21,7 @@
     <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20191003.3" />
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="Humanizer" Version="2.7.9" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.3.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -60,7 +61,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Commands\Modules\Channels\" />
     <Folder Include="Data\Images\" />
   </ItemGroup>
 

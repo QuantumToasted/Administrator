@@ -117,6 +117,8 @@ namespace Administrator.Services
                         _ => argumentResult.Reason
                     });
                     break;
+                case ChecksFailedResult checkResult when checkResult.FailedChecks.OfType<RequireOwnerAttribute>().Any():
+                    return null;
                 case ChecksFailedResult checkResult:
                     builder.AppendLine(context.Localize("commanderror_checks",
                         string.Join('\n', checkResult.FailedChecks.Select(x => x.Result.Reason))));
@@ -143,7 +145,7 @@ namespace Administrator.Services
                     break;
                 case TypeParseFailedResult typeParseResult:
                     builder.AppendLine(Format.Code(
-                            $"{context.Prefix}{string.Join(' ', context.Path)} {typeParseResult.Parameter.Command.FormatArguments()}"))
+                            $"{context.Prefix}{string.Join(' ', context.Path)}{typeParseResult.Parameter.Command.FormatArguments()}"))
                         .AppendLine($"\n{Format.Code(typeParseResult.Parameter.Name)}: {typeParseResult.Reason}");
                     break;
             }

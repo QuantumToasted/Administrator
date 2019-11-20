@@ -9,7 +9,7 @@ namespace Administrator.Extensions
     public static class StringExtensions
     {
         public static readonly Regex LazyImageLinkRegex = new Regex(
-            @"(http|https):\/\/.{2,}(png|jpg|jpeg|gif)");
+            @"(http|https):\/\/.{2,}(png|jpg|jpeg|gif)", RegexOptions.Compiled);
 
         public static bool HasImageExtension(this string str)
         {

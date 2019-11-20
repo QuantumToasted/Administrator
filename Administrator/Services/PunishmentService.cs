@@ -394,6 +394,27 @@ namespace Administrator.Services
             return field;
         }
 
+        public async Task HandleMuteEvasionAsync(SocketGuildUser user)
+        {
+            await using var ctx = new AdminDatabaseContext(_provider);
+
+            if (await ctx.Punishments.OfType<Mute>()
+                .FirstOrDefaultAsync(x => x.GuildId == user.Guild.Id && x.TargetId == user.Id && !x.IsExpired) is { } mute)
+            {
+                if (mute.ChannelId.HasValue)
+                {
+                    var channel = user.Guild.GetTextChannel(mute.ChannelId.Value);
+                    await channel.AddPermissionOverwriteAsync(user, new OverwritePermissions(sendMessages: PermValue.Deny, addReactions: PermValue.Deny));
+                    return;
+                }
+
+                if (await ctx.GetSpecialRoleAsync(user.Guild.Id, RoleType.Mute) is { } muteRole)
+                {
+                    await user.AddRoleAsync(muteRole);
+                }
+            }
+        }
+
         private async Task HandleExpiredPunishmentsAsync()
         {
             using var ctx = new AdminDatabaseContext(_provider);

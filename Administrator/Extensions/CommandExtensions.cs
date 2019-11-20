@@ -9,8 +9,9 @@ namespace Administrator.Extensions
         public static string FormatArguments(this Command command)
         {
             var builder = new StringBuilder();
-            foreach (var parameter in command.Parameters)
+            for (var i = 0; i < command.Parameters.Count; i++)
             {
+                var parameter = command.Parameters[i];
                 builder.Append(' ')
                     .Append(parameter.IsOptional ? '[' : '<')
                     .Append(parameter.Name.Humanize().ToLower()) // TODO: possible localized parameters

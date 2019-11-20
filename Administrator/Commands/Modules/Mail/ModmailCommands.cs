@@ -313,5 +313,32 @@ namespace Administrator.Commands
 
             return CommandSuccess(embed: pages[0].Embed);
         }
+
+        [Command("channel")]
+        [RequireUserPermissions(GuildPermission.ManageChannels)]
+        public async ValueTask<AdminCommandResult> GetModmailChannelAsync()
+        {
+            var channel = await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Modmail);
+            return channel is { }
+                ? CommandSuccessLocalized("modmail_channel", args: channel.Mention)
+                : CommandSuccessLocalized("modmail_channel_none");
+        }
+
+        [Command("channel")]
+        [RequireUserPermissions(GuildPermission.ManageChannels)]
+        public async ValueTask<AdminCommandResult> SetModmailChannelAsync(SocketTextChannel channel)
+        {
+            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, LogType.Modmail) is { } loggingChannel)
+            {
+                loggingChannel.Id = Context.Channel.Id;
+                Context.Database.LoggingChannels.Update(loggingChannel);
+            }
+            else
+            {
+                Context.Database.LoggingChannels.Add(new LoggingChannel(Context.Channel.Id, Context.Guild.Id, LogType.Modmail));
+            }
+
+            return CommandSuccessLocalized("modmail_channel_set", args: channel.Mention);
+        }
     }
 }

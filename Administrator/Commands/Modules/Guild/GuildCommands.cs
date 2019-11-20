@@ -75,7 +75,7 @@ namespace Administrator.Commands.Modules.Guild
                     var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
                     var enabled = Context.Path[2].Equals("enable");
 
-                    guild.Settings = enabled ? guild.Settings | setting : guild.Settings & setting;
+                    guild.Settings = enabled ? guild.Settings | setting : guild.Settings & ~setting;
                     Context.Database.Guilds.Update(guild);
                     await Context.Database.SaveChangesAsync();
 

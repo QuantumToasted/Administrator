@@ -18,11 +18,14 @@ namespace Administrator.Extensions
                 ? null
                 : $"{(bold ? Discord.Format.Bold(role.Name.Sanitize()) : role.Name.Sanitize())} (`{role.Id}`)";
 
-        public static string Format(this ITextChannel channel)
-            => channel is null ? null : $"{channel.Mention} (`{channel.Id}`)";
-
-        public static string Format(this IVoiceChannel channel, bool bold = true)
-            => channel is null ? null : $"{(bold ? Discord.Format.Bold(channel.Name.Sanitize()) : channel.Name.Sanitize())} (`{channel.Id}`)";
+        public static string Format(this IGuildChannel channel, bool bold = true)
+            => channel switch
+            {
+                ITextChannel textChannel => $"{textChannel.Mention} (`{channel.Id}`)",
+                IVoiceChannel voiceChannel => $"{(bold ? Discord.Format.Bold(voiceChannel.Name.Sanitize()) : voiceChannel.Name.Sanitize())} (`{voiceChannel.Id}`)",
+                ICategoryChannel category => $"{(bold ? Discord.Format.Bold(category.Name.Sanitize()) : category.Name.Sanitize())} (`{category.Id}`)",
+                _ => null
+            };
 
         public static string Format(this IGuild guild, bool bold = true)
             => guild is null

@@ -10,7 +10,7 @@ namespace Administrator.Extensions
         public static string HumanizeFormatted(this TimeSpan ts, AdminCommandContext context, TimeUnit? minimum = null, bool ago = false)
         {
             var min = minimum ?? TimeUnit.Minute;
-            var format = ts.Humanize(4, context.Language.Culture, minUnit: min, maxUnit: TimeUnit.Year);
+            var format = ts.Humanize(10, context.Language.Culture, minUnit: min, maxUnit: TimeUnit.Year);
 
             if (!ago)
                 return format;

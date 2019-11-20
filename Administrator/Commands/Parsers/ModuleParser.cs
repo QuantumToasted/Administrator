@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Administrator.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -12,10 +13,17 @@ namespace Administrator.Commands
         {
             var context = (AdminCommandContext) ctx;
             var commandService = context.ServiceProvider.GetRequiredService<CommandService>();
+            var config = context.ServiceProvider.GetRequiredService<ConfigurationService>();
 
             var module =
                 commandService.TopLevelModules.FirstOrDefault(x =>
                     x.Name.Equals(value, StringComparison.OrdinalIgnoreCase));
+
+            if (module?.Checks.OfType<RequireOwnerAttribute>().Any() == true &&
+                !config.OwnerIds.Contains(context.User.Id))
+            {
+                module = null;
+            }
 
             return module is { }
                 ? TypeParserResult<Module>.Successful(module)

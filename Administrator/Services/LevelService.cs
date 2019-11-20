@@ -283,10 +283,11 @@ namespace Administrator.Services
 
             using var ctx = new AdminDatabaseContext(_provider);
 
-            var now = DateTimeOffset.UtcNow;
+            
             var guild = await ctx.GetOrCreateGuildAsync(channel.Guild.Id);
             if (!guild.Settings.HasFlag(GuildSettings.XpTracking)) return;
 
+            var now = DateTimeOffset.UtcNow;
             var user = await ctx.GetOrCreateGlobalUserAsync(message.Author.Id);
             
             if (now - user.LastXpGain > XpGainInterval)
