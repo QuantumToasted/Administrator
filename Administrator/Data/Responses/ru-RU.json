@@ -274,6 +274,15 @@
     "modmail_modteam": [
       "Команда модераторов {0}"
     ],
+    "modmail_channel_none": [
+      "The modmail channel has not been configured in this server."
+    ],
+    "modmail_channel": [
+      "New modmail messages are currently sent in {0}."
+    ],
+    "modmail_channel_set": [
+      "New modmail messages will now be sent in {0}."
+    ],
     "moderation_alreadybanned": [
       "{0} уже был забанен!"
     ],
@@ -558,6 +567,9 @@
     ],
     "info_none": [
       "Нет"
+    ],
+    "info_category": [
+      "Category"
     ],
     "info_jumpmessage": [
       "Click to jump"
@@ -1104,6 +1116,102 @@
     ],
     "info_command_highlights_blacklist_remove": [
       "Remove a channel or user from your highlight blacklist."
+    ],
+    "owner_eval_inprogress": [
+      "Evaluating code..."
+    ],
+    "owner_eval_complete": [
+      "Code evalulation completed."
+    ],
+    "owner_eval_failed": [
+      "Code evalulation was unsuccessful."
+    ],
+    "owner_eval_errors": [
+      "Errors"
+    ],
+    "owner_eval_return": [
+      "Value returned"
+    ],
+    "owner_eval_executiontime": [
+      "Execution time"
+    ],
+    "owner_forcestop": [
+      "Shutting down."
+    ],
+    "channel_info_text": [
+      "Information for text channel {0}"
+    ],
+    "channel_info_voice": [
+      "Information for voice channel {0}"
+    ],
+    "channel_info_voice_bitrate": [
+      "Bitrate"
+    ],
+    "channel_info_voice_connected": [
+      "Connected users ({0})"
+    ],
+    "channel_info_category": [
+      "Information for category channel {0}"
+    ],
+    "channel_info_news": [
+      "Information for news channel {0}"
+    ],
+    "channel_info_category_footer": [
+      "Category: {0}"
+    ],
+    "channel_info_category_channels": [
+      "Channels in this category"
+    ],
+    "channel_create_text": [
+      "Text channel {0} created!"
+    ],
+    "channel_create_news": [
+      "News channel {0} created!"
+    ],
+    "channel_create_voice": [
+      "Voice channel {0} created!"
+    ],
+    "channel_create_category": [
+      "Category {0} created!"
+    ],
+    "channel_rename": [
+      "Channel successfully renamed."
+    ],
+    "channel_delete": [
+      "Channel successfully deleted."
+    ],
+    "channel_logging_alldisabled": [
+      "All logging has been disabled in this channel."
+    ],
+    "channel_logging_ban": [
+      "Bans will now be logged in this channel."
+    ],
+    "channel_logging_unban": [
+      "Unbans will now be logged in this channel."
+    ],
+    "channel_logging_kick": [
+      "Kicks will now be logged in this channel."
+    ],
+    "channel_logging_mute": [
+      "Mutes will now be logged in this channel."
+    ],
+    "channel_logging_unmute": [
+      "Unmutes will now be logged in this channel."
+    ],
+    "channel_logging_warn": [
+      "Warnings will now be logged in this channel."
+    ],
+    "channel_logging_unwarn": [
+      "Revoked warnings will now be logged in this channel."
+    ],
+    "channel_logging_appeal": [
+      "Punishment appeals will now be logged in this channel."
+    ],
+    "channel_logging_none": [
+      "No events are currently configured to log in this channel."
+    ],
+    "channel_logging_list": [
+      "The following events currently log in this channel:"
     ]
   }
 }
