@@ -11,36 +11,37 @@ using Administrator.Commands;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Qmmands;
 
 namespace Administrator.Services
 {
-    public sealed class CommandHandlerService : IService
+    public sealed class CommandHandlerService : IService, IHandler<MessageReceivedEventArgs>, 
+        IHandler<CommandExecutedEventArgs>, IHandler<CommandExecutionFailedEventArgs>
     {
         private readonly IServiceProvider _provider;
         private readonly CommandService _commands;
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordClient _client;
         private readonly ConfigurationService _config;
         private readonly LoggingService _logging;
-        private readonly LocalizationService _localization;
 
         public CommandHandlerService(IServiceProvider provider)
         {
             _provider = provider;
             _commands = _provider.GetRequiredService<CommandService>();
-            _client = _provider.GetRequiredService<DiscordSocketClient>();
+            _client = _provider.GetRequiredService<DiscordClient>();
             _config = _provider.GetRequiredService<ConfigurationService>();
             _logging = _provider.GetRequiredService<LoggingService>();
-            _localization = _provider.GetRequiredService<LocalizationService>();
         }
 
-        public async Task<bool> TryExecuteCommandAsync(SocketUserMessage userMessage)
+        public async Task HandleAsync(MessageReceivedEventArgs args)
         {
-            if (userMessage.Source != MessageSource.User || string.IsNullOrWhiteSpace(userMessage.Content)) return false;
+            if (!(args.Message is CachedUserMessage message) ||
+                message.Author.IsBot || string.IsNullOrWhiteSpace(message.Content))
+                return;
 
             var prefixes = new List<string>
                 {_config.DefaultPrefix, $"<@{_client.CurrentUser.Id}> ", $"<@!{_client.CurrentUser.Id}> "};
@@ -48,7 +49,7 @@ namespace Administrator.Services
             LocalizedLanguage language;
             using var ctx = new AdminDatabaseContext(_provider);
 
-            if (userMessage.Channel is IGuildChannel guildChannel)
+            if (message.Channel is IGuildChannel guildChannel)
             {
                 var guild = await ctx.GetOrCreateGuildAsync(guildChannel.GuildId);
                 prefixes.AddRange(guild.CustomPrefixes);
@@ -56,33 +57,35 @@ namespace Administrator.Services
             }
             else
             {
-                var user = await ctx.GetOrCreateGlobalUserAsync(userMessage.Author.Id);
+                var user = await ctx.GetOrCreateGlobalUserAsync(message.Author.Id);
                 language = user.Language;
             }
 
-            if (!CommandUtilities.HasAnyPrefix(userMessage.Content, prefixes, StringComparison.OrdinalIgnoreCase,
-                out var prefix, out var input)) return false;
-            
-            var context = new AdminCommandContext(userMessage, prefix, language, _provider);
+            if (!CommandUtilities.HasAnyPrefix(message.Content, prefixes, StringComparison.OrdinalIgnoreCase,
+                out var prefix, out var input)) return;
+
+            var context = new AdminCommandContext(message, prefix, language, _provider);
             var result = await _commands.ExecuteAsync(input, context);
 
-            if (!(result is FailedResult failedResult)) return true;
+            if (!(result is FailedResult failedResult)) return;
 
             var errorEmbed = await BuildErrorEmbedAsync(context, failedResult);
             if (!(errorEmbed is null))
                 await context.Channel.SendMessageAsync(embed: errorEmbed);
 
-            return false;
+            return;
         }
 
-        public async Task SendCommandResultAsync(Command command, AdminCommandResult result,
-            AdminCommandContext context)
+        public async Task HandleAsync(CommandExecutedEventArgs args)
         {
+            var context = (AdminCommandContext) args.Context;
+            var result = (AdminCommandResult) args.Result;
+
             // TODO: Log stuff
-            if (result.File is { })
+            if (result.Attachment is { })
             {
-                await context.Channel.SendFileAsync(result.File.Stream, result.File.Filename,
-                    result.Text ?? string.Empty, embed: result.Embed);
+                await context.Channel.SendMessageAsync(result.Attachment, result.Text ?? string.Empty,
+                    embed: result.Embed);
                 // result.File.Dispose();
                 return;
             }
@@ -93,7 +96,7 @@ namespace Administrator.Services
             }
         }
 
-        private async Task<Embed> BuildErrorEmbedAsync(AdminCommandContext context, FailedResult failedResult)
+        private async Task<LocalEmbed> BuildErrorEmbedAsync(AdminCommandContext context, FailedResult failedResult)
         {
             var builder = new StringBuilder();
             switch (failedResult)
@@ -105,7 +108,7 @@ namespace Administrator.Services
                         var center = context.Prefix.Length + path.Length + parserResult.FailurePosition.Value;
                         var fullString = $"{context.Prefix}{path} {argumentResult.RawArguments}"
                             .FixateTo(ref center, 30 - (context.Prefix.Length + path.Length));
-                        builder.AppendLine(Format.Code($"{fullString}\n{"↑".PadLeft(center + 2)}"));
+                        builder.AppendLine(Markdown.CodeBlock($"{fullString}\n{"↑".PadLeft(center + 2)}"));
                     }
                     builder.AppendLine(parserResult.Failure.GetValueOrDefault() switch
                     {
@@ -133,7 +136,7 @@ namespace Administrator.Services
                     var message = Convert.ToBase64String(Encoding.UTF8.GetBytes(
                         $"{execResult.Exception.Message} - at {frame.GetFileName()}, line {frame.GetFileLineNumber()} - {DateTimeOffset.UtcNow:g} UTC"));
                     builder.AppendLine(context.Localize("commanderror_exception",
-                        ConfigurationService.SUPPORT_GUILD, Format.Code(message, "cs")));
+                        ConfigurationService.SUPPORT_GUILD, Markdown.CodeBlock(message)));
                     break;
                 case OverloadsFailedResult overloadResult:
                     return await BuildErrorEmbedAsync(context,
@@ -144,17 +147,20 @@ namespace Administrator.Services
                         string.Join('\n', paramCheckResult.FailedChecks.Select(x => x.Result.Reason))));
                     break;
                 case TypeParseFailedResult typeParseResult:
-                    builder.AppendLine(Format.Code(
+                    builder.AppendLine(Markdown.Code(
                             $"{context.Prefix}{string.Join(' ', context.Path)}{typeParseResult.Parameter.Command.FormatArguments()}"))
-                        .AppendLine($"\n{Format.Code(typeParseResult.Parameter.Name)}: {typeParseResult.Reason}");
+                        .AppendLine($"\n{Markdown.Code(typeParseResult.Parameter.Name)}: {typeParseResult.Reason}");
                     break;
             }
 
             var value = builder.ToString();
             return !string.IsNullOrWhiteSpace(value)
-                ? new EmbedBuilder().WithErrorColor().WithTitle(context.Localize("commanderror")).WithDescription(value).Build()
+                ? new LocalEmbedBuilder().WithErrorColor().WithTitle(context.Localize("commanderror")).WithDescription(value).Build()
                 : null;
         }
+
+        public Task HandleAsync(CommandExecutionFailedEventArgs args)
+            => _logging.LogErrorAsync(args.Result.Exception, "CommandHandler");
 
         async Task IService.InitializeAsync()
         {
@@ -167,13 +173,13 @@ namespace Administrator.Services
             });
 
             // TODO: Add TypeParsers
-            _commands.AddTypeParser(new ChannelParser<SocketGuildChannel>());
-            _commands.AddTypeParser(new ChannelParser<SocketTextChannel>());
-            _commands.AddTypeParser(new ChannelParser<SocketVoiceChannel>());
-            _commands.AddTypeParser(new ChannelParser<SocketCategoryChannel>());
-            _commands.AddTypeParser(new RoleParser<SocketRole>());
-            _commands.AddTypeParser(new UserParser<SocketUser>());
-            _commands.AddTypeParser(new UserParser<SocketGuildUser>());
+            _commands.AddTypeParser(new ChannelParser<CachedGuildChannel>());
+            _commands.AddTypeParser(new ChannelParser<CachedTextChannel>());
+            _commands.AddTypeParser(new ChannelParser<CachedVoiceChannel>());
+            _commands.AddTypeParser(new ChannelParser<CachedCategoryChannel>());
+            _commands.AddTypeParser(new RoleParser());
+            _commands.AddTypeParser(new UserParser<CachedUser>());
+            _commands.AddTypeParser(new UserParser<CachedMember>());
             _commands.AddTypeParser(new GuildParser());
             _commands.AddTypeParser(new TimeSpanParser());
             _commands.AddTypeParser(new ColorParser());

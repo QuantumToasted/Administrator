@@ -1,5 +1,5 @@
 ﻿using System;
-using Discord;
+using Disqord;
 
 namespace Administrator.Database
 {
@@ -18,10 +18,10 @@ namespace Administrator.Database
 
         public ulong? ChannelId { get; set; }
 
-        public void StoreOverwrite(Overwrite overwrite)
+        public void StoreOverwrite(CachedOverwrite overwrite)
         {
-            PreviousChannelAllowValue = overwrite.Permissions.AllowValue;
-            PreviousChannelDenyValue = overwrite.Permissions.DenyValue;
+            PreviousChannelAllowValue = overwrite.Permissions.Allowed.RawValue;
+            PreviousChannelDenyValue = overwrite.Permissions.Denied.RawValue;
         }
 
         public ulong? PreviousChannelAllowValue { get; set; }

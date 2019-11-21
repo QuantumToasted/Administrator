@@ -75,7 +75,7 @@ namespace Administrator.Migrations
                     b.Property<string>("Language")
                         .HasColumnType("text");
 
-                    b.Property<string>("LevelUpEmote")
+                    b.Property<string>("LevelUpEmoji")
                         .HasColumnType("text");
 
                     b.Property<int>("LevelUpWhitelist")
@@ -278,7 +278,7 @@ namespace Administrator.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Punishment");
                 });
 
-            modelBuilder.Entity("Administrator.Database.SpecialEmote", b =>
+            modelBuilder.Entity("Administrator.Database.SpecialEmoji", b =>
                 {
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
@@ -286,14 +286,14 @@ namespace Administrator.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Emote")
+                    b.Property<string>("Emoji")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text")
                         .HasDefaultValueSql("''");
 
                     b.HasKey("GuildId", "Type");
 
-                    b.ToTable("SpecialEmotes");
+                    b.ToTable("SpecialEmojis");
                 });
 
             modelBuilder.Entity("Administrator.Database.SpecialRole", b =>

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -30,12 +30,12 @@ namespace Administrator.Commands
                 if (module.Checks.OfType<RequireOwnerAttribute>().Any() && 
                     !Config.OwnerIds.Contains(Context.User.Id)) continue;
 
-                builder.AppendLine(Format.Bold(Format.Code(module.Name)))
+                builder.AppendLine(Markdown.Bold(Markdown.Code(module.Name)))
                     .AppendLine(Localize($"info_modules_{module.Name.ToLower()}"))
                     .AppendLine();
             }
 
-            return CommandSuccess(embed: new EmbedBuilder()
+            return CommandSuccess(embed: new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithTitle(Localize("info_modules_title"))
                 .WithDescription(builder.ToString())
@@ -49,10 +49,10 @@ namespace Administrator.Commands
             var groups = commands.GroupBy(x => x.FullAliases[0]).ToList();
 
             var pages = DefaultPaginator.GeneratePages(groups, lineFunc: group => new StringBuilder()
-                    .Append(Format.Bold(FormatCommands(group)))
+                    .Append(Markdown.Bold(FormatCommands(group)))
                     .AppendLine(Localize($"info_command_{group.Key.Replace(' ', '_')}")).ToString(),
-                builder: new EmbedBuilder().WithSuccessColor()
-                    .WithTitle(Localize("info_module_commands", Format.Code(module.Name))));
+                builder: new LocalEmbedBuilder().WithSuccessColor()
+                    .WithTitle(Localize("info_module_commands", Markdown.Code(module.Name))));
             /*
             var pages = DefaultPaginator.GeneratePages(groups, 15, group => new EmbedFieldBuilder()
                 //    .WithName(new StringBuilder(Config.DefaultPrefix)
@@ -87,10 +87,10 @@ namespace Administrator.Commands
             */
 
             var command = matches[0];
-            return CommandSuccess(embed: new EmbedBuilder()
+            return CommandSuccess(embed: new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithDescription(new StringBuilder()
-                    .Append(Format.Bold(FormatCommands(matches)))
+                    .Append(Markdown.Bold(FormatCommands(matches)))
                     .AppendLine(Localize($"info_command_{command.FullAliases[0].Replace(' ', '_')}")).AppendLine()
                     .ToString())
                 .WithFooter(Localize("info_module_reference", command.Module.Name))

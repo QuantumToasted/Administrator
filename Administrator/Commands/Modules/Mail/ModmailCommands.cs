@@ -7,10 +7,10 @@ using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Permission = Disqord.Permission;
 
 namespace Administrator.Commands
 {
@@ -22,8 +22,8 @@ namespace Administrator.Commands
 
         [Command("", "anon", "anonymous")]
         [RequireContext(ContextType.DM)]
-        public async ValueTask<AdminCommandResult> OpenModmailAsync([RequireMember] SocketGuild guild,
-            [Remainder, MustBe(StringLength.ShorterThan, EmbedBuilder.MaxDescriptionLength)] string message)
+        public async ValueTask<AdminCommandResult> OpenModmailAsync([RequireMember] CachedGuild guild,
+            [Remainder, MustBe(StringLength.ShorterThan, LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH)] string message)
         {
             var guildConfig = await Context.Database.GetOrCreateGuildAsync(guild.Id);
             if (guildConfig.BlacklistedModmailAuthors.Contains(Context.User.Id))
@@ -38,8 +38,8 @@ namespace Administrator.Commands
                 return CommandErrorLocalized("modmail_exists", args: new object[]
                 {
                     guild.Name,
-                    Format.Code($"{Context.Prefix}mm reply {mm.Id} {message.TrimTo(20, true)}"),
-                    Format.Code($"{Context.Prefix}mm close {mm.Id}")
+                    Markdown.Code($"{Context.Prefix}mm reply {mm.Id} {message.TrimTo(20, true)}"),
+                    Markdown.Code($"{Context.Prefix}mm close {mm.Id}")
                 });
             }
 
@@ -48,33 +48,33 @@ namespace Administrator.Commands
                 .Add(new Modmail(guild.Id, Context.User.Id, Context.Alias.Contains("anon"), message)).Entity;
             await Context.Database.SaveChangesAsync();
 
-            await logChannel.SendMessageAsync(embed: new EmbedBuilder()
+            await logChannel.SendMessageAsync(embed: new LocalEmbedBuilder()
                 .WithColor(new Color(0x8ED0FF))
-                .WithAuthor(new EmbedAuthorBuilder
+                .WithAuthor(new LocalEmbedAuthorBuilder
                 {
                     IconUrl =
-                        modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarOrDefault(),
+                        modmail.IsAnonymous ? Discord.GetDefaultUserAvatarUrl(Context.User.Discriminator) : Context.User.GetAvatarUrl(),
                     Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString().Sanitize()
                 })
                 .WithDescription(message)
                 .WithTitle(Context.Localize("modmail_title", modmail.Id))
                 .WithFooter(Context.Localize("modmail_reply_command",
-                    Format.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
-                    Format.Code($"{Context.Prefix}mm close {modmail.Id}")))
+                    Markdown.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
+                    Markdown.Code($"{Context.Prefix}mm close {modmail.Id}")))
                 .WithTimestamp(DateTimeOffset.UtcNow)
                 .Build());
 
             return CommandSuccess(string.Join('\n', Context.Localize("modmail_send_success", modmail.Id),
                 Context.Localize("modmail_reply_command",
-                    Format.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
-                    Format.Code($"{Context.Prefix}mm close {modmail.Id}"))));
+                    Markdown.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
+                    Markdown.Code($"{Context.Prefix}mm close {modmail.Id}"))));
         }
 
         [Command("reply")]
         [RequireLoggingChannel(LogType.Modmail, Group = "reply")]
         [RequireContext(ContextType.DM, Group = "reply")]
         public async ValueTask<AdminCommandResult> ReplyToModmailAsync(int id, 
-            [Remainder, MustBe(StringLength.ShorterThan, EmbedBuilder.MaxDescriptionLength)] string message)
+            [Remainder, MustBe(StringLength.ShorterThan, LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH)] string message)
         {
             var modmail = await Context.Database.Modmails.FindAsync(id);
             if (modmail is null)
@@ -86,10 +86,10 @@ namespace Administrator.Commands
             if (!Context.IsPrivate && modmail.GuildId != Context.Guild.Id)
                 return CommandErrorLocalized("modmail_notfound");
 
-            SocketTextChannel loggingChannel = null;
+            CachedTextChannel loggingChannel = null;
             if (Context.IsPrivate)
             {
-                if (!(await Context.Database.GetLoggingChannelAsync(modmail.GuildId, LogType.Modmail) is SocketTextChannel
+                if (!(await Context.Database.GetLoggingChannelAsync(modmail.GuildId, LogType.Modmail) is CachedTextChannel
                     logChannel))
                     return CommandErrorLocalized("requireloggingchannel_notfound", args: LogType.Modmail);
 
@@ -114,19 +114,19 @@ namespace Administrator.Commands
 
             if (Context.IsPrivate)
             {
-                await loggingChannel.SendMessageAsync(embed: new EmbedBuilder()
+                await loggingChannel.SendMessageAsync(embed: new LocalEmbedBuilder()
                     .WithColor(new Color(0x8ED0FF))
-                    .WithAuthor(new EmbedAuthorBuilder
+                    .WithAuthor(new LocalEmbedAuthorBuilder
                     {
                         IconUrl =
-                            modmail.IsAnonymous ? Context.User.GetDefaultAvatarUrl() : Context.User.GetAvatarOrDefault(),
+                            modmail.IsAnonymous ? Discord.GetDefaultUserAvatarUrl(Context.User.Discriminator) : Context.User.GetAvatarUrl(),
                         Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString().Sanitize()
                     })
                     .WithDescription(message)
                     .WithTitle(Context.Localize("modmail_title", modmail.Id))
                     .WithFooter(Context.Localize("modmail_reply_command",
-                        Format.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
-                        Format.Code($"{Context.Prefix}mm close {modmail.Id}")))
+                        Markdown.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
+                        Markdown.Code($"{Context.Prefix}mm close {modmail.Id}")))
                     .WithTimestamp(DateTimeOffset.UtcNow)
                     .Build());
             }
@@ -135,18 +135,18 @@ namespace Administrator.Commands
                 _ = Task.Run(async () =>
                 {
                     var user = await Context.Client.GetOrDownloadUserAsync(modmail.UserId);
-                    _ = user.SendMessageAsync(embed: new EmbedBuilder()
+                    _ = user.SendMessageAsync(embed: new LocalEmbedBuilder()
                         .WithColor(new Color(0x8ED0FF))
-                        .WithAuthor(new EmbedAuthorBuilder
+                        .WithAuthor(new LocalEmbedAuthorBuilder
                         {
-                            IconUrl = Context.Guild.IconUrl,
+                            IconUrl = Context.Guild.GetIconUrl(),
                             Name = $"{Context.Guild.Name} modteam"
                         })
                         .WithDescription(message)
                         .WithTitle(Context.Localize("modmail_title", modmail.Id))
                         .WithFooter(Context.Localize("modmail_reply_command",
-                            Format.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
-                            Format.Code($"{Context.Prefix}mm close {modmail.Id}")))
+                            Markdown.Code($"{Context.Prefix}mm reply {modmail.Id} [...]"),
+                            Markdown.Code($"{Context.Prefix}mm close {modmail.Id}")))
                         .WithTimestamp(DateTimeOffset.UtcNow)
                         .Build());
                 });
@@ -183,7 +183,7 @@ namespace Administrator.Commands
         [Command("blacklist", "toggleblacklist")]
         [RequireLoggingChannel(LogType.Modmail)]
         [Priority(0)]
-        public ValueTask<AdminCommandResult> ToggleModmailBlacklist([Remainder] SocketUser target)
+        public ValueTask<AdminCommandResult> ToggleModmailBlacklist([Remainder] CachedUser target)
             => ToggleModmailBlacklistAsync(target.Id);
 
         [Command("blacklist", "toggleblacklist")]
@@ -245,7 +245,7 @@ namespace Administrator.Commands
             var counter = 0;
             foreach (var group in split)
             {
-                var builder = new EmbedBuilder()
+                var builder = new LocalEmbedBuilder()
                     .WithSuccessColor()
                     .WithTitle(Context.Localize("modmail_message_title", modmail.Id));
 
@@ -261,14 +261,14 @@ namespace Administrator.Commands
                         if (Context.IsPrivate)
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? Context.User.Username.Sanitize()
+                                    ? Context.User.Name.Sanitize()
                                     : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
                         else
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username.Sanitize()
+                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Name.Sanitize()
                                     : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
@@ -288,14 +288,14 @@ namespace Administrator.Commands
                         if (Context.IsPrivate)
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? Context.User.Username.Sanitize()
+                                    ? Context.User.Name.Sanitize()
                                     : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
                         else
                         {
                             builder.AddField(lastTarget == ModmailTarget.User
-                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Username.Sanitize()
+                                    ? modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : user.Name.Sanitize()
                                     : Context.Localize("modmail_modteam", guild.Name.Sanitize()),
                                 sb.ToString().TrimTo(256, true));
                         }
@@ -315,7 +315,7 @@ namespace Administrator.Commands
         }
 
         [Command("channel")]
-        [RequireUserPermissions(GuildPermission.ManageChannels)]
+        [RequireUserPermissions(Permission.ManageChannels)]
         public async ValueTask<AdminCommandResult> GetModmailChannelAsync()
         {
             var channel = await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Modmail);
@@ -325,8 +325,8 @@ namespace Administrator.Commands
         }
 
         [Command("channel")]
-        [RequireUserPermissions(GuildPermission.ManageChannels)]
-        public async ValueTask<AdminCommandResult> SetModmailChannelAsync(SocketTextChannel channel)
+        [RequireUserPermissions(Permission.ManageChannels)]
+        public async ValueTask<AdminCommandResult> SetModmailChannelAsync(CachedTextChannel channel)
         {
             if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, LogType.Modmail) is { } loggingChannel)
             {

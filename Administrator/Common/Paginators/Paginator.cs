@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Administrator.Services;
-using Discord;
+using Disqord;
 
 namespace Administrator.Common
 {
@@ -10,15 +10,15 @@ namespace Administrator.Common
         private protected bool _isPrivateMessage;
         private protected PaginationService _service;
 
-        protected Paginator(IEmote[] emotes)
+        protected Paginator(IEmoji[] emojis)
         {
-            Emotes = emotes;
+            Emojis = emojis;
         }
 
-        public Paginator WithMessage(IUserMessage message)
+        public Paginator WithMessage(IUserMessage message, IMessageChannel channel)
         {
             Message = message;
-            _isPrivateMessage = Message.Channel is IPrivateChannel;
+            _isPrivateMessage = channel is IPrivateChannel;
             return this;
         }
 
@@ -30,17 +30,17 @@ namespace Administrator.Common
 
         public async Task AddReactionAsync()
         {
-            for (var i = 0; i < Emotes.Length; i++)
+            for (var i = 0; i < Emojis.Length; i++)
             {
-                await Message.AddReactionAsync(Emotes[i]);
+                await Message.AddReactionAsync(Emojis[i]);
             }
         }
 
-        public IEmote[] Emotes { get; }
+        public IEmoji[] Emojis { get; }
 
         public IUserMessage Message { get; private set; }
 
-        public abstract ValueTask<Page> GetPageAsync(IEmote emote, IUser user);
+        public abstract ValueTask<Page> GetPageAsync(IEmoji emoji, Snowflake userId);
 
         public abstract ValueTask DisposeAsync();
 
@@ -50,18 +50,18 @@ namespace Administrator.Common
         /*
         private readonly PaginationService _service;
 
-        protected Paginator(IUserMessage message, IEmote[] emotes, PaginationService service)
+        protected Paginator(IUserMessage message, IEmoji[] emojis, PaginationService service)
         {
             Message = message;
-            Emotes = emotes;
+            emojis = emojis;
             (_service = service).AddPaginator(this);
         }
 
         public IUserMessage Message { get; }
 
-        public IEmote[] Emotes { get; }
+        public IEmoji[] emojis { get; }
 
-        public abstract ValueTask<Page> GetPageAsync(IUser user, IEmote emote);
+        public abstract ValueTask<Page> GetPageAsync(IUser user, IEmoji emoji);
 
         public abstract Task CloseAsync();
 

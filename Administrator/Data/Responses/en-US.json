@@ -97,8 +97,8 @@
     "guildparser_notfound": [
       "Server not found."
     ],
-    "emoteparser_notfound": [
-      "Emote not found."
+    "emojiparser_notfound": [
+      "Emoji not found."
     ],
     "regexparser_invalid": [
       "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."
@@ -719,7 +719,7 @@
       "Listening to \"{0}\" by {1} on Spotify"
     ],
     "user_info_streaming": [
-      "Streaming {0} on Twitch: \"{1}\""
+      "Streaming {0}: {1}"
     ],
     "user_info_status": [
       "Status"
@@ -735,6 +735,9 @@
     ],
     "user_info_offline": [
       "Offline"
+    ],
+    "user_avatar": [
+      "{0}'s avatar:" 
     ],
     "user_search_no_results": [
       "No users could be found with a name similar to \"{0}\"."
@@ -853,11 +856,11 @@
     "guild_xp_set": [
       "Users will now be able to gain {0} server XP every {1}."
     ],
-    "guild_levelemote": [
-      "The custom level-up emote is currently set to {0}."
+    "guild_levelemoji": [
+      "The custom level-up emoji is currently set to {0}."
     ],
-    "guild_levelemote_set": [
-      "The custom level-up emote has now been set to {0}."
+    "guild_levelemoji_set": [
+      "The custom level-up emoji has now been set to {0}."
     ],
     "guild_levelwhitelist": [
       "Custom level-up notifications for {0}:"
@@ -1018,8 +1021,8 @@
     "info_command_guild_xprate": [
       "View or set the server's custom XP gain rate."
     ],
-    "info_command_guild_levelemote": [
-      "View or set the server's custom level-up emote."
+    "info_command_guild_levelemoji": [
+      "View or set the server's custom level-up emoji."
     ],
     "info_command_guild_levelwhitelist": [
       "View or set the server's custom level-up notification whitelist, choosing what happens when a user levels up."

@@ -97,7 +97,7 @@
     "guildparser_notfound": [
       "Serveur introuvable."
     ],
-    "emoteparser_notfound": [
+    "emojiparser_notfound": [
       "Emoji introuvable."
     ],
     "regexparser_invalid": [

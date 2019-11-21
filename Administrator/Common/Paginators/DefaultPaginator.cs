@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Administrator.Extensions;
-using Discord;
+using Disqord;
 
 namespace Administrator.Common
 {
@@ -15,7 +16,7 @@ namespace Administrator.Common
         private int _currentPage;
 
         public DefaultPaginator(List<Page> pages, int currentPage)
-            : base(new[] { EmoteTools.Left, EmoteTools.Right })
+            : base(new[] { EmojiTools.Left, EmojiTools.Right })
         {
             _pages = pages;
             _currentPage = currentPage;
@@ -31,24 +32,24 @@ namespace Administrator.Common
 
             if (!_isPrivateMessage)
             {
-                await Message.RemoveAllReactionsAsync();
+                await Message.ClearReactionsAsync();
             }      
         }
 
-        public override async ValueTask<Page> GetPageAsync(IEmote emote, IUser user)
+        public override async ValueTask<Page> GetPageAsync(IEmoji emoji, Snowflake userId)
         {
             if (!_isPrivateMessage)
             {
-                await Message.RemoveReactionAsync(emote, user);
+                await Message.RemoveMemberReactionAsync(userId, emoji);
             }
 
-            if (emote.Equals(EmoteTools.Left) && _currentPage > 0)
+            if (emoji.Equals(EmojiTools.Left) && _currentPage > 0)
             {
                 _tokenSource.CancelAfter(TimeSpan.FromSeconds(30));
                 return _pages[--_currentPage];
             }
 
-            if (emote.Equals(EmoteTools.Right) && _currentPage < _pages.Count - 1)
+            if (emoji.Equals(EmojiTools.Right) && _currentPage < _pages.Count - 1)
             {
                 _tokenSource.CancelAfter(TimeSpan.FromSeconds(30));
                 return _pages[++_currentPage];
@@ -57,31 +58,30 @@ namespace Administrator.Common
             return null;
         }
 
-        public static List<Page> GeneratePages<T>(List<T> list, int maxLength = EmbedBuilder.MaxDescriptionLength,
-            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, EmbedBuilder builder = null)
+        public static List<Page> GeneratePages<T>(List<T> list, int maxLength = LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH,
+            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, LocalEmbedBuilder builder = null)
         {
-            var pages = new List<Page>();
+            var pages = new List<(string Plaintext, LocalEmbedBuilder Builder)>();
 
             var sb = new StringBuilder();
-            builder ??= new EmbedBuilder();
+            builder ??= new LocalEmbedBuilder();
             for (var i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
                 var text = lineFunc?.Invoke(entry) ?? entry.ToString();
-                if (builder.Length + text.Length + 1 > maxLength) // +1 to account for \n
+                if (sb.Length + text.Length + 1 > maxLength) // +1 to account for \n
                 {
-                    pages.Add(new Page(plaintextFunc?.Invoke(),
+                    pages.Add((plaintextFunc?.Invoke(),
                         builder
-                        .WithDescription(builder.ToString()).Build()));
+                        .WithDescription(builder.ToString())));
 
                     sb.Clear().AppendLine(text);
                 }
                 else if (i == list.Count - 1)
                 {
-                    pages.Add(new Page(plaintextFunc?.Invoke(),
+                    pages.Add((plaintextFunc?.Invoke(),
                         builder
-                        .WithDescription(sb.AppendLine(text).ToString())
-                        .Build()));
+                        .WithDescription(sb.AppendLine(text).ToString())));
                 }
                 else
                 {
@@ -94,20 +94,20 @@ namespace Administrator.Common
                 for (var i = 0; i < pages.Count; i++)
                 {
                     var page = pages[i];
-                    pages[i] = new Page(page.Text,
-                        page.Embed.ToEmbedBuilder().WithFooter($"{i + 1}/{pages.Count}").Build());
+                    pages[i] = (page.Plaintext,
+                        page.Builder.WithFooter($"{i + 1}/{pages.Count}"));
                 }
             }
 
-            return pages;
+            return pages.Select(x => new Page(x.Plaintext, x.Builder.Build())).ToList();
         }
 
-        public static List<Page> GeneratePages<T>(List<T> list, int numberPerPage, Func<T, EmbedFieldBuilder> fieldFunc,
-            Func<string> plaintextFunc = null, EmbedBuilder builder = null)
+        public static List<Page> GeneratePages<T>(List<T> list, int numberPerPage, Func<T, LocalEmbedFieldBuilder> fieldFunc,
+            Func<string> plaintextFunc = null, LocalEmbedBuilder builder = null)
         {
-            var pages = new List<Page>();
+            var pages = new List<(string Plaintext, LocalEmbedBuilder Builder)>();
             var split = list.SplitBy(numberPerPage);
-            builder ??= new EmbedBuilder();
+            builder ??= new LocalEmbedBuilder();
             foreach (var group in split)
             {
                 var text = plaintextFunc?.Invoke() ?? string.Empty;
@@ -116,7 +116,7 @@ namespace Administrator.Common
                     builder.AddField(fieldFunc(item));
                 }
 
-                pages.Add(new Page(text, builder.Build()));
+                pages.Add((text, builder));
             }
 
             if (pages.Count > 1)
@@ -124,12 +124,12 @@ namespace Administrator.Common
                 for (var i = 0; i < pages.Count; i++)
                 {
                     var page = pages[i];
-                    pages[i] = new Page(page.Text,
-                        page.Embed.ToEmbedBuilder().WithFooter($"{i + 1}/{pages.Count}").Build());
+                    pages[i] = (page.Plaintext,
+                        page.Builder.WithFooter($"{i + 1}/{pages.Count}"));
                 }
             }
 
-            return pages;
+            return pages.Select(x => new Page(x.Plaintext, x.Builder.Build())).ToList();
         }
     }
 }

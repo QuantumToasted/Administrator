@@ -2,8 +2,7 @@ using System;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Services;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -13,26 +12,26 @@ namespace Administrator.Commands
     {
         private readonly LocalizationService _localization;
 
-        public AdminCommandContext(SocketUserMessage message, string prefix, LocalizedLanguage language, IServiceProvider provider)
+        public AdminCommandContext(CachedUserMessage message, string prefix, LocalizedLanguage language, IServiceProvider provider)
             : base(provider)
         {
             _localization = provider.GetRequiredService<LocalizationService>();
-            Client = provider.GetRequiredService<DiscordSocketClient>();
+            Client = provider.GetRequiredService<DiscordClient>();
             Message = message;
             Prefix = prefix;
             Database = new AdminDatabaseContext(provider);
             Language = language;
         }
 
-        public DiscordSocketClient Client { get; }
+        public DiscordClient Client { get; }
 
-        public SocketUser User => Message.Author;
+        public CachedUser User => Message.Author;
 
-        public SocketGuild Guild => (Message.Channel as SocketGuildChannel)?.Guild;
+        public CachedGuild Guild => (Message.Channel as CachedGuildChannel)?.Guild;
 
-        public SocketUserMessage Message { get; }
+        public CachedUserMessage Message { get; }
 
-        public ISocketMessageChannel Channel => Message.Channel;
+        public ICachedMessageChannel Channel => Message.Channel;
 
         public bool IsPrivate => Message.Channel is IPrivateChannel;
 

@@ -9,12 +9,12 @@ using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Rest;
 using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Permission = Disqord.Permission;
 
 namespace Administrator.Commands
 {
@@ -25,18 +25,18 @@ namespace Administrator.Commands
         public PunishmentService Punishments { get; set; }
 
         [Command("ban")]
-        [RequireBotPermissions(GuildPermission.BanMembers)]
-        [RequireUserPermissions(GuildPermission.BanMembers)]
-        public ValueTask<AdminCommandResult> BanUser([RequireHierarchy] SocketGuildUser target,
+        [RequireBotPermissions(Permission.BanMembers)]
+        [RequireUserPermissions(Permission.BanMembers)]
+        public ValueTask<AdminCommandResult> BanUser([RequireHierarchy] CachedMember target,
             [Remainder] string reason = null)
             => BanUserAsync(target, reason);
 
         [Command("ban")]
-        [RequireBotPermissions(GuildPermission.BanMembers)]
-        [RequireUserPermissions(GuildPermission.BanMembers)]
+        [RequireBotPermissions(Permission.BanMembers)]
+        [RequireUserPermissions(Permission.BanMembers)]
         public async ValueTask<AdminCommandResult> BanUserAsync(ulong targetId, [Remainder] string reason = null)
         {
-            if (Context.Guild.GetUser(targetId) is SocketGuildUser target)
+            if (Context.Guild.GetMember(targetId) is CachedMember target)
             {
                 var result = await new RequireHierarchyAttribute().CheckAsync(target, Context);
                 if (!result.IsSuccessful)
@@ -47,7 +47,7 @@ namespace Administrator.Commands
                 return await BanUser(target, reason);
             }
                 
-            if (!(await Context.Client.Rest.GetUserAsync(targetId) is RestUser restTarget))
+            if (!(await Context.Client.GetUserAsync(targetId) is RestUser restTarget))
                 return CommandErrorLocalized("userparser_notfound");
 
             return await BanUserAsync(restTarget, reason);
@@ -55,8 +55,8 @@ namespace Administrator.Commands
 
         private async ValueTask<AdminCommandResult> BanUserAsync(IUser target, string reason, Warning source = null)
         {
-            if (!(await Context.Guild.GetBanAsync(target) is null))
-                return CommandErrorLocalized("moderation_alreadybanned", args: Format.Bold(target.ToString()));
+            if (!(await Context.Guild.GetBanAsync(target.Id) is null))
+                return CommandErrorLocalized("moderation_alreadybanned", args: Markdown.Bold(target.ToString()));
 
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             Ban ban = null;
@@ -70,8 +70,10 @@ namespace Administrator.Commands
                 source?.SetSecondaryPunishment(ban);
             }
 
-            await Context.Guild.AddBanAsync(target, 7, 
-                FormatAuditLogReason(reason ?? Context.Localize("punishment_noreason"), ban?.CreatedAt ?? DateTimeOffset.UtcNow, Context.User));
+            await Context.Guild.BanMemberAsync(target.Id,
+                FormatAuditLogReason(reason ?? Context.Localize("punishment_noreason"),
+                    ban?.CreatedAt ?? DateTimeOffset.UtcNow, Context.User),
+                7);
 
             Punishments.BannedUserIds.Add(target.Id);
             return CommandSuccessLocalized("moderation_ban",
@@ -79,19 +81,19 @@ namespace Administrator.Commands
         }
 
         [Command("tempban")]
-        [RequireBotPermissions(GuildPermission.BanMembers)]
-        [RequireUserPermissions(GuildPermission.BanMembers)]
-        public ValueTask<AdminCommandResult> TempbanUser([RequireHierarchy] SocketGuildUser target,
+        [RequireBotPermissions(Permission.BanMembers)]
+        [RequireUserPermissions(Permission.BanMembers)]
+        public ValueTask<AdminCommandResult> TempbanUser([RequireHierarchy] CachedMember target,
             TimeSpan duration, [Remainder] string reason = null)
             => TempbanUserAsync(target, duration, reason);
 
         [Command("tempban")]
-        [RequireBotPermissions(GuildPermission.BanMembers)]
-        [RequireUserPermissions(GuildPermission.BanMembers)]
+        [RequireBotPermissions(Permission.BanMembers)]
+        [RequireUserPermissions(Permission.BanMembers)]
         public async ValueTask<AdminCommandResult> TempbanUserAsync(ulong targetId, TimeSpan duration,
             [Remainder] string reason = null)
         {
-            if (Context.Guild.GetUser(targetId) is SocketGuildUser target)
+            if (Context.Guild.GetMember(targetId) is CachedMember target)
             {
                 var result = await new RequireHierarchyAttribute().CheckAsync(target, Context);
                 if (!result.IsSuccessful)
@@ -103,7 +105,7 @@ namespace Administrator.Commands
             }
 
 
-            if (!(await Context.Client.Rest.GetUserAsync(targetId) is RestUser restTarget))
+            if (!(await Context.Client.GetUserAsync(targetId) is RestUser restTarget))
                 return CommandErrorLocalized("userparser_notfound");
 
             return await TempbanUserAsync(restTarget, duration, reason);
@@ -111,8 +113,8 @@ namespace Administrator.Commands
 
         private async ValueTask<AdminCommandResult> TempbanUserAsync(IUser target, TimeSpan duration, string reason, Warning source = null)
         {
-            if (!(await Context.Guild.GetBanAsync(target) is null))
-                return CommandErrorLocalized("moderation_alreadybanned", args: Format.Bold(target.ToString()));
+            if (!(await Context.Guild.GetBanAsync(target.Id) is null))
+                return CommandErrorLocalized("moderation_alreadybanned", args: Markdown.Bold(target.ToString()));
 
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             Ban ban = null;
@@ -126,9 +128,10 @@ namespace Administrator.Commands
                 source?.SetSecondaryPunishment(ban);
             }
 
-            await Context.Guild.AddBanAsync(target, 7,
-                reason ?? FormatAuditLogReason(ban?.Reason ?? Context.Localize("punishment_noreason"), 
-                    ban?.CreatedAt ?? DateTimeOffset.UtcNow, Context.User));
+            await Context.Guild.BanMemberAsync(target.Id, 
+                reason ?? FormatAuditLogReason(
+                    ban?.Reason ?? Context.Localize("punishment_noreason"),
+                    ban?.CreatedAt ?? DateTimeOffset.UtcNow, Context.User), 7);
 
             Punishments.BannedUserIds.Add(target.Id);
 
@@ -141,8 +144,8 @@ namespace Administrator.Commands
         }
 
         [Command("massban"), RunMode(RunMode.Parallel)]
-        [RequireBotPermissions(GuildPermission.BanMembers)]
-        [RequireUserPermissions(GuildPermission.BanMembers)]
+        [RequireBotPermissions(Permission.BanMembers)]
+        [RequireUserPermissions(Permission.BanMembers)]
         public async ValueTask<AdminCommandResult> MassBanAsync(MassBan arguments = null)
         {
             arguments ??= new MassBan {IsInteractive = false};
@@ -187,19 +190,19 @@ namespace Administrator.Commands
                 await writer.WriteAsync(targetString);
                 await writer.FlushAsync();
 
-                await Context.Channel.SendFileAsync(stream, "targets.txt",
+                await Context.Channel.SendMessageAsync(new LocalAttachment(stream, "targets.txt"),
                     string.Join('\n', Localize("moderation_massban_target_count", targets.Count),
-                        Format.Code(targetString),
+                        Markdown.CodeBlock(targetString),
                         Localize("moderation_masspunishment_confirmation",
-                            Format.Code(password))));
+                            Markdown.Code(password))));
             }
             else
             {
                 await Context.Channel.SendMessageAsync(string.Join('\n', targets.Count > 1
                         ? Localize("moderation_massban_target_count", targets.Count)
-                        : Localize("moderation_massban_target_single"), Format.Code(targetString),
+                        : Localize("moderation_massban_target_single"), Markdown.CodeBlock(targetString),
                     Localize("moderation_masspunishment_confirmation",
-                        Format.Code(password))));
+                        Markdown.Code(password))));
             }
 
             var response = await GetNextMessageAsync();
@@ -209,7 +212,7 @@ namespace Administrator.Commands
             }
 
             var counter = 0;
-            var invoker = (SocketGuildUser) Context.User;
+            var invoker = (CachedMember) Context.User;
             foreach (var target in targets)
             {
                 if (await Context.Guild.GetBanAsync(target.Id) is { })
@@ -220,9 +223,9 @@ namespace Administrator.Commands
                     continue;
                 }
 
-                if (Context.Guild.GetUser(target.Id) is { } guildTarget)
+                if (Context.Guild.GetMember(target.Id) is { } guildTarget)
                 {
-                    if (Context.Guild.CurrentUser.Hierarchy <= guildTarget.Hierarchy)
+                    if (Context.Guild.CurrentMember.Hierarchy <= guildTarget.Hierarchy)
                     {
                         if (arguments.IsVerbose)
                             await Context.Channel.SendMessageAsync(Localize("moderation_massban_botpermissions", target.Format()));
@@ -247,7 +250,7 @@ namespace Administrator.Commands
                 }
                 else
                 {
-                    await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
+                    await Context.Guild.BanMemberAsync(target.Id, arguments.Reason, 7);
                     await Context.Channel.SendMessageAsync(duration.HasValue
                         ? Localize("moderation_tempban", target.Format(),
                             duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
@@ -268,7 +271,7 @@ namespace Administrator.Commands
         private async ValueTask<AdminCommandResult> MassBanInteractiveAsync(MassBan arguments)
         {
             await Context.Channel.SendMessageAsync(Localize("moderation_masspunishment_interactive_prompt"));
-            var invoker = (SocketGuildUser)Context.User;
+            var invoker = (CachedMember)Context.User;
             var duration = arguments.GetDuration(Context.Language.Culture);
 
             var response = await GetNextMessageAsync(timeout: TimeSpan.FromSeconds(10));
@@ -287,9 +290,9 @@ namespace Administrator.Commands
                             Localize("moderation_massban_alreadybanned", target.Format()));
                     successful = false;
                 }
-                else if (Context.Guild.GetUser(target.Id) is { } guildTarget)
+                else if (Context.Guild.GetMember(target.Id) is { } guildTarget)
                 {
-                    if (Context.Guild.CurrentUser.Hierarchy <= guildTarget.Hierarchy)
+                    if (Context.Guild.CurrentMember.Hierarchy <= guildTarget.Hierarchy)
                     {
                         await Context.Channel.SendMessageAsync(Localize("moderation_massban_botpermissions", target.Format()));
                         successful = false;
@@ -313,7 +316,7 @@ namespace Administrator.Commands
                     }
                     else
                     {
-                        await Context.Guild.AddBanAsync(target.Id, 7, arguments.Reason);
+                        await Context.Guild.BanMemberAsync(target.Id, arguments.Reason, 7);
                         await Context.Channel.SendMessageAsync(duration.HasValue
                             ? Localize("moderation_tempban", target.Format(),
                                 duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
@@ -328,13 +331,13 @@ namespace Administrator.Commands
         }
 
         [Command("kick")]
-        [RequireBotPermissions(GuildPermission.KickMembers)]
-        [RequireUserPermissions(GuildPermission.KickMembers)]
-        public ValueTask<AdminCommandResult> KickUser([RequireHierarchy] SocketGuildUser target,
+        [RequireBotPermissions(Permission.KickMembers)]
+        [RequireUserPermissions(Permission.KickMembers)]
+        public ValueTask<AdminCommandResult> KickUser([RequireHierarchy] CachedMember target,
             [Remainder] string reason = null)
             => KickUserAsync(target, reason);
 
-        private async ValueTask<AdminCommandResult> KickUserAsync(SocketGuildUser target, string reason,
+        private async ValueTask<AdminCommandResult> KickUserAsync(CachedMember target, string reason,
             Warning source = null)
         {
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
@@ -349,7 +352,7 @@ namespace Administrator.Commands
                 source?.SetSecondaryPunishment(kick);
             }
 
-            await target.KickAsync(reason ?? Context.Localize("punishment_noreason"));
+            await target.KickAsync(RestRequestOptions.FromReason(reason ?? Context.Localize("punishment_noreason")));
 
             Punishments.KickedUserIds.Add(target.Id);
 
@@ -358,28 +361,28 @@ namespace Administrator.Commands
         }
 
         [Command("mute")]
-        [RequireBotPermissions(GuildPermission.ManageRoles)]
-        [RequireUserPermissions(GuildPermission.ManageRoles, Group = "mute")]
-        [RequireUserPermissions(GuildPermission.MuteMembers, Group = "mute")]
-        public ValueTask<AdminCommandResult> MuteUser([RequireHierarchy] SocketGuildUser target, TimeSpan duration,
+        [RequireBotPermissions(Permission.ManageRoles)]
+        [RequireUserPermissions(Permission.ManageRoles, Group = "mute")]
+        [RequireUserPermissions(Permission.MuteMembers, Group = "mute")]
+        public ValueTask<AdminCommandResult> MuteUser([RequireHierarchy] CachedMember target, TimeSpan duration,
             [Remainder] string reason = null)
             => MuteUserAsync(target, duration, reason);
 
         [Command("mute")]
-        [RequireBotPermissions(GuildPermission.ManageRoles)]
-        [RequireUserPermissions(GuildPermission.ManageRoles, Group = "mute")]
-        [RequireUserPermissions(GuildPermission.MuteMembers, Group = "mute")]
-        public ValueTask<AdminCommandResult> MuteUser([RequireHierarchy] SocketGuildUser target,
+        [RequireBotPermissions(Permission.ManageRoles)]
+        [RequireUserPermissions(Permission.ManageRoles, Group = "mute")]
+        [RequireUserPermissions(Permission.MuteMembers, Group = "mute")]
+        public ValueTask<AdminCommandResult> MuteUser([RequireHierarchy] CachedMember target,
             [Remainder] string reason = null)
             => MuteUserAsync(target, null, reason);
 
-        private async ValueTask<AdminCommandResult> MuteUserAsync(SocketGuildUser target, TimeSpan? duration,
+        private async ValueTask<AdminCommandResult> MuteUserAsync(CachedMember target, TimeSpan? duration,
             string reason, Warning source = null)
         {
-            if (!(await Context.Database.GetSpecialRoleAsync(Context.Guild.Id, RoleType.Mute) is SocketRole muteRole))
+            if (!(await Context.Database.GetSpecialRoleAsync(Context.Guild.Id, RoleType.Mute) is CachedRole muteRole))
                 return CommandErrorLocalized("moderation_nomuterole");
 
-            if (target.Roles.Any(x => x.Id == muteRole.Id))
+            if (target.Roles.Keys.Any(x => x == muteRole.Id))
                 return CommandErrorLocalized("moderation_alreadymuted");
             
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
@@ -394,7 +397,7 @@ namespace Administrator.Commands
                 source?.SetSecondaryPunishment(mute);
             }
 
-            await target.AddRoleAsync(muteRole);
+            await target.GrantRoleAsync(muteRole.Id);
 
             Punishments.MutedUserIds.Add(target.Id);
 
@@ -409,61 +412,61 @@ namespace Administrator.Commands
         }
 
         [Group("block", "channelmute")]
-        [RequireBotPermissions(GuildPermission.ManageRoles, Group = "bot")]
-        [RequireBotPermissions(ChannelPermission.ManageRoles, Group = "bot")]
-        [RequireUserPermissions(ChannelPermission.ManageRoles, Group = "user")]
-        [RequireUserPermissions(GuildPermission.ManageRoles, Group = "user")]
-        [RequireUserPermissions(ChannelPermission.ManageChannels, Group = "user")]
-        [RequireUserPermissions(GuildPermission.ManageChannels, Group = "user")]
-        [RequireUserPermissions(ChannelPermission.MuteMembers, Group = "user")]
-        [RequireUserPermissions(GuildPermission.MuteMembers, Group = "user")]
+        [RequireBotPermissions(Permission.ManageRoles, Group = "bot")]
+        [RequireBotPermissions(Permission.ManageRoles, false, Group = "bot")]
+        [RequireUserPermissions(Permission.ManageRoles, false, Group = "user")]
+        [RequireUserPermissions(Permission.ManageRoles, Group = "user")]
+        [RequireUserPermissions(Permission.ManageChannels, false, Group = "user")]
+        [RequireUserPermissions(Permission.ManageChannels, Group = "user")]
+        [RequireUserPermissions(Permission.MuteMembers, false, Group = "user")]
+        [RequireUserPermissions(Permission.MuteMembers, Group = "user")]
         public sealed class BlockCommands : ModerationCommands
         {
             [Command]
-            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] SocketGuildUser target,
+            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] CachedMember target,
                 [Remainder] string reason = null)
-                => BlockUserAsync(target, Context.Channel as SocketTextChannel, null, reason);
+                => BlockUserAsync(target, Context.Channel as CachedTextChannel, null, reason);
 
             [Command]
-            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] SocketGuildUser target,
-                SocketTextChannel channel, [Remainder] string reason = null)
+            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] CachedMember target,
+                CachedTextChannel channel, [Remainder] string reason = null)
                 => BlockUserAsync(target, channel, null, reason);
 
             [Command]
-            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] SocketGuildUser target,
+            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] CachedMember target,
                 TimeSpan duration, [Remainder] string reason = null)
-                => BlockUserAsync(target, Context.Channel as SocketTextChannel, duration, reason);
+                => BlockUserAsync(target, Context.Channel as CachedTextChannel, duration, reason);
 
             [Command]
-            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] SocketGuildUser target,
-                SocketTextChannel channel, TimeSpan duration, [Remainder] string reason = null)
+            public ValueTask<AdminCommandResult> BlockUser([RequireHierarchy] CachedMember target,
+                CachedTextChannel channel, TimeSpan duration, [Remainder] string reason = null)
                 => BlockUserAsync(target, channel, duration, reason);
 
-            private async ValueTask<AdminCommandResult> BlockUserAsync(SocketGuildUser target, SocketTextChannel channel,
+            private async ValueTask<AdminCommandResult> BlockUserAsync(CachedMember target, CachedTextChannel channel,
                 TimeSpan? duration, string reason)
             {
-                channel ??= (SocketTextChannel) Context.Channel;
+                channel ??= (CachedTextChannel) Context.Channel;
 
-                if (channel.PermissionOverwrites.Any(x => x.TargetId == target.Id))
-                    return CommandErrorLocalized("moderation_alreadyblocked", args: Format.Bold(target.ToString()));
+                if (channel.Overwrites.Any(x => x.TargetId == target.Id))
+                    return CommandErrorLocalized("moderation_alreadyblocked", args: Markdown.Bold(target.ToString()));
 
                 var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
                 Mute mute = null;
                 if (guild.Settings.HasFlag(GuildSettings.Punishments))
                 {
                     mute = new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, channel.Id);
-                    if (channel.PermissionOverwrites.FirstOrDefault(x => x.TargetId == target.Id) is Overwrite overwrite)
+                    if (channel.Overwrites.FirstOrDefault(x => x.TargetId == target.Id) is CachedOverwrite overwrite)
                     {
                         mute.StoreOverwrite(overwrite);
-                        await channel.RemovePermissionOverwriteAsync(target);
+                        await channel.DeleteOverwriteAsync(target.Id);
                     }
                     mute = Context.Database.Punishments.Add(mute).Entity as Mute;
                     await Context.Database.SaveChangesAsync();
                     await Punishments.LogMuteAsync(target, Context.Guild, Context.User, mute);
                 }
 
-                await channel.AddPermissionOverwriteAsync(target,
-                    new OverwritePermissions(sendMessages: PermValue.Deny, addReactions: PermValue.Deny));
+                await channel.AddOrModifyOverwriteAsync(new LocalOverwrite(target,
+                    new OverwritePermissions().Deny(Permission.SendMessages).Deny(Permission.AddReactions)));
 
                 return duration.HasValue
                     ? CommandSuccessLocalized("moderation_block_temporary", args: new object[]
@@ -481,11 +484,11 @@ namespace Administrator.Commands
         }
 
         [Command("warn")]
-        [RequireBotPermissions(GuildPermission.KickMembers | GuildPermission.BanMembers | GuildPermission.ManageRoles)]
-        [RequireUserPermissions(GuildPermission.KickMembers, Group = "user")]
-        [RequireUserPermissions(GuildPermission.BanMembers, Group = "user")]
-        [RequireUserPermissions(GuildPermission.MuteMembers, Group = "user")]
-        public async ValueTask<AdminCommandResult> WarnUserAsync([RequireHierarchy] SocketGuildUser target,
+        [RequireBotPermissions(Permission.KickMembers | Permission.BanMembers | Permission.ManageRoles)]
+        [RequireUserPermissions(Permission.KickMembers, Group = "user")]
+        [RequireUserPermissions(Permission.BanMembers, Group = "user")]
+        [RequireUserPermissions(Permission.MuteMembers, Group = "user")]
+        public async ValueTask<AdminCommandResult> WarnUserAsync([RequireHierarchy] CachedMember target,
             [Remainder] string reason = null)
         {
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
@@ -554,25 +557,25 @@ namespace Administrator.Commands
                 var delay = Task.Delay(TimeSpan.FromSeconds(5));
                 var task = Task.Run(() =>
                 {
-                    targets = Context.Guild.Users.Where(MatchesRegex)
-                        .OrderByDescending(x => x.JoinedAt ?? DateTimeOffset.UtcNow)
+                    targets = Context.Guild.Members.Values.Where(MatchesRegex)
+                        .OrderByDescending(x => x.JoinedAt)
                         .Cast<IUser>()
                         .ToList();
                 });
 
-                using var _ = Context.Channel.EnterTypingState();
+                using var _ = Context.Channel.Typing();
                 var timeoutTask = await Task.WhenAny(delay, task);
                 if (timeoutTask == delay)
                     throw new Exception(Localize("user_searchregex_timeout"));
 
-                bool MatchesRegex(SocketGuildUser target)
+                bool MatchesRegex(CachedMember target)
                 {
-                    if (string.IsNullOrWhiteSpace(target.Username)) return false;
+                    if (string.IsNullOrWhiteSpace(target.Name)) return false;
 
-                    if (string.IsNullOrWhiteSpace(target.Nickname))
-                        return regex.IsMatch(target.Username);
+                    if (string.IsNullOrWhiteSpace(target.Nick))
+                        return regex.IsMatch(target.Name);
 
-                    return regex.IsMatch(target.Nickname) || regex.IsMatch(target.Username);
+                    return regex.IsMatch(target.Name) || regex.IsMatch(target.Name);
                 }
             }
             else if (arguments.Targets?.Length > 0)

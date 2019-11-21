@@ -8,8 +8,8 @@ using Administrator.Commands;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -21,20 +21,19 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Administrator.Services
 {
-    public sealed class LevelService : IService
+    public sealed class LevelService : IService, IHandler<MessageReceivedEventArgs>
     {
         public static readonly TimeSpan XpGainInterval = TimeSpan.FromMinutes(5);
         public const int XP_RATE = 50;
-        private const int MINIMUM_MESSAGE_LENGTH = 20;
 
         private readonly LocalizationService _localization;
         private readonly LoggingService _logging;
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordClient _client;
         private readonly ConfigurationService _config;
         private readonly HttpClient _http;
         private readonly IServiceProvider _provider;
 
-        public LevelService(LocalizationService localization, LoggingService logging, DiscordSocketClient client,
+        public LevelService(LocalizationService localization, LoggingService logging, DiscordClient client,
             ConfigurationService config, HttpClient http, IServiceProvider provider)
         {
             _localization = localization;
@@ -45,7 +44,7 @@ namespace Administrator.Services
             _provider = provider;
         }
 
-        public async Task<Stream> CreateXpImageAsync(AdminCommandContext context, IUser target)
+        public async Task<Stream> CreateXpImageAsync(AdminCommandContext context, CachedUser target)
         {
             var output = new MemoryStream();
 
@@ -58,11 +57,11 @@ namespace Administrator.Services
                 Guild guild = null;
                 Stream guildIcon = null;
                 var guildPosition = 1;
-                if (target is IGuildUser guildTarget)
+                if (target is CachedMember guildTarget)
                 {
-                    guildUser = await context.Database.GetOrCreateGuildUserAsync(target.Id, guildTarget.GuildId);
-                    guild = await context.Database.GetOrCreateGuildAsync(guildTarget.GuildId);
-                    guildIcon = await _http.GetStreamAsync(guildTarget.Guild.IconUrl);
+                    guildUser = await context.Database.GetOrCreateGuildUserAsync(target.Id, guildTarget.Guild.Id);
+                    guild = await context.Database.GetOrCreateGuildAsync(guildTarget.Guild.Id);
+                    guildIcon = await _http.GetStreamAsync(guildTarget.Guild.GetIconUrl());
 
                     var guildUsers = await context.Database.GuildUsers.OrderByDescending(x => x.TotalXp).ToListAsync();
                     guildPosition = guildUsers.IndexOf(guildUser) + 1;
@@ -73,23 +72,23 @@ namespace Administrator.Services
                     : 0;
 
                 using var background = Image.Load<Rgba32>(new FileStream("./Data/Images/01.png", FileMode.Open));
-                using var avatarStream = await _http.GetStreamAsync(target.GetAvatarOrDefault());
+                using var avatarStream = await _http.GetStreamAsync(target.GetAvatarUrl());
                 using var avatar = Image.Load<Rgba32>(avatarStream);
                 using var canvas = new Image<Rgba32>(Configuration.Default, 450, 300);
-                using var currentLevelStream = await _http.GetStreamAsync(EmoteTools.GetUrl(GetLevelEmote(user)));
+                using var currentLevelStream = await _http.GetStreamAsync(EmojiTools.GetUrl(GetLevelEmoji(user)));
                 using var currentLevel = Image.Load<Rgba32>(currentLevelStream);
                 currentLevel.Mutate(x => x.Resize(45 / currentLevel.Height * currentLevel.Width, 45));
 
                 Stream currentGuildLevelStream = null;
                 if (guildUser is { })
                 {
-                    currentGuildLevelStream = await _http.GetStreamAsync(EmoteTools.GetUrl(GetLevelEmote(guildUser)));
+                    currentGuildLevelStream = await _http.GetStreamAsync(EmojiTools.GetUrl(GetLevelEmoji(guildUser)));
                 }
                 
                 canvas.Mutate(cnvs =>
                 {
                     var sb = new StringBuilder();
-                    foreach (var c in target.Username)
+                    foreach (var c in target.Name)
                     {
                         if (char.IsLetterOrDigit(c)) sb.Append(c);
                     }
@@ -275,11 +274,12 @@ namespace Administrator.Services
             return output;
         }
 
-        public async ValueTask IncrementXpAsync(SocketUserMessage message)
+        public async Task HandleAsync(MessageReceivedEventArgs args)
         {
-            if (message.Source != MessageSource.User ||
-                message.Resolve()?.Length < MINIMUM_MESSAGE_LENGTH ||
-                !(message.Channel is SocketTextChannel channel)) return;
+            if (!(args.Message is CachedUserMessage message))
+                return;
+        
+            if (message.Author.IsBot || !(message.Channel is CachedTextChannel channel)) return;
 
             using var ctx = new AdminDatabaseContext(_provider);
 
@@ -322,21 +322,21 @@ namespace Administrator.Services
             await ctx.SaveChangesAsync();
         }
 
-        public IEmote GetLevelEmote(User user)
+        public IEmoji GetLevelEmoji(User user)
         {
-            if (_config.EmoteServerIds.Count == 0)
-                throw new ArgumentException("No emote servers could be found to process this.", nameof(user));
+            if (_config.EmojiServerIds.Count == 0)
+                throw new ArgumentException("No emoji servers could be found to process this.", nameof(user));
 
-            var emote = _config.EmoteServerIds.Select(x => _client.GetGuild(x)).SelectMany(x => x.Emotes)
+            var emoji = _config.EmojiServerIds.Select(x => _client.GetGuild(x)).SelectMany(x => x.Emojis.Values)
                 .FirstOrDefault(x => x.Name.Equals($"tier_{user.Tier}_level_{user.Level}"));
 
-            return emote ?? EmoteTools.Level; // TODO: Log if null?
+            return emoji ?? EmojiTools.Level; // TODO: Log if null?
         }
 
-        private async Task NotifyOnLevelUpAsync(SocketMessage message, Guild guild, User user, LevelUpNotification preferences)
+        private async Task NotifyOnLevelUpAsync(CachedMessage message, Guild guild, User user, LevelUpNotification preferences)
         {
             if (preferences == LevelUpNotification.None) return;
-            var levelEmote = GetLevelEmote(user);
+            var levelEmoji = GetLevelEmoji(user);
             var type = user is GlobalUser
                 ? "global"
                 : "guild";
@@ -344,11 +344,11 @@ namespace Administrator.Services
             if (preferences.HasFlag(LevelUpNotification.Channel) &&
                 guild.LevelUpWhitelist.HasFlag(LevelUpNotification.Channel))
             {
-                await message.Channel.SendMessageAsync(embed: new EmbedBuilder()
+                await message.Channel.SendMessageAsync(embed: new LocalEmbedBuilder()
                     .WithSuccessColor()
-                    .WithThumbnailUrl(EmoteTools.GetUrl(GetLevelEmote(user)))
+                    .WithThumbnailUrl(EmojiTools.GetUrl(GetLevelEmoji(user)))
                     .WithAuthor(_localization.Localize(guild.Language, $"user_levelup_{type}"),
-                        message.Author.GetAvatarOrDefault())
+                        message.Author.GetAvatarUrl())
                     .WithDescription(_localization.Localize(guild.Language, "user_levelup", message.Author.Mention,
                         user.Tier, user.Level)).Build());
             }
@@ -359,11 +359,11 @@ namespace Administrator.Services
                 var language = (user as GlobalUser)?.Language ??
                                (await ctx.GetOrCreateGlobalUserAsync(user.Id)).Language;
 
-                _ = message.Author.SendMessageAsync(embed: new EmbedBuilder()
+                _ = message.Author.SendMessageAsync(embed: new LocalEmbedBuilder()
                     .WithSuccessColor()
-                    .WithThumbnailUrl(EmoteTools.GetUrl(GetLevelEmote(user)))
+                    .WithThumbnailUrl(EmojiTools.GetUrl(GetLevelEmoji(user)))
                     .WithAuthor(_localization.Localize(language, $"user_levelup_{type}"),
-                        message.Author.GetAvatarOrDefault())
+                        message.Author.GetAvatarUrl())
                     .WithDescription(_localization.Localize(language, "user_levelup", message.Author.Mention, user.Tier,
                         user.Level)).Build());
             }
@@ -371,13 +371,15 @@ namespace Administrator.Services
             if (preferences.HasFlag(LevelUpNotification.Reaction) &&
                 guild.LevelUpWhitelist.HasFlag(LevelUpNotification.Reaction))
             {
-                var levelUpEmote = guild.LevelUpEmote ?? EmoteTools.LevelUp;
-                await message.AddReactionAsync(levelUpEmote);
-                await message.AddReactionAsync(levelEmote);
+                var levelUpEmoji = guild.LevelUpEmoji ?? EmojiTools.LevelUp;
+                await message.AddReactionAsync(levelUpEmoji);
+                await message.AddReactionAsync(levelEmoji);
             }
         }
 
         Task IService.InitializeAsync()
             => _logging.LogInfoAsync("Initialized.", "Profiles");
+
+        
     }
 }

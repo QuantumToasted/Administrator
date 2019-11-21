@@ -1,6 +1,4 @@
-﻿using Administrator.Extensions;
-using Administrator.Services;
-using Discord;
+﻿using Administrator.Services;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Qmmands;
@@ -10,6 +8,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Administrator.Extensions;
+using Disqord;
 
 namespace Administrator.Commands
 {
@@ -29,7 +29,7 @@ namespace Administrator.Commands
             if (!script.EndsWith('}') && !script.EndsWith(';'))
                 script += ';';
 
-            var msg = await Context.Channel.SendMessageAsync(embed: new EmbedBuilder()
+            var msg = await Context.Channel.SendMessageAsync(embed: new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithTitle(Localize("owner_eval_inprogress"))
                 .WithDescription($"```cs\n{script}\n```")
@@ -40,7 +40,7 @@ namespace Administrator.Commands
                 var watch = Stopwatch.StartNew();
                 var sopts = ScriptOptions.Default
                     .WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text",
-                        "System.Threading.Tasks", "Discord", "Discord.WebSocket", "Administrator.Extensions",
+                        "System.Threading.Tasks", "Disqord", "Administrator.Extensions",
                         "Administrator.Database", "Humanizer")
                     .WithReferences(AppDomain.CurrentDomain.GetAssemblies()
                         .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location)));
@@ -48,23 +48,23 @@ namespace Administrator.Commands
                 var result =
                     await CSharpScript.EvaluateAsync(script, sopts, new Globals { Context = Context });
 
-                await msg.ModifyAsync(x => x.Embed = new EmbedBuilder()
+                await msg.ModifyAsync(x => x.Embed = new LocalEmbedBuilder()
                     .WithSuccessColor()
                     .WithTitle(Localize("owner_eval_complete"))
-                    .WithDescription(Format.Code(script, "cs"))
+                    .WithDescription(Markdown.CodeBlock(script, "cs"))
                     .AddField(Localize("owner_eval_return"), result is { }
-                        ? Format.Code(result.GetType().ToString()) + '\n' + result.ToString()
+                        ? Markdown.Code(result.GetType().ToString()) + '\n' + result.ToString()
                         : Localize("info_none"), true)
                     .AddField(Localize("owner_eval_executiontime"), $"{watch.ElapsedMilliseconds / 1000D:F}s", true)
                     .Build());
             }
             catch (CompilationErrorException ex)
             {
-                await msg.ModifyAsync(x => x.Embed = new EmbedBuilder()
+                await msg.ModifyAsync(x => x.Embed = new LocalEmbedBuilder()
                     .WithErrorColor()
                     .WithTitle(Localize("owner_eval_failed"))
                     .AddField(Localize("owner_eval_errors"), 
-                        Format.Code(string.Join('\n', ex.Diagnostics.Select(x => x.GetMessage())), ""))
+                        Markdown.CodeBlock(string.Join('\n', ex.Diagnostics.Select(y => y.GetMessage()))))
                     .Build());
             }
 

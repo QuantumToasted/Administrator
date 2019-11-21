@@ -1,10 +1,10 @@
-﻿using Discord;
+﻿using Disqord;
 
 namespace Administrator.Common
 {
     public sealed class Page
     {
-        public Page(string text, Embed embed)
+        public Page(string text, LocalEmbed embed)
         {
             Text = text ?? string.Empty;
             Embed = embed;
@@ -12,9 +12,9 @@ namespace Administrator.Common
 
         public string Text { get; }
 
-        public Embed Embed { get; }
+        public LocalEmbed Embed { get; }
 
-        public static implicit operator Page(Embed embed)
+        public static implicit operator Page(LocalEmbed embed)
             => new Page(null, embed);
     }
 }

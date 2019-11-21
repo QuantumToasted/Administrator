@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Administrator.Common;
 using Administrator.Services;
-using Discord;
+using Disqord;
 
 namespace Administrator.Database
 {
@@ -36,6 +36,6 @@ namespace Administrator.Database
 
         public LevelUpNotification LevelUpWhitelist { get; set; } = LevelUpNotification.Reaction;
 
-        public IEmote LevelUpEmote { get; set; } = EmoteTools.Tada;
+        public IEmoji LevelUpEmoji { get; set; } = EmojiTools.Tada;
     }
 }

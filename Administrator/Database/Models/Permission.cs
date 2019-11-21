@@ -1,7 +1,4 @@
-﻿using System.Text;
-using Administrator.Common;
-using Administrator.Services;
-using Discord.WebSocket;
+﻿using Administrator.Common;
 
 namespace Administrator.Database
 {

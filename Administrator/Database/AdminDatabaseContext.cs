@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Services;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +17,7 @@ namespace Administrator.Database
             new ServiceCollection().AddEntityFrameworkNpgsql().BuildServiceProvider();
 
         private readonly IServiceProvider _provider;
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordClient _client;
         private readonly LocalizationService _localization;
 
         public AdminDatabaseContext() 
@@ -28,7 +28,7 @@ namespace Administrator.Database
         {
             if (!(provider is null))
             {
-                _client = provider.GetRequiredService<DiscordSocketClient>();
+                _client = provider.GetRequiredService<DiscordClient>();
                 _localization = provider.GetRequiredService<LocalizationService>();
             }
 
@@ -57,7 +57,7 @@ namespace Administrator.Database
 
         public DbSet<Suggestion> Suggestions { get; set; }
 
-        public DbSet<SpecialEmote> SpecialEmotes { get; set; }
+        public DbSet<SpecialEmoji> SpecialEmojis { get; set; }
 
         public DbSet<Highlight> Highlights { get; set; }
 
@@ -94,7 +94,7 @@ namespace Administrator.Database
             return user;
         }
 
-        public async Task<SocketTextChannel> GetLoggingChannelAsync(ulong guildId, LogType type)
+        public async Task<CachedTextChannel> GetLoggingChannelAsync(ulong guildId, LogType type)
         {
             if (!(await LoggingChannels.FindAsync(guildId, type) is { } logChannel))
                 return null;
@@ -102,7 +102,7 @@ namespace Administrator.Database
             return _client.GetGuild(guildId).GetTextChannel(logChannel.Id);
         }
 
-        public async Task<SocketRole> GetSpecialRoleAsync(ulong guildId, RoleType type)
+        public async Task<CachedRole> GetSpecialRoleAsync(ulong guildId, RoleType type)
         {
             if (!(await SpecialRoles.FindAsync(guildId, type) is { } role))
                 return null;
@@ -129,8 +129,8 @@ namespace Administrator.Database
                 guild.Property(x => x.BlacklistedModmailAuthors)
                     .HasConversion(new SnowflakeCollectionConverter())
                     .HasDefaultValueSql("''");
-                guild.Property(x => x.LevelUpEmote)
-                    .HasConversion(x => x.ToString(), x => EmoteTools.Parse(x));
+                guild.Property(x => x.LevelUpEmoji)
+                    .HasConversion(x => x.ToString(), x => EmojiTools.Parse(x));
             });
 
             modelBuilder.Entity<GlobalUser>(user =>
@@ -227,10 +227,10 @@ namespace Administrator.Database
                 suggestion.Property(x => x.Id).ValueGeneratedOnAdd();
             });
 
-            modelBuilder.Entity<SpecialEmote>(emote =>
+            modelBuilder.Entity<SpecialEmoji>(emoji =>
             {
-                emote.HasKey(x => new {x.GuildId, x.Type});
-                emote.Property(x => x.Emote).HasConversion(new EmoteConverter())
+                emoji.HasKey(x => new {x.GuildId, x.Type});
+                emoji.Property(x => x.Emoji).HasConversion(new EmojiConverter())
                     .HasDefaultValueSql("''");
             });
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Discord;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -12,13 +12,9 @@ namespace Administrator.Commands
         {
             var context = (AdminCommandContext)ctx;
 
-            // Parse "reset" or "default" to return Color.Default
-            if (value.Equals("reset", StringComparison.OrdinalIgnoreCase) || value.Equals("default", StringComparison.OrdinalIgnoreCase))
-                return TypeParserResult<Color>.Successful(Color.Default);
-
             // Parse hexadecimal color value
             value = value.TrimStart('#');
-            if (uint.TryParse(value, NumberStyles.HexNumber, default, out var result) && result <= 0xFFFFFF) // #FFFFFF
+            if (int.TryParse(value, NumberStyles.HexNumber, default, out var result) && result <= 0xFFFFFF) // #FFFFFF
                 return TypeParserResult<Color>.Successful(new Color(result));
 
             var values = value.Split(new[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries);

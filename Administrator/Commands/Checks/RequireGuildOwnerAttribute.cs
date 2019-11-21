@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Administrator.Common;
-using Discord.WebSocket;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -20,7 +20,7 @@ namespace Administrator.Commands
                 return baseResult;
 
             var context = (AdminCommandContext) ctx;
-            return ((SocketGuildUser) context.User).Id != context.Guild.OwnerId
+            return ((CachedMember) context.User).Id != context.Guild.OwnerId
                 ? CheckResult.Unsuccessful(context.Localize("requireguildowner"))
                 : CheckResult.Successful;
         }

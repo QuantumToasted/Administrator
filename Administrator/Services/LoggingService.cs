@@ -4,10 +4,11 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Disqord.Logging;
 
 namespace Administrator.Services
 {
-    public sealed class LoggingService : IService
+    public sealed class LoggingService : IService, IHandler<MessageLoggedEventArgs>
     {
         private const int PAD_LENGTH = 16;
         private readonly SemaphoreSlim _semaphore;
@@ -105,5 +106,21 @@ namespace Administrator.Services
 
         Task IService.InitializeAsync()
             => Task.CompletedTask;
+
+        public Task HandleAsync(MessageLoggedEventArgs args)
+        {
+            var obj = args.Exception ?? (object) args.Message;
+            return args.Severity switch
+            {
+                LogMessageSeverity.Trace => LogVerboseAsync(obj, args.Source),
+                LogMessageSeverity.Debug => LogVerboseAsync(obj, args.Source),
+                // LogMessageSeverity.Debug => LogDebugAsync(obj, args.Source), TODO: fuck Dispatch
+                LogMessageSeverity.Information => LogInfoAsync(obj, args.Source),
+                LogMessageSeverity.Warning => LogWarningAsync(obj, args.Source),
+                LogMessageSeverity.Error => LogErrorAsync(obj, args.Source),
+                LogMessageSeverity.Critical => LogCriticalAsync(obj, args.Source),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
     }
 }

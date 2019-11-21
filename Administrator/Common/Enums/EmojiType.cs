@@ -1,6 +1,6 @@
 ﻿namespace Administrator.Common
 {
-    public enum EmoteType
+    public enum EmojiType
     {
         Upvote,
         Downvote

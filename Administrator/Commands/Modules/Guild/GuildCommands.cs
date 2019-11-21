@@ -4,17 +4,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Extensions;
-using Discord;
+using Disqord;
 using Qmmands;
 
-namespace Administrator.Commands.Modules.Guild
+namespace Administrator.Commands
 {
     [Name("Guild")]
     [Group("guild", "server")]
     [RequireContext(ContextType.Guild)]
     public class GuildCommands : AdminModuleBase
     {
-        [RequireUserPermissions(GuildPermission.ManageGuild)]
+        [RequireUserPermissions(Permission.ManageGuild)]
         public class ManageGuildCommands : GuildCommands
         {
             [Command("language")]
@@ -22,7 +22,7 @@ namespace Administrator.Commands.Modules.Guild
             {
                 var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
                 return CommandSuccessLocalized("guild_language", args:
-                    $"{Format.Bold(guild.Language.NativeName)} ({guild.Language.EnglishName}, `{guild.Language.CultureCode}`)");
+                    $"{Markdown.Bold(guild.Language.NativeName)} ({guild.Language.EnglishName}, `{guild.Language.CultureCode}`)");
             }
 
             [Command("language")]
@@ -35,7 +35,7 @@ namespace Administrator.Commands.Modules.Guild
                 Context.Language = newLanguage;
 
                 return CommandSuccessLocalized("guild_language_set", args:
-                    $"{Format.Bold(guild.Language.NativeName)} ({guild.Language.EnglishName}, `{guild.Language.CultureCode}`)");
+                    $"{Markdown.Bold(guild.Language.NativeName)} ({guild.Language.EnglishName}, `{guild.Language.CultureCode}`)");
             }
 
             [Command("languages")]
@@ -44,7 +44,7 @@ namespace Administrator.Commands.Modules.Guild
                     .AppendLine(Localize("available_languages"))
                     .AppendJoin('\n',
                         Localization.Languages.Select(
-                            x => Format.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());
+                            x => Markdown.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());
 
             [Group("settings")]
             public class GuildSettingsCommands : ManageGuildCommands
@@ -53,7 +53,7 @@ namespace Administrator.Commands.Modules.Guild
                 public async ValueTask<AdminCommandResult> ListGuildSettingsAsync()
                 {
                     var builder =
-                        new StringBuilder(Localize("guild_settings", Format.Bold(Context.Guild.Name.Sanitize())))
+                        new StringBuilder(Localize("guild_settings", Markdown.Bold(Context.Guild.Name.Sanitize())))
                             .AppendLine()
                             .AppendLine();
 
@@ -80,7 +80,7 @@ namespace Administrator.Commands.Modules.Guild
                     await Context.Database.SaveChangesAsync();
 
                     return CommandSuccessLocalized(enabled ? "guild_settings_enabled" : "guild_settings_disabled",
-                        args: Format.Code(setting.ToString("G")));
+                        args: Markdown.Code(setting.ToString("G")));
                 }
             }
 
@@ -95,7 +95,7 @@ namespace Administrator.Commands.Modules.Guild
                         return CommandErrorLocalized("guild_prefixes_none");
 
                     return CommandSuccess(
-                        new StringBuilder(Localize("guild_prefixes", Format.Bold(Context.Guild.Name.Sanitize())))
+                        new StringBuilder(Localize("guild_prefixes", Markdown.Bold(Context.Guild.Name.Sanitize())))
                             .AppendLine()
                             .AppendLine()
                             .AppendJoin('\n', guild.CustomPrefixes.Select(x => $"\"{x.Sanitize()}\"")).ToString());
@@ -154,8 +154,8 @@ namespace Administrator.Commands.Modules.Guild
                 return CommandSuccessLocalized("guild_xp",
                     args: new object[]
                     {
-                        Format.Bold(guild.XpRate.ToString()),
-                        Format.Bold(guild.XpGainInterval.HumanizeFormatted(Context))
+                        Markdown.Bold(guild.XpRate.ToString()),
+                        Markdown.Bold(guild.XpGainInterval.HumanizeFormatted(Context))
                     });
             }
 
@@ -170,27 +170,27 @@ namespace Administrator.Commands.Modules.Guild
 
                 return CommandSuccessLocalized("guild_xp_set", args: new object[]
                 {
-                    Format.Bold(guild.XpRate.ToString()),
-                    Format.Bold(guild.XpGainInterval.HumanizeFormatted(Context))
+                    Markdown.Bold(guild.XpRate.ToString()),
+                    Markdown.Bold(guild.XpGainInterval.HumanizeFormatted(Context))
                 });
             }
 
-            [Command("levelemote")]
-            public async ValueTask<AdminCommandResult> GetLevelEmoteAsync()
+            [Command("levelemoji")]
+            public async ValueTask<AdminCommandResult> GetLevelEmojiAsync()
             {
                 var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
-                return CommandSuccessLocalized("guild_levelemote", args: guild.LevelUpEmote);
+                return CommandSuccessLocalized("guild_levelemoji", args: guild.LevelUpEmoji);
             }
 
-            [Command("levelemote")]
-            public async ValueTask<AdminCommandResult> SetLevelEmoteAsync(IEmote emote)
+            [Command("levelemoji")]
+            public async ValueTask<AdminCommandResult> SetLevelEmojiAsync(IEmoji emoji)
             {
                 var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
-                guild.LevelUpEmote = emote;
+                guild.LevelUpEmoji = emoji;
                 Context.Database.Guilds.Update(guild);
                 await Context.Database.SaveChangesAsync();
 
-                return CommandSuccessLocalized("guild_levelemote_set", args: emote);
+                return CommandSuccessLocalized("guild_levelemoji_set", args: emoji);
             }
 
             [Command("levelwhitelist")]
@@ -220,7 +220,7 @@ namespace Administrator.Commands.Modules.Guild
                 string FormatWhitelist(string key)
                 {
                     var builder =
-                        new StringBuilder(Localize(key, Format.Bold(Context.Guild.Name.Sanitize())))
+                        new StringBuilder(Localize(key, Markdown.Bold(Context.Guild.Name.Sanitize())))
                             .AppendLine()
                             .AppendLine();
 

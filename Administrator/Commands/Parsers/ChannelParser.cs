@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
 {
     public sealed class ChannelParser<TChannel> : TypeParser<TChannel>
-        where TChannel : SocketGuildChannel
+        where TChannel : CachedGuildChannel
     {
         public override ValueTask<TypeParserResult<TChannel>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
@@ -20,16 +19,16 @@ namespace Administrator.Commands
             TChannel channel = null;
             IEnumerable<TChannel> channels;
 
-            if (typeof(SocketVoiceChannel).IsAssignableFrom(typeof(TChannel)))
+            if (typeof(CachedVoiceChannel).IsAssignableFrom(typeof(TChannel)))
                 channels = context.Guild.VoiceChannels.OfType<TChannel>().ToList();
-            else if (typeof(SocketCategoryChannel).IsAssignableFrom(typeof(TChannel)))
+            else if (typeof(CachedCategoryChannel).IsAssignableFrom(typeof(TChannel)))
                 channels = context.Guild.CategoryChannels.OfType<TChannel>().ToList();
-            else if (typeof(SocketTextChannel).IsAssignableFrom(typeof(TChannel)))
+            else if (typeof(CachedTextChannel).IsAssignableFrom(typeof(TChannel)))
                 channels = context.Guild.TextChannels.OfType<TChannel>().ToList();
             else channels = context.Guild.Channels.OfType<TChannel>().ToList();
 
             // Parse by channel ID (or text channel mention)
-            if (ulong.TryParse(value, out var id) || MentionUtils.TryParseChannel(value, out id))
+            if (Snowflake.TryParse(value, out var id) || Discord.TryParseChannelMention(value, out id))
             {
                 channel = channels.FirstOrDefault(x => x.Id == id);
             }

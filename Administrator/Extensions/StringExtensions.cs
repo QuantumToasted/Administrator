@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using Discord;
+using Disqord;
 
 namespace Administrator.Extensions
 {
@@ -99,6 +97,6 @@ namespace Administrator.Extensions
         }
 
         public static string Sanitize(this string str)
-            => Format.Sanitize(str); // TODO: options for what to sanitize.
+            => Markdown.Escape(str); // TODO: options for what to sanitize.
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using Discord;
+using Disqord;
 
 namespace Administrator.Database
 {
@@ -36,7 +36,7 @@ namespace Administrator.Database
         public void SetLogMessage(IUserMessage message)
         {
             LogMessageId = message.Id;
-            LogMessageChannelId = message.Channel.Id;
+            LogMessageChannelId = message.ChannelId;
         }
     }
 }

@@ -5,11 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Administrator.Services;
 using Administrator.Extensions;
 using Administrator.Common;
-using Discord;
 using System;
 using Administrator.Database;
-using Discord.WebSocket;
 using System.Collections.Generic;
+using Disqord;
 
 namespace Administrator.Commands
 {
@@ -38,7 +37,7 @@ namespace Administrator.Commands
                     : CommandErrorLocalized("highlight_list_none_server", args: Context.Guild.Name.Sanitize());
 
             var pages = DefaultPaginator.GeneratePages(highlights, lineFunc: highlight => $"{highlight.Id} - \"{highlight.Text}\"", 
-                builder: new EmbedBuilder().WithSuccessColor().WithTitle(Context.IsPrivate
+                builder: new LocalEmbedBuilder().WithSuccessColor().WithTitle(Context.IsPrivate
                     ? Localize("highlight_list_global")
                     : Localize("highlight_list_guild", Context.Guild.Name.Sanitize())));
 
@@ -159,7 +158,7 @@ namespace Administrator.Commands
                     var target = await Context.Client.GetOrDownloadUserAsync(id);
                     if (target is null)
                     {
-                        if (Context.Client.GetChannel(id) is SocketTextChannel channel)
+                        if (Context.Client.GetChannel(id) is CachedTextChannel channel)
                         {
                             blacklist.Add(channel.Format());
                         }
@@ -186,7 +185,7 @@ namespace Administrator.Commands
 
                 var pages = DefaultPaginator.GeneratePages(blacklist, 
                     lineFunc: target => target, 
-                    builder: new EmbedBuilder().WithSuccessColor().WithTitle(Localize("highlight_blacklist")));
+                    builder: new LocalEmbedBuilder().WithSuccessColor().WithTitle(Localize("highlight_blacklist")));
 
                 if (pages.Count > 1)
                 {
@@ -199,14 +198,14 @@ namespace Administrator.Commands
 
             [Command("add")]
             [RequireContext(ContextType.Guild)]
-            public ValueTask<AdminCommandResult> BlacklistUserHighlightsAsync([Remainder] SocketGuildUser user)
+            public ValueTask<AdminCommandResult> BlacklistUserHighlightsAsync([Remainder] CachedMember user)
                 => BlacklistUserHighlightsAsync((IUser) user);
 
             [Command("add")]
             [RequireContext(ContextType.Guild)]
-            public async ValueTask<AdminCommandResult> BlacklistChannelHighlightsAsync([Remainder] SocketTextChannel channel)
+            public async ValueTask<AdminCommandResult> BlacklistChannelHighlightsAsync([Remainder] CachedTextChannel channel)
             {
-                if (channel.Guild.GetUser(Context.User.Id) is null)
+                if (channel.Guild.GetMember(Context.User.Id) is null)
                     return CommandErrorLocalized("highlight_blacklist_notmember");
 
                 var user = await Context.Database.GetOrCreateGlobalUserAsync(Context.User.Id);
@@ -226,7 +225,7 @@ namespace Administrator.Commands
                 var user = await Context.Client.GetOrDownloadUserAsync(targetId);
                 if (user is null)
                 {
-                    if (Context.Client.GetChannel(targetId) is SocketTextChannel channel)
+                    if (Context.Client.GetChannel(targetId) is CachedTextChannel channel)
                     {
                         return await BlacklistChannelHighlightsAsync(channel);
                     }
@@ -252,14 +251,14 @@ namespace Administrator.Commands
 
             [Command("remove")]
             [RequireContext(ContextType.Guild)]
-            public ValueTask<AdminCommandResult> UnblacklistUserHighlightsAsync([Remainder] SocketGuildUser user)
+            public ValueTask<AdminCommandResult> UnblacklistUserHighlightsAsync([Remainder] CachedMember user)
                 => UnblacklistUserHighlightsAsync((IUser)user);
 
             [Command("remove")]
             [RequireContext(ContextType.Guild)]
-            public async ValueTask<AdminCommandResult> UnblacklistChannelHighlightsAsync([Remainder] SocketTextChannel channel)
+            public async ValueTask<AdminCommandResult> UnblacklistChannelHighlightsAsync([Remainder] CachedTextChannel channel)
             {
-                if (channel.Guild.GetUser(Context.User.Id) is null)
+                if (channel.Guild.GetMember(Context.User.Id) is null)
                     return CommandErrorLocalized("highlight_blacklist_notmember");
 
                 var user = await Context.Database.GetOrCreateGlobalUserAsync(Context.User.Id);
@@ -278,7 +277,7 @@ namespace Administrator.Commands
                 var user = await Context.Client.GetOrDownloadUserAsync(targetId);
                 if (user is null)
                 {
-                    if (Context.Client.GetChannel(targetId) is SocketTextChannel channel)
+                    if (Context.Client.GetChannel(targetId) is CachedTextChannel channel)
                     {
                         return await UnblacklistChannelHighlightsAsync(channel);
                     }

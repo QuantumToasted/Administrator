@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -11,11 +10,11 @@ namespace Administrator.Commands
     {
         public override ValueTask<CheckResult> CheckAsync(object argument, CommandContext ctx)
         {
-            var guild = (SocketGuild) argument;
+            var guild = (CachedGuild) argument;
             var context = (AdminCommandContext) ctx;
 
-            return guild.GetUser(context.User.Id) is null
-                ? CheckResult.Unsuccessful(context.Localize("requiremember", Format.Bold(guild.Name)))
+            return guild.GetMember(context.User.Id) is null
+                ? CheckResult.Unsuccessful(context.Localize("requiremember", Markdown.Bold(guild.Name)))
                 : CheckResult.Successful;
         }
     }

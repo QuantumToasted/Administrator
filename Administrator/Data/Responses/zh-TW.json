@@ -97,8 +97,8 @@
     "guildparser_notfound": [
       "Server not found."
     ],
-    "emoteparser_notfound": [
-      "Emote not found."
+    "emojiparser_notfound": [
+      "emoji not found."
     ],
     "regexparser_invalid": [
       "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."

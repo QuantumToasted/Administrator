@@ -12,13 +12,20 @@
     <Compile Remove="Migrations\20190508031924_Reset.Designer.cs" />
     <Compile Remove="Migrations\20190508181419_Reset.cs" />
     <Compile Remove="Migrations\20190508181419_Reset.Designer.cs" />
+    <Compile Remove="Migrations\20191121014519_Disqord_Port.cs" />
+    <Compile Remove="Migrations\20191121014519_Disqord_Port.Designer.cs" />
+    <Compile Remove="Migrations\20191121021822_Disqord_Port.cs" />
+    <Compile Remove="Migrations\20191121021822_Disqord_Port.Designer.cs" />
+    <Compile Remove="Migrations\20191121032421_Disqord_Port.cs" />
+    <Compile Remove="Migrations\20191121032421_Disqord_Port.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.6.0" />
-    <PackageReference Include="Discord.Net.Core" Version="2.2.0-dev-20191003.3" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.2.0-dev-20191003.3" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20191003.3" />
+    <PackageReference Include="Disqord" Version="1.0.0" />
+    <PackageReference Include="Disqord.Core" Version="1.0.0" />
+    <PackageReference Include="Disqord.Rest" Version="1.0.0" />
+    <PackageReference Include="Disqord.Serialization.Json.Newtonsoft" Version="1.0.0" />
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="Humanizer" Version="2.7.9" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.3.1" />

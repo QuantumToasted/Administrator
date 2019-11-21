@@ -5,8 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Database;
-using Discord;
-using Discord.Rest;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -14,10 +13,10 @@ namespace Administrator.Services
 {
     public sealed class ConfigurationService : IService
     {
-        private readonly DiscordRestClient _restClient;
+        private readonly DiscordClient _restClient;
         private readonly LoggingService _logging;
         
-        public ConfigurationService(DiscordRestClient restClient, LoggingService logging)
+        public ConfigurationService(DiscordClient restClient, LoggingService logging)
         {
             _restClient = restClient;
             _logging = logging;
@@ -37,17 +36,17 @@ namespace Administrator.Services
         [JsonProperty("owners")]
         public ICollection<ulong> OwnerIds { get; private set; }
 
-        [JsonProperty("emoteServers")]
-        public ICollection<ulong> EmoteServerIds { get; private set; }
+        [JsonProperty("emojiServers")]
+        public ICollection<ulong> EmojiServerIds { get; private set; }
 
         [JsonIgnore]
-        public Color SuccessColor => new Color(uint.Parse(_successColor, NumberStyles.HexNumber));
+        public Color SuccessColor => new Color(int.Parse(_successColor, NumberStyles.HexNumber));
         
         [JsonIgnore]
-        public Color WarnColor => new Color(uint.Parse(_warnColor, NumberStyles.HexNumber));
+        public Color WarnColor => new Color(int.Parse(_warnColor, NumberStyles.HexNumber));
         
         [JsonIgnore]
-        public Color ErrorColor => new Color(uint.Parse(_errorColor, NumberStyles.HexNumber));
+        public Color ErrorColor => new Color(int.Parse(_errorColor, NumberStyles.HexNumber));
 
         [JsonProperty("successColor")]
         private string _successColor;
@@ -92,7 +91,7 @@ namespace Administrator.Services
             DefaultPrefix = config.DefaultPrefix;
             PostgresConnectionString = config.PostgresConnectionString;
             OwnerIds = config.OwnerIds;
-            EmoteServerIds = config.EmoteServerIds;
+            EmojiServerIds = config.EmojiServerIds;
             _successColor = config._successColor;
             _warnColor = config._warnColor;
             _errorColor = config._errorColor;
@@ -102,7 +101,7 @@ namespace Administrator.Services
                 await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.", 
                     "Configuration");
 
-                var app = await _restClient.GetApplicationInfoAsync();
+                var app = await _restClient.GetCurrentApplicationAsync();
                 await _logging.LogDebugAsync($"Got owner {app.Owner}.", "Configuration");
                 
                 OwnerIds = new List<ulong>
@@ -111,23 +110,23 @@ namespace Administrator.Services
                 };
             }
 
-            if (EmoteServerIds.Count == 0)
+            if (EmojiServerIds.Count == 0)
             {
-                await _logging.LogWarningAsync("No emote servers were defined. Some services (profiles) will break!",
+                await _logging.LogWarningAsync("No emoji servers were defined. Some services (profiles) will break!",
                     "Configuration");
             }
 
-            foreach (var id in EmoteServerIds)
+            foreach (var id in EmojiServerIds)
             {
                 var guild = await _restClient.GetGuildAsync(id);
                 if (guild is null)
                 {
-                    await _logging.LogCriticalAsync($"Emote server with ID {id} could not be found or I'm not a member!", "Configuration");
+                    await _logging.LogCriticalAsync($"Emoji server with ID {id} could not be found or I'm not a member!", "Configuration");
                     Console.ReadKey();
                     Environment.Exit(-1);
                 }
 
-                await _logging.LogDebugAsync($"Emote server with ID {id} found: {guild.Name}", "Configuration");
+                await _logging.LogDebugAsync($"Emoji server with ID {id} found: {guild.Name}", "Configuration");
             }
 
             using (var ctx = new AdminDatabaseContext(null))
