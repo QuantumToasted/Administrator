@@ -274,6 +274,15 @@
     "modmail_modteam": [
       "Équipe de modération du serveur {0}"
     ],
+    "modmail_channel_none": [
+      "The modmail channel has not been configured in this server."
+    ],
+    "modmail_channel": [
+      "New modmail messages are currently sent in {0}."
+    ],
+    "modmail_channel_set": [
+      "New modmail messages will now be sent in {0}."
+    ],
     "moderation_alreadybanned": [
       "{0} a déjà été banni!"
     ],
@@ -559,8 +568,20 @@
     "info_none": [
       "Aucun"
     ],
+    "info_category": [
+      "Category"
+    ],
+    "info_jumpmessage": [
+      "Click to jump"
+    ],
     "info_position": [
       "Position"
+    ],
+    "info_enabled": [
+      "Enabled"
+    ],
+    "info_disabled": [
+      "Disabled"
     ],
     "info_timeout_password": [
       "Vous avez mis trop de temps à répondre, ou votre mot de passe ne correspond pas."
@@ -680,10 +701,10 @@
       "Information pour le bot {0}"
     ],
     "user_info_created": [
-      "A rejoint Discord le"
+      "Rejoint Discord"
     ],
     "user_info_joined": [
-      "Rejoint {0} le"
+      "Rejoint {0}"
     ],
     "user_info_nickname": [
       "Surnom"
@@ -791,7 +812,58 @@
       "La langue de réponse du serveur est actuellement configurée en {0}."
     ],
     "guild_language_set": [
-      "La langue de réponse du serveur a été mise à jour pour être {0}."
+      "La langue de réponse du serveur a été mise à jour. Elle est désormais {0}."
+    ],
+    "guild_settings": [
+      "Server settings for {0}:"
+    ],
+    "guild_settings_enabled": [
+      "Setting {0} has been **enabled** for this server."
+    ],
+    "guild_settings_disabled": [
+      "Setting {0} has been **disabled** for this server."
+    ],
+    "guild_prefixes_none": [
+      "This server does not have any custom bot prefixes set!"
+    ],
+    "guild_prefixes": [
+      "Custom bot prefixes for {0}:"
+    ],
+    "guild_prefixes_maximum": [
+      "You have reached the maximum amount of custom bot prefixes.\nRemove another prefix before adding this one."
+    ],
+    "guild_prefixes_exists": [
+      "That custom bot prefix already exists, so it was not added."
+    ],
+    "guild_prefixes_notfound": [
+      "That custom bot prefix could not be found, so it was not removed."
+    ],
+    "guild_prefixes_added": [
+      "{0} has been added as a custom bot prefix."
+    ],
+    "guild_prefixes_removed": [
+      "{0} has been removed from the list of custom bot prefixes."
+    ],
+    "guild_prefixes_cleared": [
+      "All custom bot prefixes have been cleared."
+    ],
+    "guild_xp": [
+      "Users are currently able to gain {0} server XP every {1}."
+    ],
+    "guild_xp_set": [
+      "Users will now be able to gain {0} server XP every {1}."
+    ],
+    "guild_levelemote": [
+      "The custom level-up emote is currently set to {0}."
+    ],
+    "guild_levelemote_set": [
+      "The custom level-up emote has now been set to {0}."
+    ],
+    "guild_levelwhitelist": [
+      "Custom level-up notifications for {0}:"
+    ],
+    "guild_levelwhitelist_set": [
+      "New custom level-up notifications for {0}:"
     ],
     "info_command_modmail": [
       "Ouvrir un nouveau modmail."
@@ -942,6 +1014,204 @@
     ],
     "info_command_guild_languages": [
       "Voir les langues de réponse disponibles."
+    ],
+    "info_command_guild_xprate": [
+      "View or set the server's custom XP gain rate."
+    ],
+    "info_command_guild_levelemote": [
+      "View or set the server's custom level-up emote."
+    ],
+    "info_command_guild_levelwhitelist": [
+      "View or set the server's custom level-up notification whitelist, choosing what happens when a user levels up."
+    ],
+    "info_command_guild_settings": [
+      "View the custom settings enabled or disabled for this server."
+    ],
+    "info_command_guild_settings_enable": [
+      "Enable or disable a specific setting for this server."
+    ],
+    "info_command_guild_prefixes": [
+      "View custom bot prefixes for this server."
+    ],
+    "info_command_guild_prefixes_add": [
+      "Add a new custom bot prefix to this server."
+    ],
+    "info_command_guild_prefixes_remove": [
+      "Remove a custom bot prefix from this server."
+    ],
+    "info_command_guild_prefixes_clear": [
+      "Clear all currently set custom bot prefixes."
+    ],
+    "highlight_list_none_global": [
+      "You don't have any global highlights set!"
+    ],
+    "highlight_list_none_server": [
+      "You don't have any highlights set in {0}!"
+    ],
+    "highlight_list_global": [
+      "Your highlights for all servers:"
+    ],
+    "highlight_list_guild": [
+      "Your highlights for {0}:"
+    ],
+    "highlight_add_exists": [
+      "You already have a highlight for that!"
+    ],
+    "highlight_add_global": [
+      "{0} New global highlight created."
+    ],
+    "highlight_add_guild": [
+      "{0} New highlight created for {1}."
+    ],
+    "highlight_blacklist_notmember": [
+      "You are not a member of that server, so you cannot blacklist that channel."
+    ],
+    "highlight_blacklist_add": [
+      "{0} will no longer trigger highlights for you."
+    ],
+    "highlight_blacklist_remove": [
+      "{0} will now trigger highlights for you again."
+    ],
+    "highlight_blacklist": [
+      "Users and channels that will not trip your highlights:"
+    ],
+    "highlight_blacklist_empty": [
+      "Your highlight blacklist is empty!"
+    ],
+    "highlight_remove_notfound": [
+      "You don't have a highlight matching that text here!"
+    ],
+    "highlight_remove_global": [
+      "Global highlight removed."
+    ],
+    "highlight_remove_guild": [
+      "Highlight removed from {0}."
+    ],
+    "highlight_cleared": [
+      "Highlights cleared."
+    ],
+    "highlight_trigger_text": [
+      "You've been highlighted in {0}!"
+    ],
+    "highlight_trigger_author": [
+      "{0} - in {1}"
+    ],
+    "info_command_highlights": [
+      "View your highlights for this server. If used in DMs, view your global highlights."
+    ],
+    "info_command_highlights_add": [
+      "Add a new highlight."
+    ],
+    "info_command_highlights_remove": [
+      "Remove an existing highlight."
+    ],
+    "info_command_highlights_clear": [
+      "Clear all highlights in this server. If used in DMs, clears all global highlights."
+    ],
+    "info_command_highlights_blacklist": [
+      "View users and channels who will not trip your highlights."
+    ],
+    "info_command_highlights_blacklist_add": [
+      "Add a channel or user to your highlight blacklist."
+    ],
+    "info_command_highlights_blacklist_remove": [
+      "Remove a channel or user from your highlight blacklist."
+    ],
+    "owner_eval_inprogress": [
+      "Evaluating code..."
+    ],
+    "owner_eval_complete": [
+      "Code evalulation completed."
+    ],
+    "owner_eval_failed": [
+      "Code evalulation was unsuccessful."
+    ],
+    "owner_eval_errors": [
+      "Errors"
+    ],
+    "owner_eval_return": [
+      "Value returned"
+    ],
+    "owner_eval_executiontime": [
+      "Execution time"
+    ],
+    "owner_forcestop": [
+      "Shutting down."
+    ],
+    "channel_info_text": [
+      "Information for text channel {0}"
+    ],
+    "channel_info_voice": [
+      "Information for voice channel {0}"
+    ],
+    "channel_info_voice_bitrate": [
+      "Bitrate"
+    ],
+    "channel_info_voice_connected": [
+      "Connected users ({0})"
+    ],
+    "channel_info_category": [
+      "Information for category channel {0}"
+    ],
+    "channel_info_news": [
+      "Information for news channel {0}"
+    ],
+    "channel_info_category_footer": [
+      "Category: {0}"
+    ],
+    "channel_info_category_channels": [
+      "Channels in this category"
+    ],
+    "channel_create_text": [
+      "Text channel {0} created!"
+    ],
+    "channel_create_news": [
+      "News channel {0} created!"
+    ],
+    "channel_create_voice": [
+      "Voice channel {0} created!"
+    ],
+    "channel_create_category": [
+      "Category {0} created!"
+    ],
+    "channel_rename": [
+      "Channel successfully renamed."
+    ],
+    "channel_delete": [
+      "Channel successfully deleted."
+    ],
+    "channel_logging_alldisabled": [
+      "All logging has been disabled in this channel."
+    ],
+    "channel_logging_ban": [
+      "Bans will now be logged in this channel."
+    ],
+    "channel_logging_unban": [
+      "Unbans will now be logged in this channel."
+    ],
+    "channel_logging_kick": [
+      "Kicks will now be logged in this channel."
+    ],
+    "channel_logging_mute": [
+      "Mutes will now be logged in this channel."
+    ],
+    "channel_logging_unmute": [
+      "Unmutes will now be logged in this channel."
+    ],
+    "channel_logging_warn": [
+      "Warnings will now be logged in this channel."
+    ],
+    "channel_logging_unwarn": [
+      "Revoked warnings will now be logged in this channel."
+    ],
+    "channel_logging_appeal": [
+      "Punishment appeals will now be logged in this channel."
+    ],
+    "channel_logging_none": [
+      "No events are currently configured to log in this channel."
+    ],
+    "channel_logging_list": [
+      "The following events currently log in this channel:"
     ]
   }
 }
