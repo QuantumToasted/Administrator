@@ -328,7 +328,7 @@ namespace Administrator.Commands
         [RequireUserPermissions(Permission.ManageChannels)]
         public async ValueTask<AdminCommandResult> SetModmailChannelAsync(CachedTextChannel channel)
         {
-            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, LogType.Modmail) is { } loggingChannel)
+            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.Modmail) is { } loggingChannel)
             {
                 loggingChannel.Id = Context.Channel.Id;
                 Context.Database.LoggingChannels.Update(loggingChannel);

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -23,6 +25,8 @@ namespace Administrator.Commands
     public class ModerationCommands : AdminModuleBase
     {
         public PunishmentService Punishments { get; set; }
+
+        public HttpClient Http { get; set; }
 
         [Command("ban")]
         [RequireBotPermissions(Permission.BanMembers)]
@@ -62,8 +66,18 @@ namespace Administrator.Commands
             Ban ban = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
             {
+                var image = new MemoryStream();
+                var format = ImageFormat.Default;
+                if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                    attachment.FileName.HasImageExtension(out format))
+                {
+                    var stream = await Http.GetStreamAsync(attachment.Url);
+                    await stream.CopyToAsync(image);
+                    image.Seek(0, SeekOrigin.Begin);
+                }
+
                 ban = Context.Database.Punishments
-                    .Add(new Ban(Context.Guild.Id, target.Id, Context.User.Id, reason, null)).Entity as Ban;
+                    .Add(new Ban(Context.Guild.Id, target.Id, Context.User.Id, reason, null, image, format)).Entity as Ban;
                 await Context.Database.SaveChangesAsync();
                 await Punishments.LogBanAsync(target, Context.Guild, ban);
 
@@ -120,8 +134,18 @@ namespace Administrator.Commands
             Ban ban = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
             {
+                var image = new MemoryStream();
+                var format = ImageFormat.Default;
+                if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                    attachment.FileName.HasImageExtension(out format))
+                {
+                    var stream = await Http.GetStreamAsync(attachment.Url);
+                    await stream.CopyToAsync(image);
+                    image.Seek(0, SeekOrigin.Begin);
+                }
+
                 ban = Context.Database.Punishments
-                    .Add(new Ban(Context.Guild.Id, target.Id, Context.User.Id, reason, duration)).Entity as Ban;
+                    .Add(new Ban(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, image, format)).Entity as Ban;
                 await Context.Database.SaveChangesAsync();
                 await Punishments.LogBanAsync(target, Context.Guild, ban);
 
@@ -344,8 +368,18 @@ namespace Administrator.Commands
             Kick kick = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
             {
+                var image = new MemoryStream();
+                var format = ImageFormat.Default;
+                if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                    attachment.FileName.HasImageExtension(out format))
+                {
+                    var stream = await Http.GetStreamAsync(attachment.Url);
+                    await stream.CopyToAsync(image);
+                    image.Seek(0, SeekOrigin.Begin);
+                }
+
                 kick = Context.Database.Punishments
-                    .Add(new Kick(Context.Guild.Id, target.Id, Context.User.Id, reason)).Entity as Kick;
+                    .Add(new Kick(Context.Guild.Id, target.Id, Context.User.Id, reason, image, format)).Entity as Kick;
                 await Context.Database.SaveChangesAsync();
                 await Punishments.LogKickAsync(target, Context.Guild, kick);
 
@@ -389,8 +423,18 @@ namespace Administrator.Commands
             Mute mute = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
             {
+                var image = new MemoryStream();
+                var format = ImageFormat.Default;
+                if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                    attachment.FileName.HasImageExtension(out format))
+                {
+                    var stream = await Http.GetStreamAsync(attachment.Url);
+                    await stream.CopyToAsync(image);
+                    image.Seek(0, SeekOrigin.Begin);
+                }
+
                 mute = Context.Database.Punishments
-                    .Add(new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, null)).Entity as Mute;
+                    .Add(new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, null, image, format)).Entity as Mute;
                 await Context.Database.SaveChangesAsync();
                 await Punishments.LogMuteAsync(target, Context.Guild, Context.User, mute);
 
@@ -454,7 +498,17 @@ namespace Administrator.Commands
                 Mute mute = null;
                 if (guild.Settings.HasFlag(GuildSettings.Punishments))
                 {
-                    mute = new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, channel.Id);
+                    var image = new MemoryStream();
+                    var format = ImageFormat.Default;
+                    if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                        attachment.FileName.HasImageExtension(out format))
+                    {
+                        var stream = await Http.GetStreamAsync(attachment.Url);
+                        await stream.CopyToAsync(image);
+                        image.Seek(0, SeekOrigin.Begin);
+                    }
+
+                    mute = new Mute(Context.Guild.Id, target.Id, Context.User.Id, reason, duration, channel.Id, image, format);
                     if (channel.Overwrites.FirstOrDefault(x => x.TargetId == target.Id) is CachedOverwrite overwrite)
                     {
                         mute.StoreOverwrite(overwrite);
@@ -496,8 +550,18 @@ namespace Administrator.Commands
             WarningPunishment extraPunishment = null;
             if (guild.Settings.HasFlag(GuildSettings.Punishments))
             {
+                var image = new MemoryStream();
+                var format = ImageFormat.Default;
+                if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                    attachment.FileName.HasImageExtension(out format))
+                {
+                    var stream = await Http.GetStreamAsync(attachment.Url);
+                    await stream.CopyToAsync(image);
+                    image.Seek(0, SeekOrigin.Begin);
+                }
+
                 warning = Context.Database.Punishments
-                    .Add(new Warning(Context.Guild.Id, target.Id, Context.User.Id, reason))
+                    .Add(new Warning(Context.Guild.Id, target.Id, Context.User.Id, reason, image, format))
                     .Entity as Warning;
                 await Context.Database.SaveChangesAsync();
                 var count = await Context.Database.Punishments.OfType<Warning>()

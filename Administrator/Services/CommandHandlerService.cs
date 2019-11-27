@@ -189,6 +189,7 @@ namespace Administrator.Services
             _commands.AddTypeParser(new MassPunishmentParser<MassBan>());
             _commands.AddTypeParser(new ModuleParser());
             _commands.AddTypeParser(new LanguageParser());
+            _commands.AddTypeParser(new EmojiParser());
 
             // TODO: A better place to put this? A better way to do this?
             var set = new HashSet<string>();

@@ -104,7 +104,7 @@ namespace Administrator.Commands
                     status = string.IsNullOrWhiteSpace(richActivity.Details)
                         ? richActivity.Name
                         : $"{richActivity.Name} ({richActivity.Details})";
-                    builder.WithFooter(Localize("user_info_playing", status), richActivity.LargeImageUrl);
+                    builder.WithFooter(Localize("user_info_playing", status), richActivity.LargeAsset?.Url);
                     break;
                 case SpotifyActivity spotifyActivity:
                     builder.WithFooter(Localize("user_info_listening", spotifyActivity.TrackTitle, spotifyActivity.Artists.First()),
@@ -120,11 +120,12 @@ namespace Administrator.Commands
 
         [Command("avatar", "av"), RunMode(RunMode.Parallel)]
         [RequireContext(ContextType.Guild)]
-        public async ValueTask<AdminCommandResult> GetUserAvatarAsync([Remainder] CachedMember target)
+        public async ValueTask<AdminCommandResult> GetUserAvatarAsync([Remainder] CachedMember target = null)
         {
+            target ??= (CachedMember) Context.User;
             using var _ = Context.Channel.Typing();
             var avatarUrl = new Uri(target.GetAvatarUrl());
-            await using var stream = await Http.GetStreamAsync(target.GetAvatarUrl());
+            var stream = await Http.GetStreamAsync(avatarUrl);
             return CommandSuccessLocalized("user_avatar", attachment: new LocalAttachment(stream, avatarUrl.LocalPath),
                 args: Markdown.Bold(target.ToString().Sanitize()));
         }
@@ -171,7 +172,7 @@ namespace Administrator.Commands
                 [RequireBotPermissions(Permission.ManageNicknames)]
                 public async ValueTask<AdminCommandResult> SetNicknameAsync([RequireHierarchy] CachedMember target)
                 {
-                    await target.ModifyAsync(x => x.Nick = string.Empty); // TODO: null or empty?
+                    await target.ModifyAsync(x => x.Nick = string.Empty);
                     return CommandSuccessLocalized("user_nickname_reset");
                 }
 
@@ -183,7 +184,7 @@ namespace Administrator.Commands
                     if (Context.Guild.CurrentMember.Hierarchy <= target.Hierarchy)
                         return CommandErrorLocalized("requirehierarchy_self");
 
-                    await target.ModifyAsync(x => x.Nick = string.Empty); // TODO: null or empty?
+                    await target.ModifyAsync(x => x.Nick = string.Empty);
                     return CommandSuccessLocalized("user_nickname_reset");
                 }
             }

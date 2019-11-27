@@ -1,11 +1,13 @@
 ﻿using System;
+using System.IO;
+using Disqord;
 
 namespace Administrator.Database
 {
     public abstract class RevocablePunishment : Punishment
     {
-        protected RevocablePunishment(ulong guildId, ulong targetId, ulong moderatorId, string reason, bool isAppealable) 
-            : base(guildId, targetId, moderatorId, reason)
+        protected RevocablePunishment(ulong guildId, ulong targetId, ulong moderatorId, string reason, bool isAppealable, MemoryStream image = null, ImageFormat format = ImageFormat.Default) 
+            : base(guildId, targetId, moderatorId, reason, image, format)
         {
             IsAppealable = isAppealable;
         }

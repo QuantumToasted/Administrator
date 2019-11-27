@@ -47,23 +47,18 @@ namespace Administrator.Database
             get
             {
                 if (TotalXp % MAX_XP_TIER > MAX_XP_ELITE) return TotalXp % MAX_XP_ELITE;
-                switch (Grade)
+                return Grade switch
                 {
-                    case Grade.Civilian:
-                        return (TotalXp - (Tier - 1) * MAX_XP_TIER) % XP_PER_LEVEL_CIVILIAN;
-                    case Grade.Freelance:
-                        return (TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_CIVILIAN) % XP_PER_LEVEL_FREELANCE;
-                    case Grade.Mercenary:
-                        return (TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_FREELANCE) % XP_PER_LEVEL_MERCENARY;
-                    case Grade.Commando:
-                        return (TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_MERCENARY) % XP_PER_LEVEL_COMMANDO;
-                    case Grade.Assassin:
-                        return (TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_COMMANDO) % XP_PER_LEVEL_ASSASSIN;
-                    case Grade.Elite:
-                        return (TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_ASSASSIN) % XP_PER_LEVEL_ELITE;
-                    default:
-                        return TotalXp;
-                }
+                    Grade.Civilian => ((TotalXp - (Tier - 1) * MAX_XP_TIER) % XP_PER_LEVEL_CIVILIAN),
+                    Grade.Freelance => ((TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_CIVILIAN) %
+                                        XP_PER_LEVEL_FREELANCE),
+                    Grade.Mercenary => ((TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_FREELANCE) %
+                                        XP_PER_LEVEL_MERCENARY),
+                    Grade.Commando => ((TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_MERCENARY) % XP_PER_LEVEL_COMMANDO),
+                    Grade.Assassin => ((TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_COMMANDO) % XP_PER_LEVEL_ASSASSIN),
+                    Grade.Elite => ((TotalXp - (Tier - 1) * MAX_XP_TIER - MAX_XP_ASSASSIN) % XP_PER_LEVEL_ELITE),
+                    _ => TotalXp
+                };
             }
         }
 
@@ -71,23 +66,16 @@ namespace Administrator.Database
         {
             get
             {
-                switch (Grade)
+                return Grade switch
                 {
-                    case Grade.Civilian:
-                        return 750;
-                    case Grade.Freelance:
-                        return 1250;
-                    case Grade.Mercenary:
-                        return 2000;
-                    case Grade.Commando:
-                        return 3000;
-                    case Grade.Assassin:
-                        return 4500;
-                    case Grade.Elite:
-                        return 7000;
-                    default:
-                        return TotalXp;
-                }
+                    Grade.Civilian => 750,
+                    Grade.Freelance => 1250,
+                    Grade.Mercenary => 2000,
+                    Grade.Commando => 3000,
+                    Grade.Assassin => 4500,
+                    Grade.Elite => 7000,
+                    _ => TotalXp
+                };
             }
         }
 
@@ -95,29 +83,21 @@ namespace Administrator.Database
         {
             get
             {
-                switch (Grade)
+                return Grade switch
                 {
-                    case Grade.Civilian:
-                        return Level * XP_PER_LEVEL_CIVILIAN +
-                               (Tier - 1) * MAX_XP_TIER;
-                    case Grade.Freelance:
-                        return (Level - MAX_LEVEL_CIVILIAN) * XP_PER_LEVEL_FREELANCE + MAX_XP_CIVILIAN +
-                               (Tier - 1) * MAX_XP_TIER;
-                    case Grade.Mercenary:
-                        return (Level - MAX_LEVEL_FREELANCE) * XP_PER_LEVEL_MERCENARY + MAX_XP_FREELANCE +
-                               (Tier - 1) * MAX_XP_TIER;
-                    case Grade.Commando:
-                        return (Level - MAX_LEVEL_MERCENARY) * XP_PER_LEVEL_COMMANDO + MAX_XP_MERCENARY +
-                               (Tier - 1) * MAX_XP_TIER;
-                    case Grade.Assassin:
-                        return (Level - MAX_LEVEL_COMMANDO) * XP_PER_LEVEL_ASSASSIN + MAX_XP_COMMANDO +
-                               (Tier - 1) * MAX_XP_TIER;
-                    case Grade.Elite:
-                        return (Level - MAX_LEVEL_ASSASSIN) * XP_PER_LEVEL_ELITE + MAX_XP_ASSASSIN +
-                               (Tier - 1) * MAX_XP_TIER;
-                    default:
-                        return Tier * MAX_XP_TIER;
-                }
+                    Grade.Civilian => (Level * XP_PER_LEVEL_CIVILIAN + (Tier - 1) * MAX_XP_TIER),
+                    Grade.Freelance => ((Level - MAX_LEVEL_CIVILIAN) * XP_PER_LEVEL_FREELANCE + MAX_XP_CIVILIAN +
+                                        (Tier - 1) * MAX_XP_TIER),
+                    Grade.Mercenary => ((Level - MAX_LEVEL_FREELANCE) * XP_PER_LEVEL_MERCENARY + MAX_XP_FREELANCE +
+                                        (Tier - 1) * MAX_XP_TIER),
+                    Grade.Commando => ((Level - MAX_LEVEL_MERCENARY) * XP_PER_LEVEL_COMMANDO + MAX_XP_MERCENARY +
+                                       (Tier - 1) * MAX_XP_TIER),
+                    Grade.Assassin => ((Level - MAX_LEVEL_COMMANDO) * XP_PER_LEVEL_ASSASSIN + MAX_XP_COMMANDO +
+                                       (Tier - 1) * MAX_XP_TIER),
+                    Grade.Elite => ((Level - MAX_LEVEL_ASSASSIN) * XP_PER_LEVEL_ELITE + MAX_XP_ASSASSIN +
+                                    (Tier - 1) * MAX_XP_TIER),
+                    _ => (Tier * MAX_XP_TIER)
+                };
             }
         }
 

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Rest;
@@ -32,27 +33,34 @@ namespace Administrator.Commands
             builder = channel switch
             {
                 CachedTextChannel textChannel => builder
-                    .WithTitle(Localize(textChannel.IsNews ? "channel_info_news" : "channel_info_text", $"#{textChannel.Name}"))
+                    .WithTitle(Localize(textChannel.IsNews
+                        ? "channel_info_news"
+                        : "channel_info_text", textChannel))
                     .WithDescription(Markdown.Italics(textChannel.Topic))
                     .AddField(Localize("info_mention"), textChannel.Mention)
+                    .AddField(Localize("channel_info_slowmode"),
+                        textChannel.Slowmode == 0
+                            ? Localize("info_none")
+                            : TimeSpan.FromSeconds(textChannel.Slowmode).HumanizeFormatted(Context, TimeUnit.Second))
                     .WithFooter(textChannel.Category is { }
                         ? Localize("channel_info_category_footer", textChannel.Category.Name.Sanitize())
                         : null),
                 CachedVoiceChannel voiceChannel => builder
                     .WithTitle(Localize("channel_info_voice", voiceChannel.Name.Sanitize()))
-                    .AddField(Localize("channel_info_voice_bitrate"), $"{voiceChannel.Bitrate/1000}kbps")
+                    .AddField(Localize("channel_info_voice_bitrate"), $"{voiceChannel.Bitrate / 1000}kbps")
                     .AddField(Localize("channel_info_voice_connected",
-                        $"{voiceChannel.Members.Count}/{(voiceChannel.UserLimit == 0 ? "∞" : voiceChannel.UserLimit.ToString())}"),
-                        voiceChannel.Members.Count > 0 
-                            ? string.Join(", ", voiceChannel.Members.Values.Select(x => x.ToString().Sanitize())).TrimTo(1024, true) 
+                            $"{voiceChannel.Members.Count}/{(voiceChannel.UserLimit == 0 ? "∞" : voiceChannel.UserLimit.ToString())}"),
+                        voiceChannel.Members.Count > 0
+                            ? string.Join(", ", voiceChannel.Members.Values.Select(x => x.ToString().Sanitize()))
+                                .TrimTo(1024, true)
                             : Localize("info_none"))
                     .WithFooter(voiceChannel.Category is { }
                         ? Localize("channel_info_category_footer", voiceChannel.Category.Name.Sanitize())
                         : null),
                 CachedCategoryChannel category => builder
                     .WithTitle(Localize("channel_info_category", category.Name.Sanitize()))
-                    .AddField(Localize("channel_info_category_channels"), category.Channels.Count > 0 
-                        ? string.Join('\n', category.Channels.Values.OrderBy(x => x.Position).Select(x => x.Format())) 
+                    .AddField(Localize("channel_info_category_channels"), category.Channels.Count > 0
+                        ? string.Join('\n', category.Channels.Values.OrderBy(x => x.Position).Select(x => x.Format()))
                         : Localize("info_none")),
                 _ => throw new ArgumentOutOfRangeException(nameof(channel))
             };
@@ -67,7 +75,7 @@ namespace Administrator.Commands
             [Group("create")]
             public sealed class ChannelCreationCommands : ChannelManagementCommands
             {
-                [Command("text", "news", "voice", "category")]
+                [Command("text", "voice", "category")]
                 public async ValueTask<AdminCommandResult> CreateChannelAsync(
                     [Remainder, MustBe(Operator.LessThan, 32)] string name)
                 {
@@ -77,10 +85,6 @@ namespace Administrator.Commands
                         case "text":
                             channel = await Context.Guild.CreateTextChannelAsync(name);
                             break;
-                        case "news":
-                            // TODO: CreateNewsChannel?
-                            throw new ArgumentOutOfRangeException();
-                        // break;
                         case "voice":
                             channel = await Context.Guild.CreateVoiceChannelAsync(name);
                             break;
@@ -158,7 +162,7 @@ namespace Administrator.Commands
                     return CommandSuccessLocalized("channel_logging_alldisabled");
                 }
 
-                if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, logType) is { } loggingChannel)
+                if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, logType) is { } loggingChannel)
                 {
                     loggingChannel.Id = Context.Channel.Id;
                     Context.Database.LoggingChannels.Update(loggingChannel);
@@ -171,6 +175,30 @@ namespace Administrator.Commands
                 await Context.Database.SaveChangesAsync();
 
                 return CommandSuccessLocalized($"channel_logging_{logType.ToString().ToLower()}");
+            }
+
+            [Command("slowmode")]
+            public ValueTask<AdminCommandResult> SetSlowmode(TimeSpan duration)
+                => SetSlowmodeAsync((CachedTextChannel) Context.Channel, duration); 
+
+            [Command("slowmode")]
+            public async ValueTask<AdminCommandResult> SetSlowmodeAsync(CachedTextChannel channel, TimeSpan duration)
+            {
+                try
+                {
+                    var seconds = (int) duration.TotalSeconds;
+                    await channel.ModifyAsync(x => x.Slowmode = seconds);
+                    return CommandSuccessLocalized(seconds == 0 
+                            ? "channel_slowmode_set_none" 
+                            : "channel_slowmode_set",
+                        args: channel.Mention);
+                }
+                catch (InvalidCastException)
+                { }
+                catch (DiscordHttpException ex) when (ex.HttpStatusCode == HttpStatusCode.BadRequest)
+                { }
+
+                return CommandErrorLocalized("channel_slowmode_set_failed", args: channel.Mention);
             }
         }
     }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Administrator.Common;
 using Administrator.Services;
-using Disqord;
 
 namespace Administrator.Database
 {
@@ -36,6 +35,6 @@ namespace Administrator.Database
 
         public LevelUpNotification LevelUpWhitelist { get; set; } = LevelUpNotification.Reaction;
 
-        public IEmoji LevelUpEmoji { get; set; } = EmojiTools.Tada;
+        public int MaximumReactionRoles { get; set; } = 10;
     }
 }

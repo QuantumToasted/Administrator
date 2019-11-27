@@ -16,40 +16,33 @@ namespace Administrator.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
-                .HasAnnotation("ProductVersion", "3.0.0")
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("Administrator.Database.GlobalUser", b =>
                 {
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<string>("HighlightBlacklist")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
                         .HasDefaultValueSql("''");
 
-                    b.Property<string>("Language")
-                        .HasColumnType("text");
+                    b.Property<string>("Language");
 
-                    b.Property<DateTimeOffset>("LastLevelUp")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("LastLevelUp");
 
-                    b.Property<DateTimeOffset>("LastXpGain")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("LastXpGain");
 
-                    b.Property<int>("LevelUpPreferences")
-                        .HasColumnType("integer");
+                    b.Property<int>("LevelUpPreferences");
 
                     b.Property<List<string>>("PreviousNames")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text[]")
                         .HasDefaultValueSql("'{}'");
 
-                    b.Property<int>("TotalXp")
-                        .HasColumnType("integer");
+                    b.Property<int>("TotalXp");
 
                     b.HasKey("Id");
 
@@ -60,35 +53,27 @@ namespace Administrator.Migrations
                 {
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<string>("BlacklistedModmailAuthors")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
                         .HasDefaultValueSql("''");
 
                     b.Property<List<string>>("CustomPrefixes")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text[]")
                         .HasDefaultValueSql("'{}'");
 
-                    b.Property<string>("Language")
-                        .HasColumnType("text");
+                    b.Property<string>("Language");
 
-                    b.Property<string>("LevelUpEmoji")
-                        .HasColumnType("text");
+                    b.Property<int>("LevelUpWhitelist");
 
-                    b.Property<int>("LevelUpWhitelist")
-                        .HasColumnType("integer");
+                    b.Property<int>("MaximumReactionRoles");
 
-                    b.Property<int>("Settings")
-                        .HasColumnType("integer");
+                    b.Property<int>("Settings");
 
-                    b.Property<TimeSpan>("XpGainInterval")
-                        .HasColumnType("interval");
+                    b.Property<TimeSpan>("XpGainInterval");
 
-                    b.Property<int>("XpRate")
-                        .HasColumnType("integer");
+                    b.Property<int>("XpRate");
 
                     b.HasKey("Id");
 
@@ -98,24 +83,20 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.GuildUser", b =>
                 {
                     b.Property<decimal>("Id")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<DateTimeOffset>("LastLevelUp")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("LastLevelUp");
 
-                    b.Property<DateTimeOffset>("LastXpGain")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("LastXpGain");
 
                     b.Property<List<string>>("PreviousNames")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text[]")
                         .HasDefaultValueSql("'{}'");
 
-                    b.Property<int>("TotalXp")
-                        .HasColumnType("integer");
+                    b.Property<int>("TotalXp");
 
                     b.HasKey("Id", "GuildId");
 
@@ -125,18 +106,15 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.Highlight", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<decimal?>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<string>("Text")
-                        .HasColumnType("text");
+                    b.Property<string>("Text");
 
                     b.Property<decimal>("UserId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasKey("Id");
 
@@ -146,13 +124,12 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.LoggingChannel", b =>
                 {
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("Type");
 
                     b.Property<decimal>("Id")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasKey("GuildId", "Type");
 
@@ -162,21 +139,17 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.Modmail", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("ClosedBy")
-                        .HasColumnType("integer");
+                    b.Property<int?>("ClosedBy");
 
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<bool>("IsAnonymous")
-                        .HasColumnType("boolean");
+                    b.Property<bool>("IsAnonymous");
 
                     b.Property<decimal>("UserId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasKey("Id");
 
@@ -186,21 +159,15 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.ModmailMessage", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .ValueGeneratedOnAdd();
 
-                    b.Property<int>("SourceId")
-                        .HasColumnType("integer");
+                    b.Property<int>("SourceId");
 
-                    b.Property<int>("Target")
-                        .HasColumnType("integer");
+                    b.Property<int>("Target");
 
-                    b.Property<string>("Text")
-                        .HasColumnType("text");
+                    b.Property<string>("Text");
 
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("Timestamp");
 
                     b.HasKey("Id");
 
@@ -212,27 +179,21 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.Permission", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .ValueGeneratedOnAdd();
 
-                    b.Property<int>("Filter")
-                        .HasColumnType("integer");
+                    b.Property<int>("Filter");
 
                     b.Property<decimal?>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("boolean");
+                    b.Property<bool>("IsEnabled");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
+                    b.Property<string>("Name");
 
                     b.Property<decimal?>("TargetId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("Type");
 
                     b.HasKey("Id");
 
@@ -242,34 +203,33 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.Punishment", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .ValueGeneratedOnAdd();
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("CreatedAt");
 
                     b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .IsRequired();
+
+                    b.Property<byte>("Format");
 
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<byte[]>("Image");
 
                     b.Property<decimal>("LogMessageChannelId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<decimal>("LogMessageId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<decimal>("ModeratorId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<string>("Reason")
-                        .HasColumnType("text");
+                    b.Property<string>("Reason");
 
                     b.Property<decimal>("TargetId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasKey("Id");
 
@@ -278,17 +238,39 @@ namespace Administrator.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Punishment");
                 });
 
+            modelBuilder.Entity("Administrator.Database.ReactionRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<decimal>("ChannelId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("Emoji");
+
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("MessageId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("RoleId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReactionRoles");
+                });
+
             modelBuilder.Entity("Administrator.Database.SpecialEmoji", b =>
                 {
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("Type");
 
                     b.Property<string>("Emoji")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
                         .HasDefaultValueSql("''");
 
                     b.HasKey("GuildId", "Type");
@@ -299,13 +281,12 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.SpecialRole", b =>
                 {
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("Type");
 
                     b.Property<decimal>("Id")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasKey("GuildId", "Type");
 
@@ -315,24 +296,20 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.Suggestion", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<decimal>("MessageId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<string>("Text")
-                        .HasColumnType("text");
+                    b.Property<string>("Text");
 
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("Timestamp");
 
                     b.Property<decimal>("UserId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasKey("Id");
 
@@ -342,16 +319,13 @@ namespace Administrator.Migrations
             modelBuilder.Entity("Administrator.Database.WarningPunishment", b =>
                 {
                     b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
-                    b.Property<int>("Count")
-                        .HasColumnType("integer");
+                    b.Property<int>("Count");
 
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("interval");
+                    b.Property<TimeSpan?>("Duration");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("Type");
 
                     b.HasKey("GuildId", "Count");
 
@@ -369,23 +343,18 @@ namespace Administrator.Migrations
                 {
                     b.HasBaseType("Administrator.Database.Punishment");
 
-                    b.Property<string>("AppealReason")
-                        .HasColumnType("text");
+                    b.Property<string>("AppealReason");
 
-                    b.Property<DateTimeOffset?>("AppealedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset?>("AppealedAt");
 
-                    b.Property<bool>("IsAppealable")
-                        .HasColumnType("boolean");
+                    b.Property<bool>("IsAppealable");
 
-                    b.Property<string>("RevocationReason")
-                        .HasColumnType("text");
+                    b.Property<string>("RevocationReason");
 
-                    b.Property<DateTimeOffset?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset?>("RevokedAt");
 
                     b.Property<decimal>("RevokerId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasDiscriminator().HasValue("RevocablePunishment");
                 });
@@ -394,8 +363,7 @@ namespace Administrator.Migrations
                 {
                     b.HasBaseType("Administrator.Database.RevocablePunishment");
 
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("interval");
+                    b.Property<TimeSpan?>("Duration");
 
                     b.HasDiscriminator().HasValue("Ban");
                 });
@@ -405,17 +373,16 @@ namespace Administrator.Migrations
                     b.HasBaseType("Administrator.Database.RevocablePunishment");
 
                     b.Property<decimal?>("ChannelId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<TimeSpan?>("Duration")
-                        .HasColumnName("Mute_Duration")
-                        .HasColumnType("interval");
+                        .HasColumnName("Mute_Duration");
 
                     b.Property<decimal?>("PreviousChannelAllowValue")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<decimal?>("PreviousChannelDenyValue")
-                        .HasColumnType("numeric(20,0)");
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.HasDiscriminator().HasValue("Mute");
                 });
@@ -424,8 +391,7 @@ namespace Administrator.Migrations
                 {
                     b.HasBaseType("Administrator.Database.RevocablePunishment");
 
-                    b.Property<int?>("SecondaryPunishmentId")
-                        .HasColumnType("integer");
+                    b.Property<int?>("SecondaryPunishmentId");
 
                     b.HasDiscriminator().HasValue("Warning");
                 });
@@ -435,8 +401,7 @@ namespace Administrator.Migrations
                     b.HasOne("Administrator.Database.Modmail", "Source")
                         .WithMany("Messages")
                         .HasForeignKey("SourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

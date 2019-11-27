@@ -37,10 +37,8 @@ namespace Administrator.Services
             if (string.IsNullOrWhiteSpace(message.Content) || message.Author.IsBot ||
                 !(message.Channel is CachedTextChannel channel)) return;
 
-            var highlights = await ctx.Highlights.ToListAsync(); // TODO: Not separate into two queries. Blame EF Core.
-
             var completedHighlights = new List<ulong>();
-            foreach (var highlight in highlights.Where(x => x.UserId != message.Author.Id &&
+            foreach (var highlight in ctx.Highlights.Where(x => x.UserId != message.Author.Id &&
                     Regex.IsMatch(message.Content, $@"\b{x.Text}\b", RegexOptions.IgnoreCase)))
             {
                 if (completedHighlights.Contains(highlight.UserId) ||
@@ -60,7 +58,7 @@ namespace Administrator.Services
                     var builder = new LocalEmbedBuilder()
                         .WithSuccessColor()
                         .WithAuthor(_localization.Localize(user.Language, "highlight_trigger_author",
-                            message.Author.ToString(), $"#{message.Channel}"), message.Author.GetAvatarUrl())
+                            message.Author.ToString(), message.Channel), message.Author.GetAvatarUrl())
                         .WithDescription(new StringBuilder()
                             .AppendLine(message.Content.TrimTo(LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH - 50))
                             .AppendLine()
@@ -70,6 +68,8 @@ namespace Administrator.Services
 
                     _ = target.SendMessageAsync(_localization.Localize(user.Language, "highlight_trigger_text",
                         channel.Guild.Name.Sanitize()), embed: builder.Build());
+
+                    completedHighlights.Add(highlight.UserId);
                 }
             }
         }

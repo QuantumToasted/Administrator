@@ -3,9 +3,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Administrator.Database;
 using Administrator.Extensions;
 using Disqord;
+using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Permission = Disqord.Permission;
 
 namespace Administrator.Commands
 {
@@ -15,7 +18,7 @@ namespace Administrator.Commands
     public class GuildCommands : AdminModuleBase
     {
         [RequireUserPermissions(Permission.ManageGuild)]
-        public class ManageGuildCommands : GuildCommands
+        public class GuildManagementCommands : GuildCommands
         {
             [Command("language")]
             public async ValueTask<AdminCommandResult> GetLanguageAsync()
@@ -47,7 +50,7 @@ namespace Administrator.Commands
                             x => Markdown.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());
 
             [Group("settings")]
-            public class GuildSettingsCommands : ManageGuildCommands
+            public sealed class GuildSettingsCommands : GuildManagementCommands
             {
                 [Command("", "list")]
                 public async ValueTask<AdminCommandResult> ListGuildSettingsAsync()
@@ -85,7 +88,7 @@ namespace Administrator.Commands
             }
 
             [Group("prefixes", "prefix")]
-            public class GuildPrefixCommands : ManageGuildCommands
+            public sealed class GuildManagementPrefixCommands : GuildManagementCommands
             {
                 [Command("", "list")]
                 public async ValueTask<AdminCommandResult> ListPrefixesAsync()
@@ -175,24 +178,6 @@ namespace Administrator.Commands
                 });
             }
 
-            [Command("levelemoji")]
-            public async ValueTask<AdminCommandResult> GetLevelEmojiAsync()
-            {
-                var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
-                return CommandSuccessLocalized("guild_levelemoji", args: guild.LevelUpEmoji);
-            }
-
-            [Command("levelemoji")]
-            public async ValueTask<AdminCommandResult> SetLevelEmojiAsync(IEmoji emoji)
-            {
-                var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
-                guild.LevelUpEmoji = emoji;
-                Context.Database.Guilds.Update(guild);
-                await Context.Database.SaveChangesAsync();
-
-                return CommandSuccessLocalized("guild_levelemoji_set", args: emoji);
-            }
-
             [Command("levelwhitelist")]
             public async ValueTask<AdminCommandResult> SetLevelWhitelistAsync(
                 params LevelUpNotification[] notifications)
@@ -233,6 +218,52 @@ namespace Administrator.Commands
                     }
 
                     return builder.ToString();
+                }
+            }
+
+            [Group("emojis")]
+            public sealed class GuildEmojiCommands : GuildManagementCommands
+            {
+                [Command("set")]
+                public async Task<AdminCommandResult> SetSpecialEmojiAsync(EmojiType type, [RequireUsableEmoji] IEmoji emoji)
+                {
+                    if (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, type) is { } specialEmoji)
+                    {
+                        specialEmoji.Emoji = emoji;
+                        Context.Database.SpecialEmojis.Update(specialEmoji);
+                    }
+                    else
+                    {
+                        Context.Database.SpecialEmojis.Add(new SpecialEmoji(Context.Guild.Id, type, emoji));
+                    }
+
+                    await Context.Database.SaveChangesAsync();
+                    return CommandSuccessLocalized("guild_levelemoji_set",
+                        args: new object[] {Markdown.Code(type.ToString()), emoji.ToString()});
+                }
+
+                [Command("", "list")]
+                public async Task<AdminCommandResult> ListSpecialEmojisAsync()
+                {
+                    var builder =
+                        new StringBuilder(Localize("guild_emojis_list", Markdown.Bold(Context.Guild.Name.Sanitize())))
+                            .AppendLine()
+                            .AppendLine();
+
+                    var specialEmojis = await Context.Database.SpecialEmojis.Where(x => x.GuildId == Context.Guild.Id)
+                        .ToListAsync();
+
+                    foreach (var value in Enum.GetValues(typeof(EmojiType)).Cast<EmojiType>()
+                        .Where(x => !x.Equals(default)))
+                    {
+                        builder.Append($"`{value:G}` - ");
+
+                        builder.AppendLine(specialEmojis.FirstOrDefault(x => x.Type == value) is { } specialEmoji
+                            ? specialEmoji.ToString()
+                            : Localize("info_none"));
+                    }
+
+                    return CommandSuccess(builder.ToString());
                 }
             }
         }

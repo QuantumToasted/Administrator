@@ -44,13 +44,22 @@ namespace Administrator.Services
             return Task.CompletedTask;
         }
 
+        private Task HandleReady(ReadyEventArgs e)
+        {
+            if (_firstReady)
+                return Task.CompletedTask;
+
+            JobManager.Initialize(_provider.GetRequiredService<Registry>());
+            _firstReady = true;
+
+            return Task.CompletedTask;
+        }
+
         async Task IService.InitializeAsync()
         {
             var types = typeof(DiscordEventArgs).Assembly.GetTypes()
                 .Concat(typeof(MessageLoggedEventArgs).Assembly.GetTypes())
                 .Concat(typeof(CommandService).Assembly.GetTypes());
-
-            var handlers = _provider.GetHandlers<EventArgs>();
 
             foreach (var type in types.Where(x => typeof(EventArgs).IsAssignableFrom(x) && !x.IsAbstract))
             {
@@ -62,6 +71,7 @@ namespace Administrator.Services
             _client.Logger.MessageLogged += (_, args) => EnqueueHandlers(args);
             _client.MessageReceived += EnqueueHandlers;
             _client.ReactionAdded += EnqueueHandlers;
+            _client.ReactionRemoved += EnqueueHandlers;
             _client.MemberBanned += EnqueueHandlers;
             _client.MemberLeft += EnqueueHandlers;
             _client.MemberJoined += EnqueueHandlers;
@@ -69,17 +79,6 @@ namespace Administrator.Services
             _commands.CommandExecutionFailed += EnqueueHandlers;
 
             await _logging.LogInfoAsync("Initialized.", "Dispatcher");
-        }
-
-        private Task HandleReady(ReadyEventArgs e)
-        {
-            if (_firstReady)
-                return Task.CompletedTask;
-
-            JobManager.Initialize(_provider.GetRequiredService<Registry>());
-            _firstReady = true;
-
-            return Task.CompletedTask;
         }
     }
 }

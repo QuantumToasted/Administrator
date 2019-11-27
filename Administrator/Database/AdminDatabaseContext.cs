@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Common;
@@ -61,6 +62,8 @@ namespace Administrator.Database
 
         public DbSet<Highlight> Highlights { get; set; }
 
+        public DbSet<ReactionRole> ReactionRoles { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
             if (await Guilds.FindAsync(guildId) is { } guild)
@@ -110,6 +113,34 @@ namespace Administrator.Database
             return _client.GetGuild(guildId).GetRole(role.Id);
         }
 
+        public async Task<IEmoji> GetSpecialEmojiAsync(ulong guildId, EmojiType type)
+        {
+            if (!(await SpecialEmojis.FindAsync(guildId, type) is { } emoji))
+                return null;
+
+            return emoji.Emoji;
+        }
+
+        public async Task<CachedRole> GetReactionRoleAsync(ulong guildId, ulong messageId, IEmoji emoji)
+        {
+            if (!(await ReactionRoles.FirstOrDefaultAsync(x =>
+                x.GuildId == guildId && x.MessageId == messageId && x.Emoji.Equals(emoji)) is { } reactionRole))
+                return null;
+
+            return _client.GetGuild(reactionRole.GuildId).GetRole(reactionRole.RoleId);
+            /* old version
+            foreach (var reactionRole in await ReactionRoles
+                .Where(x => x.GuildId == guildId && x.MessageId == messageId)
+                .ToListAsync())
+            {
+                if (reactionRole.Emoji.Equals(emoji))
+                    return _client.GetGuild(reactionRole.GuildId).GetRole(reactionRole.RoleId);
+            }
+            
+            return null;
+            */
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql(Config.PostgresConnectionString)
@@ -129,8 +160,6 @@ namespace Administrator.Database
                 guild.Property(x => x.BlacklistedModmailAuthors)
                     .HasConversion(new SnowflakeCollectionConverter())
                     .HasDefaultValueSql("''");
-                guild.Property(x => x.LevelUpEmoji)
-                    .HasConversion(x => x.ToString(), x => EmojiTools.Parse(x));
             });
 
             modelBuilder.Entity<GlobalUser>(user =>
@@ -158,6 +187,7 @@ namespace Administrator.Database
             {
                 punishment.HasKey(x => x.Id);
                 punishment.Property(x => x.Id).ValueGeneratedOnAdd();
+                punishment.Property(x => x.Image).HasConversion(x => x.ToArray(), x => new MemoryStream(x));
             });
 
             modelBuilder.Entity<Kick>(kick =>
@@ -239,6 +269,15 @@ namespace Administrator.Database
                 highlight.HasKey(x => x.Id);
                 highlight.Property(x => x.Id)
                     .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<ReactionRole>(role =>
+            {
+                role.HasKey(x => x.Id);
+                role.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+                role.Property(x => x.Emoji)
+                    .HasConversion(x => x.ToString(), x => EmojiTools.Parse(x));
             });
         }
     }

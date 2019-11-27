@@ -150,6 +150,13 @@ namespace Administrator.Commands
                         : "❌");
                 }
 
+                if (punishment.Format != ImageFormat.Default)
+                {
+                    builder.WithImageUrl($"attachment://attachment.{punishment.Format.ToString().ToLower()}");
+                    return CommandSuccess(embed: builder.Build(), attachment: new LocalAttachment(punishment.Image,
+                        $"attachment.{punishment.Format.ToString().ToLower()}"));
+                }
+
                 return CommandSuccess(embed: builder.Build());
             }
 
@@ -283,7 +290,7 @@ namespace Administrator.Commands
             [Command("warningpunishment", "warnp")]
             public async ValueTask<AdminCommandResult> GetWarningPunishmentAsync([MustBe(Operator.GreaterThan, 0)] int count)
             {
-                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id, count) is WarningPunishment
+                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id.RawValue, count) is WarningPunishment
                     punishment))
                     return CommandErrorLocalized("warningpunishment_notfound_count", args: count.ToOrdinalWords(Context.Language.Culture));
 
@@ -316,7 +323,7 @@ namespace Administrator.Commands
             public async ValueTask<AdminCommandResult> SetWarningPunishmentAsync([MustBe(Operator.GreaterThan, 0)] int count,
                 PunishmentType type, TimeSpan? duration = null)
             {
-                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id, count) is WarningPunishment
+                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id.RawValue, count) is WarningPunishment
                     punishment))
                 {
                     Context.Database.WarningPunishments.Add(new WarningPunishment(Context.Guild.Id, count, type, duration));

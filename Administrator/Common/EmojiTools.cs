@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Disqord;
+using Disqord.Rest;
 
 namespace Administrator.Common
 {
@@ -57,7 +58,7 @@ namespace Administrator.Common
             return true;
         }
 
-        public static IEnumerable<int> GetUnicodeCodePoints(Emoji emoji)
+        private static IEnumerable<int> GetUnicodeCodePoints(IEmoji emoji)
         {
             var str = emoji.ToString();
             var codePoints = new List<int>(str.Length);
@@ -77,11 +78,17 @@ namespace Administrator.Common
         {
             return emoji switch
             {
-                CustomEmoji e => e.GetUrl(),
-                Emoji em =>
-                $"https://i.kuro.mu/emoji/512x512/{string.Join('-', GetUnicodeCodePoints(em).Select(x => x.ToString("X2"))).ToLower()}.png",
+                Emoji e => FormatEmojiUrl(GetUnicodeCodePoints(e)),
+                LocalEmoji localEmoji => FormatEmojiUrl(GetUnicodeCodePoints(localEmoji)),
+                LocalCustomEmoji localCustomEmoji => localCustomEmoji.GetUrl(),
+                CustomEmoji customEmoji => customEmoji.GetUrl(),
+                CachedGuildEmoji cachedEmoji => cachedEmoji.GetUrl(),
+                RestGuildEmoji restEmoji => restEmoji.GetUrl(),
                 _ => throw new ArgumentOutOfRangeException(nameof(emoji))
             };
         }
+
+        private static string FormatEmojiUrl(IEnumerable<int> codepoints)
+            => $"https://i.kuro.mu/emoji/512x512/{string.Join('-', codepoints.Select(x => x.ToString("X2"))).ToLower()}.png";
     }
 }

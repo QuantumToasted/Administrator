@@ -3,6 +3,7 @@
     public enum EmojiType
     {
         Upvote,
-        Downvote
+        Downvote,
+        LevelUp
     }
 }

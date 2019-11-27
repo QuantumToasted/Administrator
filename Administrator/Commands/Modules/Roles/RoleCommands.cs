@@ -61,49 +61,29 @@ namespace Administrator.Commands
             }
 
             [Command("give", "grant")]
-            public async ValueTask<AdminCommandResult> GiveRoleToUserAsync(CachedMember target,
-                [RequireHierarchy] params CachedRole[] roles)
+            public async ValueTask<AdminCommandResult> GrantRoleAsync(CachedMember target,
+                [RequireHierarchy] CachedRole role)
             {
-                if (roles.Length == 0)
-                    throw new ArgumentOutOfRangeException();
-
-                if (roles.Length == 1 && target.Roles.Keys.Any(x => x == roles[0].Id))
+                if (target.Roles.Keys.Any(x => x == role.Id))
                     return CommandErrorLocalized("role_give_role_exists", args: Markdown.Bold(target.ToString().Sanitize()));
 
-                foreach (var role in roles)
-                {
-                    await target.GrantRoleAsync(role.Id);
-                }
+                await target.GrantRoleAsync(role.Id);
 
-                return roles.Length == 1
-                    ? CommandSuccessLocalized("role_give_success",
-                        args: new object[] { Markdown.Bold(target.ToString().Sanitize()), roles[0].Format() })
-                    : CommandSuccessLocalized("role_give_success_multiple",
-                        args: new object[]
-                            {Markdown.Bold(target.ToString()), string.Join(", ", roles.Select(x => x.Format()))});
+                return CommandSuccessLocalized("role_give_success",
+                    args: new object[] {Markdown.Bold(target.ToString().Sanitize()), role.Format()});
             }
 
-            [Command("remove")]
-            public async ValueTask<AdminCommandResult> RemoveRoleFromUserAsync(CachedMember target,
-                [RequireHierarchy] params CachedRole[] roles)
+            [Command("remove", "revoke")]
+            public async ValueTask<AdminCommandResult> RevokeRoleAsync(CachedMember target,
+                [RequireHierarchy] CachedRole role)
             {
-                if (roles.Length == 0)
-                    throw new ArgumentOutOfRangeException();
-
-                if (roles.Length == 1 && target.Roles.Keys.All(x => x != roles[0].Id))
+                if (target.Roles.Keys.All(x => x != role.Id))
                     return CommandErrorLocalized("role_remove_role_exists", args: Markdown.Bold(target.ToString().Sanitize()));
+                
+                await target.RevokeRoleAsync(role.Id);
 
-                foreach (var role in roles)
-                {
-                    await target.RevokeRoleAsync(role.Id);
-                }
-
-                return roles.Length == 1
-                    ? CommandSuccessLocalized("role_remove_success",
-                        args: new object[] { Markdown.Bold(target.ToString().Sanitize()), roles[0].Format() })
-                    : CommandSuccessLocalized("role_remove_success_multiple",
-                        args: new object[]
-                            {Markdown.Bold(target.ToString()), string.Join(", ", roles.Select(x => x.Format()))});
+                return CommandSuccessLocalized("role_remove_success",
+                    args: new object[] {Markdown.Bold(target.ToString().Sanitize()), role.Format()});
             }
 
             [Command("move")]
@@ -151,6 +131,21 @@ namespace Administrator.Commands
                 await target.ModifyAsync(x => x.Name = newName);
                 return CommandSuccessLocalized("role_rename_success",
                     args: new object[] { target.Format(), Markdown.Bold(newName) });
+            }
+
+            [Command("mention"), RunMode(RunMode.Parallel)]
+            public async ValueTask<AdminCommandResult> MentionRolesAsync([RequireHierarchy, Remainder] CachedRole role)
+            {
+                if (role.IsMentionable)
+                {
+                    return CommandSuccess(role.Mention);
+                }
+
+                await role.ModifyAsync(x => x.IsMentionable = true);
+                await Context.Channel.SendMessageAsync(role.Mention);
+                await role.ModifyAsync(x => x.IsMentionable = false);
+
+                return CommandSuccess();
             }
         }
 

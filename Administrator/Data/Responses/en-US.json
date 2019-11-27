@@ -52,6 +52,9 @@
     "requireloggingchannel": [
       "This command can only be used in the {0} channel."
     ],
+    "requireusableemoji": [
+      "I do not have access to this emoji, so I cannot use it."
+    ], 
     "operator_greaterthan": [
       "The number supplied must be greater than {0}."
     ],
@@ -641,10 +644,7 @@
       "{0} doesn't have that role!"
     ],
     "role_remove_success": [
-      "{0} has had role {1} removed."
-    ],
-    "role_remove_success_multiple": [
-      "{0} has had the following roles removed:\n{1}"
+      "{0} has had the role {1} removed."
     ],
     "role_delete_success": [
       "Role {0} has been successfully deleted."
@@ -830,7 +830,7 @@
       "This server does not have any custom bot prefixes set!"
     ],
     "guild_prefixes": [
-      "Custom bot prefixes for {0}:"
+      "Custom bot prefixes for {0}"
     ],
     "guild_prefixes_maximum": [
       "You have reached the maximum amount of custom bot prefixes.\nRemove another prefix before adding this one."
@@ -862,6 +862,12 @@
     "guild_levelemoji_set": [
       "The custom level-up emoji has now been set to {0}."
     ],
+    "guild_emojis_set": [
+      "Special emoji {0} now is set to {1}."
+    ],
+    "guild_emojis_list": [
+      "Special emojis for {0}"
+    ], 
     "guild_levelwhitelist": [
       "Custom level-up notifications for {0}:"
     ],
@@ -1144,6 +1150,9 @@
     "channel_info_text": [
       "Information for text channel {0}"
     ],
+    "channel_info_slowmode": [
+      "Slowmode"
+    ], 
     "channel_info_voice": [
       "Information for voice channel {0}"
     ],
@@ -1215,6 +1224,36 @@
     ],
     "channel_logging_list": [
       "The following events currently log in this channel:"
-    ]
+    ],
+    "channel_slowmode_set_none": [
+      "Slowmode has been disabled for {0}."
+    ],
+    "channel_slowmode_set": [
+      "Slowmode has been updated for {0}."
+    ],
+    "channel_slowmode_set_failed": [
+      "Slowmode was unable to be updated for {0}. Check that it is below the maximum allowed value."
+    ],
+    "reactionrole_list_none": [
+      "No reaction roles exist on this server!"
+    ],
+    "reactionrole_list": [
+      "Reaction roles for {0}"
+    ],
+    "reactionrole_add_nomessage": [
+      "No message could be found by that ID."
+    ],
+    "reactionrole_add_maximum": [
+      "This server has reached its maximum amount of available reaction roles ({0})."
+    ], 
+    "reactionrole_add": [
+      "{0} Reaction role created. Users who react to message {1} in {2} with {3} receive the role {4}."
+    ],
+    "reactionrole_remove_notfound": [
+      "No reaction role could be found with that ID."
+    ],
+    "reactionrole_remove": [
+      "Reaction role {0} successfully removed."
+    ] 
   }
 }

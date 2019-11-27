@@ -150,10 +150,8 @@ namespace Administrator.Commands
                 for (var i = list.Count - 1; i >= 0; i--)
                 {
                     var entry = list[i];
-                    builder.Append(entry);
-
-                    if (!aliases.Contains(""))
-                        builder.Append(' ');
+                    builder.Append(entry)
+                        .Append(' ');
                 }
 
 
@@ -176,7 +174,8 @@ namespace Administrator.Commands
                 builder.AppendLine($"{command.FormatArguments()}`");
             }
 
-            return builder.ToString();
+            return string.Join('\n', builder.ToString().Split('\n').Distinct())
+                .Replace("  ", " ").Replace(" `", "`");
         }
     }
 }

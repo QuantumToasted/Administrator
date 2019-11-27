@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Disqord;
 
@@ -9,11 +10,29 @@ namespace Administrator.Extensions
         public static readonly Regex LazyImageLinkRegex = new Regex(
             @"(http|https):\/\/.{2,}(png|jpg|jpeg|gif)", RegexOptions.Compiled);
 
-        public static bool HasImageExtension(this string str)
+        public static bool HasImageExtension(this string str, out ImageFormat format)
         {
+            format = ImageFormat.Default;
             if (string.IsNullOrWhiteSpace(str)) return false;
-            return str.EndsWith(".png") || str.EndsWith(".jpg") || str.EndsWith(".jpeg") || str.EndsWith(".gif") ||
-                   str.EndsWith(".bmp");
+
+            switch (str.Split('.', StringSplitOptions.RemoveEmptyEntries).LastOrDefault()?.ToLower())
+            {
+                case "png":
+                    format = ImageFormat.Png;
+                    return true;
+                case "jpeg":
+                case "jpg":
+                    format = ImageFormat.Png;
+                    return true;
+                case "gif":
+                    format = ImageFormat.Gif;
+                    return true;
+                case "webp":
+                    format = ImageFormat.WebP;
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         public static string TrimTo(this string str, int length, bool useEllipses = false)

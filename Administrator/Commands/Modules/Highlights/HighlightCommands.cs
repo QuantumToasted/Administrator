@@ -53,52 +53,29 @@ namespace Administrator.Commands
         [Command("add")]
         public async ValueTask<AdminCommandResult> AddHighlightAsync([Remainder] string text)
         {
-            text = text.Trim();
-            /* TODO: Wait for fix from EF Core regarding string#Equals
-            if (await Context.Database.Highlights.AnyAsync(x => x.UserId == Context.User.Id &&
-                (Context.IsPrivate && !x.GuildId.HasValue || x.GuildId == Context.Guild.Id) &&
-                text.Equals(x.Text)))
+            text = text.Trim().ToLowerInvariant();
+            if (await Context.Database.Highlights
+                .AnyAsync(x => x.UserId == Context.User.Id &&
+                               (Context.IsPrivate && !x.GuildId.HasValue ||
+                                x.GuildId == Context.Guild.Id) &&
+                               text.Equals(x.Text)))
                 return CommandErrorLocalized("highlight_add_exists");
-            */
-
-            var highlights = await (Context.IsPrivate
-                ? Context.Database.Highlights.Where(x => x.UserId == Context.User.Id && !x.GuildId.HasValue)
-                : Context.Database.Highlights.Where(x => x.UserId == Context.User.Id && x.GuildId == Context.Guild.Id)).ToListAsync();
-
-            foreach (var hl in highlights)
-            {
-                if (hl.Text.Equals(text, StringComparison.OrdinalIgnoreCase))
-                    return CommandErrorLocalized("highlight_add_exists");
-            }
 
             var highlight = Context.Database.Highlights.Add(new Highlight(Context.User.Id, text.Trim().ToLowerInvariant(), Context.Guild?.Id)).Entity;
             await Context.Database.SaveChangesAsync();
 
             return Context.IsPrivate
-                ? CommandSuccessLocalized("highlight_add_global", args: $"[#{highlight.Id}]")
-                : CommandSuccessLocalized("highlight_add_guild", args: new object[] {$"[#{highlight.Id}]", Context.Guild.Name.Sanitize()});
+                ? CommandSuccessLocalized("highlight_add_global", args: Markdown.Code($"[#{highlight.Id}]"))
+                : CommandSuccessLocalized("highlight_add_guild", args: new object[] { Markdown.Code($"[#{highlight.Id}]"), Context.Guild.Name.Sanitize()});
         }
 
         [Command("remove")]
         [Priority(0)]
         public async ValueTask<AdminCommandResult> RemoveHighlightAsync([Remainder] string text)
         {
-            /* TODO: Wait for fix from EF Core regarding string#Equals
             if (!(await Context.Database.Highlights.FirstOrDefaultAsync(x => x.UserId == Context.User.Id &&
                 (Context.IsPrivate && !x.GuildId.HasValue || x.GuildId == Context.Guild.Id) &&
                 x.Text.Equals(text, StringComparison.OrdinalIgnoreCase)) is { } highlight))
-                return CommandErrorLocalized("highlight_remove_notfound");
-            */
-
-            Highlight highlight = null;
-            foreach (var hl in await Context.Database.Highlights.Where(x => x.UserId == Context.User.Id &&
-                (Context.IsPrivate && !x.GuildId.HasValue || x.GuildId == Context.Guild.Id)).ToListAsync())
-            {
-                if (hl.Text.Equals(text, StringComparison.OrdinalIgnoreCase))
-                    highlight = hl;
-            }
-
-            if (highlight is null)
                 return CommandErrorLocalized("highlight_remove_notfound");
 
             Context.Database.Highlights.Remove(highlight);

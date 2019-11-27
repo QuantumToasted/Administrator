@@ -29,7 +29,7 @@ namespace Administrator.Commands
 
             Stream stream = null;
             string extension = null;
-            if (Context.Message.Attachments.FirstOrDefault(x => x.FileName.HasImageExtension()) is { } image)
+            if (Context.Message.Attachments.FirstOrDefault(x => x.FileName.HasImageExtension(out _)) is { } image)
             {
                 stream = await Http.GetStreamAsync(image.Url);
                 extension = image.FileName.Split('.')[^1];
@@ -73,9 +73,9 @@ namespace Administrator.Commands
                 message = await suggestionChannel.SendMessageAsync(embed: builder.Build());
             }
 
-            var upvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id, EmojiType.Upvote))?.Emoji ??
+            var upvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Upvote))?.Emoji ??
                          EmojiTools.Upvote;
-            var downvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id, EmojiType.Downvote))?.Emoji ??
+            var downvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Downvote))?.Emoji ??
                 EmojiTools.Downvote;
 
             await message.AddReactionAsync(upvote);
@@ -134,9 +134,9 @@ namespace Administrator.Commands
                 {
                     message = (IUserMessage) await suggestionChannel.GetMessageAsync(suggestion.MessageId);
 
-                    var upvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id, EmojiType.Upvote))?.Emoji ??
+                    var upvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Upvote))?.Emoji ??
                                  EmojiTools.Upvote;
-                    var downvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id, EmojiType.Downvote))?.Emoji ??
+                    var downvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Downvote))?.Emoji ??
                                    EmojiTools.Downvote;
 
                     upvotes = Math.Max((await message.GetReactionsAsync(upvote, int.MaxValue)).Count - 1, 0);
@@ -198,7 +198,7 @@ namespace Administrator.Commands
         [RequireUserPermissions(Permission.ManageGuild)]
         public async ValueTask<AdminCommandResult> SetSuggestionChannel(CachedTextChannel newChannel)
         {
-            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, LogType.Suggestion) is { } channel)
+            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.Suggestion) is { } channel)
             {
                 channel.Id = newChannel.Id;
                 Context.Database.LoggingChannels.Update(channel);
@@ -227,7 +227,7 @@ namespace Administrator.Commands
         [RequireUserPermissions(Permission.ManageGuild)]
         public async ValueTask<AdminCommandResult> SetSuggestionArchive(CachedTextChannel newChannel)
         {
-            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, LogType.SuggestionArchive) is { } channel)
+            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.SuggestionArchive) is { } channel)
             {
                 channel.Id = newChannel.Id;
                 Context.Database.LoggingChannels.Update(channel);

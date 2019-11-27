@@ -322,7 +322,7 @@ namespace Administrator.Services
             await ctx.SaveChangesAsync();
         }
 
-        public IEmoji GetLevelEmoji(User user)
+        private IEmoji GetLevelEmoji(User user)
         {
             if (_config.EmojiServerIds.Count == 0)
                 throw new ArgumentException("No emoji servers could be found to process this.", nameof(user));
@@ -340,7 +340,8 @@ namespace Administrator.Services
             var type = user is GlobalUser
                 ? "global"
                 : "guild";
-            
+
+            using var ctx = new AdminDatabaseContext();
             if (preferences.HasFlag(LevelUpNotification.Channel) &&
                 guild.LevelUpWhitelist.HasFlag(LevelUpNotification.Channel))
             {
@@ -355,7 +356,6 @@ namespace Administrator.Services
 
             if (preferences.HasFlag(LevelUpNotification.DM))
             {
-                using var ctx = new AdminDatabaseContext();
                 var language = (user as GlobalUser)?.Language ??
                                (await ctx.GetOrCreateGlobalUserAsync(user.Id)).Language;
 
@@ -371,7 +371,8 @@ namespace Administrator.Services
             if (preferences.HasFlag(LevelUpNotification.Reaction) &&
                 guild.LevelUpWhitelist.HasFlag(LevelUpNotification.Reaction))
             {
-                var levelUpEmoji = guild.LevelUpEmoji ?? EmojiTools.LevelUp;
+                var levelUpEmoji = await ctx.GetSpecialEmojiAsync(guild.Id, EmojiType.LevelUp)
+                                   ?? EmojiTools.LevelUp;
                 await message.AddReactionAsync(levelUpEmoji);
                 await message.AddReactionAsync(levelEmoji);
             }
