@@ -33,7 +33,7 @@ namespace Administrator.Services
 
             var user = args.User.HasValue
                 ? args.User.Value
-                : await args.User.Downloadable.GetOrDownloadAsync() as IUser;
+                : await args.User.Downloadable.DownloadAsync() as IUser;
 
             if (user is null) // TODO: Remove after fix
             {

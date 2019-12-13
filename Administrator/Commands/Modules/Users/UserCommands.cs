@@ -44,7 +44,7 @@ namespace Administrator.Commands
         {
             var builder = new LocalEmbedBuilder()
                 .WithTitle(Localize(target.IsBot ? "user_info_title_bot" : "user_info_title",
-                    target.ToString().Sanitize()))
+                    target.Tag.Sanitize()))
                 .AddField(Localize("info_id"), target.Id, true)
                 .AddField(Localize("info_mention"), target.Mention, true)
                 .WithThumbnailUrl(target.GetAvatarUrl(size: 256));
@@ -76,13 +76,13 @@ namespace Administrator.Commands
             }), true);
 
             builder.AddField(Localize("user_info_created"), string.Join('\n', target.Id.CreatedAt.ToString("g", Context.Language.Culture),
-                (DateTimeOffset.UtcNow - target.Id.CreatedAt).HumanizeFormatted(Context, TimeUnit.Second, true)), true);
+                (DateTimeOffset.UtcNow - target.Id.CreatedAt).HumanizeFormatted(Localization, Context.Language, TimeUnit.Second, true)), true);
 
             if (isGuildTarget)
             {
                 builder.AddField(Localize("user_info_joined", Context.Guild.Name), string.Join('\n',
                     guildTarget.JoinedAt.ToString("g", Context.Language.Culture),
-                    (DateTimeOffset.UtcNow - guildTarget.JoinedAt).HumanizeFormatted(Context, TimeUnit.Second, true)), true);
+                    (DateTimeOffset.UtcNow - guildTarget.JoinedAt).HumanizeFormatted(Localization, Context.Language, TimeUnit.Second, true)), true);
 
                 var roles = guildTarget.Roles.Values.Where(x => !x.IsDefault).OrderByDescending(x => x.Position).ToList();
                 if (roles.Count > 0)
@@ -120,14 +120,14 @@ namespace Administrator.Commands
 
         [Command("avatar", "av"), RunMode(RunMode.Parallel)]
         [RequireContext(ContextType.Guild)]
-        public async ValueTask<AdminCommandResult> GetUserAvatarAsync([Remainder] CachedMember target = null)
+        public async ValueTask<AdminCommandResult> GetUserAvatarAsync([Remainder] CachedUser target = null)
         {
-            target ??= (CachedMember) Context.User;
+            var user = await Context.Client.GetUserAsync((target ?? Context.User).Id);
             using var _ = Context.Channel.Typing();
-            var avatarUrl = new Uri(target.GetAvatarUrl());
+            var avatarUrl = new Uri(user.GetAvatarUrl());
             var stream = await Http.GetStreamAsync(avatarUrl);
             return CommandSuccessLocalized("user_avatar", attachment: new LocalAttachment(stream, avatarUrl.LocalPath),
-                args: Markdown.Bold(target.ToString().Sanitize()));
+                args: Markdown.Bold(user.Tag.Sanitize()));
         }
 
         [RequireContext(ContextType.Guild)]
@@ -140,9 +140,9 @@ namespace Administrator.Commands
                 public AdminCommandResult GetNickname([Remainder] CachedMember target)
                 {
                     return string.IsNullOrWhiteSpace(target.Nick)
-                        ? CommandSuccessLocalized("user_no_nickname", args: Markdown.Bold(target.ToString().Sanitize()))
+                        ? CommandSuccessLocalized("user_no_nickname", args: Markdown.Bold(target.Tag.Sanitize()))
                         : CommandSuccessLocalized("user_nickname",
-                            args: new object[] { Markdown.Bold(target.ToString().Sanitize()), Markdown.Bold(target.Nick.Sanitize()) });
+                            args: new object[] { Markdown.Bold(target.Tag.Sanitize()), Markdown.Bold(target.Nick.Sanitize()) });
                 }
 
                 [Command("set")]
@@ -281,7 +281,7 @@ namespace Administrator.Commands
             {
                 return string.IsNullOrWhiteSpace(target.Nick)
                     ? target.Format()
-                    : Localize("user_search_format", Markdown.Bold(target.ToString().Sanitize()),
+                    : Localize("user_search_format", Markdown.Bold(target.Tag.Sanitize()),
                         Markdown.Bold(target.Nick.Sanitize()),
                         Markdown.Code(target.Id.ToString()));
             }
@@ -318,6 +318,7 @@ namespace Administrator.Commands
         }
 
         [Command("languages")]
+        [IgnoresExtraArguments]
         public AdminCommandResult GetLanguages()
             => CommandSuccess(new StringBuilder()
                 .AppendLine(Localize("available_languages"))

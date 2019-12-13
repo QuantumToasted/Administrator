@@ -316,6 +316,10 @@ namespace Administrator.Services
                 {
                     // TODO: Discard necessary?
                     _ = NotifyOnLevelUpAsync(message, guild, guildUser, user.LevelUpPreferences);
+                    foreach (var reward in ctx.LevelRewards.Where(x => x.GuildId == guild.Id && x.Level == guildUser.Level))
+                    {
+                        await reward.RewardAsync(args.Message.Author as CachedMember);
+                    }
                 }
             }
 

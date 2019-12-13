@@ -70,6 +70,8 @@ namespace Administrator.Services
             _client.Ready += HandleReady;
             _client.Logger.MessageLogged += (_, args) => EnqueueHandlers(args);
             _client.MessageReceived += EnqueueHandlers;
+            _client.MessageDeleted += EnqueueHandlers;
+            _client.MessageUpdated += EnqueueHandlers;
             _client.ReactionAdded += EnqueueHandlers;
             _client.ReactionRemoved += EnqueueHandlers;
             _client.MemberBanned += EnqueueHandlers;

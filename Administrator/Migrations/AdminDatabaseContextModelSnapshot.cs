@@ -121,6 +121,28 @@ namespace Administrator.Migrations
                     b.ToTable("Highlights");
                 });
 
+            modelBuilder.Entity("Administrator.Database.LevelReward", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired();
+
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("Level");
+
+                    b.Property<int>("Tier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LevelRewards");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("LevelReward");
+                });
+
             modelBuilder.Entity("Administrator.Database.LoggingChannel", b =>
                 {
                     b.Property<decimal>("GuildId")
@@ -262,6 +284,34 @@ namespace Administrator.Migrations
                     b.ToTable("ReactionRoles");
                 });
 
+            modelBuilder.Entity("Administrator.Database.Reminder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<decimal>("AuthorId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("ChannelId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<DateTimeOffset>("CreatedAt");
+
+                    b.Property<DateTimeOffset>("Ending");
+
+                    b.Property<decimal?>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("MessageId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("Text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Reminders");
+                });
+
             modelBuilder.Entity("Administrator.Database.SpecialEmoji", b =>
                 {
                     b.Property<decimal>("GuildId")
@@ -298,8 +348,12 @@ namespace Administrator.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<byte>("Format");
+
                     b.Property<decimal>("GuildId")
                         .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<byte[]>("Image");
 
                     b.Property<decimal>("MessageId")
                         .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
@@ -316,6 +370,31 @@ namespace Administrator.Migrations
                     b.ToTable("Suggestions");
                 });
 
+            modelBuilder.Entity("Administrator.Database.Tag", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("Name");
+
+                    b.Property<decimal>("AuthorId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<DateTimeOffset>("CreatedAt");
+
+                    b.Property<byte>("Format");
+
+                    b.Property<byte[]>("Image");
+
+                    b.Property<string>("Response");
+
+                    b.Property<int>("Uses");
+
+                    b.HasKey("GuildId", "Name");
+
+                    b.ToTable("Tags");
+                });
+
             modelBuilder.Entity("Administrator.Database.WarningPunishment", b =>
                 {
                     b.Property<decimal>("GuildId")
@@ -330,6 +409,21 @@ namespace Administrator.Migrations
                     b.HasKey("GuildId", "Count");
 
                     b.ToTable("WarningPunishments");
+                });
+
+            modelBuilder.Entity("Administrator.Database.RoleLevelReward", b =>
+                {
+                    b.HasBaseType("Administrator.Database.LevelReward");
+
+                    b.Property<string>("AddedRoleIds")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("''");
+
+                    b.Property<string>("RemovedRoleIds")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("''");
+
+                    b.HasDiscriminator().HasValue("RoleLevelReward");
                 });
 
             modelBuilder.Entity("Administrator.Database.Kick", b =>

@@ -65,12 +65,12 @@ namespace Administrator.Commands
                 [RequireHierarchy] CachedRole role)
             {
                 if (target.Roles.Keys.Any(x => x == role.Id))
-                    return CommandErrorLocalized("role_give_role_exists", args: Markdown.Bold(target.ToString().Sanitize()));
+                    return CommandErrorLocalized("role_give_role_exists", args: Markdown.Bold(target.Tag.Sanitize()));
 
                 await target.GrantRoleAsync(role.Id);
 
                 return CommandSuccessLocalized("role_give_success",
-                    args: new object[] {Markdown.Bold(target.ToString().Sanitize()), role.Format()});
+                    args: new object[] {Markdown.Bold(target.Tag.Sanitize()), role.Format()});
             }
 
             [Command("remove", "revoke")]
@@ -78,12 +78,12 @@ namespace Administrator.Commands
                 [RequireHierarchy] CachedRole role)
             {
                 if (target.Roles.Keys.All(x => x != role.Id))
-                    return CommandErrorLocalized("role_remove_role_exists", args: Markdown.Bold(target.ToString().Sanitize()));
+                    return CommandErrorLocalized("role_remove_role_exists", args: Markdown.Bold(target.Tag.Sanitize()));
                 
                 await target.RevokeRoleAsync(role.Id);
 
                 return CommandSuccessLocalized("role_remove_success",
-                    args: new object[] {Markdown.Bold(target.ToString().Sanitize()), role.Format()});
+                    args: new object[] {Markdown.Bold(target.Tag.Sanitize()), role.Format()});
             }
 
             [Command("move")]
@@ -142,7 +142,9 @@ namespace Administrator.Commands
                 }
 
                 await role.ModifyAsync(x => x.IsMentionable = true);
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
                 await Context.Channel.SendMessageAsync(role.Mention);
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
                 await role.ModifyAsync(x => x.IsMentionable = false);
 
                 return CommandSuccess();
@@ -166,7 +168,7 @@ namespace Administrator.Commands
                 .AddField(Context.Localize("info_position"), FormatPosition())
                 .AddField(Context.Localize("info_created"),
                     string.Join('\n', role.Id.CreatedAt.ToString("g", Context.Language.Culture),
-                        (DateTimeOffset.UtcNow - role.Id.CreatedAt).HumanizeFormatted(Context, ago: true)), true)
+                        (DateTimeOffset.UtcNow - role.Id.CreatedAt).HumanizeFormatted(Localization, Context.Language, ago: true)), true)
                 .AddField(Context.Localize("role_info_permissions"),
                     string.Join('\n',
                         role.Permissions.ToList().Select(x => x.ToString("G").Humanize(LetterCasing.Title))))
@@ -206,13 +208,13 @@ namespace Administrator.Commands
                 {
                     var member = members[i];
                     
-                    if (builder.Length + member.ToString().Sanitize().Length > 1019) // 1024 - 3
+                    if (builder.Length + member.Tag.Sanitize().Length > 1019) // 1024 - 3
                     {
                         builder.Append('…');
                         break;
                     }
 
-                    builder.Append(member.ToString().Sanitize());
+                    builder.Append(member.Tag.Sanitize());
 
                     if (i != members.Count - 1)
                         builder.Append(", ");

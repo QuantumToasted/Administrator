@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
+using Humanizer.Localisation;
 using Qmmands;
+using Module = Qmmands.Module;
 
 namespace Administrator.Commands
 {
@@ -20,7 +23,10 @@ namespace Administrator.Commands
 
         public ConfigurationService Config { get; set; }
 
+        public StatsService Stats { get; set; }
+
         [Command("modules")]
+        [IgnoresExtraArguments]
         public AdminCommandResult GetModules()
         {
             var builder = new StringBuilder();
@@ -56,7 +62,7 @@ namespace Administrator.Commands
             /*
             var pages = DefaultPaginator.GeneratePages(groups, 15, group => new EmbedFieldBuilder()
                 //    .WithName(new StringBuilder(Config.DefaultPrefix)
-                //        .AppendJoin($"\n{Config.DefaultPrefix}", group.First().FullAliases).ToString())
+                //        .AppendJoin($"\n{Config.DefaultPrefix}", group.First().FullAliases).Tag)
                 .WithName(FormatCommands(group))
                 .WithValue(Localize($"info_command_{group.Key.Replace(' ', '_')}")), 
                 embedFunc: builder => builder.WithSuccessColor()
@@ -95,6 +101,50 @@ namespace Administrator.Commands
                     .ToString())
                 .WithFooter(Localize("info_module_reference", command.Module.Name))
                 .Build());
+        }
+
+        [Command("stats")]
+        [IgnoresExtraArguments]
+        public async ValueTask<AdminCommandResult> GetBotStatsAsync()
+        {
+            var app = await Context.Client.GetCurrentApplicationAsync();
+            return CommandSuccess(embed: new LocalEmbedBuilder()
+                .WithSuccessColor()
+                .WithAuthor(
+                    Localize("info_stats_author", Context.Client.CurrentUser.Tag,
+                        Stats.BuildDate.ToString("d", Context.Language.Culture)),
+                    Context.Client.CurrentUser.GetAvatarUrl())
+                .AddField(Localize("info_stats_uptime"),
+                    string.Join('\n',
+                        Stats.Uptime.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second)
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Trim())), true)
+                .AddField(Localize("info_stats_presence"),
+                    Localize("info_stats_presence_text", Stats.TotalGuilds, Stats.TotalTextChannels,
+                        Stats.TotalVoiceChannels, Stats.TotalMembers), true)
+                .AddField(Localize("info_stats_commands"), Stats.CommandsExecuted, true)
+                .AddField(Localize("info_stats_messages"),
+                    Localize("info_stats_messages_text", Stats.MessagesReceived,
+                        (Stats.MessagesReceived / Stats.Uptime.TotalSeconds).ToString("F")), true)
+                .AddField(Localize("info_stats_memory"),
+                    Localize("info_stats_megabytes", (Stats.MemoryUsage / 1_000_000D).ToString("F")), true)
+                .AddField(Localize("info_stats_nerds"), FormatAssemblies(Stats.CustomAssemblies).TrimTo(1024, true))
+                .WithFooter(Localize("info_stats_created", app.Owner.Tag), app.Owner.GetAvatarUrl())
+                .Build());
+
+            static string FormatAssemblies(IEnumerable<Assembly> assemblies)
+            {
+                var builder = new StringBuilder();
+                foreach (var assemblyName in assemblies.Select(x => x.GetName()))
+                {
+                    if (assemblyName.Version is { } version)
+                    {
+                        builder.AppendLine($"{assemblyName.Name} v{version}");
+                    }
+                }
+
+                return builder.ToString();
+            }
         }
 
         private string FormatCommands(IEnumerable<Command> group)

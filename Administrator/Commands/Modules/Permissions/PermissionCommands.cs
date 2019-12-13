@@ -110,7 +110,7 @@ namespace Administrator.Commands
                 PermissionFilter.Guild => Context.Guild.Name.Sanitize(),
                 PermissionFilter.Role => Context.Guild.GetRole(targetId.Value).Name.Sanitize(),
                 PermissionFilter.Channel => Context.Guild.GetTextChannel(targetId.Value).Mention,
-                PermissionFilter.User => Context.Guild.GetMember(targetId.Value)?.ToString().Sanitize() ?? "???",
+                PermissionFilter.User => Context.Guild.GetMember(targetId.Value)?.Tag.Sanitize() ?? "???",
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -182,7 +182,7 @@ namespace Administrator.Commands
                     {
                         PermissionFilter.Role => Context.Guild.GetRole(permission.TargetId.Value)?.Name.Sanitize() ?? "???",
                         PermissionFilter.Channel => Context.Guild.GetTextChannel(permission.TargetId.Value)?.Mention ?? "???",
-                        PermissionFilter.User => Context.Guild.GetMember(permission.TargetId.Value)?.ToString().Sanitize() ?? "???",
+                        PermissionFilter.User => Context.Guild.GetMember(permission.TargetId.Value)?.Tag.Sanitize() ?? "???",
                         _ => string.Empty
                     })
                     .Append('`');

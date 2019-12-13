@@ -13,12 +13,12 @@ namespace Administrator.Services
 {
     public sealed class ConfigurationService : IService
     {
-        private readonly DiscordClient _restClient;
+        private readonly DiscordClient _client;
         private readonly LoggingService _logging;
         
-        public ConfigurationService(DiscordClient restClient, LoggingService logging)
+        public ConfigurationService(DiscordClient client, LoggingService logging)
         {
-            _restClient = restClient;
+            _client = client;
             _logging = logging;
         }
 
@@ -32,6 +32,12 @@ namespace Administrator.Services
 
         [JsonProperty("connectionString")]
         public string PostgresConnectionString { get; private set; }
+
+        [JsonProperty("steamApiKey")]
+        public string SteamApiKey { get; private set; }
+
+        [JsonProperty("backpackApiKey")]
+        public string BackpackApiKey { get; private set; }
         
         [JsonProperty("owners")]
         public ICollection<ulong> OwnerIds { get; private set; }
@@ -101,7 +107,7 @@ namespace Administrator.Services
                 await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.", 
                     "Configuration");
 
-                var app = await _restClient.GetCurrentApplicationAsync();
+                var app = await _client.GetCurrentApplicationAsync();
                 await _logging.LogDebugAsync($"Got owner {app.Owner}.", "Configuration");
                 
                 OwnerIds = new List<ulong>
@@ -118,7 +124,7 @@ namespace Administrator.Services
 
             foreach (var id in EmojiServerIds)
             {
-                var guild = await _restClient.GetGuildAsync(id);
+                var guild = await _client.GetGuildAsync(id);
                 if (guild is null)
                 {
                     await _logging.LogCriticalAsync($"Emoji server with ID {id} could not be found or I'm not a member!", "Configuration");

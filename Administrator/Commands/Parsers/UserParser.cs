@@ -27,7 +27,7 @@ namespace Administrator.Commands
             if (user is null)
             {
                 user = context.Guild.Members.Values.FirstOrDefault(x =>
-                    x.ToString().Equals(value, StringComparison.OrdinalIgnoreCase)) as TUser;
+                    x.Tag.Equals(value, StringComparison.OrdinalIgnoreCase)) as TUser;
             }
 
             // Parse by exact username/nickname match

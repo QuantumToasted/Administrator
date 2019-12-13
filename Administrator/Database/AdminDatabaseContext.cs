@@ -64,6 +64,12 @@ namespace Administrator.Database
 
         public DbSet<ReactionRole> ReactionRoles { get; set; }
 
+        public DbSet<LevelReward> LevelRewards { get; set; }
+
+        public DbSet<Tag> Tags { get; set; }
+
+        public DbSet<Reminder> Reminders { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
             if (await Guilds.FindAsync(guildId) is { } guild)
@@ -128,22 +134,12 @@ namespace Administrator.Database
                 return null;
 
             return _client.GetGuild(reactionRole.GuildId).GetRole(reactionRole.RoleId);
-            /* old version
-            foreach (var reactionRole in await ReactionRoles
-                .Where(x => x.GuildId == guildId && x.MessageId == messageId)
-                .ToListAsync())
-            {
-                if (reactionRole.Emoji.Equals(emoji))
-                    return _client.GetGuild(reactionRole.GuildId).GetRole(reactionRole.RoleId);
-            }
-            
-            return null;
-            */
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql(Config.PostgresConnectionString)
+                .EnableSensitiveDataLogging()
                 .UseInternalServiceProvider(_provider);
         }
 
@@ -255,6 +251,7 @@ namespace Administrator.Database
             {
                 suggestion.HasKey(x => x.Id);
                 suggestion.Property(x => x.Id).ValueGeneratedOnAdd();
+                suggestion.Property(x => x.Image).HasConversion(x => x.ToArray(), x => new MemoryStream(x));
             });
 
             modelBuilder.Entity<SpecialEmoji>(emoji =>
@@ -278,6 +275,37 @@ namespace Administrator.Database
                     .ValueGeneratedOnAdd();
                 role.Property(x => x.Emoji)
                     .HasConversion(x => x.ToString(), x => EmojiTools.Parse(x));
+            });
+
+            modelBuilder.Entity<LevelReward>(reward =>
+            {
+                reward.HasKey(x => x.Id);
+                reward.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<RoleLevelReward>(reward =>
+            {
+                reward.HasBaseType<LevelReward>();
+                reward.Property(x => x.AddedRoleIds)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+                reward.Property(x => x.RemovedRoleIds)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+            });
+
+            modelBuilder.Entity<Tag>(tag =>
+            {
+                tag.HasKey(x => new {x.GuildId, x.Name});
+                tag.Property(x => x.Image).HasConversion(x => x.ToArray(), x => new MemoryStream(x));
+            });
+
+            modelBuilder.Entity<Reminder>(reminder =>
+            {
+                reminder.HasKey(x => x.Id);
+                reminder.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
             });
         }
     }

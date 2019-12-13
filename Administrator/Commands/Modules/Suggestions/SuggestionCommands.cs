@@ -27,29 +27,32 @@ namespace Administrator.Commands
                 LogType.Suggestion) is { } suggestionChannel))
                 return CommandErrorLocalized("suggestion_nochannel");
 
-            Stream stream = null;
-            string extension = null;
-            if (Context.Message.Attachments.FirstOrDefault(x => x.FileName.HasImageExtension(out _)) is { } image)
+            var image = new MemoryStream();
+            var format = ImageFormat.Default;
+            if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                attachment.FileName.HasImageExtension(out format))
             {
-                stream = await Http.GetStreamAsync(image.Url);
-                extension = image.FileName.Split('.')[^1];
+                await using var stream = await Http.GetStreamAsync(attachment.Url);
+                await stream.CopyToAsync(image);
+                image.Seek(0, SeekOrigin.Begin);
             }
 
-            if (stream is null)
+            if (format == ImageFormat.Default)
             {
                 var match = StringExtensions.LazyImageLinkRegex.Match(text);
-                if (match.Success)
+                if (match.Success && match.Value.HasImageExtension(out format))
                 {
                     try
                     {
-                        stream = await Http.GetStreamAsync(match.Value);
-                        extension = match.Groups[2].Value;
+                        await using var stream = await Http.GetStreamAsync(match.Value);
+                        await stream.CopyToAsync(image);
+                        image.Seek(0, SeekOrigin.Begin);
                     }
                     catch { /* ignored */ }
                 }
             }
 
-            var suggestion = Context.Database.Suggestions.Add(new Suggestion(Context.Guild.Id, Context.User.Id, text))
+            var suggestion = Context.Database.Suggestions.Add(new Suggestion(Context.Guild.Id, Context.User.Id, text, image, format))
                 .Entity;
             await Context.Database.SaveChangesAsync();
 
@@ -60,13 +63,10 @@ namespace Administrator.Commands
                 .WithFooter(Context.Localize("suggestion_id", suggestion.Id));
 
             RestUserMessage message;
-            if (!(stream is null))
+            if (format != ImageFormat.Default)
             {
-                using (stream)
-                {
-                    message = await suggestionChannel.SendMessageAsync(new LocalAttachment(stream, $"image.{extension}"),
-                        embed: builder.WithImageUrl($"attachment://image.{extension}").Build());
-                }
+                message = await suggestionChannel.SendMessageAsync(new LocalAttachment(image, $"attachment.{format.ToString().ToLower()}"),
+                    embed: builder.WithImageUrl($"attachment://attachment.{format.ToString().ToLower()}").Build());
             }
             else
             {
@@ -124,7 +124,6 @@ namespace Administrator.Commands
                 archiveChannel))
                 return CommandErrorLocalized("suggestion_noarchive");
 
-            string url = null, extension = null;
             IUserMessage message = null;
             int upvotes = 0, downvotes = 0;
             if (await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Suggestion) is { }
@@ -141,15 +140,6 @@ namespace Administrator.Commands
 
                     upvotes = Math.Max((await message.GetReactionsAsync(upvote, int.MaxValue)).Count - 1, 0);
                     downvotes = Math.Max((await message.GetReactionsAsync(downvote, int.MaxValue)).Count - 1, 0);
-
-                    if (message.Attachments.FirstOrDefault() is { } image)
-                    { }
-
-                    if (message.Embeds.FirstOrDefault(x => x.Image is { }) is { } embed)
-                    {
-                        extension = embed.Image.Url.Split('.')[^1];
-                        url = embed.Image.Url;
-                    }
                 }
                 catch { /* ignored */ }
             }
@@ -158,12 +148,12 @@ namespace Administrator.Commands
             var builder = new LocalEmbedBuilder()
                 .WithAuthor(Context.Localize(Context.Alias.Equals("approve")
                         ? "suggestion_approved_title"
-                        : "suggestion_denied_title", suggestion.Id, author.ToString(), upvotes, downvotes),
+                        : "suggestion_denied_title", suggestion.Id, author.Tag, upvotes, downvotes),
                     author.GetAvatarUrl())
                 .WithDescription(suggestion.Text)
                 .WithFooter(Context.Localize(Context.Alias.Equals("approve")
                         ? "suggestion_approved_footer"
-                        : "suggestion_denied_footer", Context.User.ToString()),
+                        : "suggestion_denied_footer", Context.User.Tag),
                     Context.User.GetAvatarUrl());
             if (Context.Alias.Equals("approve"))
                 builder.WithSuccessColor();
@@ -172,13 +162,10 @@ namespace Administrator.Commands
             if (!string.IsNullOrWhiteSpace(reason))
                 builder.AddField(Context.Localize("title_reason"), reason);
 
-            if (!string.IsNullOrWhiteSpace(url))
+            if (suggestion.Format != ImageFormat.Default)
             {
-                using (var stream = await Http.GetStreamAsync(url))
-                {
-                    await archiveChannel.SendMessageAsync(new LocalAttachment(stream, $"image.{extension}"),
-                        embed: builder.WithImageUrl($"attachment://image.{extension}").Build());
-                }
+                await archiveChannel.SendMessageAsync(new LocalAttachment(suggestion.Image, $"attachment.{suggestion.Format.ToString().ToLower()}"),
+                    embed: builder.WithImageUrl($"attachment://attachment.{suggestion.Format.ToString().ToLower()}").Build());
             }
             else
             {

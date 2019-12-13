@@ -18,9 +18,18 @@
     <Compile Remove="Migrations\20191121021822_Disqord_Port.Designer.cs" />
     <Compile Remove="Migrations\20191121032421_Disqord_Port.cs" />
     <Compile Remove="Migrations\20191121032421_Disqord_Port.Designer.cs" />
+    <Compile Remove="Migrations\20191205041026_BackpackItemPrices.cs" />
+    <Compile Remove="Migrations\20191205041026_BackpackItemPrices.Designer.cs" />
+    <Compile Remove="Migrations\20191205041831_BackpackItemPrices.cs" />
+    <Compile Remove="Migrations\20191205041831_BackpackItemPrices.Designer.cs" />
+    <Compile Remove="Migrations\20191208075417_Tags.cs" />
+    <Compile Remove="Migrations\20191208075417_Tags.Designer.cs" />
+    <Compile Remove="Migrations\20191208175745_Tags.cs" />
+    <Compile Remove="Migrations\20191208175745_Tags.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Backpack.Net" Version="1.0.5" />
     <PackageReference Include="CommandLineParser" Version="2.6.0" />
     <PackageReference Include="Disqord" Version="1.0.0" />
     <PackageReference Include="Disqord.Core" Version="1.0.0" />
@@ -38,6 +47,7 @@
     <PackageReference Include="Qmmands" Version="3.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002988" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-dev002988" />
+    <PackageReference Include="SteamWebAPI2" Version="4.0.12" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,6 +79,12 @@
 
   <ItemGroup>
     <Folder Include="Data\Images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Administrator.Common.BuildDateAttribute">
+      <_Parameter1>$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties data_4responses_4en-us_1json__JsonSchema="http://json.schemastore.org/grunt-copy-task" /></VisualStudio></ProjectExtensions>

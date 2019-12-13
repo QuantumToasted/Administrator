@@ -20,7 +20,7 @@ namespace Administrator.Commands
             var context = (AdminCommandContext) ctx;
 
             TPunishment punishment = default;
-            ArgParser.ParseArguments<TPunishment>(new[] {value})
+            ArgParser.ParseArguments<TPunishment>(value.Split(' '))
                 .WithParsed(x => punishment = x)
                 .WithNotParsed(_ => punishment = default);
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using Disqord;
 
 namespace Administrator.Database
 {
@@ -7,11 +9,13 @@ namespace Administrator.Database
         private Suggestion()
         { }
 
-        public Suggestion(ulong guildId, ulong userId, string text)
+        public Suggestion(ulong guildId, ulong userId, string text, MemoryStream image, ImageFormat format)
         {
             GuildId = guildId;
             UserId = userId;
             Text = text;
+            Image = image;
+            Format = format;
         }
 
         public int Id { get; set; }
@@ -25,6 +29,10 @@ namespace Administrator.Database
         public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 
         public ulong MessageId { get; set; }
+
+        public MemoryStream Image { get; set; } = new MemoryStream();
+
+        public ImageFormat Format { get; set; } = ImageFormat.Default;
 
         public void SetMessageId(ulong messageId)
         {

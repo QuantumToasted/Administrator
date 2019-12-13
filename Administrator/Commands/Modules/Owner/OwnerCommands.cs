@@ -34,11 +34,11 @@ namespace Administrator.Commands
                 .WithTitle(Localize("owner_eval_inprogress"))
                 .WithDescription($"```cs\n{script}\n```")
                 .Build());
-            
+
             try
             {
                 var watch = Stopwatch.StartNew();
-                var sopts = ScriptOptions.Default
+                var scriptOptions = ScriptOptions.Default
                     .WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text",
                         "System.Threading.Tasks", "Disqord", "Administrator.Extensions",
                         "Administrator.Database", "Humanizer")
@@ -46,26 +46,38 @@ namespace Administrator.Commands
                         .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location)));
 
                 var result =
-                    await CSharpScript.EvaluateAsync(script, sopts, new Globals { Context = Context });
+                    await CSharpScript.EvaluateAsync(script, scriptOptions, new Globals { Context = Context });
 
                 await msg.ModifyAsync(x => x.Embed = new LocalEmbedBuilder()
                     .WithSuccessColor()
                     .WithTitle(Localize("owner_eval_complete"))
                     .WithDescription(Markdown.CodeBlock(script, "cs"))
                     .AddField(Localize("owner_eval_return"), result is { }
-                        ? Markdown.Code(result.GetType().ToString()) + '\n' + result.ToString()
+                        ? Markdown.Code(result.GetType().ToString()) + '\n' + result
                         : Localize("info_none"), true)
                     .AddField(Localize("owner_eval_executiontime"), $"{watch.ElapsedMilliseconds / 1000D:F}s", true)
                     .Build());
             }
-            catch (CompilationErrorException ex)
+            catch (Exception ex)
             {
-                await msg.ModifyAsync(x => x.Embed = new LocalEmbedBuilder()
-                    .WithErrorColor()
-                    .WithTitle(Localize("owner_eval_failed"))
-                    .AddField(Localize("owner_eval_errors"), 
-                        Markdown.CodeBlock(string.Join('\n', ex.Diagnostics.Select(y => y.GetMessage()))))
-                    .Build());
+                if (ex is CompilationErrorException e)
+                {
+                    await msg.ModifyAsync(x => x.Embed = new LocalEmbedBuilder()
+                        .WithErrorColor()
+                        .WithTitle(Localize("owner_eval_failed"))
+                        .AddField(Localize("owner_eval_errors"),
+                            Markdown.CodeBlock(string.Join('\n', e.Diagnostics.Select(y => y.GetMessage()))))
+                        .Build());
+                }
+                else
+                {
+                    await msg.ModifyAsync(x => x.Embed = new LocalEmbedBuilder()
+                        .WithErrorColor()
+                        .WithTitle(Localize("owner_eval_failed"))
+                        .AddField(Localize("owner_eval_errors"),
+                            Markdown.CodeBlock(ex.Message))
+                        .Build());
+                }
             }
 
             return CommandSuccess();

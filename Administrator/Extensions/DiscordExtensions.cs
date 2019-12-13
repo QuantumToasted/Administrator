@@ -10,7 +10,7 @@ namespace Administrator.Extensions
         public static string Format(this IUser user, bool bold = true)
             => user is null
                 ? null
-                : $"{(bold ? Markdown.Bold(user.ToString().Sanitize()) : user.ToString().Sanitize())} (`{user.Id}`)";
+                : $"{(bold ? Markdown.Bold(user.Tag.Sanitize()) : user.Tag.Sanitize())} (`{user.Id}`)";
 
         public static string Format(this IRole role, bool bold = true)
             => role is null
@@ -37,7 +37,7 @@ namespace Administrator.Extensions
         public static CachedRole GetHighestRole(this CachedMember user)
             => user.Roles.Values.OrderByDescending(x => x.Position).First();
 
-        public static async ValueTask<IUser> GetOrDownloadUserAsync(this DiscordClient client, ulong id)
+        public static async ValueTask<IUser> GetOrDownloadUserAsync(this DiscordClientBase client, ulong id)
             => client.GetUser(id) ?? await client.GetUserAsync(id) as IUser;
     }
 }

@@ -58,7 +58,7 @@ namespace Administrator.Services
                     var builder = new LocalEmbedBuilder()
                         .WithSuccessColor()
                         .WithAuthor(_localization.Localize(user.Language, "highlight_trigger_author",
-                            message.Author.ToString(), message.Channel), message.Author.GetAvatarUrl())
+                            message.Author.Tag, message.Channel), message.Author.GetAvatarUrl())
                         .WithDescription(new StringBuilder()
                             .AppendLine(message.Content.TrimTo(LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH - 50))
                             .AppendLine()

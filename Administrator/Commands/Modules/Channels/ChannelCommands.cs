@@ -28,7 +28,7 @@ namespace Administrator.Commands
                 .WithSuccessColor()
                 .AddField(Localize("info_id"), channel.Id)
                 .AddField(Localize("info_created"), string.Join('\n', channel.Id.CreatedAt.ToString("g", Context.Language.Culture),
-                (DateTimeOffset.UtcNow - channel.Id.CreatedAt).HumanizeFormatted(Context, TimeUnit.Minute, true)));
+                (DateTimeOffset.UtcNow - channel.Id.CreatedAt).HumanizeFormatted(Localization, Context.Language, TimeUnit.Minute, true)));
 
             builder = channel switch
             {
@@ -41,7 +41,7 @@ namespace Administrator.Commands
                     .AddField(Localize("channel_info_slowmode"),
                         textChannel.Slowmode == 0
                             ? Localize("info_none")
-                            : TimeSpan.FromSeconds(textChannel.Slowmode).HumanizeFormatted(Context, TimeUnit.Second))
+                            : TimeSpan.FromSeconds(textChannel.Slowmode).HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                     .WithFooter(textChannel.Category is { }
                         ? Localize("channel_info_category_footer", textChannel.Category.Name.Sanitize())
                         : null),
@@ -51,7 +51,7 @@ namespace Administrator.Commands
                     .AddField(Localize("channel_info_voice_connected",
                             $"{voiceChannel.Members.Count}/{(voiceChannel.UserLimit == 0 ? "∞" : voiceChannel.UserLimit.ToString())}"),
                         voiceChannel.Members.Count > 0
-                            ? string.Join(", ", voiceChannel.Members.Values.Select(x => x.ToString().Sanitize()))
+                            ? string.Join(", ", voiceChannel.Members.Values.Select(x => x.Tag.Sanitize()))
                                 .TrimTo(1024, true)
                             : Localize("info_none"))
                     .WithFooter(voiceChannel.Category is { }

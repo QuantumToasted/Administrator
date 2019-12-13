@@ -60,7 +60,7 @@ namespace Administrator.Commands
         private async ValueTask<AdminCommandResult> BanUserAsync(IUser target, string reason, Warning source = null)
         {
             if (!(await Context.Guild.GetBanAsync(target.Id) is null))
-                return CommandErrorLocalized("moderation_alreadybanned", args: Markdown.Bold(target.ToString()));
+                return CommandErrorLocalized("moderation_alreadybanned", args: Markdown.Bold(target.Tag));
 
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             Ban ban = null;
@@ -128,7 +128,7 @@ namespace Administrator.Commands
         private async ValueTask<AdminCommandResult> TempbanUserAsync(IUser target, TimeSpan duration, string reason, Warning source = null)
         {
             if (!(await Context.Guild.GetBanAsync(target.Id) is null))
-                return CommandErrorLocalized("moderation_alreadybanned", args: Markdown.Bold(target.ToString()));
+                return CommandErrorLocalized("moderation_alreadybanned", args: Markdown.Bold(target.Tag));
 
             var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
             Ban ban = null;
@@ -163,14 +163,14 @@ namespace Administrator.Commands
                 args: new object[]
                 {
                     (ban is { } ? $"`[#{ban.Id}]` " : string.Empty) + target.Format(),
-                    duration.HumanizeFormatted(Context, TimeUnit.Second)
+                    duration.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second)
                 });
         }
 
         [Command("massban"), RunMode(RunMode.Parallel)]
         [RequireBotPermissions(Permission.BanMembers)]
         [RequireUserPermissions(Permission.BanMembers)]
-        public async ValueTask<AdminCommandResult> MassBanAsync(MassBan arguments = null)
+        public async ValueTask<AdminCommandResult> MassBanAsync([Remainder] MassBan arguments = null)
         {
             arguments ??= new MassBan {IsInteractive = false};
 
@@ -203,7 +203,7 @@ namespace Administrator.Commands
 
             var targetString = new StringBuilder()
                 .AppendLine()
-                .AppendJoin('\n', targets.Select(x => x.ToString()))
+                .AppendJoin('\n', targets.Select(x => x.Tag))
                 .ToString();
 
             var password = Guid.NewGuid().ToString()[..4];
@@ -277,7 +277,7 @@ namespace Administrator.Commands
                     await Context.Guild.BanMemberAsync(target.Id, arguments.Reason, 7);
                     await Context.Channel.SendMessageAsync(duration.HasValue
                         ? Localize("moderation_tempban", target.Format(),
-                            duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                            duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                         : Localize("moderation_ban", target.Format()));
                 }
 
@@ -343,7 +343,7 @@ namespace Administrator.Commands
                         await Context.Guild.BanMemberAsync(target.Id, arguments.Reason, 7);
                         await Context.Channel.SendMessageAsync(duration.HasValue
                             ? Localize("moderation_tempban", target.Format(),
-                                duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                                duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                             : Localize("moderation_ban", target.Format()));
                     }
                 }
@@ -449,7 +449,7 @@ namespace Administrator.Commands
                 ? CommandSuccessLocalized("moderation_mute_temporary", args: new object[]
                 {
                     (mute is { } ? $"`[#{mute.Id}]` " : string.Empty) + target.Format(),
-                    duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
+                    duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second)
                 })
                 : CommandSuccessLocalized("moderation_mute",
                     args: (mute is { } ? $"`[#{mute.Id}]` " : string.Empty) + target.Format());
@@ -492,7 +492,7 @@ namespace Administrator.Commands
                 channel ??= (CachedTextChannel) Context.Channel;
 
                 if (channel.Overwrites.Any(x => x.TargetId == target.Id))
-                    return CommandErrorLocalized("moderation_alreadyblocked", args: Markdown.Bold(target.ToString()));
+                    return CommandErrorLocalized("moderation_alreadyblocked", args: Markdown.Bold(target.Tag));
 
                 var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
                 Mute mute = null;
@@ -527,7 +527,7 @@ namespace Administrator.Commands
                     {
                         (mute is { } ? $"`[#{mute.Id}]` " : string.Empty) + target.Format(),
                         channel.Mention,
-                        duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
+                        duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second)
                     })
                     : CommandSuccessLocalized("moderation_block", args: new object[]
                     {
@@ -599,11 +599,11 @@ namespace Administrator.Commands
 
         private string FormatAuditLogReason(string reason, DateTimeOffset timestamp, IUser moderator)
             => new StringBuilder(reason ?? Context.Localize("punishment_noreason"))
-                .Append($" | {Context.Localize("punishment_moderator", moderator.ToString())}")
+                .Append($" | {Context.Localize("punishment_moderator", moderator.Tag)}")
                 .Append($" | {timestamp.ToString("g", Context.Language.Culture)} UTC")
                 .ToString();
 
-        private async ValueTask<List<IUser>> GetTargetsAsync(MassPunishment arguments)
+        private async Task<List<IUser>> GetTargetsAsync(MassPunishment arguments)
         {
             var targets = new List<IUser>();
             if (!string.IsNullOrWhiteSpace(arguments.RegexString))
@@ -642,7 +642,7 @@ namespace Administrator.Commands
                     return regex.IsMatch(target.Name) || regex.IsMatch(target.Name);
                 }
             }
-            else if (arguments.Targets?.Length > 0)
+            else if (arguments.Targets?.Count() > 0)
             {
                 foreach (var id in arguments.Targets)
                 {

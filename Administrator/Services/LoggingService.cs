@@ -8,7 +8,8 @@ using Disqord.Logging;
 
 namespace Administrator.Services
 {
-    public sealed class LoggingService : IService, IHandler<MessageLoggedEventArgs>
+    public sealed class LoggingService : IService,
+        IHandler<MessageLoggedEventArgs>
     {
         private const int PAD_LENGTH = 16;
         private readonly SemaphoreSlim _semaphore;
@@ -104,12 +105,9 @@ namespace Administrator.Services
             writer.WriteLine();
         }
 
-        Task IService.InitializeAsync()
-            => Task.CompletedTask;
-
         public Task HandleAsync(MessageLoggedEventArgs args)
         {
-            var obj = args.Exception ?? (object) args.Message;
+            var obj = args.Exception ?? (object)args.Message;
             return args.Severity switch
             {
                 LogMessageSeverity.Trace => LogVerboseAsync(obj, args.Source),
@@ -122,5 +120,8 @@ namespace Administrator.Services
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+
+        Task IService.InitializeAsync()
+            => Task.CompletedTask;
     }
 }

@@ -71,7 +71,7 @@ namespace Administrator.Services
                 if (guild.CurrentMember.Permissions.ViewAuditLog)
                 {
                     // TODO: Adjust delay if necessary.
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(1));
 
                     var logs = await guild.GetAuditLogsAsync<RestMemberBannedAuditLog>(5);
                     if (logs.OrderByDescending(x => x.Id).FirstOrDefault(x => x.TargetId == target.Id) is { } log)
@@ -121,7 +121,7 @@ namespace Administrator.Services
 
                 string reason = null;
                 // TODO: Adjust delay if necessary.
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                await Task.Delay(TimeSpan.FromSeconds(1));
 
                 var logs = await guild.GetAuditLogsAsync<RestMemberKickedAuditLog>(5);
                 if (logs.OrderByDescending(x => x.Id).FirstOrDefault(x => x.TargetId == target.Id) is { } log)
@@ -223,7 +223,7 @@ namespace Administrator.Services
                     punishment.Reason ?? _localization.Localize(language, "punishment_needsreason",
                         Markdown.Code(
                             $"{_config.DefaultPrefix}reason {punishment.Id} [{_localization.Localize(language, "title_reason").ToLower()}]")))
-                .WithFooter(_localization.Localize(language, "punishment_moderator", moderator.ToString()),
+                .WithFooter(_localization.Localize(language, "punishment_moderator", moderator.Tag),
                     moderator.GetAvatarUrl())
                 .WithTimestamp(punishment.CreatedAt);
 
@@ -289,7 +289,7 @@ namespace Administrator.Services
                     $"**{target}** (`{target.Id}`)"))
                 .AddField(_localization.Localize(language, "title_reason"),
                     punishment.RevocationReason ?? _localization.Localize(language, "punishment_noreason"))
-                .WithFooter(_localization.Localize(language, "punishment_moderator", moderator.ToString()),
+                .WithFooter(_localization.Localize(language, "punishment_moderator", moderator.Tag),
                     moderator.GetAvatarUrl())
                 .WithTimestamp(punishment.RevokedAt ?? DateTimeOffset.UtcNow);
 
@@ -433,9 +433,10 @@ namespace Administrator.Services
         {
             using var ctx = new AdminDatabaseContext(_provider);
 
-            if (await ctx.Punishments.OfType<Mute>().FirstOrDefaultAsync(x =>
+            var serverMuted = false;
+            foreach (var mute in ctx.Punishments.OfType<Mute>().Where(x =>
                 x.GuildId == args.Member.Guild.Id && x.TargetId == args.Member.Id && !x.IsExpired &&
-                !x.RevokedAt.HasValue) is { } mute)
+                !x.RevokedAt.HasValue))
             {
                 if (mute.ChannelId.HasValue)
                 {
@@ -445,9 +446,11 @@ namespace Administrator.Services
                     return;
                 }
 
-                if (await ctx.GetSpecialRoleAsync(args.Member.Guild.Id, RoleType.Mute) is { } muteRole)
+                if (!serverMuted && 
+                    await ctx.GetSpecialRoleAsync(args.Member.Guild.Id, RoleType.Mute) is { } muteRole)
                 {
                     await args.Member.GrantRoleAsync(muteRole.Id);
+                    serverMuted = true;
                 }
             }
         }

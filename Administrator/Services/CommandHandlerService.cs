@@ -120,7 +120,7 @@ namespace Administrator.Services
                         _ => argumentResult.Reason
                     });
                     break;
-                case ChecksFailedResult checkResult when checkResult.FailedChecks.OfType<RequireOwnerAttribute>().Any():
+                case ChecksFailedResult checkResult when checkResult.FailedChecks.Any(x => x.Check is RequireOwnerAttribute):
                     return null;
                 case ChecksFailedResult checkResult:
                     builder.AppendLine(context.Localize("commanderror_checks",
@@ -190,6 +190,8 @@ namespace Administrator.Services
             _commands.AddTypeParser(new ModuleParser());
             _commands.AddTypeParser(new LanguageParser());
             _commands.AddTypeParser(new EmojiParser());
+            _commands.AddTypeParser(new BackpackUserParser());
+            _commands.AddTypeParser(new SanitaryStringParser());
 
             // TODO: A better place to put this? A better way to do this?
             var set = new HashSet<string>();

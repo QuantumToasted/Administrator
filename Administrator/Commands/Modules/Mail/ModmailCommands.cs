@@ -54,7 +54,7 @@ namespace Administrator.Commands
                 {
                     IconUrl =
                         modmail.IsAnonymous ? Discord.GetDefaultUserAvatarUrl(Context.User.Discriminator) : Context.User.GetAvatarUrl(),
-                    Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString().Sanitize()
+                    Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.Tag.Sanitize()
                 })
                 .WithDescription(message)
                 .WithTitle(Context.Localize("modmail_title", modmail.Id))
@@ -120,7 +120,7 @@ namespace Administrator.Commands
                     {
                         IconUrl =
                             modmail.IsAnonymous ? Discord.GetDefaultUserAvatarUrl(Context.User.Discriminator) : Context.User.GetAvatarUrl(),
-                        Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.ToString().Sanitize()
+                        Name = modmail.IsAnonymous ? Context.Localize("modmail_anonymous") : Context.User.Tag.Sanitize()
                     })
                     .WithDescription(message)
                     .WithTitle(Context.Localize("modmail_title", modmail.Id))

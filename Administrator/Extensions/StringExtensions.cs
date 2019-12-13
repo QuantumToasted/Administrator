@@ -22,7 +22,7 @@ namespace Administrator.Extensions
                     return true;
                 case "jpeg":
                 case "jpg":
-                    format = ImageFormat.Png;
+                    format = ImageFormat.Jpg;
                     return true;
                 case "gif":
                     format = ImageFormat.Gif;

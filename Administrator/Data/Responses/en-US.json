@@ -54,7 +54,7 @@
     ],
     "requireusableemoji": [
       "I do not have access to this emoji, so I cannot use it."
-    ], 
+    ],
     "operator_greaterthan": [
       "The number supplied must be greater than {0}."
     ],
@@ -105,6 +105,9 @@
     ],
     "regexparser_invalid": [
       "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."
+    ],
+    "backpackuserparser_notfound": [
+      "The supplied Steam ID or profile link was invalid."
     ],
     "masspunishmentparser_errors": [
       "The mass punishment arguments were formatted incorrectly. Try using the --help argument."
@@ -562,6 +565,9 @@
     "info_created": [
       "Created"
     ],
+    "info_owner": [
+      "Owned by"
+    ], 
     "info_ago": [
       "{0} ago"
     ],
@@ -574,6 +580,12 @@
     "info_category": [
       "Category"
     ],
+    "info_content": [
+      "Content"
+    ],
+    "info_text": [
+      "Text"
+    ], 
     "info_jumpmessage": [
       "Click to jump"
     ],
@@ -588,6 +600,9 @@
     ],
     "info_timeout_password": [
       "You took too long to respond, or your password didn't match."
+    ],
+    "info_timeout": [
+      "You took too long to respond."
     ],
     "role_info_above_below": [
       "{0}/{1}, above {2} but below {3}"
@@ -737,7 +752,7 @@
       "Offline"
     ],
     "user_avatar": [
-      "{0}'s avatar:" 
+      "{0}'s avatar:"
     ],
     "user_search_no_results": [
       "No users could be found with a name similar to \"{0}\"."
@@ -811,6 +826,39 @@
     "info_help_multiple": [
       "Multiple commands were found with that name."
     ],
+    "info_stats_author": [
+      "{0}, built on {1}"
+    ],
+    "info_stats_uptime": [
+      "Uptime"
+    ],
+    "info_stats_presence": [
+      "Presence"
+    ],
+    "info_stats_presence_text": [
+      "Guilds: {0}\nText channels: {1}\nVoice channels: {2}\nTotal members: {3}"
+    ],
+    "info_stats_commands": [
+      "Commands executed"
+    ],
+    "info_stats_messages": [
+      "Messages received"
+    ],
+    "info_stats_messages_text": [
+      "{0} ({1} / second)"
+    ],
+    "info_stats_nerds": [
+      "Stats for nerds"
+    ],
+    "info_stats_memory": [
+      "Memory usage"
+    ],
+    "info_stats_megabytes": [
+      "{0}MB"
+    ],
+    "info_stats_created": [
+      "Created by {0}"
+    ],
     "guild_language": [
       "The server response language is currently set to {0}."
     ],
@@ -867,12 +915,54 @@
     ],
     "guild_emojis_list": [
       "Special emojis for {0}"
-    ], 
+    ],
     "guild_levelwhitelist": [
       "Custom level-up notifications for {0}:"
     ],
     "guild_levelwhitelist_set": [
       "New custom level-up notifications for {0}:"
+    ],
+    "guild_levelrewards_add_role": [
+      "New role level reward created. Use this command again to modify it."
+    ],
+    "guild_levelrewards_modify_role": [
+      "Choose whether to {0} or {1} a role."
+    ],
+    "guild_levelrewards_modify_role_success": [
+      "Role reward successfully modified."
+    ],
+    "guild_levelrewards_modify_role_add": [
+      "Input the role you wish to add."
+    ],
+    "guild_levelrewards_modify_role_remove": [
+      "Input the role you wish to remove."
+    ],
+    "guild_levelrewards_list_none": [
+      "You do not have any role rewards set up for this tier/level!"
+    ],
+    "guild_levelrewards_list": [
+      "Level rewards for {0}"
+    ],
+    "guild_levelrewards_remove": [
+      "All level rewards removed for this tier/level."
+    ],
+    "levelreward_role_addedroles": [
+      "Roles added:"
+    ],
+    "levelreward_role_removedroles": [
+      "Roles removed:"
+    ],
+    "levelreward_title": [
+      "Tier {0}, Level {1}"
+    ],
+    "guild_specialrole_none": [
+      "The {0} role has not been set up, or could not be found!"
+    ],
+    "guild_specialrole": [
+      "The {0} role is currently assigned to {1}."
+    ],
+    "guild_specialrole_set": [
+      "The {0} role is now assigned to {1}."
     ],
     "info_command_modmail": [
       "Open a new modmail thread."
@@ -1152,7 +1242,7 @@
     ],
     "channel_info_slowmode": [
       "Slowmode"
-    ], 
+    ],
     "channel_info_voice": [
       "Information for voice channel {0}"
     ],
@@ -1219,6 +1309,18 @@
     "channel_logging_appeal": [
       "Punishment appeals will now be logged in this channel."
     ],
+    "channel_logging_messagedelete": [
+      "Message deletions will now be logged in this channel."
+    ],
+    "channel_logging_messageupdate": [
+      "Message updates will now be logged in this channel."
+    ],
+    "channel_logging_join": [
+      "Users joining will now be logged in this channel."
+    ],
+    "channel_logging_leave": [
+      "Users leaving will now be logged in this channel."
+    ],
     "channel_logging_none": [
       "No events are currently configured to log in this channel."
     ],
@@ -1245,7 +1347,7 @@
     ],
     "reactionrole_add_maximum": [
       "This server has reached its maximum amount of available reaction roles ({0})."
-    ], 
+    ],
     "reactionrole_add": [
       "{0} Reaction role created. Users who react to message {1} in {2} with {3} receive the role {4}."
     ],
@@ -1254,6 +1356,111 @@
     ],
     "reactionrole_remove": [
       "Reaction role {0} successfully removed."
+    ],
+    "logging_message_delete": [
+      "Message deleted in {0}"
+    ],
+    "logging_message_delete_moderator": [
+      "Message deleted by {0} in {1}"
+    ],
+    "logging_message_update": [
+      "Message updeated in {0}"
+    ],
+    "logging_message_update_oldcontent": [
+      "Old content"
+    ],
+    "logging_message_update_newcontent": [
+      "New content"
+    ],
+    "logging_member_join": [
+      "User joined"
+    ],
+    "logging_member_left": [
+      "User left"
+    ],
+    "logging_membercount": [
+      "Current member count: {0}"
+    ],
+    "backpack_info_title": [
+      "{0}'s backpack.tf profile"
+    ],
+    "backpack_info_lastonline": [
+      "Last online"
+    ],
+    "backpack_info_flags": [
+      "User flags"
+    ],
+    "backpack_info_worth": [
+      "Inventory worth"
+    ],
+    "backpack_info_worth_text": [
+      "{0} keys ({1} refined metal, ${2} USD)"
+    ],
+    "backpack_info_donated": [
+      "Amount donated"
+    ],
+    "backpack_info_premiumgifts": [
+      "Months of premium gifted"
+    ],
+    "backpack_info_trust": [
+      "Trust score"
+    ],
+    "backpack_info_caution": [
+      "Take caution! This user may be banned or a scammer. Use {0} to view more info."
+    ],
+    "tag_list_none": [
+      "You don't have any tags in this server!"
+    ],
+    "tag_list_title": [
+      "Your tags in {0}"
+    ], 
+    "tag_info_uses": [
+      "Uses"
+    ],
+    "tag_notfound": [
+      "No tag could be found with that name."
+    ],
+    "tag_exists": [
+      "A tag already exists with that name!"
+    ],
+    "tag_noresponse": [
+      "A tag must have text, an image, or both as a response."
+    ], 
+    "tag_created": [
+      "Tag successfully created with the name \"{0}\""
+    ],
+    "tag_nopermission": [
+      "You don't have permission to remove another user's tag!"
+    ],
+    "tag_deleted": [
+      "Tag successfully deleted."
+    ],
+    "tag_search_none": [
+      "No tags could be found close to that input."
+    ],
+    "tag_search": [
+      "Closest matches for the tag name \"{0}\""
+    ],
+    "reminder_toolong": [
+      "A reminder duration must not exceed 10 years."
+    ],
+    "reminder_create": [
+      "{0} New reminder created."
+    ],
+    "reminder_list_none": [
+      "You don't have any reminders set here!"
+    ],
+    "reminder_list_title": [
+      "Your reminders"
+    ],
+    "reminder_delete_notfound": [
+      "No reminder could be found by that ID."
+    ],
+    "reminder_delete": [
+      "Reminder successfully deleted."
+    ],
+    "reminder_trigger": [
+      "Your reminder from {0}:" 
     ] 
   }
 }

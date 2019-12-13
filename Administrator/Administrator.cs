@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Administrator.Extensions;
 using Administrator.Services;
+using Backpack.Net;
 using Disqord;
 using FluentScheduler;
 using Qmmands;
+using SteamWebAPI2.Utilities;
 
 namespace Administrator
 {
@@ -18,10 +20,14 @@ namespace Administrator
             var config = ConfigurationService.Basic;
             var client = new DiscordClient(TokenType.Bot, config.DiscordToken,
                 new DiscordClientConfiguration {MessageCache = new DefaultMessageCache(100)});
+            var factory = new SteamWebInterfaceFactory(config.SteamApiKey); // TODO: Factory?
+            var backpackClient = new BackpackClient(config.BackpackApiKey);
 
             var provider = new ServiceCollection()
                 .AutoAddServices()
                 .AddSingleton(client)
+                .AddSingleton(factory)
+                .AddSingleton(backpackClient)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CancellationTokenSource>()
                 .AddSingleton<Random>()

@@ -13,6 +13,10 @@
         Modmail,
         Appeal,
         Suggestion,
-        SuggestionArchive // TODO: Better name?
+        SuggestionArchive, // TODO: Better name?
+        MessageDelete,
+        MessageUpdate,
+        Join,
+        Leave
     }
 }

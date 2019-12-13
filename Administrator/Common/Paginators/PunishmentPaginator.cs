@@ -129,7 +129,7 @@ namespace Administrator.Common
 
                     sb.AppendLine(_context.Localize("punishment_revoked") + ' ' + (revocable.RevokedAt.HasValue
                                       ? "✅ " + revocable.RevokedAt.Value.ToString("g", _context.Language.Culture) +
-                                        $" - {Markdown.Bold(revoker?.ToString() ?? "???")} - " +
+                                        $" - {Markdown.Bold(revoker?.Tag ?? "???")} - " +
                                         (revocable.RevocationReason?.TrimTo(920) ??
                                          _context.Localize("punishment_noreason"))
                                       : "❌"));
