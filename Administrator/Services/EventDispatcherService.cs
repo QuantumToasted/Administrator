@@ -77,6 +77,9 @@ namespace Administrator.Services
             _client.MemberBanned += EnqueueHandlers;
             _client.MemberLeft += EnqueueHandlers;
             _client.MemberJoined += EnqueueHandlers;
+            _client.MemberUpdated += EnqueueHandlers;
+            _client.UserUpdated += EnqueueHandlers;
+
             _commands.CommandExecuted += EnqueueHandlers;
             _commands.CommandExecutionFailed += EnqueueHandlers;
 

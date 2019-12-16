@@ -25,18 +25,6 @@ namespace Administrator.Commands.Reminders
             if (duration > TimeSpan.FromDays(365 * 10)) // 10 years, jesus christ
                 return CommandErrorLocalized("reminder_toolong");
 
-            if (duration < TimeSpan.FromSeconds(20))
-            {
-                await Task.Delay(duration);
-                return CommandSuccess(Localize("reminder_trigger",
-                    duration.HumanizeFormatted(Localization, Context.Language,
-                        TimeUnit.Second, true)), new LocalEmbedBuilder()
-                    .WithSuccessColor()
-                    .WithDescription(string.Join('\n',
-                        (text ?? string.Empty).TrimTo(LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH - 50),
-                        Markdown.Link(Localize("info_jumpmessage"), Context.Message.JumpUrl))).Build());
-            }
-
             var reminder = Context.Database.Reminders.Add(new Reminder(Context.User.Id, Context.Guild?.Id,
                 Context.Channel.Id, Context.Message.Id, text, duration)).Entity;
             await Context.Database.SaveChangesAsync();

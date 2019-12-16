@@ -567,7 +567,7 @@
     ],
     "info_owner": [
       "Owned by"
-    ], 
+    ],
     "info_ago": [
       "{0} ago"
     ],
@@ -585,7 +585,7 @@
     ],
     "info_text": [
       "Text"
-    ], 
+    ],
     "info_jumpmessage": [
       "Click to jump"
     ],
@@ -1216,6 +1216,102 @@
     "info_command_highlights_blacklist_remove": [
       "Remove a channel or user from your highlight blacklist."
     ],
+    "info_command_channel": [
+      "View info about a channel."
+    ],
+    "info_command_channel_rename": [
+      "Rename a channel."
+    ],
+    "info_command_channel_delete": [
+      "Delete a channel."
+    ],
+    "info_command_channel_logevents": [
+      "View events which are posted in the current text channel."
+    ],
+    "info_command_channel_logevent": [
+      "Enable an event to be posted in the current text channel."
+    ],
+    "info_command_channel_slowmode": [
+      "Set a channel's slowmode duration."
+    ],
+    "info_command_channel_create_text": [
+      "Create a new text, voice, or category channel."
+    ],
+    "info_command_guild_specialrole": [
+      "View or set a specific special role."
+    ],
+    "info_command_guild_specialemoji_set": [
+      "Set a specific special emoji for this server."
+    ],
+    "info_command_guild_specialemoji": [
+      "View currently set special emoji for this server."
+    ],
+    "info_command_guild_levelrewards": [
+      "View all currently set level rewards for this server."
+    ],
+    "info_command_guild_levelrewards_remove": [
+      "Remove all level rewards for a specific level."
+    ],
+    "info_command_guild_levelrewards_add_role": [
+      "Add a new role level rewards."
+    ],
+    "info_command_stats": [
+      "View stats about the bot."
+    ],
+    "info_command_modmail_channel": [
+      "View or set the modmail channel for this server."
+    ],
+    "info_command_eval": [
+      "Execute C# code."
+    ],
+    "info_command_forcestop": [
+      "Kill the bot."
+    ],
+    "info_command_role_mention": [
+      "Mention the specified role."
+    ],
+    "info_command_user_avatar": [
+      "View a user's avatar."
+    ],
+    "info_command_tag_list": [
+      "List all of your tags on this server."
+    ],
+    "info_command_tag": [
+      "Display a tag by name."
+    ],
+    "info_command_tag_create": [
+      "Create a new tag."
+    ],
+    "info_command_tag_info": [
+      "View an existing tag's info."
+    ],
+    "info_command_tag_delete": [
+      "Delete one of your tags, or another users' tag if you are a moderator."
+    ],
+    "info_command_tag_search": [
+      "Search for tags by name."
+    ],
+    "info_command_reminder": [
+      "Create a new reminder."
+    ],
+    "info_command_reminder_list": [
+      "List your current reminders."
+    ],
+    "info_command_reminder_delete": [
+      "Delete a reminder."
+    ],
+    "info_command_reactionrole_list": [
+      "List all reaction roles on this server."
+    ],
+    "info_command_reactionrole_add": [
+      "Add a new reaction role."
+    ],
+    "info_command_reactionrole_remove": [
+      "Delete a reaction role."
+    ],
+    "info_command_backpack": [
+      "Get a user's backpack.tf profile."
+    ],
     "owner_eval_inprogress": [
       "Evaluating code..."
     ],
@@ -1321,11 +1417,23 @@
     "channel_logging_leave": [
       "Users leaving will now be logged in this channel."
     ],
+    "channel_logging_usernameupdate": [
+      "Username updates will now be logged in this channel."
+    ],
+    "channel_logging_nicknameupdate": [
+      "Nickname updates will now be logged in this channel."
+    ],
+    "channel_logging_avatarupdate": [
+      "Avatar updates will now be logged in this channel."
+    ],
+    "channel_logging_userroleupdate": [
+      "User role updates will now be logged in this channel."
+    ],
     "channel_logging_none": [
       "No events are currently configured to log in this channel."
     ],
     "channel_logging_list": [
-      "The following events currently log in this channel:"
+      "The following events are currently logged in this channel:"
     ],
     "channel_slowmode_set_none": [
       "Slowmode has been disabled for {0}."
@@ -1381,6 +1489,42 @@
     "logging_membercount": [
       "Current member count: {0}"
     ],
+    "logging_member_nickname": [
+      "User nickname updated"
+    ],
+    "logging_member_prevnick": [
+      "Previous nickname"
+    ],
+    "logging_member_noprevnick": [
+      "(no previous nickname)"
+    ],
+    "logging_member_newnick": [
+      "New nickname"
+    ],
+    "logging_member_nonewnick": [
+      "(nickname was removed)"
+    ],
+    "logging_member_roleupdate": [
+      "User roles updated"
+    ],
+    "logging_member_addedroles": [
+      "Added roles"
+    ],
+    "logging_member_removedroles": [
+      "Removed roles"
+    ],
+    "logging_member_username": [
+      "User name updated"
+    ],
+    "logging_member_oldname": [
+      "Old username"
+    ],
+    "logging_member_newname": [
+      "New username"
+    ],
+    "logging_member_avatar": [
+      "User avatar updated"
+    ],
     "backpack_info_title": [
       "{0}'s backpack.tf profile"
     ],
@@ -1413,7 +1557,7 @@
     ],
     "tag_list_title": [
       "Your tags in {0}"
-    ], 
+    ],
     "tag_info_uses": [
       "Uses"
     ],
@@ -1425,7 +1569,7 @@
     ],
     "tag_noresponse": [
       "A tag must have text, an image, or both as a response."
-    ], 
+    ],
     "tag_created": [
       "Tag successfully created with the name \"{0}\""
     ],
@@ -1460,7 +1604,7 @@
       "Reminder successfully deleted."
     ],
     "reminder_trigger": [
-      "Your reminder from {0}:" 
-    ] 
+      "Your reminder from {0}:"
+    ]
   }
 }

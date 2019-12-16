@@ -37,7 +37,7 @@ namespace Administrator.Services
 
             if (user is null) // TODO: Remove after fix
             {
-                await _logging.LogErrorAsync($"User with ID {args.User.Id} was null for some reason.", "ReactionRoles");
+                await _logging.LogErrorAsync($"User with ID {args.User.Id} was null on reaction add.", "ReactionRoles");
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace Administrator.Services
 
             if (user is null) // TODO: Remove after fix
             {
-                await _logging.LogErrorAsync($"User with ID {args.User.Id} was null for some reason.", "ReactionRoles");
+                await _logging.LogErrorAsync($"User with ID {args.User.Id} was null on reaction remove.", "ReactionRoles");
                 return;
             }
 

@@ -31,7 +31,7 @@ namespace Administrator.Services
         {
             using var ctx = new AdminDatabaseContext(_provider);
             var now = DateTimeOffset.UtcNow;
-            foreach (var reminder in ctx.Reminders.Where(x => now <= x.Ending))
+            foreach (var reminder in ctx.Reminders.Where(x => now >= x.Ending))
             {
                 var user = await _client.GetOrDownloadUserAsync(reminder.AuthorId);
                 var language = reminder.GuildId.HasValue

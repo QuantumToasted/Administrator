@@ -55,6 +55,11 @@ namespace Administrator.Commands
             }
 
             [Command("punishments", "cases")]
+            public ValueTask<AdminCommandResult> ListPunishments(CachedMember member,
+                [MustBe(Operator.GreaterThan, 0)] int page = 1)
+                => ListPunishmentsAsync(member.Id, page);
+
+            [Command("punishments", "cases")]
             public async ValueTask<AdminCommandResult> ListPunishmentsAsync(ulong targetId,
                 [MustBe(Operator.GreaterThan, 0)] int page = 1)
             {

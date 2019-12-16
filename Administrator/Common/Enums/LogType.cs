@@ -17,6 +17,10 @@
         MessageDelete,
         MessageUpdate,
         Join,
-        Leave
+        Leave,
+        UsernameUpdate,
+        NicknameUpdate,
+        AvatarUpdate,
+        UserRoleUpdate
     }
 }

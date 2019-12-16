@@ -18,7 +18,9 @@ namespace Administrator.Services
         IHandler<MemberJoinedEventArgs>,
         IHandler<MessageDeletedEventArgs>,
         IHandler<MessageUpdatedEventArgs>,
-        IHandler<MessageReceivedEventArgs>
+        IHandler<MessageReceivedEventArgs>,
+        IHandler<MemberUpdatedEventArgs>,
+        IHandler<UserUpdatedEventArgs>
     {
         private readonly IServiceProvider _provider;
         private readonly HttpClient _http;
@@ -192,6 +194,97 @@ namespace Administrator.Services
                 _temporaryImages.TryAdd(message.Id, new LocalAttachment(stream, attachment.FileName.Replace("SPOILER_", "spoiled_")));
             }
             catch { /* ignored */ }
+        }
+
+        public async Task HandleAsync(MemberUpdatedEventArgs args)
+        {
+            var oldMember = args.OldMember;
+            var newMember = args.NewMember;
+
+            using var ctx = new AdminDatabaseContext(_provider);
+            var language = (await ctx.GetOrCreateGuildAsync(args.NewMember.Guild.Id)).Language;
+            var builder = new LocalEmbedBuilder()
+                .WithSuccessColor()
+                .WithDescription(newMember.Format(false))
+                .WithTimestamp(DateTimeOffset.UtcNow);
+
+            CachedTextChannel channel = null;
+
+            // nickname
+            if (!(newMember.Nick ?? string.Empty).Equals(oldMember.Nick ?? string.Empty,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                channel = await ctx.GetLoggingChannelAsync(oldMember.Guild.Id, LogType.NicknameUpdate);
+
+                builder.WithTitle(_localization.Localize(language, "logging_member_nickname"))
+                    .AddField(_localization.Localize(language, "logging_member_prevnick"),
+                        oldMember.Nick?.Sanitize() ??
+                        Markdown.Italics(_localization.Localize(language, "logging_member_noprevnick")))
+                    .AddField(_localization.Localize(language, "logging_member_newnick"), 
+                        newMember.Nick?.Sanitize() ??
+                        Markdown.Italics(_localization.Localize(language, "logging_member_nonewnick")));
+            }
+            // role update
+            else if (newMember.Roles.Count != oldMember.Roles.Count)
+            {
+                channel = await ctx.GetLoggingChannelAsync(oldMember.Guild.Id, LogType.UserRoleUpdate);
+                var removedRoles = oldMember.Roles.Values.Where(x => !newMember.Roles.ContainsKey(x.Id)).ToList();
+                var addedRoles = newMember.Roles.Values.Where(x => !oldMember.Roles.ContainsKey(x.Id)).ToList();
+
+                builder.WithTitle(_localization.Localize(language, "logging_member_roleupdate"));
+
+                if (addedRoles.Count > 0)
+                    builder.AddField(_localization.Localize(language, "logging_member_addedroles"),
+                        string.Join('\n', addedRoles.Select(x => x.Format(false))));
+
+                if (removedRoles.Count > 0)
+                    builder.AddField(_localization.Localize(language, "logging_member_removedroles"),
+                        string.Join('\n', removedRoles.Select(x => x.Format(false))));
+            }
+
+            if (channel is { })
+                await channel.SendMessageAsync(embed: builder.Build());
+        }
+
+        public async Task HandleAsync(UserUpdatedEventArgs args)
+        {
+            var oldUser = args.OldUser;
+            var newUser = args.NewUser;
+
+            using var ctx = new AdminDatabaseContext(_provider);
+            foreach (var guild in args.Client.Guilds.Values
+                .Where(x => x.Members.ContainsKey(args.NewUser.Id)))
+            {
+                var language = (await ctx.GetOrCreateGuildAsync(guild.Id)).Language;
+                var builder = new LocalEmbedBuilder()
+                    .WithSuccessColor()
+                    .WithDescription(newUser.Format(false))
+                    .WithTimestamp(DateTimeOffset.UtcNow);
+
+                CachedTextChannel channel = null;
+
+                // username
+                if (!newUser.Tag.Equals(oldUser.Tag, StringComparison.OrdinalIgnoreCase))
+                {
+                    channel = await ctx.GetLoggingChannelAsync(guild.Id, LogType.UsernameUpdate);
+                    builder.WithTitle(_localization.Localize(language, "logging_member_user"))
+                        .WithDescription(null)
+                        .AddField(_localization.Localize(language, "logging_member_oldname"), oldUser.Tag.Sanitize())
+                        .AddField(_localization.Localize(language, "logging_member_newname"), newUser.Tag.Sanitize());
+                }
+                // avatar
+                else if (!(newUser.AvatarHash ?? string.Empty).Equals(oldUser.AvatarHash ?? string.Empty,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    channel = await ctx.GetLoggingChannelAsync(guild.Id, LogType.AvatarUpdate);
+                    builder.WithTitle(_localization.Localize(language, "logging_member_avatar"))
+                        .WithThumbnailUrl(oldUser.GetAvatarUrl())
+                        .WithImageUrl(newUser.GetAvatarUrl());
+                }
+
+                if (channel is { })
+                    await channel.SendMessageAsync(embed: builder.Build());
+            }
         }
 
         Task IService.InitializeAsync()
