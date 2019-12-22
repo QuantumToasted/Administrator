@@ -275,13 +275,13 @@
       "Команда модераторов {0}"
     ],
     "modmail_channel_none": [
-      "The modmail channel has not been configured in this server."
+      "Канал мод-почты не был настроен на этом сервере."
     ],
     "modmail_channel": [
-      "New modmail messages are currently sent in {0}."
+      "Новые сообщения мод-почты на данный момент отправляются в {0}."
     ],
     "modmail_channel_set": [
-      "New modmail messages will now be sent in {0}."
+      "Теперь новые сообщения мод-почты будут отправляться в {0}."
     ],
     "moderation_alreadybanned": [
       "{0} уже был забанен!"
@@ -569,10 +569,10 @@
       "Нет"
     ],
     "info_category": [
-      "Category"
+      "Категория"
     ],
     "info_jumpmessage": [
-      "Click to jump"
+      "Нажмите, чтобы перейти к сообщению"
     ],
     "info_position": [
       "Позиция"
@@ -1043,175 +1043,175 @@
       "Очистить все текущие пользовательские префиксы бота."
     ],
     "highlight_list_none_global": [
-      "You don't have any global highlights set!"
+      "У вас нет глобальных выделений!"
     ],
     "highlight_list_none_server": [
-      "You don't have any highlights set in {0}!"
+      "У вас нет каких-либо упоминаний в {0}!"
     ],
     "highlight_list_global": [
-      "Your highlights for all servers:"
+      "Ваши упоминания на всех серверах:"
     ],
     "highlight_list_guild": [
-      "Your highlights for {0}:"
+      "Ваши упоминания на {0}:"
     ],
     "highlight_add_exists": [
-      "You already have a highlight for that!"
+      "У вас уже установлены упоминания для этого!"
     ],
     "highlight_add_global": [
-      "{0} New global highlight created."
+      "{0} Новое глобальное упоминание было создано."
     ],
     "highlight_add_guild": [
-      "{0} New highlight created for {1}."
+      "{0} Новое глобальное упоминание для {1} было создано."
     ],
     "highlight_blacklist_notmember": [
-      "You are not a member of that server, so you cannot blacklist that channel."
+      "Вы не являетесь участником этого сервера, поэтому вы не можете внести этот канал в черный список."
     ],
     "highlight_blacklist_add": [
-      "{0} will no longer trigger highlights for you."
+      "Упоминания в {0} больше не будут срабатывать."
     ],
     "highlight_blacklist_remove": [
-      "{0} will now trigger highlights for you again."
+      "Упоминания в {0} снова будут срабатывать."
     ],
     "highlight_blacklist": [
-      "Users and channels that will not trip your highlights:"
+      "Пользователи и каналы, упоминания для которых не будут работать:"
     ],
     "highlight_blacklist_empty": [
-      "Your highlight blacklist is empty!"
+      "Ваш чёрный список упоминаний пуст!"
     ],
     "highlight_remove_notfound": [
-      "You don't have a highlight matching that text here!"
+      "У вас нет упоминания, совпадающего с этим текстом!"
     ],
     "highlight_remove_global": [
-      "Global highlight removed."
+      "Глобальное упоминание удалено."
     ],
     "highlight_remove_guild": [
-      "Highlight removed from {0}."
+      "Упоминание удалено из {0}."
     ],
     "highlight_cleared": [
-      "Highlights cleared."
+      "Упоминания очищены."
     ],
     "highlight_trigger_text": [
-      "You've been highlighted in {0}!"
+      "Вы были упомянуты в {0}!"
     ],
     "highlight_trigger_author": [
-      "{0} - in {1}"
+      "{0} - в {1}"
     ],
     "info_command_highlights": [
-      "View your highlights for this server. If used in DMs, view your global highlights."
+      "Просмотреть ваши упоминания для этого сервера. Если используется в ЛС, просмотреть ваши глобальные упоминания."
     ],
     "info_command_highlights_add": [
-      "Add a new highlight."
+      "Добавить новое упоминание."
     ],
     "info_command_highlights_remove": [
-      "Remove an existing highlight."
+      "Удалить существующее упоминание."
     ],
     "info_command_highlights_clear": [
-      "Clear all highlights in this server. If used in DMs, clears all global highlights."
+      "Очистить все упоминания на этом сервере. Если используется в ЛС, очищает все глобальные подсказки."
     ],
     "info_command_highlights_blacklist": [
-      "View users and channels who will not trip your highlights."
+      "Просмотреть пользователей и каналы, которые не будут использовать ваши упоминания."
     ],
     "info_command_highlights_blacklist_add": [
-      "Add a channel or user to your highlight blacklist."
+      "Добавить канал или пользователя в ваш чёрный список."
     ],
     "info_command_highlights_blacklist_remove": [
-      "Remove a channel or user from your highlight blacklist."
+      "Удалить канал или пользователя из вашего черного списка упоминаний."
     ],
     "owner_eval_inprogress": [
-      "Evaluating code..."
+      "Исполнение кода..."
     ],
     "owner_eval_complete": [
-      "Code evalulation completed."
+      "Исполнение кода завершёно."
     ],
     "owner_eval_failed": [
-      "Code evalulation was unsuccessful."
+      "Не удалось успешно исполнить код."
     ],
     "owner_eval_errors": [
-      "Errors"
+      "Ошибки"
     ],
     "owner_eval_return": [
-      "Value returned"
+      "Возвращенное значение"
     ],
     "owner_eval_executiontime": [
-      "Execution time"
+      "Время выполнения"
     ],
     "owner_forcestop": [
-      "Shutting down."
+      "Завершение работы."
     ],
     "channel_info_text": [
-      "Information for text channel {0}"
+      "Информация о текстовом канале {0}"
     ],
     "channel_info_voice": [
-      "Information for voice channel {0}"
+      "Информация о голосовом канале {0}"
     ],
     "channel_info_voice_bitrate": [
-      "Bitrate"
+      "Битрейт"
     ],
     "channel_info_voice_connected": [
-      "Connected users ({0})"
+      "Подключенные пользователи ({0})"
     ],
     "channel_info_category": [
-      "Information for category channel {0}"
+      "Информация о канале-категории {0}"
     ],
     "channel_info_news": [
-      "Information for news channel {0}"
+      "Информация о канале новостей {0}"
     ],
     "channel_info_category_footer": [
-      "Category: {0}"
+      "Категория: {0}"
     ],
     "channel_info_category_channels": [
-      "Channels in this category"
+      "Каналы в этой категории"
     ],
     "channel_create_text": [
-      "Text channel {0} created!"
+      "Текстовый канал {0} создан!"
     ],
     "channel_create_news": [
-      "News channel {0} created!"
+      "Канал новостей {0} создан!"
     ],
     "channel_create_voice": [
-      "Voice channel {0} created!"
+      "Голосовой канал {0} создан!"
     ],
     "channel_create_category": [
-      "Category {0} created!"
+      "Категория {0} создана!"
     ],
     "channel_rename": [
-      "Channel successfully renamed."
+      "Канал успешно переименован."
     ],
     "channel_delete": [
-      "Channel successfully deleted."
+      "Канал успешно удален."
     ],
     "channel_logging_alldisabled": [
-      "All logging has been disabled in this channel."
+      "Все логи были отключены в этом канале."
     ],
     "channel_logging_ban": [
-      "Bans will now be logged in this channel."
+      "Баны теперь будут записаны в этом канале."
     ],
     "channel_logging_unban": [
-      "Unbans will now be logged in this channel."
+      "Разбаны теперь будут записаны в этом канале."
     ],
     "channel_logging_kick": [
-      "Kicks will now be logged in this channel."
+      "Кики теперь будут записаны в этом канале."
     ],
     "channel_logging_mute": [
-      "Mutes will now be logged in this channel."
+      "Заглушки теперь будут авторизованы в этом канале."
     ],
     "channel_logging_unmute": [
-      "Unmutes will now be logged in this channel."
+      "Размуты теперь будут записаны в этом канале."
     ],
     "channel_logging_warn": [
-      "Warnings will now be logged in this channel."
+      "Предупреждения теперь будут записаны в этом канале."
     ],
     "channel_logging_unwarn": [
-      "Revoked warnings will now be logged in this channel."
+      "Отмененные предупреждения теперь будут записаны в этом канале."
     ],
     "channel_logging_appeal": [
-      "Punishment appeals will now be logged in this channel."
+      "Апелляции наказаний теперь будут записаны на этом канале."
     ],
     "channel_logging_none": [
-      "No events are currently configured to log in this channel."
+      "На данный момент ни одно событие не настроено для записи в этом канале."
     ],
     "channel_logging_list": [
-      "The following events currently log in this channel:"
+      "Следующие события в настоящее время записываются в этом канале:"
     ]
   }
 }
