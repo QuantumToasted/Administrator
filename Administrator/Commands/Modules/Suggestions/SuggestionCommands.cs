@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
-using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Rest;
 using Qmmands;
+using Permission = Disqord.Permission;
 
 namespace Administrator.Commands
 {
@@ -27,58 +27,59 @@ namespace Administrator.Commands
                 LogType.Suggestion) is { } suggestionChannel))
                 return CommandErrorLocalized("suggestion_nochannel");
 
-            Stream stream = null;
-            string extension = null;
-            if (Context.Message.Attachments.FirstOrDefault(x => x.Filename.HasImageExtension()) is { } image)
+            var image = new MemoryStream();
+            var format = ImageFormat.Default;
+            if (Context.Message.Attachments.FirstOrDefault() is { } attachment &&
+                attachment.FileName.HasImageExtension(out format))
             {
-                stream = await Http.GetStreamAsync(image.Url);
-                extension = image.Filename.Split('.')[^1];
+                await using var stream = await Http.GetStreamAsync(attachment.Url);
+                await stream.CopyToAsync(image);
+                image.Seek(0, SeekOrigin.Begin);
             }
 
-            if (stream is null)
+            if (format == ImageFormat.Default)
             {
                 var match = StringExtensions.LazyImageLinkRegex.Match(text);
-                if (match.Success)
+                if (match.Success && match.Value.HasImageExtension(out format))
                 {
                     try
                     {
-                        stream = await Http.GetStreamAsync(match.Value);
-                        extension = match.Groups[2].Value;
+                        await using var stream = await Http.GetStreamAsync(match.Value);
+                        await stream.CopyToAsync(image);
+                        image.Seek(0, SeekOrigin.Begin);
                     }
                     catch { /* ignored */ }
                 }
             }
 
-            var suggestion = Context.Database.Suggestions.Add(new Suggestion(Context.Guild.Id, Context.User.Id, text))
+            var suggestion = Context.Database.Suggestions.Add(new Suggestion(Context.Guild.Id, Context.User.Id, text, image, format))
                 .Entity;
             await Context.Database.SaveChangesAsync();
 
-            var builder = new EmbedBuilder()
+            var builder = new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithAuthor(Context.User)
                 .WithDescription(text)
                 .WithFooter(Context.Localize("suggestion_id", suggestion.Id));
 
             RestUserMessage message;
-            if (!(stream is null))
+            if (format != ImageFormat.Default)
             {
-                using (stream)
-                {
-                    message = await suggestionChannel.SendFileAsync(stream, $"image.{extension}", string.Empty,
-                        embed: builder.WithImageUrl($"attachment://image.{extension}").Build());
-                }
+                message = await suggestionChannel.SendMessageAsync(new LocalAttachment(image, $"attachment.{format.ToString().ToLower()}"),
+                    embed: builder.WithImageUrl($"attachment://attachment.{format.ToString().ToLower()}").Build());
             }
             else
             {
                 message = await suggestionChannel.SendMessageAsync(embed: builder.Build());
             }
 
-            var upvote = (await Context.Database.SpecialEmotes.FindAsync(Context.Guild.Id, EmoteType.Upvote))?.Emote ??
-                         EmoteTools.Upvote;
-            var downvote = (await Context.Database.SpecialEmotes.FindAsync(Context.Guild.Id, EmoteType.Downvote))?.Emote ??
-                EmoteTools.Downvote;
+            var upvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Upvote))?.Emoji ??
+                         EmojiTools.Upvote;
+            var downvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Downvote))?.Emoji ??
+                EmojiTools.Downvote;
 
-            await message.AddReactionsAsync(new[] {upvote, downvote});
+            await message.AddReactionAsync(upvote);
+            await message.AddReactionAsync(downvote);
 
             suggestion.SetMessageId(message.Id);
             Context.Database.Suggestions.Update(suggestion);
@@ -88,8 +89,8 @@ namespace Administrator.Commands
             return CommandSuccessLocalized("suggestion_successful", args: suggestion.Id);
         }
 
-        [Command("remove", "rem", "rm")]
-        [RequireUserPermissions(GuildPermission.ManageMessages)]
+        [Command("remove")]
+        [RequireUserPermissions(Permission.ManageMessages)]
         public async ValueTask<AdminCommandResult> RemoveSuggestionAsync(int id)
         {
             var suggestion = await Context.Database.Suggestions.FindAsync(id);
@@ -112,7 +113,7 @@ namespace Administrator.Commands
         }
 
         [Command("approve", "deny"), RunMode(RunMode.Parallel)]
-        [RequireUserPermissions(GuildPermission.ManageMessages)]
+        [RequireUserPermissions(Permission.ManageMessages)]
         public async ValueTask<AdminCommandResult> ModifySuggestionAsync(int id, [Remainder] string reason = null)
         {
             var suggestion = await Context.Database.Suggestions.FindAsync(id);
@@ -123,7 +124,6 @@ namespace Administrator.Commands
                 archiveChannel))
                 return CommandErrorLocalized("suggestion_noarchive");
 
-            string url = null, extension = null;
             IUserMessage message = null;
             int upvotes = 0, downvotes = 0;
             if (await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Suggestion) is { }
@@ -133,39 +133,28 @@ namespace Administrator.Commands
                 {
                     message = (IUserMessage) await suggestionChannel.GetMessageAsync(suggestion.MessageId);
 
-                    var upvote = (await Context.Database.SpecialEmotes.FindAsync(Context.Guild.Id, EmoteType.Upvote))?.Emote ??
-                                 EmoteTools.Upvote;
-                    var downvote = (await Context.Database.SpecialEmotes.FindAsync(Context.Guild.Id, EmoteType.Downvote))?.Emote ??
-                                   EmoteTools.Downvote;
+                    var upvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Upvote))?.Emoji ??
+                                 EmojiTools.Upvote;
+                    var downvote = (await Context.Database.SpecialEmojis.FindAsync(Context.Guild.Id.RawValue, EmojiType.Downvote))?.Emoji ??
+                                   EmojiTools.Downvote;
 
-                    upvotes = Math.Max((await message.GetReactionUsersAsync(upvote, int.MaxValue).FlattenAsync()).Count() - 1,
-                            0);
-                    downvotes = Math.Max((await message.GetReactionUsersAsync(downvote, int.MaxValue).FlattenAsync()).Count() - 1,
-                            0);
-
-                    if (message.Attachments.FirstOrDefault() is { } image)
-                    { }
-
-                    if (message.Embeds.FirstOrDefault(x => x.Image.HasValue) is {} embed)
-                    {
-                        extension = embed.Image.Value.Url.Split('.')[^1];
-                        url = embed.Image.Value.Url;
-                    }
+                    upvotes = Math.Max((await message.GetReactionsAsync(upvote, int.MaxValue)).Count - 1, 0);
+                    downvotes = Math.Max((await message.GetReactionsAsync(downvote, int.MaxValue)).Count - 1, 0);
                 }
                 catch { /* ignored */ }
             }
 
             var author = await Context.Client.GetOrDownloadUserAsync(suggestion.UserId);
-            var builder = new EmbedBuilder()
+            var builder = new LocalEmbedBuilder()
                 .WithAuthor(Context.Localize(Context.Alias.Equals("approve")
                         ? "suggestion_approved_title"
-                        : "suggestion_denied_title", suggestion.Id, author.ToString(), upvotes, downvotes),
-                    author.GetAvatarOrDefault())
+                        : "suggestion_denied_title", suggestion.Id, author.Tag, upvotes, downvotes),
+                    author.GetAvatarUrl())
                 .WithDescription(suggestion.Text)
                 .WithFooter(Context.Localize(Context.Alias.Equals("approve")
                         ? "suggestion_approved_footer"
-                        : "suggestion_denied_footer", Context.User.ToString()),
-                    Context.User.GetAvatarOrDefault());
+                        : "suggestion_denied_footer", Context.User.Tag),
+                    Context.User.GetAvatarUrl());
             if (Context.Alias.Equals("approve"))
                 builder.WithSuccessColor();
             else builder.WithErrorColor();
@@ -173,13 +162,10 @@ namespace Administrator.Commands
             if (!string.IsNullOrWhiteSpace(reason))
                 builder.AddField(Context.Localize("title_reason"), reason);
 
-            if (!string.IsNullOrWhiteSpace(url))
+            if (suggestion.Format != ImageFormat.Default)
             {
-                using (var stream = await Http.GetStreamAsync(url))
-                {
-                    await archiveChannel.SendFileAsync(stream, $"image.{extension}", string.Empty,
-                        embed: builder.WithImageUrl($"attachment://image.{extension}").Build());
-                }
+                await archiveChannel.SendMessageAsync(new LocalAttachment(suggestion.Image, $"attachment.{suggestion.Format.ToString().ToLower()}"),
+                    embed: builder.WithImageUrl($"attachment://attachment.{suggestion.Format.ToString().ToLower()}").Build());
             }
             else
             {
@@ -196,10 +182,10 @@ namespace Administrator.Commands
         }
 
         [Command("channel")]
-        [RequireUserPermissions(GuildPermission.ManageGuild)]
-        public async ValueTask<AdminCommandResult> SetSuggestionChannel(SocketTextChannel newChannel)
+        [RequireUserPermissions(Permission.ManageGuild)]
+        public async ValueTask<AdminCommandResult> SetSuggestionChannel(CachedTextChannel newChannel)
         {
-            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, LogType.Suggestion) is { } channel)
+            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.Suggestion) is { } channel)
             {
                 channel.Id = newChannel.Id;
                 Context.Database.LoggingChannels.Update(channel);
@@ -215,7 +201,7 @@ namespace Administrator.Commands
         }
 
         [Command("channel")]
-        [RequireUserPermissions(GuildPermission.ManageGuild)]
+        [RequireUserPermissions(Permission.ManageGuild)]
         public async ValueTask<AdminCommandResult> GetSuggestionChannel()
         {
             if (!(await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Suggestion) is { } channel))
@@ -225,10 +211,10 @@ namespace Administrator.Commands
         }
 
         [Command("archive")]
-        [RequireUserPermissions(GuildPermission.ManageGuild)]
-        public async ValueTask<AdminCommandResult> SetSuggestionArchive(SocketTextChannel newChannel)
+        [RequireUserPermissions(Permission.ManageGuild)]
+        public async ValueTask<AdminCommandResult> SetSuggestionArchive(CachedTextChannel newChannel)
         {
-            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id, LogType.SuggestionArchive) is { } channel)
+            if (await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.SuggestionArchive) is { } channel)
             {
                 channel.Id = newChannel.Id;
                 Context.Database.LoggingChannels.Update(channel);
@@ -244,7 +230,7 @@ namespace Administrator.Commands
         }
 
         [Command("archive")]
-        [RequireUserPermissions(GuildPermission.ManageGuild)]
+        [RequireUserPermissions(Permission.ManageGuild)]
         public async ValueTask<AdminCommandResult> GetSuggestionArchive()
         {
             if (!(await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.SuggestionArchive) is { } channel))

@@ -7,30 +7,48 @@
     <StartupObject>Administrator.Program</StartupObject>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Migrations\20190508031924_Reset.cs" />
     <Compile Remove="Migrations\20190508031924_Reset.Designer.cs" />
     <Compile Remove="Migrations\20190508181419_Reset.cs" />
     <Compile Remove="Migrations\20190508181419_Reset.Designer.cs" />
+    <Compile Remove="Migrations\20191121014519_Disqord_Port.cs" />
+    <Compile Remove="Migrations\20191121014519_Disqord_Port.Designer.cs" />
+    <Compile Remove="Migrations\20191121021822_Disqord_Port.cs" />
+    <Compile Remove="Migrations\20191121021822_Disqord_Port.Designer.cs" />
+    <Compile Remove="Migrations\20191121032421_Disqord_Port.cs" />
+    <Compile Remove="Migrations\20191121032421_Disqord_Port.Designer.cs" />
+    <Compile Remove="Migrations\20191205041026_BackpackItemPrices.cs" />
+    <Compile Remove="Migrations\20191205041026_BackpackItemPrices.Designer.cs" />
+    <Compile Remove="Migrations\20191205041831_BackpackItemPrices.cs" />
+    <Compile Remove="Migrations\20191205041831_BackpackItemPrices.Designer.cs" />
+    <Compile Remove="Migrations\20191208075417_Tags.cs" />
+    <Compile Remove="Migrations\20191208075417_Tags.Designer.cs" />
+    <Compile Remove="Migrations\20191208175745_Tags.cs" />
+    <Compile Remove="Migrations\20191208175745_Tags.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Backpack.Net" Version="1.0.6" />
     <PackageReference Include="CommandLineParser" Version="2.6.0" />
-    <PackageReference Include="Discord.Net.Core" Version="2.2.0-dev-20191003.3" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.2.0-dev-20191003.3" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20191003.3" />
+    <PackageReference Include="Disqord" Version="1.0.0-nightly-00005" />
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="Humanizer" Version="2.7.9" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.3.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.0.1" />
-    <PackageReference Include="Qmmands" Version="3.0.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002988" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-dev002988" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
+    <PackageReference Include="Qmmands" Version="3.1.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev003195" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-dev003195" />
+    <PackageReference Include="SteamWebAPI2" Version="4.0.12" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,6 +80,12 @@
 
   <ItemGroup>
     <Folder Include="Data\Images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Administrator.Common.BuildDateAttribute">
+      <_Parameter1>$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties data_4responses_4en-us_1json__JsonSchema="http://json.schemastore.org/grunt-copy-task" /></VisualStudio></ProjectExtensions>

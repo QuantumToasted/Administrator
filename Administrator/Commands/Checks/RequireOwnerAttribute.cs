@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Administrator.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -10,9 +12,9 @@ namespace Administrator.Commands
         public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
-            var app = await context.Client.GetApplicationInfoAsync();
+            var config = context.ServiceProvider.GetRequiredService<ConfigurationService>();
 
-            return context.User.Id != app.Owner.Id
+            return !config.OwnerIds.Contains(context.User.Id)
                 ? CheckResult.Unsuccessful(context.Localize("requireowner"))
                 : CheckResult.Successful;
         }

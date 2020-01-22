@@ -97,7 +97,7 @@
     "guildparser_notfound": [
       "Сервер не найден."
     ],
-    "emoteparser_notfound": [
+    "emojiparser_notfound": [
       "Эмодзи не найден."
     ],
     "regexparser_invalid": [

@@ -3,13 +3,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
-using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Permission = Administrator.Database.Permission;
 
 namespace Administrator.Commands
 {
@@ -38,17 +37,17 @@ namespace Administrator.Commands
 
                 [Command]
                 public ValueTask<AdminCommandResult> AddPermission(string name,
-                    [Remainder, RequireHierarchy] SocketGuildUser user)
+                    [Remainder, RequireHierarchy] CachedMember user)
                     => AddPermissionAsync(name, Context.Path[1].Equals("enable"), PermissionFilter.User, user.Id);
 
                 [Command]
                 public ValueTask<AdminCommandResult> AddPermission(string name,
-                    [Remainder] SocketRole role)
+                    [Remainder] CachedRole role)
                     => AddPermissionAsync(name, Context.Path[1].Equals("enable"), PermissionFilter.Role, role.Id);
 
                 [Command]
                 public ValueTask<AdminCommandResult> AddPermission(string name,
-                    [Remainder] SocketTextChannel channel)
+                    [Remainder] CachedTextChannel channel)
                     => AddPermissionAsync(name, Context.Path[1].Equals("enable"), PermissionFilter.Channel, channel.Id);
             }
 
@@ -65,15 +64,15 @@ namespace Administrator.Commands
                             : PermissionFilter.Guild, null);
 
                 [Command]
-                public ValueTask<AdminCommandResult> AddPermission([Remainder, RequireHierarchy] SocketGuildUser user)
+                public ValueTask<AdminCommandResult> AddPermission([Remainder, RequireHierarchy] CachedMember user)
                     => AddPermissionAsync(null, Context.Path[1].Equals("enable"), PermissionFilter.User, user.Id);
 
                 [Command]
-                public ValueTask<AdminCommandResult> AddPermission([Remainder] SocketRole role)
+                public ValueTask<AdminCommandResult> AddPermission([Remainder] CachedRole role)
                     => AddPermissionAsync(null, Context.Path[1].Equals("enable"), PermissionFilter.Role, role.Id);
 
                 [Command]
-                public ValueTask<AdminCommandResult> AddPermission([Remainder] SocketTextChannel channel)
+                public ValueTask<AdminCommandResult> AddPermission([Remainder] CachedTextChannel channel)
                     => AddPermissionAsync(null, Context.Path[1].Equals("enable"), PermissionFilter.Channel, channel.Id);
             }
         }
@@ -111,7 +110,7 @@ namespace Administrator.Commands
                 PermissionFilter.Guild => Context.Guild.Name.Sanitize(),
                 PermissionFilter.Role => Context.Guild.GetRole(targetId.Value).Name.Sanitize(),
                 PermissionFilter.Channel => Context.Guild.GetTextChannel(targetId.Value).Mention,
-                PermissionFilter.User => Context.Guild.GetUser(targetId.Value)?.ToString().Sanitize() ?? "???",
+                PermissionFilter.User => Context.Guild.GetMember(targetId.Value)?.Tag.Sanitize() ?? "???",
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -129,16 +128,16 @@ namespace Administrator.Commands
                         ? "permissions_command_enabled"
                         : "permissions_command_disabled", args: new object[]
                     {
-                        Format.Code(permission.Name),
-                        Format.Bold(filterText)
+                        Markdown.Code(permission.Name),
+                        Markdown.Bold(filterText)
                     });
                 case PermissionType.Module:
                     return CommandSuccessLocalized(permission.IsEnabled
                         ? "permissions_module_enabled"
                         : "permissions_module_disabled", args: new object[]
                     {
-                        Format.Code(permission.Name),
-                        Format.Bold(filterText)
+                        Markdown.Code(permission.Name),
+                        Markdown.Bold(filterText)
                     });
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -156,7 +155,7 @@ namespace Administrator.Commands
                 return CommandErrorLocalized("permissions_none");
 
             var pages = DefaultPaginator.GeneratePages(permissions, lineFunc: Format,
-                builder: new EmbedBuilder()
+                builder: new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithTitle(Context.Localize("permissions_list", Context.Guild?.Name)));
 
@@ -183,7 +182,7 @@ namespace Administrator.Commands
                     {
                         PermissionFilter.Role => Context.Guild.GetRole(permission.TargetId.Value)?.Name.Sanitize() ?? "???",
                         PermissionFilter.Channel => Context.Guild.GetTextChannel(permission.TargetId.Value)?.Mention ?? "???",
-                        PermissionFilter.User => Context.Guild.GetUser(permission.TargetId.Value)?.ToString().Sanitize() ?? "???",
+                        PermissionFilter.User => Context.Guild.GetMember(permission.TargetId.Value)?.Tag.Sanitize() ?? "???",
                         _ => string.Empty
                     })
                     .Append('`');

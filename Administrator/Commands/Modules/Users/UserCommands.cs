@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Humanizer.Localisation;
 using Qmmands;
-using Color = Discord.Color;
 
-namespace Administrator.Commands.Modules.Users
+namespace Administrator.Commands
 {
     [Name("Users")]
     [Group("user")]
@@ -28,15 +26,17 @@ namespace Administrator.Commands.Modules.Users
 
         public HttpClient Http { get; set; }
 
+        public CommandHandlerService CommandHandler { get; set; }
+
         [Command("", "info")]
         [RequireContext(ContextType.Guild)]
-        public AdminCommandResult GetGuildUserInfo([Remainder] SocketGuildUser target = null)
-            => GetUserInfo(target ?? (SocketGuildUser) Context.User);
+        public AdminCommandResult GetGuildUserInfo([Remainder] CachedMember target = null)
+            => GetUserInfo(target ?? (CachedMember) Context.User);
 
         [Command("", "info")]
         public async ValueTask<AdminCommandResult> GetUserInfoAsync(ulong targetId)
         {
-            var target = await Context.Client.Rest.GetUserAsync(targetId);
+            var target = await Context.Client.GetUserAsync(targetId);
             return target is { }
                 ? GetUserInfo(target)
                 : CommandErrorLocalized("userparser_notfound");
@@ -44,24 +44,24 @@ namespace Administrator.Commands.Modules.Users
 
         private AdminCommandResult GetUserInfo(IUser target)
         {
-            var builder = new EmbedBuilder()
+            var builder = new LocalEmbedBuilder()
                 .WithTitle(Localize(target.IsBot ? "user_info_title_bot" : "user_info_title",
-                    target.ToString().Sanitize()))
+                    target.Tag.Sanitize()))
                 .AddField(Localize("info_id"), target.Id, true)
                 .AddField(Localize("info_mention"), target.Mention, true)
-                .WithThumbnailUrl(target.GetAvatarOrDefault(size: 256));
+                .WithThumbnailUrl(target.GetAvatarUrl(size: 256));
 
-            var guildTarget = target as SocketGuildUser;
+            var guildTarget = target as CachedMember;
             var isGuildTarget = guildTarget is { };
 
             if (isGuildTarget)
             {
-                var highestRole = guildTarget.GetHighestRole(x => x.Color != Color.Default);
+                var highestRole = guildTarget.GetHighestRole(x => x.Color.HasValue);
                 builder.WithColor(highestRole?.Color ?? Config.SuccessColor);
 
-                if (!string.IsNullOrWhiteSpace(guildTarget.Nickname))
+                if (!string.IsNullOrWhiteSpace(guildTarget.Nick))
                 {
-                    builder.AddField(Localize("user_info_nickname"), guildTarget.Nickname.Sanitize(), true);
+                    builder.AddField(Localize("user_info_nickname"), guildTarget.Nick.Sanitize(), true);
                 }
             }
             else
@@ -69,28 +69,24 @@ namespace Administrator.Commands.Modules.Users
                 builder.WithColor(Config.SuccessColor);
             }
 
-            builder.AddField(Localize("user_info_status"), Localize(target.Status switch
+            builder.AddField(Localize("user_info_status"), Localize(guildTarget?.Presence?.Status switch
             {
                 UserStatus.Online => "user_info_online",
                 UserStatus.Idle => "user_info_idle",
-                UserStatus.AFK => "user_info_idle",
                 UserStatus.DoNotDisturb => "user_info_dnd",
-                UserStatus.Invisible => "user_info_offline",
-                UserStatus.Offline => "user_info_offline",
-                _ => throw new ArgumentOutOfRangeException()
+                _ => "user_info_offline"
             }), true);
 
-            builder.AddField(Localize("user_info_created"), string.Join('\n', target.CreatedAt.ToString("g", Context.Language.Culture),
-                (DateTimeOffset.UtcNow - target.CreatedAt).HumanizeFormatted(Context, TimeUnit.Second, true)), true);
+            builder.AddField(Localize("user_info_created"), string.Join('\n', target.Id.CreatedAt.ToString("g", Context.Language.Culture),
+                (DateTimeOffset.UtcNow - target.Id.CreatedAt).HumanizeFormatted(Localization, Context.Language, TimeUnit.Second, true)), true);
 
             if (isGuildTarget)
             {
-                var joinedAt = guildTarget.JoinedAt ?? DateTimeOffset.UtcNow;
                 builder.AddField(Localize("user_info_joined", Context.Guild.Name), string.Join('\n',
-                    joinedAt.ToString("g", Context.Language.Culture),
-                    (DateTimeOffset.UtcNow - joinedAt).HumanizeFormatted(Context, TimeUnit.Second, true)), true);
+                    guildTarget.JoinedAt.ToString("g", Context.Language.Culture),
+                    (DateTimeOffset.UtcNow - guildTarget.JoinedAt).HumanizeFormatted(Localization, Context.Language, TimeUnit.Second, true)), true);
 
-                var roles = guildTarget.Roles.Where(x => !x.IsEveryone).OrderByDescending(x => x.Position).ToList();
+                var roles = guildTarget.Roles.Values.Where(x => !x.IsDefault).OrderByDescending(x => x.Position).ToList();
                 if (roles.Count > 0)
                 {
                     builder.AddField(Localize("user_info_roles", roles.Count),
@@ -98,34 +94,42 @@ namespace Administrator.Commands.Modules.Users
                 }
             }
 
-            if (target.Activity is { } activity)
+            switch (guildTarget?.Presence?.Activity)
             {
-                switch (activity)
-                {
-                    case RichGame richGame:
-                        var status = string.IsNullOrWhiteSpace(richGame.Details)
-                            ? richGame.Name
-                            : $"{richGame.Name} ({richGame.Details})";
-                        builder.WithFooter(Localize("user_info_playing", status), richGame.LargeAsset.GetImageUrl());
-                        break;
-                    case SpotifyGame spotify:
-                        builder.WithFooter(Localize("user_info_listening", spotify.TrackTitle, spotify.Artists.First()),
-                            spotify.AlbumArtUrl);
-                        break;
-                    case StreamingGame stream:
-                        builder.WithFooter(Localize("user_info_streaming", stream.Name, stream.Details),
-                            "https://i.imgur.com/e6JdpuP.png"); // twitch icon
-                        break;
-                    case Game game:
-                        status = string.IsNullOrWhiteSpace(game.Details)
-                            ? game.Name
-                            : $"{game.Name} ({game.Details})";
-                        builder.WithFooter(Localize("user_info_playing", status));
-                        break;
-                }
+                case CustomActivity customActivity:
+                    var status = string.IsNullOrWhiteSpace(customActivity.Text)
+                        ? customActivity.Name
+                        : $"{customActivity.Name} ({customActivity.Text})";
+                    builder.WithFooter(Localize("user_info_playing", status));
+                    break;
+                case RichActivity richActivity:
+                    status = string.IsNullOrWhiteSpace(richActivity.Details)
+                        ? richActivity.Name
+                        : $"{richActivity.Name} ({richActivity.Details})";
+                    builder.WithFooter(Localize("user_info_playing", status), richActivity.LargeAsset?.Url);
+                    break;
+                case SpotifyActivity spotifyActivity:
+                    builder.WithFooter(Localize("user_info_listening", spotifyActivity.TrackTitle, spotifyActivity.Artists.First()),
+                        spotifyActivity.AlbumCoverUrl);
+                    break;
+                case StreamingActivity streamingActivity:
+                    builder.WithFooter(Localize("user_info_streaming", streamingActivity.Name, streamingActivity.Url));
+                    break;
             }
 
             return CommandSuccess(embed: builder.Build());
+        }
+
+        [Command("avatar", "av"), RunMode(RunMode.Parallel)]
+        [RequireContext(ContextType.Guild)]
+        public async ValueTask<AdminCommandResult> GetUserAvatarAsync([Remainder] CachedUser target = null)
+        {
+            var user = await Context.Client.GetUserAsync((target ?? Context.User).Id);
+            using var _ = Context.Channel.Typing();
+            var avatarUrl = new Uri(user.GetAvatarUrl());
+            var stream = await Http.GetStreamAsync(avatarUrl);
+            return CommandSuccessLocalized("user_avatar", attachment: new LocalAttachment(stream, avatarUrl.LocalPath),
+                args: Markdown.Bold(user.Tag.Sanitize()));
         }
 
         [RequireContext(ContextType.Guild)]
@@ -135,78 +139,78 @@ namespace Administrator.Commands.Modules.Users
             public sealed class NicknameCommands : UserCommands
             {
                 [Command]
-                public AdminCommandResult GetNickname([Remainder] SocketGuildUser target)
+                public AdminCommandResult GetNickname([Remainder] CachedMember target)
                 {
-                    return string.IsNullOrWhiteSpace(target.Nickname)
-                        ? CommandSuccessLocalized("user_no_nickname", args: Format.Bold(target.ToString().Sanitize()))
+                    return string.IsNullOrWhiteSpace(target.Nick)
+                        ? CommandSuccessLocalized("user_no_nickname", args: Markdown.Bold(target.Tag.Sanitize()))
                         : CommandSuccessLocalized("user_nickname",
-                            args: new object[] { Format.Bold(target.ToString().Sanitize()), Format.Bold(target.Nickname.Sanitize()) });
+                            args: new object[] { Markdown.Bold(target.Tag.Sanitize()), Markdown.Bold(target.Nick.Sanitize()) });
                 }
 
                 [Command("set")]
-                [RequireUserPermissions(GuildPermission.ManageNicknames)]
-                [RequireBotPermissions(GuildPermission.ManageNicknames)]
-                public async ValueTask<AdminCommandResult> SetNicknameAsync([RequireHierarchy] SocketGuildUser target,
+                [RequireUserPermissions(Permission.ManageNicknames)]
+                [RequireBotPermissions(Permission.ManageNicknames)]
+                public async ValueTask<AdminCommandResult> SetNicknameAsync([RequireHierarchy] CachedMember target,
                     [Remainder, MustBe(StringLength.ShorterThan, 33)] string newNickname)
                 {
-                    await target.ModifyAsync(x => x.Nickname = newNickname);
+                    await target.ModifyAsync(x => x.Nick = newNickname);
                     return CommandSuccessLocalized("user_nickname_updated");
                 }
 
                 [Command("set")]
-                [RequireBotPermissions(GuildPermission.ManageNicknames)]
+                [RequireBotPermissions(Permission.ManageNicknames)]
                 public async ValueTask<AdminCommandResult> SetNicknameAsync(
                     [Remainder, MustBe(StringLength.ShorterThan, 33)] string newNickname)
                 {
-                    var target = (SocketGuildUser) Context.User;
-                    if (Context.Guild.CurrentUser.Hierarchy <= target.Hierarchy)
+                    var target = (CachedMember) Context.User;
+                    if (Context.Guild.CurrentMember.Hierarchy <= target.Hierarchy)
                         return CommandErrorLocalized("requirehierarchy_self");
 
-                    await target.ModifyAsync(x => x.Nickname = newNickname);
+                    await target.ModifyAsync(x => x.Nick = newNickname);
                     return CommandSuccessLocalized("user_nickname_updated");
                 }
 
                 [Command("reset")]
-                [RequireBotPermissions(GuildPermission.ManageNicknames)]
-                public async ValueTask<AdminCommandResult> SetNicknameAsync([RequireHierarchy] SocketGuildUser target)
+                [RequireBotPermissions(Permission.ManageNicknames)]
+                public async ValueTask<AdminCommandResult> SetNicknameAsync([RequireHierarchy] CachedMember target)
                 {
-                    await target.ModifyAsync(x => x.Nickname = string.Empty);
+                    await target.ModifyAsync(x => x.Nick = string.Empty);
                     return CommandSuccessLocalized("user_nickname_reset");
                 }
 
                 [Command("reset")]
-                [RequireBotPermissions(GuildPermission.ManageNicknames)]
+                [RequireBotPermissions(Permission.ManageNicknames)]
                 public async ValueTask<AdminCommandResult> SetNicknameAsync()
                 {
-                    var target = (SocketGuildUser)Context.User;
-                    if (Context.Guild.CurrentUser.Hierarchy <= target.Hierarchy)
+                    var target = (CachedMember)Context.User;
+                    if (Context.Guild.CurrentMember.Hierarchy <= target.Hierarchy)
                         return CommandErrorLocalized("requirehierarchy_self");
 
-                    await target.ModifyAsync(x => x.Nickname = string.Empty);
+                    await target.ModifyAsync(x => x.Nick = string.Empty);
                     return CommandSuccessLocalized("user_nickname_reset");
                 }
             }
 
             [Command("search"), RunMode(RunMode.Parallel)]
-            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
-            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
+            [RequireUserPermissions(Permission.ManageMessages, false, Group = "user")]
+            [RequireUserPermissions(Permission.ManageMessages, Group = "user")]
             public async ValueTask<AdminCommandResult> SearchUsersAsync(
                 [Remainder, MustBe(StringLength.ShorterThan, 33)] string input)
             {
                 // input = input.ToLower();
-                var matches = new List<ValueTuple<int, SocketGuildUser>>();
-                foreach (var user in Context.Guild.Users.Where(x => !string.IsNullOrWhiteSpace(x.Username)))
+                var matches = new List<ValueTuple<int, CachedMember>>();
+                foreach (var user in Context.Guild.Members.Values.Where(x => !string.IsNullOrWhiteSpace(x.Name)))
                 {
                     var nickDistance = int.MaxValue;
-                    if (!string.IsNullOrWhiteSpace(user.Nickname))
+                    if (!string.IsNullOrWhiteSpace(user.Nick))
                     {
-                        nickDistance = input.GetLevenshteinDistanceTo(user.Nickname.ToLower());
-                        if (user.Nickname.Contains(input, StringComparison.OrdinalIgnoreCase))
+                        nickDistance = input.GetLevenshteinDistanceTo(user.Nick.ToLower());
+                        if (user.Nick.Contains(input, StringComparison.OrdinalIgnoreCase))
                             nickDistance -= 6;
                     }
                     
-                    var nameDistance = input.GetLevenshteinDistanceTo(user.Username.ToLower());
-                    if (user.Username.Contains(input, StringComparison.OrdinalIgnoreCase))
+                    var nameDistance = input.GetLevenshteinDistanceTo(user.Name.ToLower());
+                    if (user.Name.Contains(input, StringComparison.OrdinalIgnoreCase))
                         nameDistance -= 8; // higher weighting for usernames
 
                     var distance = Math.Min(nameDistance, nickDistance);
@@ -220,7 +224,7 @@ namespace Administrator.Commands.Modules.Users
                 matches = matches.OrderBy(x => x.Item1).ToList();
 
                 var pages = DefaultPaginator.GeneratePages(matches, 1024, x => FormatUser(x.Item2),
-                    builder: new EmbedBuilder().WithSuccessColor().WithTitle(Localize("user_search_results", input)));
+                    builder: new LocalEmbedBuilder().WithSuccessColor().WithTitle(Localize("user_search_results", input)));
 
                 if (pages.Count > 1)
                 {
@@ -232,20 +236,20 @@ namespace Administrator.Commands.Modules.Users
             }
 
             [Command("searchregex"), RunMode(RunMode.Parallel)]
-            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
-            [RequireUserPermissions(ChannelPermission.ManageMessages, Group = "user")]
+            [RequireUserPermissions(Permission.ManageMessages, false, Group = "user")]
+            [RequireUserPermissions(Permission.ManageMessages, Group = "user")]
             public async ValueTask<AdminCommandResult> RegexSearchUsersAsync([Remainder] Regex regex)
             {
-                var matches = new List<SocketGuildUser>();
+                var matches = new List<CachedMember>();
                 var delay = Task.Delay(TimeSpan.FromSeconds(5));
                 var task = Task.Run(() =>
                 {
-                    matches = Context.Guild.Users.Where(MatchesRegex)
-                        .OrderByDescending(x => x.JoinedAt ?? DateTimeOffset.UtcNow)
+                    matches = Context.Guild.Members.Values.Where(MatchesRegex)
+                        .OrderByDescending(x => x.JoinedAt)
                         .ToList();
                 });
 
-                using var _ = Context.Channel.EnterTypingState();
+                using var _ = Context.Channel.Typing();
                 var timeoutTask = await Task.WhenAny(delay, task);
                 if (timeoutTask == delay)
                     return CommandErrorLocalized("user_searchregex_timeout");
@@ -253,7 +257,7 @@ namespace Administrator.Commands.Modules.Users
                 if (matches.Count == 0)
                     return CommandErrorLocalized("user_searchregex_no_results", args: regex.ToString());
 
-                var pages = DefaultPaginator.GeneratePages(matches, 1024, FormatUser, builder: new EmbedBuilder()
+                var pages = DefaultPaginator.GeneratePages(matches, 1024, FormatUser, builder: new LocalEmbedBuilder()
                     .WithSuccessColor().WithTitle(Localize("user_searchregex_results")));
 
                 if (pages.Count > 1)
@@ -264,34 +268,34 @@ namespace Administrator.Commands.Modules.Users
 
                 return CommandSuccess(embed: pages[0].Embed);
 
-                bool MatchesRegex(SocketGuildUser target)
+                bool MatchesRegex(CachedMember target)
                 {
-                    if (string.IsNullOrWhiteSpace(target.Username)) return false;
+                    if (string.IsNullOrWhiteSpace(target.Name)) return false;
 
-                    if (string.IsNullOrWhiteSpace(target.Nickname))
-                        return regex.IsMatch(target.Username);
+                    if (string.IsNullOrWhiteSpace(target.Nick))
+                        return regex.IsMatch(target.Name);
 
-                    return regex.IsMatch(target.Nickname) || regex.IsMatch(target.Username);
+                    return regex.IsMatch(target.Nick) || regex.IsMatch(target.Name);
                 }
             }
 
-            private string FormatUser(SocketGuildUser target)
+            private string FormatUser(CachedMember target)
             {
-                return string.IsNullOrWhiteSpace(target.Nickname)
+                return string.IsNullOrWhiteSpace(target.Nick)
                     ? target.Format()
-                    : Localize("user_search_format", Format.Bold(target.ToString().Sanitize()),
-                        Format.Bold(target.Nickname.Sanitize()),
-                        Format.Code(target.Id.ToString()));
+                    : Localize("user_search_format", Markdown.Bold(target.Tag.Sanitize()),
+                        Markdown.Bold(target.Nick.Sanitize()),
+                        Markdown.Code(target.Id.ToString()));
             }
         }
 
         [Command("xp"), RunMode(RunMode.Parallel)]
-        public async ValueTask<AdminCommandResult> GetUserXpAsync([Remainder] SocketGuildUser target = null)
+        public async ValueTask<AdminCommandResult> GetUserXpAsync([Remainder] CachedMember target = null)
         {
-            using var _ = Context.Channel.EnterTypingState();
+            using var _ = Context.Channel.Typing();
             var image = await Levels.CreateXpImageAsync(Context, target ?? Context.User);
 
-            return CommandSuccess(file: new MessageFile(image, "xp.png"));
+            return CommandSuccess(attachment: new LocalAttachment(image, "xp.png"));
         }
 
         [Command("language")]
@@ -299,7 +303,7 @@ namespace Administrator.Commands.Modules.Users
         {
             var user = await Context.Database.GetOrCreateGlobalUserAsync(Context.User.Id);
             return CommandSuccessLocalized("user_language", args:
-                $"{Format.Bold(user.Language.NativeName)} ({user.Language.EnglishName}, `{user.Language.CultureCode}`)");
+                $"{Markdown.Bold(user.Language.NativeName)} ({user.Language.EnglishName}, `{user.Language.CultureCode}`)");
         }
 
         [Command("language")]
@@ -310,17 +314,19 @@ namespace Administrator.Commands.Modules.Users
             Context.Database.GlobalUsers.Update(user);
             await Context.Database.SaveChangesAsync();
             Context.Language = newLanguage;
+            CommandHandler.UpdateLanguage(Context.User.Id, newLanguage);
 
             return CommandSuccessLocalized("user_language_set", args:
-                $"{Format.Bold(user.Language.NativeName)} ({user.Language.EnglishName}, `{user.Language.CultureCode}`)");
+                $"{Markdown.Bold(user.Language.NativeName)} ({user.Language.EnglishName}, `{user.Language.CultureCode}`)");
         }
 
         [Command("languages")]
+        [IgnoresExtraArguments]
         public AdminCommandResult GetLanguages()
             => CommandSuccess(new StringBuilder()
-                .AppendLine(Localize("available_languages"))
+                .AppendNewline(Localize("available_languages"))
                 .AppendJoin('\n',
                     Localization.Languages.Select(
-                        x => Format.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());
+                        x => Markdown.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());
     }
 }

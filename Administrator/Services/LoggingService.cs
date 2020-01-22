@@ -4,15 +4,18 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Disqord.Logging;
 
 namespace Administrator.Services
 {
-    public sealed class LoggingService : IService
+    public sealed class LoggingService : Service,
+        IHandler<MessageLoggedEventArgs>
     {
         private const int PAD_LENGTH = 16;
         private readonly SemaphoreSlim _semaphore;
 
-        public LoggingService()
+        public LoggingService(IServiceProvider provider)
+            : base(provider)
         {
             _semaphore = new SemaphoreSlim(1, 1);
         }
@@ -59,6 +62,25 @@ namespace Administrator.Services
             => Task.CompletedTask;
 #endif
 
+        public Task HandleAsync(MessageLoggedEventArgs args)
+        {
+            var obj = args.Exception ?? (object)args.Message;
+            return args.Severity switch
+            {
+                LogMessageSeverity.Trace => LogVerboseAsync(obj, args.Source),
+                LogMessageSeverity.Debug => LogVerboseAsync(obj, args.Source),
+                // LogMessageSeverity.Debug => LogDebugAsync(obj, args.Source), TODO: fuck Dispatch
+                LogMessageSeverity.Information => LogInfoAsync(obj, args.Source),
+                LogMessageSeverity.Warning => LogWarningAsync(obj, args.Source),
+                LogMessageSeverity.Error => LogErrorAsync(obj, args.Source),
+                LogMessageSeverity.Critical => LogCriticalAsync(obj, args.Source),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        public override Task InitializeAsync()
+            => Task.CompletedTask;
+
         private async Task LogMessageAsync(object value, string source, string level, ConsoleColor levelColor,
             ConsoleColor textColor)
         {
@@ -90,7 +112,7 @@ namespace Administrator.Services
                 Console.ForegroundColor = textColor;
                 Console.WriteLine(message);
             }
-            
+
             _semaphore.Release();
         }
 
@@ -102,8 +124,5 @@ namespace Administrator.Services
             writer.WriteLine($"[{now:g}|{source}]:{ex}");
             writer.WriteLine();
         }
-
-        Task IService.InitializeAsync()
-            => Task.CompletedTask;
     }
 }

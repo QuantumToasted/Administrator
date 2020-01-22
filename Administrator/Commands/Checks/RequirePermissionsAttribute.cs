@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Common;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
@@ -26,8 +25,8 @@ namespace Administrator.Commands
                 return CheckResult.Successful;
 
             var userId = context.User.Id;
-            var roleIds = (context.User as SocketGuildUser)?.Roles.Select(x => x.Id).ToList()
-                          ?? new List<ulong>();
+            var roleIds = (context.User as CachedMember)?.Roles.Keys.ToList()
+                          ?? new List<Snowflake>();
             var channelId = context.Channel.Id;
             var guildId = context.Guild?.Id;
             var commandName = context.Command.FullAliases[0];

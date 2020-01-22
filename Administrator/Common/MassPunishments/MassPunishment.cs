@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System.Collections.Generic;
+using CommandLine;
 
 namespace Administrator.Common
 {
@@ -11,7 +12,7 @@ namespace Administrator.Common
         public string RegexString { get; set; }
 
         [Option('t', "targets", Required = false, HelpText = "masspunishment_targets", SetName = "targets")]
-        public ulong[] Targets { get; set; }
+        public IEnumerable<ulong> Targets { get; set; }
 
         [Option('v', "verbose", Required = false, HelpText = "masspunishment_verbose", SetName = "verbose")]
         public bool IsVerbose { get; set; }

@@ -3,13 +3,14 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Administrator.Commands;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
+using Backpack.Net;
+using Disqord;
 using FluentScheduler;
 using Qmmands;
+using SteamWebAPI2.Utilities;
 
 namespace Administrator
 {
@@ -18,19 +19,19 @@ namespace Administrator
         public async Task InitializeAsync()
         {
             var config = ConfigurationService.Basic;
-            var restClient = new DiscordRestClient();
-            var client = new DiscordSocketClient(new DiscordSocketConfig
-            {
-                MessageCacheSize = 100,
-                LogLevel = LogSeverity.Info,
-                ExclusiveBulkDelete = true
-            });
+            var client = new DiscordClient(TokenType.Bot, config.DiscordToken,
+                new DiscordClientConfiguration {MessageCache = new DefaultMessageCache(100)});
+            var factory = new SteamWebInterfaceFactory(config.SteamApiKey); // TODO: Factory?
+            var backpackClient = new BackpackClient(config.BackpackApiKey);
+            var commands = new CommandService(new CommandServiceConfiguration
+                {CooldownProvider = new AdminCooldownProvider()});
 
             var provider = new ServiceCollection()
                 .AutoAddServices()
                 .AddSingleton(client)
-                .AddSingleton(restClient)
-                .AddSingleton<CommandService>()
+                .AddSingleton(factory)
+                .AddSingleton(backpackClient)
+                .AddSingleton(commands)
                 .AddSingleton<CancellationTokenSource>()
                 .AddSingleton<Random>()
                 .AddSingleton<Registry>()
@@ -38,17 +39,17 @@ namespace Administrator
                 .AddEntityFrameworkNpgsql()
                 .BuildServiceProvider();
 
-            await restClient.LoginAsync(TokenType.Bot,config.DiscordToken);
-            await provider.InitializeServicesAsync();
-            await client.LoginAsync(TokenType.Bot, config.DiscordToken);
-            await client.StartAsync();
-
             try
             {
-                await Task.Delay(-1, provider.GetRequiredService<CancellationTokenSource>().Token);
+                await provider.InitializeServicesAsync();
+                await client.RunAsync(provider.GetRequiredService<CancellationTokenSource>().Token);
             }
             catch (TaskCanceledException)
             { }
+            catch (Exception ex)
+            {
+                await provider.GetRequiredService<LoggingService>().LogCriticalAsync(ex, "Administrator");
+            }
         }
     }
 }

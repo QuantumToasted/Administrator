@@ -7,13 +7,13 @@ using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
-using Discord.Net;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Rest;
 using Humanizer;
 using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Permission = Disqord.Permission;
 
 namespace Administrator.Commands
 {
@@ -24,7 +24,7 @@ namespace Administrator.Commands
 
         public PunishmentService Punishments { get; set; }
 
-        [RequireUserPermissions(GuildPermission.ManageMessages)]
+        [RequireUserPermissions(Permission.ManageMessages)]
         public sealed class MainCommands : PunishmentCommands
         {
             [Command("punishments", "cases")]
@@ -50,8 +50,14 @@ namespace Administrator.Commands
                     return CommandSuccess();
                 }
 
-                return CommandSuccess(embed: firstPage.Embed.ToEmbedBuilder().WithFooter((string) null).Build());
+                // TODO: Empty footer?
+                return CommandSuccess(embed: firstPage.Embed);
             }
+
+            [Command("punishments", "cases")]
+            public ValueTask<AdminCommandResult> ListPunishments(CachedMember member,
+                [MustBe(Operator.GreaterThan, 0)] int page = 1)
+                => ListPunishmentsAsync(member.Id, page);
 
             [Command("punishments", "cases")]
             public async ValueTask<AdminCommandResult> ListPunishmentsAsync(ulong targetId,
@@ -76,7 +82,8 @@ namespace Administrator.Commands
                     return CommandSuccess();
                 }
 
-                return CommandSuccess(embed: firstPage.Embed.ToEmbedBuilder().WithFooter((string)null).Build());
+                // TODO: Empty footer?
+                return CommandSuccess(embed: firstPage.Embed);
             }
 
             [Command("punishment", "case")]
@@ -93,7 +100,7 @@ namespace Administrator.Commands
                 var target = await Context.Client.GetOrDownloadUserAsync(punishment.TargetId);
                 var moderator = await Context.Client.GetOrDownloadUserAsync(punishment.ModeratorId);
 
-                var builder = new EmbedBuilder()
+                var builder = new LocalEmbedBuilder()
                     .WithSuccessColor()
                     .WithTitle(Context.Localize($"punishment_{punishment.GetType().Name.ToLower()}") +
                                $" - {Context.Localize("punishment_case", punishment.Id)}")
@@ -109,7 +116,7 @@ namespace Administrator.Commands
                     case Ban ban:
                         builder.AddField(Context.Localize("punishment_duration"),
                             ban.Duration.HasValue
-                                ? ban.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
+                                ? ban.Duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second)
                                 : Context.Localize("punishment_permanent"));
                         break;
                     case Mute mute:
@@ -120,7 +127,7 @@ namespace Administrator.Commands
                         }
                         builder.AddField(Context.Localize("punishment_duration"),
                             mute.Duration.HasValue
-                                ? mute.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second)
+                                ? mute.Duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second)
                                 : Context.Localize("punishment_permanent"));
                         break;
                     case Warning warning when warning.SecondaryPunishmentId.HasValue:
@@ -143,16 +150,23 @@ namespace Administrator.Commands
                         : default;
 
                     builder.AddField(Context.Localize("punishment_revoked"), revocable.RevokedAt.HasValue
-                        ? "✅ " + revocable.RevokedAt.Value.ToString("g", Context.Language.Culture) + $" - {Format.Bold(revoker?.ToString() ?? "???")} - " +
+                        ? "✅ " + revocable.RevokedAt.Value.ToString("g", Context.Language.Culture) + $" - {Markdown.Bold(revoker?.Tag ?? "???")} - " +
                           (revocable.RevocationReason?.TrimTo(920) ?? Context.Localize("punishment_noreason"))
                         : "❌");
+                }
+
+                if (punishment.Format != ImageFormat.Default)
+                {
+                    builder.WithImageUrl($"attachment://attachment.{punishment.Format.ToString().ToLower()}");
+                    return CommandSuccess(embed: builder.Build(), attachment: new LocalAttachment(punishment.Image,
+                        $"attachment.{punishment.Format.ToString().ToLower()}"));
                 }
 
                 return CommandSuccess(embed: builder.Build());
             }
 
             [Command("revoke")]
-            [RequireBotPermissions(GuildPermission.BanMembers | GuildPermission.ManageRoles)]
+            [RequireBotPermissions(Permission.BanMembers | Permission.ManageRoles)]
             public async ValueTask<AdminCommandResult> RevokePunishmentAsync([MustBe(Operator.GreaterThan, 0)] int id,
                 [Remainder] string reason = null)
             {
@@ -172,57 +186,53 @@ namespace Administrator.Commands
                 await Context.Database.SaveChangesAsync();
 
                 var key = "punishment_revoked_success";
-                LogType type;
                 switch (punishment)
                 {
                     case Ban _:
-                        type = LogType.Unban;
                         try
                         {
-                            await Context.Guild.RemoveBanAsync(punishment.TargetId);
+                            await Context.Guild.UnbanMemberAsync(punishment.TargetId);
                         }
-                        catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.Forbidden)
+                        catch (DiscordHttpException ex) when (ex.HttpStatusCode == HttpStatusCode.Forbidden)
                         {
                             key = "punishment_revoked_nounban";
                         }
                         break;
                     case Mute mute:
-                        type = LogType.Unmute;
-                        if (!(Context.Guild.GetUser(punishment.TargetId) is SocketGuildUser target))
+                        if (!(Context.Guild.GetMember(punishment.TargetId) is CachedMember target))
                             break;
                         if (mute.ChannelId.HasValue)
                         {
                             var channel = Context.Guild.GetTextChannel(mute.ChannelId.Value);
-                            if (!channel.PermissionOverwrites.Any(x =>
-                                x.TargetId == punishment.TargetId && x.Permissions.SendMessages == PermValue.Deny &&
-                                x.Permissions.AddReactions == PermValue.Deny))
+                            if (!channel.Overwrites.Any(x =>
+                                x.TargetId == punishment.TargetId && x.Permissions.Denied.SendMessages &&
+                                x.Permissions.Denied.AddReactions))
                             {
                                 key = "punishment_revoked_nounmute";
                                 break;
                             }
 
-                            await channel.RemovePermissionOverwriteAsync(target);
+                            await channel.DeleteOverwriteAsync(target.Id);
                             if (mute.PreviousChannelAllowValue.HasValue)
                             {
-                                await channel.AddPermissionOverwriteAsync(target, new OverwritePermissions(
-                                    mute.PreviousChannelAllowValue.Value,
-                                    mute.PreviousChannelDenyValue.Value));
+                                await channel.AddOrModifyOverwriteAsync(new LocalOverwrite(target,
+                                    new OverwritePermissions(mute.PreviousChannelAllowValue.Value,
+                                        mute.PreviousChannelDenyValue.Value)));
                             }
                             break;
                         }
 
                         var muteRole = await Context.Database.GetSpecialRoleAsync(Context.Guild.Id, RoleType.Mute);
                         if (muteRole is null) break;
-                        await target.RemoveRoleAsync(muteRole);
+                        await target.RevokeRoleAsync(muteRole.Id);
                         break;
                     case Warning _:
-                        type = LogType.Unwarn;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
 
-                if (await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, type) is SocketTextChannel logChannel)
+                if (await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Revoke) is CachedTextChannel logChannel)
                 {
                     var target = await Context.Client.GetOrDownloadUserAsync(punishment.TargetId);
                     var moderator = await Context.Client.GetOrDownloadUserAsync(punishment.RevokerId);
@@ -252,7 +262,7 @@ namespace Administrator.Commands
                 Context.Database.Punishments.Update(punishment);
                 await Context.Database.SaveChangesAsync();
 
-                if (!(Context.Guild.GetTextChannel(punishment.LogMessageChannelId) is SocketTextChannel channel) ||
+                if (!(Context.Guild.GetTextChannel(punishment.LogMessageChannelId) is CachedTextChannel channel) ||
                     !(await channel.GetMessageAsync(punishment.LogMessageId) is IUserMessage message))
                 {
                     return CommandSuccess(string.Join('\n', Context.Localize("punishment_reason_success"), Context.Localize("punishment_reason_missingmessage")));
@@ -260,7 +270,7 @@ namespace Administrator.Commands
 
                 await message.ModifyAsync(x =>
                 {
-                    var builder = message.Embeds.First().ToEmbedBuilder();
+                    var builder = LocalEmbedBuilder.FromEmbed(message.Embeds[0]);
                     var field = builder.Fields.FirstOrDefault(y => y.Name.Equals(Context.Localize("title_reason")));
                     if (!(field is null))
                     {
@@ -281,7 +291,7 @@ namespace Administrator.Commands
             [Command("warningpunishment", "warnp")]
             public async ValueTask<AdminCommandResult> GetWarningPunishmentAsync([MustBe(Operator.GreaterThan, 0)] int count)
             {
-                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id, count) is WarningPunishment
+                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id.RawValue, count) is WarningPunishment
                     punishment))
                     return CommandErrorLocalized("warningpunishment_notfound_count", args: count.ToOrdinalWords(Context.Language.Culture));
 
@@ -291,7 +301,7 @@ namespace Administrator.Commands
                     case PunishmentType.Mute:
                         text = punishment.Duration.HasValue
                             ? Context.Localize("warningpunishment_mute_duration",
-                                punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                                punishment.Duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                             : Context.Localize("punishment_mute").ToLower();
                         break;
                     case PunishmentType.Kick:
@@ -300,7 +310,7 @@ namespace Administrator.Commands
                     case PunishmentType.Ban:
                         text = punishment.Duration.HasValue
                             ? Context.Localize("warningpunishment_ban_duration",
-                                punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                                punishment.Duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                             : Context.Localize("punishment_ban").ToLower();
                         break;
                     default:
@@ -314,7 +324,7 @@ namespace Administrator.Commands
             public async ValueTask<AdminCommandResult> SetWarningPunishmentAsync([MustBe(Operator.GreaterThan, 0)] int count,
                 PunishmentType type, TimeSpan? duration = null)
             {
-                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id, count) is WarningPunishment
+                if (!(await Context.Database.WarningPunishments.FindAsync(Context.Guild.Id.RawValue, count) is WarningPunishment
                     punishment))
                 {
                     Context.Database.WarningPunishments.Add(new WarningPunishment(Context.Guild.Id, count, type, duration));
@@ -334,7 +344,7 @@ namespace Administrator.Commands
                     case PunishmentType.Mute:
                         text = duration.HasValue
                             ? Context.Localize("warningpunishment_mute_duration",
-                                duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                                duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                             : Context.Localize("punishment_mute").ToLower();
                         break;
                     case PunishmentType.Kick:
@@ -343,7 +353,7 @@ namespace Administrator.Commands
                     case PunishmentType.Ban:
                         text = duration.HasValue
                             ? Context.Localize("warningpunishment_ban_duration",
-                                duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                                duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                             : Context.Localize("punishment_ban").ToLower();
                         break;
                     default:
@@ -362,7 +372,7 @@ namespace Administrator.Commands
                 if (punishments.Count == 0)
                     return CommandErrorLocalized("warningpunishments_none");
 
-                var builder = new EmbedBuilder()
+                var builder = new LocalEmbedBuilder()
                     .WithSuccessColor()
                     .WithTitle(Context.Localize("warningpunishments_title", Context.Guild.Name));
 
@@ -377,7 +387,7 @@ namespace Administrator.Commands
                         case PunishmentType.Mute:
                             text = punishment.Duration.HasValue
                                 ? Context.Localize("warningpunishment_mute_duration",
-                                    punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                                    punishment.Duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                                 : Context.Localize("punishment_mute").ToLower(Context.Language.Culture);
                             break;
                         case PunishmentType.Kick:
@@ -386,14 +396,14 @@ namespace Administrator.Commands
                         case PunishmentType.Ban:
                             text = punishment.Duration.HasValue
                                 ? Context.Localize("warningpunishment_ban_duration",
-                                    punishment.Duration.Value.HumanizeFormatted(Context, TimeUnit.Second))
+                                    punishment.Duration.Value.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
                                 : Context.Localize("punishment_ban").ToLower(Context.Language.Culture);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
 
-                    sb.AppendLine(char.ToUpper(text[0], Context.Language.Culture) + text[1..]);
+                    sb.AppendNewline(char.ToUpper(text[0], Context.Language.Culture) + text[1..]);
                 }
 
                 builder.WithDescription(sb.ToString());

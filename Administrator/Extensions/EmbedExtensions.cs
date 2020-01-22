@@ -1,5 +1,6 @@
-﻿using Administrator.Services;
-using Discord;
+﻿using Administrator.Common.LocalizedEmbed;
+using Administrator.Services;
+using Disqord;
 
 namespace Administrator.Extensions
 {
@@ -7,13 +8,22 @@ namespace Administrator.Extensions
     {
         private static readonly ConfigurationService Config = ConfigurationService.Basic;
 
-        public static EmbedBuilder WithSuccessColor(this EmbedBuilder builder)
+        public static LocalEmbedBuilder WithSuccessColor(this LocalEmbedBuilder builder)
             => builder.WithColor(Config.SuccessColor);
 
-        public static EmbedBuilder WithWarnColor(this EmbedBuilder builder)
+        public static LocalEmbedBuilder WithWarnColor(this LocalEmbedBuilder builder)
             => builder.WithColor(Config.WarnColor);
 
-        public static EmbedBuilder WithErrorColor(this EmbedBuilder builder)
+        public static LocalEmbedBuilder WithErrorColor(this LocalEmbedBuilder builder)
+            => builder.WithColor(Config.ErrorColor);
+
+        public static LocalizedEmbedBuilder WithSuccessColor(this LocalizedEmbedBuilder builder)
+            => builder.WithColor(Config.SuccessColor);
+
+        public static LocalizedEmbedBuilder WithWarnColor(this LocalizedEmbedBuilder builder)
+            => builder.WithColor(Config.WarnColor);
+
+        public static LocalizedEmbedBuilder WithErrorColor(this LocalizedEmbedBuilder builder)
             => builder.WithColor(Config.ErrorColor);
     }
 }

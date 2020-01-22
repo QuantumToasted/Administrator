@@ -1,12 +1,13 @@
 ﻿using System;
-using Discord;
+using System.IO;
+using Disqord;
 
 namespace Administrator.Database
 {
     public sealed class Mute : RevocablePunishment
     {
-        public Mute(ulong guildId, ulong targetId, ulong moderatorId, string reason, TimeSpan? duration, ulong? channelId)
-            : base(guildId, targetId, moderatorId, reason, !duration.HasValue)
+        public Mute(ulong guildId, ulong targetId, ulong moderatorId, string reason, TimeSpan? duration, ulong? channelId, MemoryStream image = null, ImageFormat format = ImageFormat.Default)
+            : base(guildId, targetId, moderatorId, reason, !duration.HasValue, image, format)
         {
             Duration = duration;
             ChannelId = channelId;
@@ -18,10 +19,10 @@ namespace Administrator.Database
 
         public ulong? ChannelId { get; set; }
 
-        public void StoreOverwrite(Overwrite overwrite)
+        public void StoreOverwrite(CachedOverwrite overwrite)
         {
-            PreviousChannelAllowValue = overwrite.Permissions.AllowValue;
-            PreviousChannelDenyValue = overwrite.Permissions.DenyValue;
+            PreviousChannelAllowValue = overwrite.Permissions.Allowed.RawValue;
+            PreviousChannelDenyValue = overwrite.Permissions.Denied.RawValue;
         }
 
         public ulong? PreviousChannelAllowValue { get; set; }

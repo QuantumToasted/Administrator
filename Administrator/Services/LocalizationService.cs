@@ -5,19 +5,21 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Administrator.Services
 {
-    public sealed class LocalizationService : IService
+    public sealed class LocalizationService : Service
     {
         private readonly LoggingService _logging;
         private readonly Random _random;
 
-        public LocalizationService(LoggingService logging, Random random)
+        public LocalizationService(IServiceProvider provider)
+            : base(provider)
         {
-            _logging = logging;
-            _random = random;
+            _logging = _provider.GetRequiredService<LoggingService>();
+            _random = _provider.GetRequiredService<Random>();
             Languages = new List<LocalizedLanguage>();
         }
 
@@ -75,7 +77,10 @@ namespace Administrator.Services
             return Localize(Languages.First(x => x.CultureCode.Equals("en-US")), key, args);
         }
 
-        Task IService.InitializeAsync()
-            => ReloadAsync();
+        public override async Task InitializeAsync()
+        {
+            await ReloadAsync();
+            await base.InitializeAsync();
+        }
     }
 }

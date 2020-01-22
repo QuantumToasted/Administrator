@@ -5,49 +5,17 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Database;
-using Discord;
-using Discord.Rest;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Administrator.Services
 {
-    public sealed class ConfigurationService : IService
+    public sealed class ConfigurationService : Service
     {
-        private readonly DiscordRestClient _restClient;
+        private readonly DiscordClient _client;
         private readonly LoggingService _logging;
-        
-        public ConfigurationService(DiscordRestClient restClient, LoggingService logging)
-        {
-            _restClient = restClient;
-            _logging = logging;
-        }
-
-        public const string SUPPORT_GUILD = @"https://discord.gg/rTvGube";
-
-        [JsonProperty("token")]
-        public string DiscordToken { get; private set; }
-        
-        [JsonProperty("prefix")]
-        public string DefaultPrefix { get; private set; }
-
-        [JsonProperty("connectionString")]
-        public string PostgresConnectionString { get; private set; }
-        
-        [JsonProperty("owners")]
-        public ICollection<ulong> OwnerIds { get; private set; }
-
-        [JsonProperty("emoteServers")]
-        public ICollection<ulong> EmoteServerIds { get; private set; }
-
-        [JsonIgnore]
-        public Color SuccessColor => new Color(uint.Parse(_successColor, NumberStyles.HexNumber));
-        
-        [JsonIgnore]
-        public Color WarnColor => new Color(uint.Parse(_warnColor, NumberStyles.HexNumber));
-        
-        [JsonIgnore]
-        public Color ErrorColor => new Color(uint.Parse(_errorColor, NumberStyles.HexNumber));
 
         [JsonProperty("successColor")]
         private string _successColor;
@@ -58,76 +26,90 @@ namespace Administrator.Services
         [JsonProperty("errorColor")]
         private string _errorColor;
 
-        public static ConfigurationService Basic
+        public ConfigurationService(IServiceProvider provider)
+            : base(provider)
         {
-            get
-            {
-                var config = new ConfigurationService(null, null);
-                try
-                {
-                    JsonConvert.PopulateObject(File.ReadAllText("./Data/Config.json"), config);
-
-                    if (string.IsNullOrWhiteSpace(config.DiscordToken))
-                        throw new ArgumentException("You have not supplied a token for the bot.");
-
-                    if (string.IsNullOrWhiteSpace(config.PostgresConnectionString))
-                        throw new ArgumentException(
-                            "You have not supplied a connection string for the PostgreSQL database.");
-                }
-                catch (Exception ex)
-                {
-                    new LoggingService().LogCriticalAsync(ex, "Configuration");
-                    Console.ReadKey();
-                    Environment.Exit(-1);
-                }
-
-                return config;
-            }
+            _client = _provider?.GetRequiredService<DiscordClient>();
+            _logging = _provider?.GetRequiredService<LoggingService>();
         }
+
+        public const string SUPPORT_GUILD = "https://discord.gg/rTvGube";
+
+        [JsonProperty("token")]
+        public string DiscordToken { get; private set; }
         
-        async Task IService.InitializeAsync()
+        [JsonProperty("prefix")]
+        public string DefaultPrefix { get; private set; }
+
+        [JsonProperty("connectionString")]
+        public string PostgresConnectionString { get; private set; }
+
+        [JsonProperty("steamApiKey")]
+        public string SteamApiKey { get; private set; }
+
+        [JsonProperty("backpackApiKey")]
+        public string BackpackApiKey { get; private set; }
+        
+        [JsonProperty("owners")]
+        public ICollection<ulong> OwnerIds { get; private set; }
+
+        [JsonProperty("emojiServers")]
+        public ICollection<ulong> EmojiServerIds { get; private set; }
+
+        [JsonIgnore]
+        public Color SuccessColor => new Color(int.Parse(_successColor, NumberStyles.HexNumber));
+        
+        [JsonIgnore]
+        public Color WarnColor => new Color(int.Parse(_warnColor, NumberStyles.HexNumber));
+        
+        [JsonIgnore]
+        public Color ErrorColor => new Color(int.Parse(_errorColor, NumberStyles.HexNumber));
+
+        public override async Task InitializeAsync()
         {
             var config = Basic;
             DiscordToken = config.DiscordToken;
             DefaultPrefix = config.DefaultPrefix;
             PostgresConnectionString = config.PostgresConnectionString;
             OwnerIds = config.OwnerIds;
-            EmoteServerIds = config.EmoteServerIds;
+            BackpackApiKey = config.BackpackApiKey;
+            SteamApiKey = config.SteamApiKey;
+            EmojiServerIds = config.EmojiServerIds;
             _successColor = config._successColor;
             _warnColor = config._warnColor;
             _errorColor = config._errorColor;
-            
+
             if (OwnerIds.Count == 0)
             {
-                await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.", 
+                await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.",
                     "Configuration");
 
-                var app = await _restClient.GetApplicationInfoAsync();
+                var app = await _client.GetCurrentApplicationAsync();
                 await _logging.LogDebugAsync($"Got owner {app.Owner}.", "Configuration");
-                
+
                 OwnerIds = new List<ulong>
                 {
                     app.Owner.Id
                 };
             }
 
-            if (EmoteServerIds.Count == 0)
+            if (EmojiServerIds.Count == 0)
             {
-                await _logging.LogWarningAsync("No emote servers were defined. Some services (profiles) will break!",
+                await _logging.LogWarningAsync("No emoji servers were defined. Some services (profiles) will break!",
                     "Configuration");
             }
 
-            foreach (var id in EmoteServerIds)
+            foreach (var id in EmojiServerIds)
             {
-                var guild = await _restClient.GetGuildAsync(id);
+                var guild = await _client.GetGuildAsync(id);
                 if (guild is null)
                 {
-                    await _logging.LogCriticalAsync($"Emote server with ID {id} could not be found or I'm not a member!", "Configuration");
+                    await _logging.LogCriticalAsync($"Emoji server with ID {id} could not be found or I'm not a member!", "Configuration");
                     Console.ReadKey();
                     Environment.Exit(-1);
                 }
 
-                await _logging.LogDebugAsync($"Emote server with ID {id} found: {guild.Name}", "Configuration");
+                await _logging.LogDebugAsync($"Emoji server with ID {id} found: {guild.Name}", "Configuration");
             }
 
             using (var ctx = new AdminDatabaseContext(null))
@@ -165,6 +147,33 @@ namespace Administrator.Services
             }
 
             await _logging.LogInfoAsync("Initialized.", "Configuration");
+        }
+
+        public static ConfigurationService Basic
+        {
+            get
+            {
+                var config = new ConfigurationService(default);
+                try
+                {
+                    JsonConvert.PopulateObject(File.ReadAllText("./Data/Config.json"), config);
+
+                    if (string.IsNullOrWhiteSpace(config.DiscordToken))
+                        throw new ArgumentException("You have not supplied a token for the bot.");
+
+                    if (string.IsNullOrWhiteSpace(config.PostgresConnectionString))
+                        throw new ArgumentException(
+                            "You have not supplied a connection string for the PostgreSQL database.");
+                }
+                catch (Exception ex)
+                {
+                    new LoggingService(default).LogCriticalAsync(ex, "Configuration");
+                    Console.ReadKey();
+                    Environment.Exit(-1);
+                }
+
+                return config;
+            }
         }
     }
 }

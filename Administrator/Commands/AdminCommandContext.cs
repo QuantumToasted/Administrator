@@ -2,8 +2,7 @@ using System;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Services;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -12,29 +11,56 @@ namespace Administrator.Commands
     public sealed class AdminCommandContext : CommandContext, IDisposable
     {
         private readonly LocalizationService _localization;
+        private CachedUser _user;
+        private CachedGuild _guild;
+        private ICachedMessageChannel _channel;
 
-        public AdminCommandContext(SocketUserMessage message, string prefix, LocalizedLanguage language, IServiceProvider provider)
+        private AdminCommandContext(LocalizedLanguage language, IServiceProvider provider, CachedUser user,
+            CachedGuild guild, CachedUserMessage message, ICachedMessageChannel channel)
+            : base(provider)
+        {
+            User = user;
+            Guild = guild;
+            Message = message;
+            Channel = channel;
+            Database = new AdminDatabaseContext(provider);
+            Language = language;
+        }
+
+        public AdminCommandContext(CachedUserMessage message, string prefix, LocalizedLanguage language, IServiceProvider provider)
             : base(provider)
         {
             _localization = provider.GetRequiredService<LocalizationService>();
-            Client = provider.GetRequiredService<DiscordSocketClient>();
+            Client = provider.GetRequiredService<DiscordClient>();
             Message = message;
             Prefix = prefix;
             Database = new AdminDatabaseContext(provider);
             Language = language;
         }
 
-        public DiscordSocketClient Client { get; }
+        public DiscordClient Client { get; }
 
-        public SocketUser User => Message.Author;
+        public CachedUser User
+        {
+            get => _user ??= Message?.Author;
+            private set => _user = value;
+        }
 
-        public SocketGuild Guild => (Message.Channel as SocketGuildChannel)?.Guild;
+        public CachedGuild Guild
+        {
+            get => _guild ??= (Message?.Channel as CachedGuildChannel)?.Guild;
+            private set => _guild = value;
+        }
 
-        public SocketUserMessage Message { get; }
+        public CachedUserMessage Message { get; }
 
-        public ISocketMessageChannel Channel => Message.Channel;
+        public ICachedMessageChannel Channel
+        {
+            get => _channel ??= Message.Channel;
+            private set => _channel = value;
+        }
 
-        public bool IsPrivate => Message.Channel is IPrivateChannel;
+        public bool IsPrivate => Channel is IPrivateChannel;
 
         public string Prefix { get; }
 
@@ -49,5 +75,9 @@ namespace Administrator.Commands
         {
             Database.Dispose();
         }
+
+        public static AdminCommandContext MockContext(LocalizedLanguage language, IServiceProvider provider, CachedUser user = null,
+            CachedGuild guild = null, CachedUserMessage message = null, ICachedMessageChannel channel = null)
+            => new AdminCommandContext(language, provider, user, guild, message, channel);
     }
 }

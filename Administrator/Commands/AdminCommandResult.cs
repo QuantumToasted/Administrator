@@ -1,19 +1,18 @@
 using System;
 using System.Threading.Tasks;
-using Administrator.Common;
-using Discord;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
 {
     public sealed class AdminCommandResult : CommandResult
     {
-        public AdminCommandResult(TimeSpan executionTime, string text, Embed embed, MessageFile file, bool isSuccessful)
+        public AdminCommandResult(TimeSpan executionTime, string text, LocalEmbed embed, LocalAttachment attachment, bool isSuccessful)
         {
             ExecutionTime = executionTime;
             Text = text;
             Embed = embed;
-            File = file;
+            Attachment = attachment;
             IsSuccessful = isSuccessful;
         }
         
@@ -21,9 +20,9 @@ namespace Administrator.Commands
         
         public string Text { get; }
         
-        public Embed Embed { get; }
+        public LocalEmbed Embed { get; }
         
-        public MessageFile File { get; }
+        public LocalAttachment Attachment { get; }
         
         public override bool IsSuccessful { get; }
         

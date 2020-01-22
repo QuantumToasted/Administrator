@@ -1,165 +1,91 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Administrator.Commands;
-using Administrator.Common;
-using Administrator.Database;
-using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
+using Administrator.Extensions;
+using Disqord;
+using Disqord.Events;
+using Disqord.Logging;
 using FluentScheduler;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Administrator.Services
 {
-    public sealed class EventDispatcherService : IService
+    public sealed class EventDispatcherService : Service,
+        IHandler<ReadyEventArgs>
     {
-        private readonly IServiceProvider _provider;
+        private readonly IDictionary<Type, List<IHandler>> _handlers;
         private readonly TaskQueueService _queue;
-        private readonly DiscordSocketClient _client;
-        private readonly DiscordRestClient _restClient;
+        private readonly DiscordClient _client;
         private readonly CommandService _commands;
         private readonly LoggingService _logging;
-        private readonly CommandHandlerService _commandHandler;
-        private readonly PaginationService _pagination;
-        private readonly PunishmentService _punishments;
-        private readonly LevelService _levels;
-        private readonly HighlightService _highlights;
         private bool _firstReady;
 
         public EventDispatcherService(IServiceProvider provider)
+            : base(provider)
         {
-            _provider = provider;
+            _handlers = new Dictionary<Type, List<IHandler>>();
             _queue = _provider.GetRequiredService<TaskQueueService>();
-            _client = _provider.GetRequiredService<DiscordSocketClient>();
-            _restClient = _provider.GetRequiredService<DiscordRestClient>();
+            _client = _provider.GetRequiredService<DiscordClient>();
             _commands = _provider.GetRequiredService<CommandService>();
             _logging = _provider.GetRequiredService<LoggingService>();
-            _commandHandler = _provider.GetRequiredService<CommandHandlerService>();
-            _pagination = _provider.GetRequiredService<PaginationService>();
-            _punishments = _provider.GetRequiredService<PunishmentService>();
-            _levels = _provider.GetRequiredService<LevelService>();
-            _highlights = _provider.GetRequiredService<HighlightService>();
         }
 
-        private async Task HandleUserBannedAsync(SocketUser user, SocketGuild guild)
-        {
-            if (_punishments.BannedUserIds.Remove(user.Id)) return;
-
-            using (var ctx = new AdminDatabaseContext(_provider))
-            {
-                var config = await ctx.GetOrCreateGuildAsync(guild.Id);
-                if (config.Settings.HasFlag(GuildSettings.Punishments | GuildSettings.AutoPunishments))
-                {
-                    await _punishments.LogBanAsync(user, guild, null);
-                }
-            }
-        }
-
-        private async Task HandleUserLeftAsync(SocketGuildUser user)
-        {
-            if (_punishments.KickedUserIds.Remove(user.Id)) return;
-
-            using (var ctx = new AdminDatabaseContext(_provider))
-            {
-                var config = await ctx.GetOrCreateGuildAsync(user.Guild.Id);
-                if (config.Settings.HasFlag(GuildSettings.Punishments | GuildSettings.AutoPunishments))
-                {
-                    await _punishments.LogKickAsync(user, user.Guild, null);
-                }
-            }
-        }
-
-        private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable,
-            ISocketMessageChannel channel, SocketReaction reaction)
-        {
-            await _pagination.ModifyPaginatorsAsync(cacheable, channel, reaction);
-        }
-
-        private async Task HandleMessageReceivedAsync(SocketMessage message)
-        {
-            if (!(message is SocketUserMessage userMessage)) return;
-            var executed = await _commandHandler.TryExecuteCommandAsync(userMessage);
-
-            if (!executed)
-            {
-                await _highlights.HighlightUsersAsync(userMessage);
-                await _levels.IncrementXpAsync(userMessage);
-            }
-        }
-
-        private async Task HandleCommandExecutedAsync(CommandResult result, CommandContext context)
-        {
-            await _commandHandler.SendCommandResultAsync(result.Command, (AdminCommandResult) result,
-                (AdminCommandContext) context);
-        }
-
-        private Task HandleClientLog(LogMessage message)
-        {
-            if (string.IsNullOrWhiteSpace(message.Message)) return Task.CompletedTask;
-
-            return message.Severity switch
-            {
-                LogSeverity.Critical => _logging.LogCriticalAsync(message.Message, "Discord"),
-                LogSeverity.Error => _logging.LogErrorAsync(message.Message, "Discord"),
-                LogSeverity.Warning => _logging.LogWarningAsync(message.Message, "Discord"),
-                LogSeverity.Info => _logging.LogInfoAsync(message.Message, "Discord"),
-                LogSeverity.Verbose => _logging.LogVerboseAsync(message.Message, "Discord"),
-                LogSeverity.Debug => _logging.LogVerboseAsync(message.Message, "Discord"),
-                _ => Task.CompletedTask
-            };
-        }
-
-        private Task HandleReady()
+        public Task HandleAsync(ReadyEventArgs args)
         {
             if (_firstReady)
                 return Task.CompletedTask;
 
             JobManager.Initialize(_provider.GetRequiredService<Registry>());
             _firstReady = true;
+
             return Task.CompletedTask;
         }
 
-        Task IService.InitializeAsync()
+        public override async Task InitializeAsync()
         {
-            _client.Ready += ()
-                => _queue.Enqueue(HandleReady);
+            var types = typeof(DiscordEventArgs).Assembly.GetTypes()
+                .Concat(typeof(MessageLoggedEventArgs).Assembly.GetTypes())
+                .Concat(typeof(CommandService).Assembly.GetTypes());
 
-            _client.Log += message
-                => _queue.Enqueue(() => HandleClientLog(message));
+            foreach (var type in types.Where(x => typeof(EventArgs).IsAssignableFrom(x) && !x.IsAbstract))
+            {
+                await _logging.LogDebugAsync($"Created handler group for {type}", "Events");
+                _handlers[type] = _provider.GetHandlers(type).ToList();
+            }
 
-            _client.MessageReceived += message
-                => _queue.Enqueue(() => HandleMessageReceivedAsync(message));
+            _client.Ready += EnqueueHandlers;
+            _client.Logger.MessageLogged += (_, args) => EnqueueHandlers(args);
+            _client.MessageReceived += EnqueueHandlers;
+            _client.MessageDeleted += EnqueueHandlers;
+            _client.MessageUpdated += EnqueueHandlers;
+            _client.ReactionAdded += EnqueueHandlers;
+            _client.ReactionRemoved += EnqueueHandlers;
+            _client.MemberBanned += EnqueueHandlers;
+            _client.MemberLeft += EnqueueHandlers;
+            _client.MemberJoined += EnqueueHandlers;
+            _client.MemberUpdated += EnqueueHandlers;
+            _client.UserUpdated += EnqueueHandlers;
+            _client.ReactionsCleared += EnqueueHandlers;
+            _client.ChannelDeleted += EnqueueHandlers;
+            _client.MessagesBulkDeleted += EnqueueHandlers;
 
-            _client.ReactionAdded += (cacheable, channel, reaction)
-                => _queue.Enqueue(() => HandleReactionAddedAsync(cacheable, channel, reaction));
+            _commands.CommandExecuted += EnqueueHandlers;
+            _commands.CommandExecutionFailed += EnqueueHandlers;
 
-            _client.UserBanned += (user, guild)
-                => _queue.Enqueue(() => HandleUserBannedAsync(user, guild));
-
-            _client.UserLeft += user
-                => _queue.Enqueue(() => HandleUserLeftAsync(user));
-
-            _client.UserJoined += user
-                => _queue.Enqueue(() => HandleUserJoinedAsync(user));
-
-            _restClient.Log += message
-                => _queue.Enqueue(() => HandleClientLog(message));
-
-            _commands.CommandExecuted += args
-                => _queue.Enqueue(() => HandleCommandExecutedAsync(args.Result, args.Context));
-
-            _commands.CommandExecutionFailed += HandleCommandExecutionFailed;
-
-            return _logging.LogInfoAsync("Initialized.", "Dispatcher");
+            await _logging.LogInfoAsync("Initialized.", "Dispatcher");
         }
 
-        private async Task HandleUserJoinedAsync(SocketGuildUser user)
+        private Task EnqueueHandlers<TArgs>(TArgs args)
+            where TArgs : EventArgs
         {
-            await _punishments.HandleMuteEvasionAsync(user);
-        }
+            foreach (var handler in _handlers[typeof(TArgs)])
+            {
+                _queue.Enqueue(() => ((IHandler<TArgs>) handler).HandleAsync(args));
+            }
 
-        private Task HandleCommandExecutionFailed(CommandExecutionFailedEventArgs e)
-            => _logging.LogErrorAsync(e.Result.Exception, "Test");
+            return Task.CompletedTask;
+        }
     }
 }

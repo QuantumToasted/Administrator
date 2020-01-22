@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 using Administrator.Commands;
 using Administrator.Database;
 using Administrator.Extensions;
-using Administrator.Services;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 
 namespace Administrator.Common
 {
@@ -24,7 +22,7 @@ namespace Administrator.Common
 
         public PunishmentPaginator(List<List<Punishment>> pages, int currentPage, ulong targetId, 
             PunishmentListType type, AdminCommandContext context)
-            : base(new[] { EmoteTools.Left, EmoteTools.Right })
+            : base(new[] { EmojiTools.Left, EmojiTools.Right })
         {
             _pages = pages;
             _currentPage = currentPage;
@@ -44,25 +42,25 @@ namespace Administrator.Common
 
             if (!_isPrivateMessage)
             {
-                await Message.RemoveAllReactionsAsync();
+                await Message.ClearReactionsAsync();
             }
         }
 
-        public override async ValueTask<Page> GetPageAsync(IEmote emote, IUser user)
+        public override async ValueTask<Page> GetPageAsync(IEmoji emoji, Snowflake userId)
         {
             if (!_isPrivateMessage)
             {
-                await Message.RemoveReactionAsync(emote, user);
+                await Message.RemoveMemberReactionAsync(userId, emoji);
             }
 
-            if (emote.Equals(EmoteTools.Left) && _currentPage > 0)
+            if (emoji.Equals(EmojiTools.Left) && _currentPage > 0)
             {
                 _tokenSource.CancelAfter(TimeSpan.FromSeconds(30));
                 _currentPage--;
                 return await BuildPageAsync();
             }
 
-            if (emote.Equals(EmoteTools.Right) && _currentPage < _pages.Count - 1)
+            if (emoji.Equals(EmojiTools.Right) && _currentPage < _pages.Count - 1)
             {
                 _tokenSource.CancelAfter(TimeSpan.FromSeconds(30));
                 _currentPage++;
@@ -81,7 +79,7 @@ namespace Administrator.Common
                 titleName = target?.Format() ?? "???";
             }
 
-            var builder = new EmbedBuilder()
+            var builder = new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithTitle(_context.Localize("punishment_list_title", titleName))
                 .WithFooter($"{_currentPage + 1}/{_pages.Count}");
@@ -102,24 +100,24 @@ namespace Administrator.Common
                            $" - {_context.Localize("punishment_case", punishment.Id)}";
 
                 var sb = new StringBuilder()
-                    .AppendLine(_context.Localize("punishment_target", target?.Format(false) ?? "???"))
-                    .AppendLine(_context.Localize("punishment_moderator", moderator?.Format(false) ?? "???"));
+                    .AppendNewline(_context.Localize("punishment_target", target?.Format(false) ?? "???"))
+                    .AppendNewline(_context.Localize("punishment_moderator", moderator?.Format(false) ?? "???"));
 
                 if (punishment is Mute mute && mute.ChannelId.HasValue)
                 {
-                    sb.AppendLine(_context.Localize("punishment_mute_channel") + ": " +
+                    sb.AppendNewline(_context.Localize("punishment_mute_channel") + ": " +
                                   (_context.Guild.GetTextChannel(mute.ChannelId.Value)?.Mention ?? "???"));
                 }
 
-                sb.AppendLine(_context.Localize("title_reason") + ": " + punishment.Reason.TrimTo(512))
-                    .AppendLine(_context.Localize("punishment_timestamp",
+                sb.AppendNewline(_context.Localize("title_reason") + ": " + punishment.Reason.TrimTo(512))
+                    .AppendNewline(_context.Localize("punishment_timestamp",
                         punishment.CreatedAt.ToString("g", _context.Language.Culture)));
 
                 if (punishment is RevocablePunishment revocable)
                 {
                     if (revocable.IsAppealable)
                     {
-                        sb.AppendLine(_context.Localize("punishment_appealed") + ' ' +
+                        sb.AppendNewline(_context.Localize("punishment_appealed") + ' ' +
                                       (revocable.AppealedAt.HasValue
                                           ? $"✅ {revocable.AppealedAt.Value.ToString("g", _context.Language.Culture)} - {revocable.AppealReason.TrimTo(950)}"
                                           : "❌"));
@@ -129,9 +127,9 @@ namespace Administrator.Common
                         ? await _context.Client.GetOrDownloadUserAsync(revocable.RevokerId)
                         : default;
 
-                    sb.AppendLine(_context.Localize("punishment_revoked") + ' ' + (revocable.RevokedAt.HasValue
+                    sb.AppendNewline(_context.Localize("punishment_revoked") + ' ' + (revocable.RevokedAt.HasValue
                                       ? "✅ " + revocable.RevokedAt.Value.ToString("g", _context.Language.Culture) +
-                                        $" - {Format.Bold(revoker?.ToString() ?? "???")} - " +
+                                        $" - {Markdown.Bold(revoker?.Tag ?? "???")} - " +
                                         (revocable.RevocationReason?.TrimTo(920) ??
                                          _context.Localize("punishment_noreason"))
                                       : "❌"));

@@ -1,5 +1,7 @@
 ﻿using System;
 using Administrator.Commands;
+using Administrator.Common;
+using Administrator.Services;
 using Humanizer;
 using Humanizer.Localisation;
 
@@ -7,10 +9,11 @@ namespace Administrator.Extensions
 {
     public static class TimeSpanExtensions
     {
-        public static string HumanizeFormatted(this TimeSpan ts, AdminCommandContext context, TimeUnit? minimum = null, bool ago = false)
+        public static string HumanizeFormatted(this TimeSpan ts, LocalizationService localization, 
+            LocalizedLanguage language, TimeUnit? minimum = null, bool ago = false)
         {
             var min = minimum ?? TimeUnit.Minute;
-            var format = ts.Humanize(10, context.Language.Culture, minUnit: min, maxUnit: TimeUnit.Year);
+            var format = ts.Humanize(10, language.Culture, minUnit: min, maxUnit: TimeUnit.Year);
 
             if (!ago)
                 return format;
@@ -33,8 +36,8 @@ namespace Administrator.Extensions
             }
 
             return belowMinimum
-                ? context.Localize("info_now")
-                : context.Localize("info_ago", format);
+                ? localization.Localize(language, "info_now")
+                : localization.Localize(language, "info_ago", format);
         }
         /*
         public static string HumanizeFormatted(this TimeSpan ts, AdminCommandContext context, bool ago,)

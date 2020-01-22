@@ -4,8 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Administrator.Extensions;
 using Administrator.Services;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Humanizer;
 using Qmmands;
 using Direction = Administrator.Common.Direction;
@@ -18,8 +17,8 @@ namespace Administrator.Commands
     {
         public ConfigurationService Config { get; set; }
 
-        [RequireUserPermissions(GuildPermission.ManageRoles)]
-        [RequireBotPermissions(GuildPermission.ManageRoles)]
+        [RequireUserPermissions(Permission.ManageRoles)]
+        [RequireBotPermissions(Permission.ManageRoles)]
         public sealed class ManageRoleCommands : RoleCommands
         {
             [Command("create")]
@@ -27,105 +26,98 @@ namespace Administrator.Commands
                 => CreateRoleAsync(name, null);
 
             [Command("create")]
-            public ValueTask<AdminCommandResult> CreateRole(string name, [Remainder] Color color)
+            public ValueTask<AdminCommandResult> CreateRole(string name, [Remainder] Color? color)
                 => CreateRoleAsync(name, color);
 
             private async ValueTask<AdminCommandResult> CreateRoleAsync(string name, Color? color)
             {
-                var role = await Context.Guild.CreateRoleAsync(name, color: color);
+                var role = await Context.Guild.CreateRoleAsync(x =>
+                {
+                    x.Name = name;
+                    x.Color = color ?? Optional<Color>.Empty;
+                });
+
                 return color.HasValue
                     ? CommandSuccessLocalized("role_create_success_color",
-                        args: new object[] { role.Format(), $"#{role.Color.RawValue:X}" })
+                        args: new object[] { role.Format(), $"#{color.Value.RawValue:X}" })
                     : CommandSuccessLocalized("role_create_success", args: role.Format());
             }
 
             [Command("delete")]
-            public async ValueTask<AdminCommandResult> DeleteRoleAsync([Remainder, RequireHierarchy] SocketRole role)
+            public async ValueTask<AdminCommandResult> DeleteRoleAsync([Remainder, RequireHierarchy] CachedRole role)
             {
                 await role.DeleteAsync();
                 return CommandSuccessLocalized("role_delete_success", args: role.Format());
             }
 
             [Command("color")]
-            public async ValueTask<AdminCommandResult> ModifyRoleColorAsync([RequireHierarchy] SocketRole role,
-            [Remainder] Color color)
+            public async ValueTask<AdminCommandResult> ModifyRoleColorAsync([RequireHierarchy] CachedRole role,
+            [Remainder] Color? color)
             {
                 await role.ModifyAsync(x => x.Color = color);
-                return color == Color.Default
+                return !color.HasValue
                     ? CommandSuccessLocalized("role_color_modified_default", args: role.Format())
-                    : CommandSuccessLocalized("role_color_modified", args: new object[] { role.Format(), $"#{color.RawValue:X}" });
+                    : CommandSuccessLocalized("role_color_modified", args: new object[] { role.Format(), $"#{color.Value.RawValue:X}" });
             }
 
             [Command("give", "grant")]
-            public async ValueTask<AdminCommandResult> GiveRoleToUserAsync(SocketGuildUser target,
-                [RequireHierarchy] params SocketRole[] roles)
+            public async ValueTask<AdminCommandResult> GrantRoleAsync(CachedMember target,
+                [RequireHierarchy] CachedRole role)
             {
-                if (roles.Length == 0)
-                    throw new ArgumentOutOfRangeException();
+                if (target.Roles.Keys.Any(x => x == role.Id))
+                    return CommandErrorLocalized("role_give_role_exists", args: Markdown.Bold(target.Tag.Sanitize()));
 
-                if (roles.Length == 1 && target.Roles.Any(x => x.Id == roles[0].Id))
-                    return CommandErrorLocalized("role_give_role_exists", args: Format.Bold(target.ToString().Sanitize()));
+                await target.GrantRoleAsync(role.Id);
 
-                await target.AddRolesAsync(roles);
-                return roles.Length == 1
-                    ? CommandSuccessLocalized("role_give_success",
-                        args: new object[] { Format.Bold(target.ToString().Sanitize()), roles[0].Format() })
-                    : CommandSuccessLocalized("role_give_success_multiple",
-                        args: new object[]
-                            {Format.Bold(target.ToString()), string.Join(", ", roles.Select(x => x.Format()))});
+                return CommandSuccessLocalized("role_give_success",
+                    args: new object[] {Markdown.Bold(target.Tag.Sanitize()), role.Format()});
             }
 
-            [Command("remove")]
-            public async ValueTask<AdminCommandResult> RemoveRoleFromUserAsync(SocketGuildUser target,
-                [RequireHierarchy] params SocketRole[] roles)
+            [Command("remove", "revoke")]
+            public async ValueTask<AdminCommandResult> RevokeRoleAsync(CachedMember target,
+                [RequireHierarchy] CachedRole role)
             {
-                if (roles.Length == 0)
-                    throw new ArgumentOutOfRangeException();
+                if (target.Roles.Keys.All(x => x != role.Id))
+                    return CommandErrorLocalized("role_remove_role_exists", args: Markdown.Bold(target.Tag.Sanitize()));
+                
+                await target.RevokeRoleAsync(role.Id);
 
-                if (roles.Length == 1 && target.Roles.All(x => x.Id != roles[0].Id))
-                    return CommandErrorLocalized("role_remove_role_exists", args: Format.Bold(target.ToString().Sanitize()));
-
-                await target.RemoveRolesAsync(roles);
-                return roles.Length == 1
-                    ? CommandSuccessLocalized("role_remove_success",
-                        args: new object[] { Format.Bold(target.ToString().Sanitize()), roles[0].Format() })
-                    : CommandSuccessLocalized("role_remove_success_multiple",
-                        args: new object[]
-                            {Format.Bold(target.ToString()), string.Join(", ", roles.Select(x => x.Format()))});
+                return CommandSuccessLocalized("role_remove_success",
+                    args: new object[] {Markdown.Bold(target.Tag.Sanitize()), role.Format()});
             }
 
             [Command("move")]
-            public async ValueTask<AdminCommandResult> MoveRoleAsync([RequireHierarchy] SocketRole target,
-                Direction direction, [Remainder] SocketRole move)
+            public async ValueTask<AdminCommandResult> MoveRoleAsync([RequireHierarchy] CachedRole target,
+                Direction direction, [Remainder] CachedRole move)
             {
-                var user = (SocketGuildUser)Context.User;
+                var user = (CachedMember)Context.User;
 
                 if (direction == Direction.Below)
                 {
-                    if (target.IsEveryone || move.IsEveryone)
+                    if (target.IsDefault || move.IsDefault)
                         return CommandErrorLocalized("role_move_below_everyone", args: "@\u200Beveryone");
 
-                    if (Context.Guild.CurrentUser.GetHighestRole().Position < move.Position)
+                    if (Context.Guild.CurrentMember.GetHighestRole().Position < move.Position)
                         return CommandErrorLocalized("role_move_below_unable_self",
-                            args: new object[] { Format.Bold(move.Name), Format.Bold(target.Name) });
+                            args: new object[] { Markdown.Bold(move.Name), Markdown.Bold(target.Name) });
                     if (user.GetHighestRole().Position < move.Position)
                         return CommandErrorLocalized("role_move_below_unable_user",
-                            args: new object[] { Format.Bold(move.Name), Format.Bold(target.Name) });
+                            args: new object[] { Markdown.Bold(move.Name), Markdown.Bold(target.Name) });
 
                     await target.ModifyAsync(x => x.Position = move.Position - 1);
                     return CommandSuccessLocalized("role_move_below_success",
                         args: new object[] { target.Format(), move.Format() });
                 }
 
-                if (target.IsEveryone)
+                if (target.IsDefault)
                     return CommandErrorLocalized("role_move_above_everyone", args: "@\u200Beveryone");
 
-                if (Context.Guild.CurrentUser.GetHighestRole().Position < move.Position)
+                if (Context.Guild.CurrentMember.GetHighestRole().Position < move.Position)
                     return CommandErrorLocalized("role_move_above_unable_self",
-                        args: new object[] { Format.Bold(move.Name), Format.Bold(target.Name) });
+                        args: new object[] { Markdown.Bold(move.Name), Markdown.Bold(target.Name) });
                 if (user.GetHighestRole().Position < move.Position)
                     return CommandErrorLocalized("role_move_above_unable_user",
-                        args: new object[] { Format.Bold(move.Name), Format.Bold(target.Name) });
+                        args: new object[] { Markdown.Bold(move.Name), Markdown.Bold(target.Name) });
 
                 await target.ModifyAsync(x => x.Position = move.Position + 1);
                 return CommandSuccessLocalized("role_move_above_success",
@@ -133,35 +125,50 @@ namespace Administrator.Commands
             }
 
             [Command("rename")]
-            public async ValueTask<AdminCommandResult> RenameRoleAsync([RequireHierarchy] SocketRole target,
+            public async ValueTask<AdminCommandResult> RenameRoleAsync([RequireHierarchy] CachedRole target,
                 [Remainder] string newName)
             {
                 await target.ModifyAsync(x => x.Name = newName);
                 return CommandSuccessLocalized("role_rename_success",
-                    args: new object[] { target.Format(), Format.Bold(newName) });
+                    args: new object[] { target.Format(), Markdown.Bold(newName) });
+            }
+
+            [Command("mention"), RunMode(RunMode.Parallel)]
+            public async ValueTask<AdminCommandResult> MentionRolesAsync([RequireHierarchy, Remainder] CachedRole role)
+            {
+                if (role.IsMentionable)
+                {
+                    return CommandSuccess(role.Mention);
+                }
+
+                await role.ModifyAsync(x => x.IsMentionable = true);
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+                await Context.Channel.SendMessageAsync(role.Mention);
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+                await role.ModifyAsync(x => x.IsMentionable = false);
+
+                return CommandSuccess();
             }
         }
 
         [Command("", "info")]
-        public AdminCommandResult GetRoleInfo([Remainder] SocketRole role)
+        public AdminCommandResult GetRoleInfo([Remainder] CachedRole role)
         {
-            var color = role.Color == Color.Default
-                ? Config.SuccessColor
-                : role.Color;
+            var color = role.Color ?? Config.SuccessColor;
 
-            return CommandSuccess(embed: new EmbedBuilder()
+            return CommandSuccess(embed: new LocalEmbedBuilder()
                 .WithColor(color)
                 .WithTitle(Context.Localize("role_info_title", role.Name.Sanitize()))
                 .AddField(Context.Localize("info_id"), role.Id, true)
                 .AddField(Context.Localize("info_mention"), role.Mention, true)
                 .AddField(Context.Localize("role_info_color"),
-                    role.Color == Color.Default
+                    !role.Color.HasValue
                         ? Context.Localize("info_none")
                         : $"[#{color.RawValue:X}](https://www.colorhexa.com/{color.RawValue:X})", true)
                 .AddField(Context.Localize("info_position"), FormatPosition())
                 .AddField(Context.Localize("info_created"),
-                    string.Join('\n', role.CreatedAt.ToString("g", Context.Language.Culture),
-                        (DateTimeOffset.UtcNow - role.CreatedAt).HumanizeFormatted(Context, ago: true)), true)
+                    string.Join('\n', role.Id.CreatedAt.ToString("g", Context.Language.Culture),
+                        (DateTimeOffset.UtcNow - role.Id.CreatedAt).HumanizeFormatted(Localization, Context.Language, ago: true)), true)
                 .AddField(Context.Localize("role_info_permissions"),
                     string.Join('\n',
                         role.Permissions.ToList().Select(x => x.ToString("G").Humanize(LetterCasing.Title))))
@@ -182,8 +189,8 @@ namespace Administrator.Commands
                         Context.Guild.Roles.Count));
                 else
                 {
-                    var above = Context.Guild.Roles.First(x => x.Position == role.Position + 1);
-                    var below = Context.Guild.Roles.First(x => x.Position == role.Position - 1);
+                    var above = Context.Guild.Roles.Values.First(x => x.Position == role.Position + 1);
+                    var below = Context.Guild.Roles.Values.First(x => x.Position == role.Position - 1);
                     builder.Append(Context.Localize("role_info_above_below", 
                         Context.Guild.Roles.Count - role.Position,
                         Context.Guild.Roles.Count, 
@@ -196,18 +203,18 @@ namespace Administrator.Commands
             string FormatMembers()
             {
                 var builder = new StringBuilder();
-                var members = role.Members.OrderByDescending(x => x.JoinedAt ?? DateTimeOffset.UtcNow).ToList();
+                var members = role.Members.Values.OrderByDescending(x => x.JoinedAt).ToList();
                 for (var i = 0; i < members.Count; i++)
                 {
                     var member = members[i];
                     
-                    if (builder.Length + member.ToString().Sanitize().Length > 1019) // 1024 - 3
+                    if (builder.Length + member.Tag.Sanitize().Length > 1019) // 1024 - 3
                     {
                         builder.Append('…');
                         break;
                     }
 
-                    builder.Append(member.ToString().Sanitize());
+                    builder.Append(member.Tag.Sanitize());
 
                     if (i != members.Count - 1)
                         builder.Append(", ");
@@ -220,9 +227,9 @@ namespace Administrator.Commands
         }
         
         [Command("color")]
-        public AdminCommandResult GetRoleColor([Remainder] SocketRole role)
-            => role.Color == Color.Default
-                ? CommandSuccessLocalized("role_color_default", args: role.Format())
-                : CommandSuccessLocalized("role_color", args: new object[] {role.Format(), $"#{role.Color.RawValue:X}"});
+        public AdminCommandResult GetRoleColor([Remainder] CachedRole role)
+            => role.Color.HasValue
+                ? CommandSuccessLocalized("role_color", args: new object[] { role.Format(), $"#{role.Color.Value.RawValue:X}" })
+                : CommandSuccessLocalized("role_color_default", args: role.Format());
     }
 }

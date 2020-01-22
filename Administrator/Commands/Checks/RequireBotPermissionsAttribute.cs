@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Administrator.Commands;
-using Discord;
 using Humanizer;
 using Administrator.Common;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -13,22 +12,14 @@ namespace Administrator.Commands
     {
         private readonly bool _isGuildPermissions;
 
-        public RequireBotPermissionsAttribute(GuildPermission requiredGuildPermissions)
+        public RequireBotPermissionsAttribute(Permission requiredPermissions, bool isGuildPermissions = true)
             : base(ContextType.Guild)
         {
-            RequiredGuildPermissions = requiredGuildPermissions;
-            _isGuildPermissions = true;
+            RequiredPermissions = requiredPermissions;
+            _isGuildPermissions = isGuildPermissions;
         }
 
-        public RequireBotPermissionsAttribute(ChannelPermission requiredChannelPermissions)
-            : base(ContextType.Guild)
-        {
-            RequiredChannelPermissions = requiredChannelPermissions;
-        }
-
-        public GuildPermission RequiredGuildPermissions { get; }
-
-        public ChannelPermission RequiredChannelPermissions { get; }
+        public Permission RequiredPermissions { get; }
 
         public override async ValueTask<CheckResult> CheckAsync(CommandContext ctx)
         {
@@ -39,16 +30,16 @@ namespace Administrator.Commands
             var context = (AdminCommandContext) ctx;
             if (_isGuildPermissions)
             {
-                return !context.Guild.CurrentUser.GuildPermissions.Has(RequiredGuildPermissions)
+                return !context.Guild.CurrentMember.Permissions.Has(RequiredPermissions)
                     ? CheckResult.Unsuccessful(context.Localize("requirebotpermissions_guild",
-                        Format.Bold(RequiredGuildPermissions.Humanize(LetterCasing.Title))))
+                        Markdown.Bold(RequiredPermissions.Humanize(LetterCasing.Title))))
                     : CheckResult.Successful;
             }
 
-            return !context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)
-                .Has(RequiredChannelPermissions)
+            return !context.Guild.CurrentMember.GetPermissionsFor(context.Channel as IGuildChannel)
+                .Has(RequiredPermissions)
                 ? CheckResult.Unsuccessful(context.Localize("requirebotpermissions_channel",
-                    Format.Bold(RequiredChannelPermissions.Humanize(LetterCasing.Title))))
+                    Markdown.Bold(RequiredPermissions.Humanize(LetterCasing.Title))))
                 : CheckResult.Successful;
         }
     }

@@ -1,44 +1,42 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
 {
-    public sealed class RoleParser<TRole> : TypeParser<TRole>
-        where TRole : SocketRole
+    public sealed class RoleParser : TypeParser<CachedRole>
     {
-        public override ValueTask<TypeParserResult<TRole>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
+        public override ValueTask<TypeParserResult<CachedRole>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
             if (context.IsPrivate)
-                return TypeParserResult<TRole>.Unsuccessful(context.Localize("requirecontext_guild"));
+                return TypeParserResult<CachedRole>.Unsuccessful(context.Localize("requirecontext_guild"));
 
-            TRole role = null;
+            CachedRole role = null;
 
             // Parse by ID or mention
-            if (ulong.TryParse(value, out var id) || MentionUtils.TryParseRole(value, out id))
+            if (Snowflake.TryParse(value, out var id) || Discord.TryParseRoleMention(value, out id))
             {
-                role = context.Guild.GetRole(id) as TRole;
+                role = context.Guild.GetRole(id);
             }
 
             // Parse by name
             if (role is null)
             {
-                var matches = context.Guild.Roles.Where(x => x.Name.Equals(value, StringComparison.OrdinalIgnoreCase))
+                var matches = context.Guild.Roles.Values.Where(x => x.Name.Equals(value, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 if (matches.Count > 1)
-                    return TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_multiple"));
+                    return TypeParserResult<CachedRole>.Unsuccessful(context.Localize("roleparser_multiple"));
 
-                role = matches.FirstOrDefault() as TRole;
+                role = matches.FirstOrDefault();
             }
 
             return !(role is null)
-                ? TypeParserResult<TRole>.Successful(role)
-                : TypeParserResult<TRole>.Unsuccessful(context.Localize("roleparser_notfound"));
+                ? TypeParserResult<CachedRole>.Successful(role)
+                : TypeParserResult<CachedRole>.Unsuccessful(context.Localize("roleparser_notfound"));
         }
     }
 }

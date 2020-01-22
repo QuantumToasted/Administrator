@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using Administrator.Extensions;
-using Discord;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -13,7 +12,7 @@ namespace Administrator.Commands
         public override ValueTask<CheckResult> CheckAsync(object argument, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
-            var user = (SocketGuildUser) context.User;
+            var user = (CachedMember) context.User;
 
             if (context.IsPrivate)
                 return CheckResult.Unsuccessful(context.Localize("requirecontext_guild"));
@@ -21,10 +20,10 @@ namespace Administrator.Commands
             var result = string.Empty;
             switch (argument)
             {
-                case SocketRole targetRole:
+                case CachedRole targetRole:
                     result = GetRoleResult(targetRole);
                     break;
-                case SocketRole[] targetRoles:
+                case CachedRole[] targetRoles:
                     foreach (var targetRole in targetRoles)
                     {
                         result = GetRoleResult(targetRole);
@@ -35,7 +34,7 @@ namespace Administrator.Commands
                     }
 
                     break;
-                case SocketGuildUser[] targetUsers:
+                case CachedMember[] targetUsers:
                     foreach (var targetUser in targetUsers)
                     {
                         result = GetUserResult(targetUser);
@@ -44,7 +43,7 @@ namespace Administrator.Commands
                     }
 
                     break;
-                case SocketGuildUser targetUser:
+                case CachedMember targetUser:
                     result = GetUserResult(targetUser);
                     break;
             }
@@ -53,19 +52,19 @@ namespace Administrator.Commands
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful(result);
             
-            string GetRoleResult(SocketRole target)
+            string GetRoleResult(CachedRole target)
             {
-                if (context.Guild.CurrentUser.GetHighestRole().Position <= target.Position)
-                    return context.Localize("role_unassignable_self", Format.Bold(target.Name));
+                if (context.Guild.CurrentMember.GetHighestRole().Position <= target.Position)
+                    return context.Localize("role_unassignable_self", Markdown.Bold(target.Name));
                 if (user.GetHighestRole().Position <= target.Position)
-                    return context.Localize("role_unassignable_user", Format.Bold(target.Name));
+                    return context.Localize("role_unassignable_user", Markdown.Bold(target.Name));
 
                 return string.Empty;
             }
 
-            string GetUserResult(SocketGuildUser target)
+            string GetUserResult(CachedMember target)
             {
-                if (context.Guild.CurrentUser.Hierarchy <= target.Hierarchy)
+                if (context.Guild.CurrentMember.Hierarchy <= target.Hierarchy)
                     return context.Localize("requirehierarchy_self");
                 if (user.Hierarchy <= target.Hierarchy)
                     return context.Localize("requirehierarchy_user");

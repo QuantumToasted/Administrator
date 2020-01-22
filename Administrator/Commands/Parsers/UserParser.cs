@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Qmmands;
 
 namespace Administrator.Commands
 {
     public sealed class UserParser<TUser> : TypeParser<TUser>
-        where TUser : SocketUser
+        where TUser : CachedUser
     {
         public override ValueTask<TypeParserResult<TUser>> ParseAsync(Parameter parameter, string value, CommandContext ctx)
         {
@@ -19,24 +18,24 @@ namespace Administrator.Commands
             TUser user = null;
 
             // Parse by ID or mention
-            if (ulong.TryParse(value, out var id) || MentionUtils.TryParseUser(value, out id))
+            if (Snowflake.TryParse(value, out var id) || Discord.TryParseUserMention(value, out id))
             {
-                user = context.Guild.GetUser(id) as TUser;
+                user = context.Guild.GetMember(id) as TUser;
             }
 
             // Parse by user#discrim
             if (user is null)
             {
-                user = context.Guild.Users.FirstOrDefault(x =>
-                    x.ToString().Equals(value, StringComparison.OrdinalIgnoreCase)) as TUser;
+                user = context.Guild.Members.Values.FirstOrDefault(x =>
+                    x.Tag.Equals(value, StringComparison.OrdinalIgnoreCase)) as TUser;
             }
 
             // Parse by exact username/nickname match
             if (user is null)
             {
-                var matches = context.Guild.Users.Where(x =>
-                        x.Username?.Equals(value, StringComparison.OrdinalIgnoreCase) == true ||
-                        x.Nickname?.Equals(value, StringComparison.OrdinalIgnoreCase) == true)
+                var matches = context.Guild.Members.Values.Where(x =>
+                        x.Name?.Equals(value, StringComparison.OrdinalIgnoreCase) == true ||
+                        x.Nick?.Equals(value, StringComparison.OrdinalIgnoreCase) == true)
                     .ToList();
 
                 if (matches.Count > 1)

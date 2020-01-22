@@ -1,9 +1,12 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Administrator.Extensions;
 using Administrator.Services;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +20,7 @@ namespace Administrator.Database
             new ServiceCollection().AddEntityFrameworkNpgsql().BuildServiceProvider();
 
         private readonly IServiceProvider _provider;
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordClient _client;
         private readonly LocalizationService _localization;
 
         public AdminDatabaseContext() 
@@ -28,7 +31,7 @@ namespace Administrator.Database
         {
             if (!(provider is null))
             {
-                _client = provider.GetRequiredService<DiscordSocketClient>();
+                _client = provider.GetRequiredService<DiscordClient>();
                 _localization = provider.GetRequiredService<LocalizationService>();
             }
 
@@ -57,9 +60,29 @@ namespace Administrator.Database
 
         public DbSet<Suggestion> Suggestions { get; set; }
 
-        public DbSet<SpecialEmote> SpecialEmotes { get; set; }
+        public DbSet<SpecialEmoji> SpecialEmojis { get; set; }
 
         public DbSet<Highlight> Highlights { get; set; }
+
+        public DbSet<ReactionRole> ReactionRoles { get; set; }
+
+        public DbSet<LevelReward> LevelRewards { get; set; }
+
+        public DbSet<Tag> Tags { get; set; }
+
+        public DbSet<Reminder> Reminders { get; set; }
+
+        public DbSet<CommandAlias> CommandAliases { get; set; }
+
+        public DbSet<StarboardEntry> Starboard { get; set; }
+
+        public DbSet<CyclingStatus> Statuses { get; set; }
+
+        public DbSet<TextChannel> TextChannels { get; set; }
+
+        public DbSet<CommandCooldown> Cooldowns { get; set; }
+
+        public DbSet<CooldownData> CooldownData { get; set; }
 
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
@@ -94,7 +117,7 @@ namespace Administrator.Database
             return user;
         }
 
-        public async Task<SocketTextChannel> GetLoggingChannelAsync(ulong guildId, LogType type)
+        public async Task<CachedTextChannel> GetLoggingChannelAsync(ulong guildId, LogType type)
         {
             if (!(await LoggingChannels.FindAsync(guildId, type) is { } logChannel))
                 return null;
@@ -102,7 +125,7 @@ namespace Administrator.Database
             return _client.GetGuild(guildId).GetTextChannel(logChannel.Id);
         }
 
-        public async Task<SocketRole> GetSpecialRoleAsync(ulong guildId, RoleType type)
+        public async Task<CachedRole> GetSpecialRoleAsync(ulong guildId, RoleType type)
         {
             if (!(await SpecialRoles.FindAsync(guildId, type) is { } role))
                 return null;
@@ -110,9 +133,38 @@ namespace Administrator.Database
             return _client.GetGuild(guildId).GetRole(role.Id);
         }
 
+        public async Task<IEmoji> GetSpecialEmojiAsync(ulong guildId, EmojiType type)
+        {
+            if (!(await SpecialEmojis.FindAsync(guildId, type) is { } emoji))
+                return new LocalEmoji(type.GetDescription());
+
+            return emoji.Emoji;
+        }
+
+        public async Task<CachedRole> GetReactionRoleAsync(ulong guildId, ulong messageId, IEmoji emoji)
+        {
+            if (!(await ReactionRoles.FirstOrDefaultAsync(x =>
+                x.GuildId == guildId && x.MessageId == messageId && x.Emoji.Equals(emoji)) is { } reactionRole))
+                return null;
+
+            return _client.GetGuild(reactionRole.GuildId).GetRole(reactionRole.RoleId);
+        }
+
+        public async Task<TextChannel> GetOrCreateTextChannelAsync(ulong guildId, ulong channelId)
+        {
+            if (await TextChannels.FindAsync(guildId, channelId) is { } channel)
+                return channel;
+
+            channel = new TextChannel(guildId, channelId);
+            TextChannels.Add(channel);
+            await SaveChangesAsync();
+            return channel;
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql(Config.PostgresConnectionString)
+                .EnableSensitiveDataLogging()
                 .UseInternalServiceProvider(_provider);
         }
 
@@ -129,8 +181,12 @@ namespace Administrator.Database
                 guild.Property(x => x.BlacklistedModmailAuthors)
                     .HasConversion(new SnowflakeCollectionConverter())
                     .HasDefaultValueSql("''");
-                guild.Property(x => x.LevelUpEmote)
-                    .HasConversion(x => x.ToString(), x => EmoteTools.Parse(x));
+                guild.Property(x => x.BlacklistedEmojiGuilds)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+                guild.Property(x => x.BlacklistedStarboardIds)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
             });
 
             modelBuilder.Entity<GlobalUser>(user =>
@@ -158,6 +214,7 @@ namespace Administrator.Database
             {
                 punishment.HasKey(x => x.Id);
                 punishment.Property(x => x.Id).ValueGeneratedOnAdd();
+                punishment.Property(x => x.Image).HasConversion(x => x.ToArray(), x => new MemoryStream(x));
             });
 
             modelBuilder.Entity<Kick>(kick =>
@@ -225,12 +282,13 @@ namespace Administrator.Database
             {
                 suggestion.HasKey(x => x.Id);
                 suggestion.Property(x => x.Id).ValueGeneratedOnAdd();
+                suggestion.Property(x => x.Image).HasConversion(x => x.ToArray(), x => new MemoryStream(x));
             });
 
-            modelBuilder.Entity<SpecialEmote>(emote =>
+            modelBuilder.Entity<SpecialEmoji>(emoji =>
             {
-                emote.HasKey(x => new {x.GuildId, x.Type});
-                emote.Property(x => x.Emote).HasConversion(new EmoteConverter())
+                emoji.HasKey(x => new {x.GuildId, x.Type});
+                emoji.Property(x => x.Emoji).HasConversion(new EmojiConverter())
                     .HasDefaultValueSql("''");
             });
 
@@ -239,6 +297,81 @@ namespace Administrator.Database
                 highlight.HasKey(x => x.Id);
                 highlight.Property(x => x.Id)
                     .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<ReactionRole>(role =>
+            {
+                role.HasKey(x => x.Id);
+                role.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+                role.Property(x => x.Emoji)
+                    .HasConversion(x => x.ToString(), x => EmojiTools.Parse(x));
+            });
+
+            modelBuilder.Entity<LevelReward>(reward =>
+            {
+                reward.HasKey(x => x.Id);
+                reward.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<RoleLevelReward>(reward =>
+            {
+                reward.HasBaseType<LevelReward>();
+                reward.Property(x => x.AddedRoleIds)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+                reward.Property(x => x.RemovedRoleIds)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+            });
+
+            modelBuilder.Entity<Tag>(tag =>
+            {
+                tag.HasKey(x => new {x.GuildId, x.Name});
+                tag.Property(x => x.Image).HasConversion(x => x.ToArray(), x => new MemoryStream(x));
+            });
+
+            modelBuilder.Entity<Reminder>(reminder =>
+            {
+                reminder.HasKey(x => x.Id);
+                reminder.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<CommandAlias>(alias =>
+            {
+                alias.HasKey(x => new {x.GuildId, x.Alias});
+            });
+
+            modelBuilder.Entity<StarboardEntry>(entry =>
+            {
+                entry.HasKey(x => x.MessageId);
+                entry.Property(x => x.Stars)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+            });
+
+            modelBuilder.Entity<CyclingStatus>(status =>
+            {
+                status.HasKey(x => x.Id);
+                status.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<TextChannel>(channel =>
+            {
+                channel.HasKey(x => new {x.GuildId, x.ChannelId});
+            });
+
+            modelBuilder.Entity<CommandCooldown>(cooldown =>
+            {
+                cooldown.HasKey(x => new {x.GuildId, x.CommandName});
+            });
+
+            modelBuilder.Entity<CooldownData>(data =>
+            {
+                data.HasKey(x => new {x.GuildId, x.UserId, x.Command});
             });
         }
     }

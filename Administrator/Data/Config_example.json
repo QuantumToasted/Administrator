@@ -3,7 +3,9 @@
   "prefix": "!!",
   "connectionString": "",
   "owners": [],
-  "emoteServers": [], 
+  "steamApiKey": "",
+  "backpackApiKey": "",
+  "emojiServers": [ 476067586241462272, 476068717743177728, 476068979203637260 ],
   "successColor": "8650AC",
   "errorColor": "EB4B4B",
   "warningColor": "FFD700"

@@ -1,21 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using Discord;
+using System.Threading.Tasks;
+using Administrator.Commands;
+using Disqord;
 
 namespace Administrator.Extensions
 {
     public static class StringExtensions
     {
-        public static readonly Regex LazyImageLinkRegex = new Regex(
-            @"(http|https):\/\/.{2,}(png|jpg|jpeg|gif)", RegexOptions.Compiled);
+        private static readonly Regex AsyncUserRegex =
+            new Regex(@"{user\.(?:xp|level|nextxp|tier)}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static bool HasImageExtension(this string str)
+        private static readonly Regex AsyncGuildUserRegex =
+            new Regex(@"{user\.(?:guildxp|guildlevel|guildnextxp|guildtier)}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static readonly Regex RandomNumberRegex = 
+            new Regex(@"{random(\d{1,})-(\d{1,})}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static readonly Regex LazyImageLinkRegex = new Regex(
+            @"(http|https):\/\/.{2,}(png|jpg|jpeg|gif)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static StringBuilder AppendNewline(this StringBuilder builder, string text)
+            => builder.Append(text).Append('\n');
+
+        public static StringBuilder AppendNewline(this StringBuilder builder)
+            => builder.Append('\n');
+
+        public static bool HasImageExtension(this string str, out ImageFormat format)
         {
+            format = ImageFormat.Default;
             if (string.IsNullOrWhiteSpace(str)) return false;
-            return str.EndsWith(".png") || str.EndsWith(".jpg") || str.EndsWith(".jpeg") || str.EndsWith(".gif") ||
-                   str.EndsWith(".bmp");
+
+            switch (str.Split('.', StringSplitOptions.RemoveEmptyEntries).LastOrDefault()?.ToLower())
+            {
+                case "png":
+                    format = ImageFormat.Png;
+                    return true;
+                case "jpeg":
+                case "jpg":
+                    format = ImageFormat.Jpg;
+                    return true;
+                case "gif":
+                    format = ImageFormat.Gif;
+                    return true;
+                case "webp":
+                    format = ImageFormat.WebP;
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         public static string TrimTo(this string str, int length, bool useEllipses = false)
@@ -99,6 +134,95 @@ namespace Administrator.Extensions
         }
 
         public static string Sanitize(this string str)
-            => Format.Sanitize(str); // TODO: options for what to sanitize.
+            => Markdown.Escape(str); // TODO: options for what to sanitize.
+
+        public static async Task<string> FormatPlaceHoldersAsync(this string str, AdminCommandContext context, object target = null, Random random = null)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+                return str;
+
+            // Target
+            if (!(target is null))
+                str = str.Replace("{target}", target.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            // RNG
+            str = RandomNumberRegex.Replace(str, ReplaceRandomNumber);
+
+            // User
+            if (AsyncUserRegex.IsMatch(str))
+            {
+                var user = await context.Database.GetOrCreateGlobalUserAsync(context.User.Id);
+                str = str.Replace("{user.xp}", user.CurrentLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.level}", user.Level.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.nextxp}", user.NextLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.tier}", user.Tier.ToString(), StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (AsyncGuildUserRegex.IsMatch(str) && !context.IsPrivate)
+            {
+                var guildUser = await context.Database.GetOrCreateGuildUserAsync(context.User.Id, context.Guild.Id);
+                str = str.Replace("{user.guildxp}", guildUser.CurrentLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.guildlevel}", guildUser.Level.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.guildnextxp}", guildUser.NextLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.guildtier}", guildUser.Tier.ToString(), StringComparison.OrdinalIgnoreCase);
+            }
+
+            str = str.Replace("{user}", context.User.Tag, StringComparison.OrdinalIgnoreCase)
+                .Replace("{user.id}", context.User.Id.ToString(), StringComparison.OrdinalIgnoreCase)
+                .Replace("{user.avatar}", context.User.GetAvatarUrl(), StringComparison.OrdinalIgnoreCase)
+                .Replace("{user.name}", context.User.Name, StringComparison.OrdinalIgnoreCase)
+                .Replace("{user.mention}", context.User.Mention, StringComparison.OrdinalIgnoreCase)
+                .Replace("{user.created}", context.User.Id.CreatedAt.ToString("g", context.Language.Culture),
+                    StringComparison.OrdinalIgnoreCase)
+                .Replace("{user.discrim}", context.User.Discriminator, StringComparison.OrdinalIgnoreCase);
+
+            if (!context.IsPrivate)
+            {
+                var member = (CachedMember) context.User;
+                str = str.Replace("{user.nick}", member.Nick ?? context.User.Name, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.joined}", member.JoinedAt.ToString("g", context.Language.Culture),
+                        StringComparison.OrdinalIgnoreCase);
+            }
+
+            // Channel
+            str = str.Replace("{channel}", context.Channel.ToString(), StringComparison.OrdinalIgnoreCase)
+                .Replace("{channel.id}", context.Channel.Id.ToString(), StringComparison.OrdinalIgnoreCase)
+                .Replace("{channel.name}", context.Channel.Name, StringComparison.OrdinalIgnoreCase)
+                .Replace("{channel.created}", context.Channel.Id.CreatedAt.ToString("g", context.Language.Culture), StringComparison.OrdinalIgnoreCase);
+
+            if (!context.IsPrivate)
+            {
+                var channel = (CachedTextChannel) context.Channel;
+                str = str.Replace("{channel.tag}", channel.Tag, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{channel.topic}", channel.Topic, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{channel.mention}", channel.Mention, StringComparison.OrdinalIgnoreCase);
+            }
+
+            // Guild
+            if (!context.IsPrivate)
+            {
+                str = str.Replace("{guild}", context.Guild.Name, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{guild.id}", context.Guild.Id.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{guild.name}", context.Guild.Name, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{guild.created}", context.Guild.Id.CreatedAt.ToString("g", context.Language.Culture), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{guild.members}", context.Guild.Members.Count.ToString(), StringComparison.OrdinalIgnoreCase);
+            }
+
+            return str;
+
+            string ReplaceRandomNumber(Match match)
+            {
+                try
+                {
+                    return (random ?? new Random())
+                        .Next(int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value))
+                        .ToString();
+                }
+                catch
+                {
+                    return match.Value;
+                }
+            }
+        }
     }
 }

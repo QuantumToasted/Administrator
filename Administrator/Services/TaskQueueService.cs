@@ -2,10 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Services
 {
-    public sealed class TaskQueueService : IService
+    public sealed class TaskQueueService : Service
     {
         private readonly ConcurrentQueue<Func<Task>> _queue;
         private readonly SemaphoreSlim _semaphore;
@@ -13,17 +14,29 @@ namespace Administrator.Services
 
         private event Func<Task> CollectionChanged;
 
-        public TaskQueueService(LoggingService logging)
+        public TaskQueueService(IServiceProvider provider)
+            : base(provider)
         {
             _queue = new ConcurrentQueue<Func<Task>>();
             _semaphore = new SemaphoreSlim(1, 1);
-            _logging = logging;
+            _logging = _provider.GetRequiredService<LoggingService>();
         }
 
         public Task Enqueue(Func<Task> func)
         {
             _queue.Enqueue(func);
             return CollectionChanged?.Invoke() ?? Task.CompletedTask;
+        }
+
+        public override Task InitializeAsync()
+        {
+            CollectionChanged += () =>
+            {
+                _ = Task.Run(EmptyQueueAsync);
+                return Task.CompletedTask;
+            };
+
+            return base.InitializeAsync();
         }
 
         private async Task EmptyQueueAsync()
@@ -43,18 +56,6 @@ namespace Administrator.Services
             }
 
             _semaphore.Release();
-        }
-
-        Task IService.InitializeAsync()
-        {
-            CollectionChanged += ()
-                =>
-            {
-                _ = Task.Run(EmptyQueueAsync);
-                return Task.CompletedTask;
-            };
-
-            return _logging.LogInfoAsync("Initialized.", "TaskQueue");
         }
     }
 }
