@@ -75,17 +75,17 @@ namespace Administrator.Common
                         builder
                         .WithDescription(builder.ToString())));
 
-                    sb.Clear().AppendLine(text);
+                    sb.Clear().AppendNewline(text);
                 }
                 else if (i == list.Count - 1)
                 {
                     pages.Add((plaintextFunc?.Invoke(),
                         builder
-                        .WithDescription(sb.AppendLine(text).ToString())));
+                        .WithDescription(sb.AppendNewline(text).ToString())));
                 }
                 else
                 {
-                    sb.AppendLine(text);
+                    sb.AppendNewline(text);
                 }
             }
             

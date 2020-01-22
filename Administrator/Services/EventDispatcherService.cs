@@ -12,10 +12,10 @@ using Qmmands;
 
 namespace Administrator.Services
 {
-    public sealed class EventDispatcherService : IService
+    public sealed class EventDispatcherService : Service,
+        IHandler<ReadyEventArgs>
     {
         private readonly IDictionary<Type, List<IHandler>> _handlers;
-        private readonly IServiceProvider _provider;
         private readonly TaskQueueService _queue;
         private readonly DiscordClient _client;
         private readonly CommandService _commands;
@@ -23,28 +23,16 @@ namespace Administrator.Services
         private bool _firstReady;
 
         public EventDispatcherService(IServiceProvider provider)
+            : base(provider)
         {
-            _provider = provider;
             _handlers = new Dictionary<Type, List<IHandler>>();
-
             _queue = _provider.GetRequiredService<TaskQueueService>();
             _client = _provider.GetRequiredService<DiscordClient>();
             _commands = _provider.GetRequiredService<CommandService>();
             _logging = _provider.GetRequiredService<LoggingService>();
         }
 
-        private Task EnqueueHandlers<TArgs>(TArgs args)
-            where TArgs : EventArgs
-        {
-            foreach (var handler in _handlers[typeof(TArgs)])
-            {
-                _queue.Enqueue(() => ((IHandler<TArgs>) handler).HandleAsync(args));
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private Task HandleReady(ReadyEventArgs e)
+        public Task HandleAsync(ReadyEventArgs args)
         {
             if (_firstReady)
                 return Task.CompletedTask;
@@ -55,7 +43,7 @@ namespace Administrator.Services
             return Task.CompletedTask;
         }
 
-        async Task IService.InitializeAsync()
+        public override async Task InitializeAsync()
         {
             var types = typeof(DiscordEventArgs).Assembly.GetTypes()
                 .Concat(typeof(MessageLoggedEventArgs).Assembly.GetTypes())
@@ -67,7 +55,7 @@ namespace Administrator.Services
                 _handlers[type] = _provider.GetHandlers(type).ToList();
             }
 
-            _client.Ready += HandleReady;
+            _client.Ready += EnqueueHandlers;
             _client.Logger.MessageLogged += (_, args) => EnqueueHandlers(args);
             _client.MessageReceived += EnqueueHandlers;
             _client.MessageDeleted += EnqueueHandlers;
@@ -79,11 +67,25 @@ namespace Administrator.Services
             _client.MemberJoined += EnqueueHandlers;
             _client.MemberUpdated += EnqueueHandlers;
             _client.UserUpdated += EnqueueHandlers;
+            _client.ReactionsCleared += EnqueueHandlers;
+            _client.ChannelDeleted += EnqueueHandlers;
+            _client.MessagesBulkDeleted += EnqueueHandlers;
 
             _commands.CommandExecuted += EnqueueHandlers;
             _commands.CommandExecutionFailed += EnqueueHandlers;
 
             await _logging.LogInfoAsync("Initialized.", "Dispatcher");
+        }
+
+        private Task EnqueueHandlers<TArgs>(TArgs args)
+            where TArgs : EventArgs
+        {
+            foreach (var handler in _handlers[typeof(TArgs)])
+            {
+                _queue.Enqueue(() => ((IHandler<TArgs>) handler).HandleAsync(args));
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

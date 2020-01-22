@@ -5,25 +5,22 @@ using Administrator.Database;
 using Disqord;
 using Disqord.Events;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Services
 {
-    public sealed class ReactionRoleService : IService, 
+    public sealed class ReactionRoleService : Service, 
         IHandler<ReactionAddedEventArgs>, 
         IHandler<ReactionRemovedEventArgs>,
         IHandler<MessageDeletedEventArgs>,
         IHandler<ChannelDeletedEventArgs>
     {
-        private readonly DiscordClient _client;
         private readonly LoggingService _logging;
-        private readonly IServiceProvider _provider;
 
-        public ReactionRoleService(DiscordClient client,
-            LoggingService logging, IServiceProvider provider)
+        public ReactionRoleService(IServiceProvider provider)
+            : base(provider)
         {
-            _client = client;
-            _logging = logging;
-            _provider = provider;
+            _logging = _provider.GetRequiredService<LoggingService>();
         }
 
         public async Task HandleAsync(ReactionAddedEventArgs args)
@@ -93,8 +90,5 @@ namespace Administrator.Services
             if (reactionRoles.Count > 0)
                 ctx.ReactionRoles.RemoveRange(reactionRoles);
         }
-
-        Task IService.InitializeAsync()
-            => _logging.LogInfoAsync("Initialized", "ReactionRoles");
     }
 }

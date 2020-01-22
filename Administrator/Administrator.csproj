@@ -7,6 +7,10 @@
     <StartupObject>Administrator.Program</StartupObject>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Migrations\20190508031924_Reset.cs" />
     <Compile Remove="Migrations\20190508031924_Reset.Designer.cs" />
@@ -29,12 +33,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Backpack.Net" Version="1.0.5" />
+    <PackageReference Include="Backpack.Net" Version="1.0.6" />
     <PackageReference Include="CommandLineParser" Version="2.6.0" />
-    <PackageReference Include="Disqord" Version="1.0.0" />
-    <PackageReference Include="Disqord.Core" Version="1.0.0" />
-    <PackageReference Include="Disqord.Rest" Version="1.0.0" />
-    <PackageReference Include="Disqord.Serialization.Json.Newtonsoft" Version="1.0.0" />
+    <PackageReference Include="Disqord" Version="1.0.0-nightly-00005" />
     <PackageReference Include="FluentScheduler" Version="5.3.0" />
     <PackageReference Include="Humanizer" Version="2.7.9" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.3.1" />
@@ -44,9 +45,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
-    <PackageReference Include="Qmmands" Version="3.0.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002988" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-dev002988" />
+    <PackageReference Include="Qmmands" Version="3.1.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev003195" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-dev003195" />
     <PackageReference Include="SteamWebAPI2" Version="4.0.12" />
   </ItemGroup>
 

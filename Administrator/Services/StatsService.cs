@@ -8,11 +8,12 @@ using Administrator.Common;
 using Administrator.Extensions;
 using Disqord;
 using Disqord.Events;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Administrator.Services
 {
-    public sealed class StatsService : IService,
+    public sealed class StatsService : Service,
         IHandler<MessageReceivedEventArgs>,
         IHandler<CommandExecutedEventArgs>
     {
@@ -20,10 +21,11 @@ namespace Administrator.Services
         private readonly LoggingService _logging;
         private readonly DateTimeOffset _startTime;
 
-        public StatsService(DiscordClient client, LoggingService logging)
+        public StatsService(IServiceProvider provider)
+            : base(provider)
         {
-            _client = client;
-            _logging = logging;
+            _client = _provider.GetRequiredService<DiscordClient>();
+            _logging = _provider.GetRequiredService<LoggingService>();
             _startTime = DateTimeOffset.UtcNow;
             CustomAssemblies = new List<Assembly>();
         }
@@ -67,7 +69,7 @@ namespace Administrator.Services
             return Task.CompletedTask;
         }
 
-        Task IService.InitializeAsync()
+        public override Task InitializeAsync()
         {
             BuildDate = Assembly.GetExecutingAssembly().GetCustomAttribute<BuildDateAttribute>()?.Date ?? default;
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().DistinctBy(x => x.FullName))
@@ -81,7 +83,7 @@ namespace Administrator.Services
                     CustomAssemblies.Add(assembly);
             }
 
-            return _logging.LogInfoAsync("Initialized", "Stats");
+            return base.InitializeAsync();
         }
     }
 }

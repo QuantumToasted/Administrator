@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Administrator.Commands.Attributes;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Extensions;
@@ -57,6 +56,9 @@ namespace Administrator.Commands.Tags
             Context.Database.Tags.Update(tag);
             await Context.Database.SaveChangesAsync();
 
+            if (!string.IsNullOrWhiteSpace(tag.Response))
+                tag.Response = await tag.Response.FormatPlaceHoldersAsync(Context);
+
             if (JsonEmbed.TryParse(tag.Response ?? string.Empty, out var embed))
             {
                 return CommandSuccess(embed.Text, embed.ToLocalEmbed(),
@@ -71,7 +73,7 @@ namespace Administrator.Commands.Tags
         }
 
         [Command("create")]
-        public async ValueTask<AdminCommandResult> CreateTagAsync([Lowercase, MustBe(StringLength.ShorterThan, 50), NoNewlines] string name, 
+        public async ValueTask<AdminCommandResult> CreateTagAsync([Lowercase, MustBe(StringLength.ShorterThan, 50), Replace("\n", "")] string name, 
             [Remainder] string response = null)
         {
             if (await Context.Database.Tags.FindAsync(Context.Guild.Id.RawValue, name) is { })

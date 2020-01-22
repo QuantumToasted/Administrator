@@ -5,8 +5,11 @@ using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Rest;
@@ -97,6 +100,54 @@ namespace Administrator.Commands
 
                     return CommandSuccessLocalized($"channel_create_{Context.Path[2]}", args: channel.Format());
                 }
+            }
+
+            [Command("clone"), RunMode(RunMode.Parallel)]
+            public async ValueTask<AdminCommandResult> CloneChannelAsync(CachedGuildChannel channel,
+                [Remainder, MustBe(StringLength.ShorterThan, 32)] string newName = null)
+            {
+                using var _ = Context.Channel.Typing();
+                newName ??= channel.Name;
+
+                RestGuildChannel newChannel;
+                switch (channel)
+                {
+                    case CachedCategoryChannel _:
+                        newChannel = await Context.Guild.CreateCategoryChannelAsync(newName, x =>
+                        {
+                            x.Overwrites = channel.Overwrites.Select(y =>
+                                new LocalOverwrite(y.TargetId, y.TargetType, y.Permissions)).ToList();
+                        });
+                        break;
+                    case CachedTextChannel textChannel:
+                        newChannel = await Context.Guild.CreateTextChannelAsync(newName, x =>
+                        {
+                            x.Overwrites = textChannel.Overwrites.Select(y =>
+                                new LocalOverwrite(y.TargetId, y.TargetType, y.Permissions)).ToList();
+                            x.IsNsfw = textChannel.IsNsfw;
+                            x.Slowmode = textChannel.Slowmode;
+                            x.ParentId = textChannel.CategoryId ?? Optional<Snowflake>.Empty;
+                        });
+                        break;
+                    case CachedVoiceChannel voiceChannel:
+                        newChannel = await Context.Guild.CreateVoiceChannelAsync(newName, x =>
+                        {
+                            x.Overwrites = voiceChannel.Overwrites.Select(y =>
+                                new LocalOverwrite(y.TargetId, y.TargetType, y.Permissions)).ToList();
+                            x.Bitrate = voiceChannel.Bitrate;
+                            x.UserLimit = voiceChannel.UserLimit;
+                            x.ParentId = voiceChannel.CategoryId ?? Optional<Snowflake>.Empty;
+                        });
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(newChannel));
+                }
+
+                await Context.Guild.ReorderChannelsAsync(new Dictionary<Snowflake, int>
+                    { [newChannel.Id] = channel.Position + 1 });
+
+                return CommandSuccessLocalized("channel_clone",
+                    args: new object[] {channel.Format(), newChannel.Format()});
             }
 
             [Command("rename")]
@@ -199,6 +250,46 @@ namespace Administrator.Commands
                 { }
 
                 return CommandErrorLocalized("channel_slowmode_set_failed", args: channel.Mention);
+            }
+
+            [Group("settings")]
+            public sealed class ChannelSettingsCommands : ChannelManagementCommands
+            {
+                [Command]
+                public async ValueTask<AdminCommandResult> ViewAsync()
+                {
+                    var channel =
+                        await Context.Database.GetOrCreateTextChannelAsync(Context.Guild.Id, Context.Channel.Id);
+
+                    var builder = new StringBuilder(Localize("channel_settings_title", ((CachedTextChannel) Context.Channel).Mention))
+                        .AppendNewline()
+                        .AppendNewline();
+
+                    foreach (var value in Enum.GetValues(typeof(TextChannelSettings)).Cast<TextChannelSettings>()
+                        .Where(x => !x.Equals(default)))
+                    {
+                        var enabled = channel.Settings.HasFlag(value);
+                        builder.Append($"`{value:G}` - ")
+                            .AppendNewline(Localize($"info_{(enabled ? "enabled" : "disabled")}"));
+                    }
+
+                    return CommandSuccess(builder.ToString());
+                }
+
+                [Command("enable", "disable")]
+                public async ValueTask<AdminCommandResult> ModifyAsync(TextChannelSettings setting)
+                {
+                    var channel = await Context.Database.GetOrCreateTextChannelAsync(Context.Guild.Id, Context.Channel.Id);
+                    var enabled = Context.Path[2].Equals("enable");
+
+                    channel.Settings = enabled ? channel.Settings | setting : channel.Settings & ~setting;
+                    Context.Database.TextChannels.Update(channel);
+                    await Context.Database.SaveChangesAsync();
+
+                    return CommandSuccessLocalized(enabled ? "channel_settings_enabled" : "channel_settings_disabled",
+                        args: new object[]
+                            {Markdown.Code(setting.ToString("G")), ((CachedTextChannel) Context.Channel).Mention});
+                }
             }
         }
     }

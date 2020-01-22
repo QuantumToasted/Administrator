@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +72,18 @@ namespace Administrator.Database
 
         public DbSet<Reminder> Reminders { get; set; }
 
+        public DbSet<CommandAlias> CommandAliases { get; set; }
+
+        public DbSet<StarboardEntry> Starboard { get; set; }
+
+        public DbSet<CyclingStatus> Statuses { get; set; }
+
+        public DbSet<TextChannel> TextChannels { get; set; }
+
+        public DbSet<CommandCooldown> Cooldowns { get; set; }
+
+        public DbSet<CooldownData> CooldownData { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
             if (await Guilds.FindAsync(guildId) is { } guild)
@@ -122,7 +136,7 @@ namespace Administrator.Database
         public async Task<IEmoji> GetSpecialEmojiAsync(ulong guildId, EmojiType type)
         {
             if (!(await SpecialEmojis.FindAsync(guildId, type) is { } emoji))
-                return null;
+                return new LocalEmoji(type.GetDescription());
 
             return emoji.Emoji;
         }
@@ -134,6 +148,17 @@ namespace Administrator.Database
                 return null;
 
             return _client.GetGuild(reactionRole.GuildId).GetRole(reactionRole.RoleId);
+        }
+
+        public async Task<TextChannel> GetOrCreateTextChannelAsync(ulong guildId, ulong channelId)
+        {
+            if (await TextChannels.FindAsync(guildId, channelId) is { } channel)
+                return channel;
+
+            channel = new TextChannel(guildId, channelId);
+            TextChannels.Add(channel);
+            await SaveChangesAsync();
+            return channel;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -154,6 +179,12 @@ namespace Administrator.Database
                             .First(y => y.CultureCode.Equals(x)));
                 guild.Property(x => x.CustomPrefixes).HasDefaultValueSql("'{}'");
                 guild.Property(x => x.BlacklistedModmailAuthors)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+                guild.Property(x => x.BlacklistedEmojiGuilds)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+                guild.Property(x => x.BlacklistedStarboardIds)
                     .HasConversion(new SnowflakeCollectionConverter())
                     .HasDefaultValueSql("''");
             });
@@ -306,6 +337,41 @@ namespace Administrator.Database
                 reminder.HasKey(x => x.Id);
                 reminder.Property(x => x.Id)
                     .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<CommandAlias>(alias =>
+            {
+                alias.HasKey(x => new {x.GuildId, x.Alias});
+            });
+
+            modelBuilder.Entity<StarboardEntry>(entry =>
+            {
+                entry.HasKey(x => x.MessageId);
+                entry.Property(x => x.Stars)
+                    .HasConversion(new SnowflakeCollectionConverter())
+                    .HasDefaultValueSql("''");
+            });
+
+            modelBuilder.Entity<CyclingStatus>(status =>
+            {
+                status.HasKey(x => x.Id);
+                status.Property(x => x.Id)
+                    .ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<TextChannel>(channel =>
+            {
+                channel.HasKey(x => new {x.GuildId, x.ChannelId});
+            });
+
+            modelBuilder.Entity<CommandCooldown>(cooldown =>
+            {
+                cooldown.HasKey(x => new {x.GuildId, x.CommandName});
+            });
+
+            modelBuilder.Entity<CooldownData>(data =>
+            {
+                data.HasKey(x => new {x.GuildId, x.UserId, x.Command});
             });
         }
     }

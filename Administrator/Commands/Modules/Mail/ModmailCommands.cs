@@ -278,7 +278,7 @@ namespace Administrator.Commands
                     }
                     else
                     {
-                        sb.AppendLine(message.Text);
+                        sb.AppendNewline(message.Text);
                     }
 
                     lastTarget = message.Target;

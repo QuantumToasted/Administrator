@@ -9,23 +9,20 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Disqord;
 using Disqord.Events;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Services
 {
-    public sealed class HighlightService : IService, IHandler<MessageReceivedEventArgs>
+    public sealed class HighlightService : Service, IHandler<MessageReceivedEventArgs>
     {
-        private readonly LoggingService _logging;
         private readonly LocalizationService _localization;
         private readonly DiscordClient _client;
-        private readonly IServiceProvider _provider;
 
-        public HighlightService(LoggingService logging, LocalizationService localization, 
-            DiscordClient client, IServiceProvider provider)
+        public HighlightService(IServiceProvider provider)
+            : base(provider)
         {
-            _logging = logging;
-            _localization = localization;
-            _client = client;
-            _provider = provider;
+            _localization = _provider.GetRequiredService<LocalizationService>();
+            _client = _provider.GetRequiredService<DiscordClient>();
         }
 
         public async Task HandleAsync(MessageReceivedEventArgs args)
@@ -60,9 +57,9 @@ namespace Administrator.Services
                         .WithAuthor(_localization.Localize(user.Language, "highlight_trigger_author",
                             message.Author.Tag, message.Channel), message.Author.GetAvatarUrl())
                         .WithDescription(new StringBuilder()
-                            .AppendLine(message.Content.TrimTo(LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH - 50))
-                            .AppendLine()
-                            .AppendLine($"[{_localization.Localize(user.Language, "info_jumpmessage")}]({message.JumpUrl})")
+                            .AppendNewline(message.Content.TrimTo(LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH - 50))
+                            .AppendNewline()
+                            .AppendNewline($"[{_localization.Localize(user.Language, "info_jumpmessage")}]({message.JumpUrl})")
                             .ToString())
                         .WithTimestamp(message.Id.CreatedAt);
 
@@ -73,8 +70,5 @@ namespace Administrator.Services
                 }
             }
         }
-
-        public Task InitializeAsync()
-            => _logging.LogInfoAsync("Initialized", "Highlights");
     }
 }

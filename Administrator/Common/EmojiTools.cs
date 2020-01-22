@@ -21,6 +21,8 @@ namespace Administrator.Common
         public static readonly IEmoji Tada = new LocalEmoji("🎉");
         public static readonly IEmoji Left = new LocalEmoji("⬅");
         public static readonly IEmoji Right = new LocalEmoji("➡");
+        public static readonly IEmoji Checkmark = new LocalEmoji("✅");
+        public static readonly IEmoji X = new LocalEmoji("❌");
 
         public static IEmoji Parse(string input)
             => TryParse(input, out var result) ? result : throw new FormatException("Failed to parse IEmoji.");
@@ -60,7 +62,7 @@ namespace Administrator.Common
 
         private static IEnumerable<int> GetUnicodeCodePoints(IEmoji emoji)
         {
-            var str = emoji.ToString();
+            var str = emoji.MessageFormat;
             var codePoints = new List<int>(str.Length);
             for (var i = 0; i < str.Length; i++)
             {

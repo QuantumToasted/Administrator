@@ -186,11 +186,9 @@ namespace Administrator.Commands
                 await Context.Database.SaveChangesAsync();
 
                 var key = "punishment_revoked_success";
-                LogType type;
                 switch (punishment)
                 {
                     case Ban _:
-                        type = LogType.Unban;
                         try
                         {
                             await Context.Guild.UnbanMemberAsync(punishment.TargetId);
@@ -201,7 +199,6 @@ namespace Administrator.Commands
                         }
                         break;
                     case Mute mute:
-                        type = LogType.Unmute;
                         if (!(Context.Guild.GetMember(punishment.TargetId) is CachedMember target))
                             break;
                         if (mute.ChannelId.HasValue)
@@ -230,13 +227,12 @@ namespace Administrator.Commands
                         await target.RevokeRoleAsync(muteRole.Id);
                         break;
                     case Warning _:
-                        type = LogType.Unwarn;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
 
-                if (await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, type) is CachedTextChannel logChannel)
+                if (await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Revoke) is CachedTextChannel logChannel)
                 {
                     var target = await Context.Client.GetOrDownloadUserAsync(punishment.TargetId);
                     var moderator = await Context.Client.GetOrDownloadUserAsync(punishment.RevokerId);
@@ -407,7 +403,7 @@ namespace Administrator.Commands
                             throw new ArgumentOutOfRangeException();
                     }
 
-                    sb.AppendLine(char.ToUpper(text[0], Context.Language.Culture) + text[1..]);
+                    sb.AppendNewline(char.ToUpper(text[0], Context.Language.Culture) + text[1..]);
                 }
 
                 builder.WithDescription(sb.ToString());

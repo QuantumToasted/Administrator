@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Administrator.Commands.Attributes;
 using Qmmands;
 
 namespace Administrator.Commands

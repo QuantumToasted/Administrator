@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Administrator.Commands.Attributes
+namespace Administrator.Commands
 {
     [AttributeUsage(AttributeTargets.Parameter)]
     public sealed class UppercaseAttribute : SanitaryAttribute
     {
         public UppercaseAttribute() 
-            : base(x => x.ToLowerInvariant())
+            : base(x => x.ToUpperInvariant())
         { }
     }
 }

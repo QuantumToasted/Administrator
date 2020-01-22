@@ -3,6 +3,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Administrator.Commands;
 using Administrator.Extensions;
 using Administrator.Services;
 using Backpack.Net;
@@ -22,13 +23,15 @@ namespace Administrator
                 new DiscordClientConfiguration {MessageCache = new DefaultMessageCache(100)});
             var factory = new SteamWebInterfaceFactory(config.SteamApiKey); // TODO: Factory?
             var backpackClient = new BackpackClient(config.BackpackApiKey);
+            var commands = new CommandService(new CommandServiceConfiguration
+                {CooldownProvider = new AdminCooldownProvider()});
 
             var provider = new ServiceCollection()
                 .AutoAddServices()
                 .AddSingleton(client)
                 .AddSingleton(factory)
                 .AddSingleton(backpackClient)
-                .AddSingleton<CommandService>()
+                .AddSingleton(commands)
                 .AddSingleton<CancellationTokenSource>()
                 .AddSingleton<Random>()
                 .AddSingleton<Registry>()

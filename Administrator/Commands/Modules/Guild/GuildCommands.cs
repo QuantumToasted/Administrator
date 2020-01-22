@@ -7,6 +7,7 @@ using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
+using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using Permission = Disqord.Permission;
@@ -19,6 +20,8 @@ namespace Administrator.Commands
     public class GuildCommands : AdminModuleBase
     {
         public PaginationService Pagination { get; set; }
+
+        public CommandHandlerService CommandHandler { get; set; }
 
         [RequireUserPermissions(Permission.ManageGuild)]
         public class GuildManagementCommands : GuildCommands
@@ -40,6 +43,8 @@ namespace Administrator.Commands
                 await Context.Database.SaveChangesAsync();
                 Context.Language = newLanguage;
 
+                CommandHandler.UpdateLanguage(Context.Guild.Id, newLanguage);
+
                 return CommandSuccessLocalized("guild_language_set", args:
                     $"{Markdown.Bold(guild.Language.NativeName)} ({guild.Language.EnglishName}, `{guild.Language.CultureCode}`)");
             }
@@ -47,7 +52,7 @@ namespace Administrator.Commands
             [Command("languages")]
             public AdminCommandResult GetLanguages()
                 => CommandSuccess(new StringBuilder()
-                    .AppendLine(Localize("available_languages"))
+                    .AppendNewline(Localize("available_languages"))
                     .AppendJoin('\n',
                         Localization.Languages.Select(
                             x => Markdown.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());
@@ -55,13 +60,13 @@ namespace Administrator.Commands
             [Group("settings")]
             public sealed class GuildSettingsCommands : GuildManagementCommands
             {
-                [Command("", "list")]
+                [Command]
                 public async ValueTask<AdminCommandResult> ListGuildSettingsAsync()
                 {
                     var builder =
                         new StringBuilder(Localize("guild_settings", Markdown.Bold(Context.Guild.Name.Sanitize())))
-                            .AppendLine()
-                            .AppendLine();
+                            .AppendNewline()
+                            .AppendNewline();
 
                     var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
                     foreach (var value in Enum.GetValues(typeof(GuildSettings)).Cast<GuildSettings>()
@@ -69,7 +74,7 @@ namespace Administrator.Commands
                     {
                         var enabled = guild.Settings.HasFlag(value);
                         builder.Append($"`{value:G}` - ")
-                            .AppendLine(Localize($"info_{(enabled ? "enabled" : "disabled")}"));
+                            .AppendNewline(Localize($"info_{(enabled ? "enabled" : "disabled")}"));
                     }
 
                     return CommandSuccess(builder.ToString());
@@ -102,8 +107,8 @@ namespace Administrator.Commands
 
                     return CommandSuccess(
                         new StringBuilder(Localize("guild_prefixes", Markdown.Bold(Context.Guild.Name.Sanitize())))
-                            .AppendLine()
-                            .AppendLine()
+                            .AppendNewline()
+                            .AppendNewline()
                             .AppendJoin('\n', guild.CustomPrefixes.Select(x => $"\"{x.Sanitize()}\"")).ToString());
                 }
 
@@ -121,6 +126,8 @@ namespace Administrator.Commands
                     Context.Database.Guilds.Update(guild);
                     await Context.Database.SaveChangesAsync();
 
+                    CommandHandler.UpdatePrefixes(Context.Guild.Id, guild.CustomPrefixes);
+
                     return CommandSuccessLocalized("guild_prefixes_added", args: $"\"{prefix.Sanitize()}\"");
                 }
 
@@ -135,6 +142,8 @@ namespace Administrator.Commands
                     Context.Database.Guilds.Update(guild);
                     await Context.Database.SaveChangesAsync();
 
+                    CommandHandler.UpdatePrefixes(Context.Guild.Id, guild.CustomPrefixes);
+
                     return CommandSuccessLocalized("guild_prefixes_removed", args: $"\"{prefix.Sanitize()}\"");
                 }
 
@@ -148,6 +157,8 @@ namespace Administrator.Commands
                     guild.CustomPrefixes.Clear();
                     Context.Database.Guilds.Update(guild);
                     await Context.Database.SaveChangesAsync();
+
+                    CommandHandler.UpdatePrefixes(Context.Guild.Id, guild.CustomPrefixes);
 
                     return CommandSuccessLocalized("guild_prefixes_cleared");
                 }
@@ -209,15 +220,15 @@ namespace Administrator.Commands
                 {
                     var builder =
                         new StringBuilder(Localize(key, Markdown.Bold(Context.Guild.Name.Sanitize())))
-                            .AppendLine()
-                            .AppendLine();
+                            .AppendNewline()
+                            .AppendNewline();
 
                     foreach (var value in Enum.GetValues(typeof(LevelUpNotification)).Cast<LevelUpNotification>()
                         .Where(x => !x.Equals(LevelUpNotification.None)))
                     {
                         var enabled = guild.LevelUpWhitelist.HasFlag(value);
                         builder.Append($"`{value:G}` - ")
-                            .AppendLine(Localize($"info_{(enabled ? "enabled" : "disabled")}"));
+                            .AppendNewline(Localize($"info_{(enabled ? "enabled" : "disabled")}"));
                     }
 
                     return builder.ToString();
@@ -250,8 +261,8 @@ namespace Administrator.Commands
                 {
                     var builder =
                         new StringBuilder(Localize("guild_emojis_list", Markdown.Bold(Context.Guild.Name.Sanitize())))
-                            .AppendLine()
-                            .AppendLine();
+                            .AppendNewline()
+                            .AppendNewline();
 
                     var specialEmojis = await Context.Database.SpecialEmojis.Where(x => x.GuildId == Context.Guild.Id)
                         .ToListAsync();
@@ -261,7 +272,7 @@ namespace Administrator.Commands
                     {
                         builder.Append($"`{value:G}` - ");
 
-                        builder.AppendLine(specialEmojis.FirstOrDefault(x => x.Type == value) is { } specialEmoji
+                        builder.AppendNewline(specialEmojis.FirstOrDefault(x => x.Type == value) is { } specialEmoji
                             ? specialEmoji.ToString()
                             : Localize("info_none"));
                     }
@@ -310,12 +321,12 @@ namespace Administrator.Commands
                                     roleReward.RemovedRoleIds.Select(x => Context.Guild.GetRole(x).Format()));
                                 return builder.WithValue(new StringBuilder(Localize("levelreward_role_addedroles"))
                                     .Append(" ")
-                                    .AppendLine(string.IsNullOrWhiteSpace(addedRoles)
+                                    .AppendNewline(string.IsNullOrWhiteSpace(addedRoles)
                                         ? Localize("info_none")
                                         : addedRoles)
                                     .Append(Localize("levelreward_role_removedroles"))
                                     .Append(" ")
-                                    .AppendLine(string.IsNullOrWhiteSpace(removedRoles)
+                                    .AppendNewline(string.IsNullOrWhiteSpace(removedRoles)
                                         ? Localize("info_none")
                                         : removedRoles).ToString()
                                     .TrimTo(LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH / 2));
@@ -485,5 +496,24 @@ namespace Administrator.Commands
                 return CommandSuccessLocalized("guild_specialrole", args: new object[] { Markdown.Bold(type.ToString()), role.Format() });
             }
         }
+
+        [Command("", "info")]
+        [IgnoresExtraArguments]
+        public AdminCommandResult GetGuildInfo()
+            => CommandSuccess(embed: new LocalEmbedBuilder()
+                .WithSuccessColor()
+                .WithTitle(Localize("guild_info_title", Context.Guild.Name.Sanitize()))
+                .WithThumbnailUrl(Context.Guild.GetIconUrl())
+                .AddField(Localize("info_id"), Context.Guild.Id)
+                .AddField(Localize("info_created"),
+                    string.Join('\n', Context.Guild.Id.CreatedAt.ToString("G", Context.Language.Culture),
+                        (DateTimeOffset.UtcNow - Context.Guild.Id.CreatedAt).HumanizeFormatted(Localization,
+                            Context.Language, TimeUnit.Second, true)))
+                .AddField(Localize("info_stats_presence"),
+                    Localize("guild_info_presence", Context.Guild.MemberCount,
+                        Context.Guild.Members.Values.Count(x => x.IsBot), Context.Guild.TextChannels.Count,
+                        Context.Guild.VoiceChannels.Count, Context.Guild.CategoryChannels.Count))
+                .WithFooter(Localize("guild_info_owner", Context.Guild.Owner.Tag), Context.Guild.Owner.GetAvatarUrl())
+                .Build());
     }
 }

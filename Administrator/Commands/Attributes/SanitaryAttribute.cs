@@ -1,7 +1,7 @@
 ﻿using System;
 using Qmmands;
 
-namespace Administrator.Commands.Attributes
+namespace Administrator.Commands
 {
     public abstract class SanitaryAttribute : OverrideTypeParserAttribute
     {

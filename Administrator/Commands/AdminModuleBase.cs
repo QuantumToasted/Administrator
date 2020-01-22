@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Administrator.Common;
+using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
 using Disqord.Events;
@@ -13,6 +15,8 @@ namespace Administrator.Commands
         private readonly Stopwatch _watch = Stopwatch.StartNew();
         
         public LocalizationService Localization { get; set; }
+
+        public new AdminCommandContext Context => base.Context;
 
         protected AdminCommandResult CommandSuccess(string text = null, LocalEmbed embed = null, LocalAttachment attachment = null)
             => new AdminCommandResult(_watch.Elapsed, text, embed, attachment, true);
@@ -59,6 +63,18 @@ namespace Administrator.Commands
 
                 return Task.CompletedTask;
             }
+        }
+
+        protected override ValueTask BeforeExecutedAsync()
+        {
+            Context.Command.BeginExecution(Context);
+            return new ValueTask();
+        }
+
+        protected override ValueTask AfterExecutedAsync()
+        {
+            Context.Command.EndExecution(Context);
+            return new ValueTask();
         }
 
         public void Dispose()

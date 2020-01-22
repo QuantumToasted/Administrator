@@ -1,9 +1,16 @@
-﻿namespace Administrator.Common
+﻿using System.ComponentModel;
+
+namespace Administrator.Common
 {
     public enum EmojiType
     {
+        [Description("⬆️")]
         Upvote,
+        [Description("⬇️")]
         Downvote,
-        LevelUp
+        [Description("🎉")]
+        LevelUp,
+        [Description("⭐")]
+        Star
     }
 }

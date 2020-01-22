@@ -4,16 +4,14 @@
     {
         Disable,
         Ban,
-        Unban,
         Kick,
         Mute,
-        Unmute,
         Warn,
-        Unwarn, // TODO: Better name
+        Revoke, // TODO: Better name
         Modmail,
         Appeal,
         Suggestion,
-        SuggestionArchive, // TODO: Better name?
+        SuggestionArchive,
         MessageDelete,
         MessageUpdate,
         Join,
@@ -21,6 +19,8 @@
         UsernameUpdate,
         NicknameUpdate,
         AvatarUpdate,
-        UserRoleUpdate
+        UserRoleUpdate,
+        ReactionRemove,
+        Starboard
     }
 }

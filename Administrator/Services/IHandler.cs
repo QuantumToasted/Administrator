@@ -11,12 +11,4 @@ namespace Administrator.Services
     {
         Task HandleAsync(T1 args);
     }
-
-    /*
-    public interface IHandler<in T1> : IHandler
-        where T1: DiscordEventArgs
-    {
-        Task HandleAsync(T1 args);
-    }
-    */
 }

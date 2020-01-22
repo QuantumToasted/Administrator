@@ -27,6 +27,10 @@ namespace Administrator.Database
 
         public List<ulong> BlacklistedModmailAuthors { get; set; } = new List<ulong>();
 
+        public List<ulong> BlacklistedEmojiGuilds { get; set; } = new List<ulong>();
+
+        public List<ulong> BlacklistedStarboardIds { get; set; } = new List<ulong>();
+
         public GuildSettings Settings { get; set; } = GuildSettings.Punishments | GuildSettings.XpTracking;
 
         public TimeSpan XpGainInterval { get; set; } = LevelService.XpGainInterval;
@@ -36,5 +40,9 @@ namespace Administrator.Database
         public LevelUpNotification LevelUpWhitelist { get; set; } = LevelUpNotification.Reaction;
 
         public int MaximumReactionRoles { get; set; } = 10;
+
+        public int BigEmojiSize { get; set; } = 256;
+
+        public int MinimumStars { get; set; } = 3;
     }
 }

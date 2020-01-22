@@ -100,24 +100,24 @@ namespace Administrator.Common
                            $" - {_context.Localize("punishment_case", punishment.Id)}";
 
                 var sb = new StringBuilder()
-                    .AppendLine(_context.Localize("punishment_target", target?.Format(false) ?? "???"))
-                    .AppendLine(_context.Localize("punishment_moderator", moderator?.Format(false) ?? "???"));
+                    .AppendNewline(_context.Localize("punishment_target", target?.Format(false) ?? "???"))
+                    .AppendNewline(_context.Localize("punishment_moderator", moderator?.Format(false) ?? "???"));
 
                 if (punishment is Mute mute && mute.ChannelId.HasValue)
                 {
-                    sb.AppendLine(_context.Localize("punishment_mute_channel") + ": " +
+                    sb.AppendNewline(_context.Localize("punishment_mute_channel") + ": " +
                                   (_context.Guild.GetTextChannel(mute.ChannelId.Value)?.Mention ?? "???"));
                 }
 
-                sb.AppendLine(_context.Localize("title_reason") + ": " + punishment.Reason.TrimTo(512))
-                    .AppendLine(_context.Localize("punishment_timestamp",
+                sb.AppendNewline(_context.Localize("title_reason") + ": " + punishment.Reason.TrimTo(512))
+                    .AppendNewline(_context.Localize("punishment_timestamp",
                         punishment.CreatedAt.ToString("g", _context.Language.Culture)));
 
                 if (punishment is RevocablePunishment revocable)
                 {
                     if (revocable.IsAppealable)
                     {
-                        sb.AppendLine(_context.Localize("punishment_appealed") + ' ' +
+                        sb.AppendNewline(_context.Localize("punishment_appealed") + ' ' +
                                       (revocable.AppealedAt.HasValue
                                           ? $"✅ {revocable.AppealedAt.Value.ToString("g", _context.Language.Culture)} - {revocable.AppealReason.TrimTo(950)}"
                                           : "❌"));
@@ -127,7 +127,7 @@ namespace Administrator.Common
                         ? await _context.Client.GetOrDownloadUserAsync(revocable.RevokerId)
                         : default;
 
-                    sb.AppendLine(_context.Localize("punishment_revoked") + ' ' + (revocable.RevokedAt.HasValue
+                    sb.AppendNewline(_context.Localize("punishment_revoked") + ' ' + (revocable.RevokedAt.HasValue
                                       ? "✅ " + revocable.RevokedAt.Value.ToString("g", _context.Language.Culture) +
                                         $" - {Markdown.Bold(revoker?.Tag ?? "???")} - " +
                                         (revocable.RevocationReason?.TrimTo(920) ??

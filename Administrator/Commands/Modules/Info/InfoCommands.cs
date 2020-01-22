@@ -5,17 +5,19 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
 using Humanizer.Localisation;
 using Qmmands;
 using Module = Qmmands.Module;
+using Permission = Disqord.Permission;
 
 namespace Administrator.Commands
 {
     [Name("Info")]
-    public sealed class InfoCommands : AdminModuleBase
+    public class InfoCommands : AdminModuleBase
     {
         public CommandService Commands { get; set; }
 
@@ -24,6 +26,8 @@ namespace Administrator.Commands
         public ConfigurationService Config { get; set; }
 
         public StatsService Stats { get; set; }
+
+        public LocalizationService Localization { get; set; }
 
         [Command("modules")]
         [IgnoresExtraArguments]
@@ -36,9 +40,9 @@ namespace Administrator.Commands
                 if (module.Checks.OfType<RequireOwnerAttribute>().Any() && 
                     !Config.OwnerIds.Contains(Context.User.Id)) continue;
 
-                builder.AppendLine(Markdown.Bold(Markdown.Code(module.Name)))
-                    .AppendLine(Localize($"info_modules_{module.Name.ToLower()}"))
-                    .AppendLine();
+                builder.AppendNewline(Markdown.Bold(Markdown.Code(module.Name)))
+                    .AppendNewline(Localize($"info_modules_{module.Name.ToLower()}"))
+                    .AppendNewline();
             }
 
             return CommandSuccess(embed: new LocalEmbedBuilder()
@@ -56,7 +60,7 @@ namespace Administrator.Commands
 
             var pages = DefaultPaginator.GeneratePages(groups, lineFunc: group => new StringBuilder()
                     .Append(Markdown.Bold(FormatCommands(group)))
-                    .AppendLine(Localize($"info_command_{group.Key.Replace(' ', '_')}")).ToString(),
+                    .AppendNewline(Localize($"info_command_{group.Key.Replace(' ', '_')}")).ToString(),
                 builder: new LocalEmbedBuilder().WithSuccessColor()
                     .WithTitle(Localize("info_module_commands", Markdown.Code(module.Name))));
             /*
@@ -97,7 +101,7 @@ namespace Administrator.Commands
                 .WithSuccessColor()
                 .WithDescription(new StringBuilder()
                     .Append(Markdown.Bold(FormatCommands(matches)))
-                    .AppendLine(Localize($"info_command_{command.FullAliases[0].Replace(' ', '_')}")).AppendLine()
+                    .AppendNewline(Localize($"info_command_{command.FullAliases[0].Replace(' ', '_')}")).AppendNewline()
                     .ToString())
                 .WithFooter(Localize("info_module_reference", command.Module.Name))
                 .Build());
@@ -139,11 +143,106 @@ namespace Administrator.Commands
                 {
                     if (assemblyName.Version is { } version)
                     {
-                        builder.AppendLine($"{assemblyName.Name} v{version}");
+                        builder.AppendNewline($"{assemblyName.Name} v{version}");
                     }
                 }
 
                 return builder.ToString();
+            }
+        }
+
+        [Command("ping")]
+        [IgnoresExtraArguments]
+        public ValueTask<AdminCommandResult> GetPing()
+            => CommandSuccessLocalized("info_ping", args: (Context.Client.Latency?.TotalMilliseconds ?? 0).ToString("F"));
+
+        [Group("cooldown")]
+        [RequireUserPermissions(Permission.ManageMessages)]
+        public sealed class CooldownCommands : InfoCommands
+        {
+            [Command]
+            public async ValueTask<AdminCommandResult> ViewCooldownAsync([Lowercase] string commandName)
+            {
+                var matches = Commands.GetAllCommands()
+                    .Where(x => x.FullAliases.Contains(commandName, StringComparer.OrdinalIgnoreCase)).ToList();
+
+                if (matches.Count == 0)
+                    return CommandErrorLocalized("info_help_notfound");
+
+                if (!(await Context.Database.Cooldowns.FindAsync(Context.Guild.Id.RawValue, commandName) is { }
+                    commandCooldown))
+                {
+                    return CommandSuccessLocalized("info_cooldown_default",
+                        args: new object[]
+                        {
+                            Markdown.Code(commandName),
+                            Markdown.Bold(
+                                MinimumCooldownAttribute.MinimumCooldown.HumanizeFormatted(Localization, Context.Language,
+                                    TimeUnit.Second))
+                        });
+                }
+
+                return CommandSuccessLocalized("info_cooldown", args: new object[]
+                {
+                    Markdown.Code(commandName),
+                    Markdown.Bold(
+                        commandCooldown.Cooldown.HumanizeFormatted(Localization, Context.Language,
+                            TimeUnit.Second))
+                });
+            }
+
+            [Command]
+            public async ValueTask<AdminCommandResult> SetAsync([Lowercase] string commandName, TimeSpan cooldown)
+            {
+                if (cooldown < MinimumCooldownAttribute.MinimumCooldown)
+                    return CommandErrorLocalized("info_cooldown_minimum",
+                        args: Markdown.Bold(
+                            MinimumCooldownAttribute.MinimumCooldown.HumanizeFormatted(Localization, Context.Language,
+                                TimeUnit.Second)));
+
+                var matches = Commands.GetAllCommands()
+                    .Where(x => x.FullAliases.Contains(commandName, StringComparer.OrdinalIgnoreCase)).ToList();
+
+                if (matches.Count == 0)
+                    return CommandErrorLocalized("info_help_notfound");
+
+                if (!(await Context.Database.Cooldowns.FindAsync(Context.Guild.Id.RawValue, commandName) is { }
+                    commandCooldown))
+                {
+                    Context.Database.Cooldowns.Add(new CommandCooldown(Context.Guild.Id, commandName, cooldown));
+                }
+                else
+                {
+                    commandCooldown.Cooldown = cooldown;
+                    Context.Database.Cooldowns.Update(commandCooldown);
+                }
+
+                await Context.Database.SaveChangesAsync();
+                return CommandSuccessLocalized("info_cooldown_set",
+                    args: new object[]
+                    {
+                        Markdown.Code(commandName),
+                        Markdown.Bold(cooldown.HumanizeFormatted(Localization, Context.Language, TimeUnit.Second))
+                    });
+            }
+
+            [Command("remove")]
+            public async ValueTask<AdminCommandResult> RemoveAsync([Lowercase] string commandName)
+            {
+                var matches = Commands.GetAllCommands()
+                    .Where(x => x.FullAliases.Contains(commandName, StringComparer.OrdinalIgnoreCase)).ToList();
+
+                if (matches.Count == 0)
+                    return CommandErrorLocalized("info_help_notfound");
+
+                if (!(await Context.Database.Cooldowns.FindAsync(Context.Guild.Id.RawValue, commandName) is { }
+                    commandCooldown))
+                    return CommandErrorLocalized("info_cooldown_notfound");
+
+                Context.Database.Cooldowns.Remove(commandCooldown);
+                await Context.Database.SaveChangesAsync();
+
+                return CommandSuccessLocalized("info_cooldown_remove", args: Markdown.Code(commandName));
             }
         }
 
@@ -208,7 +307,7 @@ namespace Administrator.Commands
                 if (aliases.Contains(""))
                 {
                     var temp = builder.ToString();
-                    builder.AppendLine($"{command.FormatArguments()}`")
+                    builder.AppendNewline($"{command.FormatArguments()}`")
                         .Append(temp);
 
                     aliases.Remove("");
@@ -221,7 +320,7 @@ namespace Administrator.Commands
                         : aliases[0]);
                 }
 
-                builder.AppendLine($"{command.FormatArguments()}`");
+                builder.AppendNewline($"{command.FormatArguments()}`");
             }
 
             return string.Join('\n', builder.ToString().Split('\n').Distinct())

@@ -28,5 +28,27 @@ namespace Administrator.Extensions
         public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> enumerable, Func<T, TKey> keySelector)
             => enumerable.GroupBy(keySelector).Select(x => x.FirstOrDefault());
 
+        public static bool ContainsAny<T>(this IEnumerable<T> enumerable, params T[] ts)
+        {
+            if (ts.Length == 0)
+                throw new Exception();
+
+            var list = enumerable as IList<T> ?? enumerable.ToList();
+            foreach (var t in ts)
+            {
+                if (list.Contains(t))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static T GetRandomElement<T>(this IEnumerable<T> enumerable, Random random)
+        {
+            random ??= new Random();
+            if (!(enumerable is IList<T> list))
+                list = enumerable.ToList();
+            return list[random.Next(list.Count)];
+        }
     }
 }

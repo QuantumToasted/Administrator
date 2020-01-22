@@ -10,11 +10,10 @@ namespace Administrator.Commands
         public override ValueTask<CheckResult> CheckAsync(object argument, CommandContext ctx)
         {
             var context = (AdminCommandContext) ctx;
-
-            if (argument is CustomEmoji emoji)
+            if (argument is LocalCustomEmoji emoji)
             {
                 return !context.Client.Guilds.Values.SelectMany(x => x.Emojis.Keys).Contains(emoji.Id)
-                    ? CheckResult.Unsuccessful(context.Localize("requireusableemoji"))
+                    ? CheckResult.Unsuccessful(context.Localize("require_usable_emoji"))
                     : CheckResult.Successful;
             }
 

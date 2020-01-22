@@ -11,6 +11,7 @@ using Administrator.Extensions;
 using Disqord;
 using Disqord.Events;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -21,7 +22,10 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Administrator.Services
 {
-    public sealed class LevelService : IService, IHandler<MessageReceivedEventArgs>
+    public sealed class LevelService : Service, 
+        IHandler<MessageReceivedEventArgs>,
+        IHandler<MemberJoinedEventArgs>,
+        IHandler<MemberBannedEventArgs>
     {
         public static readonly TimeSpan XpGainInterval = TimeSpan.FromMinutes(5);
         public const int XP_RATE = 50;
@@ -31,17 +35,15 @@ namespace Administrator.Services
         private readonly DiscordClient _client;
         private readonly ConfigurationService _config;
         private readonly HttpClient _http;
-        private readonly IServiceProvider _provider;
 
-        public LevelService(LocalizationService localization, LoggingService logging, DiscordClient client,
-            ConfigurationService config, HttpClient http, IServiceProvider provider)
+        public LevelService(IServiceProvider provider)
+            : base(provider)
         {
-            _localization = localization;
-            _logging = logging;
-            _client = client;
-            _config = config;
-            _http = http;
-            _provider = provider;
+            _localization = _provider.GetRequiredService<LocalizationService>();
+            _logging = _provider.GetRequiredService<LoggingService>();
+            _client = _provider.GetRequiredService<DiscordClient>();
+            _config = _provider.GetRequiredService<ConfigurationService>();
+            _http = _provider.GetRequiredService<HttpClient>();
         }
 
         public async Task<Stream> CreateXpImageAsync(AdminCommandContext context, CachedUser target)
@@ -106,8 +108,6 @@ namespace Administrator.Services
 
                     // Draw XP image (background)
                     cnvs.DrawImage(background, PixelColorBlendingMode.Normal, 1);
-                    var circle = new EllipsePolygon(new PointF(100, 100), 10);
-                    cnvs.Fill(GraphicsOptions.Default, Rgba32.AliceBlue, circle);
 
                     // Draw outer bounding box
                     cnvs.FillPolygon(ImageTools.Colors.DarkButTransparent,
@@ -252,7 +252,7 @@ namespace Administrator.Services
                         guildImage.Mutate(img => img.Resize(18, 18));
                         cnvs.DrawImage(guildImage,
                             ImageTools.Justify(new Point(435, 255), guildImage, Justification.TopRight),
-                            PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.Dest, 1f);
+                            PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcOver, 1f);
 
                         // Write current guild position
                         cnvs.DrawText(new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center},
@@ -326,6 +326,32 @@ namespace Administrator.Services
             await ctx.SaveChangesAsync();
         }
 
+        public async Task HandleAsync(MemberJoinedEventArgs args)
+        {
+            using var ctx = new AdminDatabaseContext(_provider);
+            var user = await ctx.GetOrCreateGuildUserAsync(args.Member.Id, args.Member.Guild.Id);
+
+            if (await ctx.GetSpecialRoleAsync(args.Member.Guild.Id, RoleType.Join) is { } role)
+                await args.Member.GrantRoleAsync(role.Id);
+
+            foreach (var roleReward in ctx.LevelRewards.OfType<RoleLevelReward>()
+                .OrderBy(x => x.Level)
+                .Where(x => x.Level <= user.Level))
+            {
+                await roleReward.RewardAsync(args.Member);
+            }
+        }
+
+        public async Task HandleAsync(MemberBannedEventArgs args)
+        {
+            using var ctx = new AdminDatabaseContext(_provider);
+            if (await ctx.GuildUsers.FindAsync(args.Guild.Id.RawValue, args.User.Id.RawValue) is { } user)
+            {
+                ctx.GuildUsers.Remove(user);
+                await ctx.SaveChangesAsync();
+            }
+        }
+
         private IEmoji GetLevelEmoji(User user)
         {
             if (_config.EmojiServerIds.Count == 0)
@@ -381,10 +407,5 @@ namespace Administrator.Services
                 await message.AddReactionAsync(levelEmoji);
             }
         }
-
-        Task IService.InitializeAsync()
-            => _logging.LogInfoAsync("Initialized.", "Profiles");
-
-        
     }
 }

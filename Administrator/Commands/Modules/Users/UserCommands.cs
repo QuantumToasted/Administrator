@@ -26,6 +26,8 @@ namespace Administrator.Commands
 
         public HttpClient Http { get; set; }
 
+        public CommandHandlerService CommandHandler { get; set; }
+
         [Command("", "info")]
         [RequireContext(ContextType.Guild)]
         public AdminCommandResult GetGuildUserInfo([Remainder] CachedMember target = null)
@@ -312,6 +314,7 @@ namespace Administrator.Commands
             Context.Database.GlobalUsers.Update(user);
             await Context.Database.SaveChangesAsync();
             Context.Language = newLanguage;
+            CommandHandler.UpdateLanguage(Context.User.Id, newLanguage);
 
             return CommandSuccessLocalized("user_language_set", args:
                 $"{Markdown.Bold(user.Language.NativeName)} ({user.Language.EnglishName}, `{user.Language.CultureCode}`)");
@@ -321,7 +324,7 @@ namespace Administrator.Commands
         [IgnoresExtraArguments]
         public AdminCommandResult GetLanguages()
             => CommandSuccess(new StringBuilder()
-                .AppendLine(Localize("available_languages"))
+                .AppendNewline(Localize("available_languages"))
                 .AppendJoin('\n',
                     Localization.Languages.Select(
                         x => Markdown.Code($"{x.NativeName} ({x.EnglishName}, {x.CultureCode})"))).ToString());

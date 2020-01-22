@@ -18,18 +18,19 @@ using TimeUnit = Humanizer.Localisation.TimeUnit;
 
 namespace Administrator.Services
 {
-    public sealed class PunishmentService : IService, IHandler<MemberBannedEventArgs>,
-        IHandler<MemberLeftEventArgs>, IHandler<MemberJoinedEventArgs>
+    public sealed class PunishmentService : Service, 
+        IHandler<MemberBannedEventArgs>,
+        IHandler<MemberLeftEventArgs>, 
+        IHandler<MemberJoinedEventArgs>
     {
-        private readonly IServiceProvider _provider;
         private readonly DiscordClient _client;
         private readonly LoggingService _logging;
         private readonly LocalizationService _localization;
         private readonly ConfigurationService _config;
 
         public PunishmentService(IServiceProvider provider)
+            : base(provider)
         {
-            _provider = provider;
             _client = _provider.GetRequiredService<DiscordClient>();
             _logging = _provider.GetRequiredService<LoggingService>();
             _localization = _provider.GetRequiredService<LocalizationService>();
@@ -474,7 +475,7 @@ namespace Administrator.Services
                 ctx.Punishments.Update(mute);
 
                 var target = await _client.GetOrDownloadUserAsync(mute.TargetId);
-                if (await ctx.GetLoggingChannelAsync(mute.GuildId, LogType.Unmute) is CachedTextChannel logChannel)
+                if (await ctx.GetLoggingChannelAsync(mute.GuildId, LogType.Revoke) is CachedTextChannel logChannel)
                 {
                     await SendLoggingRevocationEmbedAsync(mute, target, _client.CurrentUser, logChannel,
                         guild.Language);
@@ -502,7 +503,7 @@ namespace Administrator.Services
                 ctx.Punishments.Update(ban);
 
                 var target = await _client.GetOrDownloadUserAsync(ban.TargetId);
-                if (await ctx.GetLoggingChannelAsync(ban.GuildId, LogType.Unban) is CachedTextChannel logChannel)
+                if (await ctx.GetLoggingChannelAsync(ban.GuildId, LogType.Revoke) is CachedTextChannel logChannel)
                 {
                     await SendLoggingRevocationEmbedAsync(ban, target, _client.CurrentUser, logChannel,
                         guild.Language);
@@ -516,8 +517,5 @@ namespace Administrator.Services
 
             await ctx.SaveChangesAsync();
         }
-
-        Task IService.InitializeAsync()
-            => _logging.LogInfoAsync("Initialized.", "Punishments");
     }
 }

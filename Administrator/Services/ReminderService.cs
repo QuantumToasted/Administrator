@@ -5,26 +5,34 @@ using Administrator.Database;
 using Administrator.Extensions;
 using Disqord;
 using FluentScheduler;
+using Microsoft.Extensions.DependencyInjection;
 using TimeUnit = Humanizer.Localisation.TimeUnit;
 
 namespace Administrator.Services
 {
-    public sealed class ReminderService : IService
+    public sealed class ReminderService : Service
     {
-        private readonly LoggingService _logging;
         private readonly Registry _registry;
         private readonly DiscordClient _client;
         private readonly LocalizationService _localization;
-        private readonly IServiceProvider _provider;
 
-        public ReminderService(LoggingService logging, Registry registry, 
-            DiscordClient client, LocalizationService localization, IServiceProvider provider)
+        public ReminderService(IServiceProvider provider)
+            : base(provider)
         {
-            _logging = logging;
-            _registry = registry;
-            _client = client;
-            _localization = localization;
-            _provider = provider;
+            _registry = _provider.GetRequiredService<Registry>();
+            _client = _provider.GetRequiredService<DiscordClient>();
+            _localization = _provider.GetRequiredService<LocalizationService>();
+        }
+
+        public override Task InitializeAsync()
+        {
+            _registry.Schedule(async () => await SendRemindersAsync())
+                .NonReentrant()
+                .ToRunNow()
+                .AndEvery(10)
+                .Seconds();
+
+            return base.InitializeAsync();
         }
 
         private async Task SendRemindersAsync()
@@ -70,17 +78,6 @@ namespace Administrator.Services
             }
 
             await ctx.SaveChangesAsync();
-        }
-
-        Task IService.InitializeAsync()
-        {
-            _registry.Schedule(async () => await SendRemindersAsync())
-                .NonReentrant()
-                .ToRunNow()
-                .AndEvery(10)
-                .Seconds();
-
-            return _logging.LogInfoAsync("Initialized.", "Reminders");
         }
     }
 }

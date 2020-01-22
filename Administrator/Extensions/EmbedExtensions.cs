@@ -1,4 +1,5 @@
-﻿using Administrator.Services;
+﻿using Administrator.Common.LocalizedEmbed;
+using Administrator.Services;
 using Disqord;
 
 namespace Administrator.Extensions
@@ -14,6 +15,15 @@ namespace Administrator.Extensions
             => builder.WithColor(Config.WarnColor);
 
         public static LocalEmbedBuilder WithErrorColor(this LocalEmbedBuilder builder)
+            => builder.WithColor(Config.ErrorColor);
+
+        public static LocalizedEmbedBuilder WithSuccessColor(this LocalizedEmbedBuilder builder)
+            => builder.WithColor(Config.SuccessColor);
+
+        public static LocalizedEmbedBuilder WithWarnColor(this LocalizedEmbedBuilder builder)
+            => builder.WithColor(Config.WarnColor);
+
+        public static LocalizedEmbedBuilder WithErrorColor(this LocalizedEmbedBuilder builder)
             => builder.WithColor(Config.ErrorColor);
     }
 }

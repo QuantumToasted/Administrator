@@ -10,31 +10,32 @@ using Disqord;
 using Disqord.Events;
 using Disqord.Rest.AuditLogs;
 using Humanizer.Localisation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Services
 {
-    public sealed class EventLoggingService : IService,
+    public sealed class EventLoggingService : Service,
         IHandler<MemberLeftEventArgs>,
         IHandler<MemberJoinedEventArgs>,
         IHandler<MessageDeletedEventArgs>,
         IHandler<MessageUpdatedEventArgs>,
         IHandler<MessageReceivedEventArgs>,
         IHandler<MemberUpdatedEventArgs>,
-        IHandler<UserUpdatedEventArgs>
+        IHandler<UserUpdatedEventArgs>,
+        IHandler<ReactionRemovedEventArgs>
     {
-        private readonly IServiceProvider _provider;
+        private readonly LoggingService _logging;
         private readonly HttpClient _http;
         private readonly LocalizationService _localization;
-        private readonly LoggingService _logging;
         private readonly Dictionary<Snowflake, LocalAttachment> _temporaryImages;
 
-        public EventLoggingService(IServiceProvider provider, HttpClient http, LocalizationService localization,
-            LoggingService logging)
+        public EventLoggingService(IServiceProvider provider)
+            : base(provider)
         {
-            _provider = provider;
-            _http = http;
-            _localization = localization;
-            _logging = logging;
+            _logging = _provider.GetRequiredService<LoggingService>();
+            _http = _provider.GetRequiredService<HttpClient>();
+            _localization = _provider.GetRequiredService<LocalizationService>();
             _temporaryImages = new Dictionary<Snowflake, LocalAttachment>();
         }
 
@@ -287,7 +288,43 @@ namespace Administrator.Services
             }
         }
 
-        Task IService.InitializeAsync()
-            => _logging.LogInfoAsync("Initialized.", "EventLogging");
+        public async Task HandleAsync(ReactionRemovedEventArgs args)
+        {
+            if (!args.Reaction.HasValue || !(args.Channel is CachedTextChannel channel))
+                return;
+
+            var emoji = args.Reaction.Value.Emoji;
+
+            var user = args.User.HasValue
+                ? args.User.Value
+                : await args.User.Downloadable.DownloadAsync() as IUser;
+
+            if (user is null)
+            {
+                await _logging.LogErrorAsync($"User {args.User.Id} was null for some reason on reaction remove.",
+                    "EventLogging");
+                return;
+            }
+
+            if (user.IsBot)
+                return;
+
+            using var ctx = new AdminDatabaseContext(_provider);
+            if (!(await ctx.GetLoggingChannelAsync(channel.Guild.Id, LogType.ReactionRemove) is { } logChannel))
+                return;
+
+            var guild = await ctx.GetOrCreateGuildAsync(channel.Guild.Id);
+            var url = EmojiTools.GetUrl(emoji);
+
+            await logChannel.SendMessageAsync(embed: new LocalEmbedBuilder()
+                .WithWarnColor()
+                .WithTitle(_localization.Localize(guild.Language, "logging_reactionremove", channel.Tag))
+                .WithDescription(user.Format(false))
+                .AddField(_localization.Localize(guild.Language, "logging_reactionremove_emoji"),
+                    $"{(emoji as Emoji)?.MessageFormat}{(emoji as CustomEmoji)?.MessageFormat}")
+                .WithThumbnailUrl(url)
+                .WithTimestamp(DateTimeOffset.UtcNow)
+                .Build());
+        }
     }
 }

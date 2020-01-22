@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Administrator.Commands.Attributes
+namespace Administrator.Commands
 {
     [AttributeUsage(AttributeTargets.Parameter)]
     public sealed class LowercaseAttribute : SanitaryAttribute

@@ -7,22 +7,33 @@ using System.Threading.Tasks;
 using Administrator.Database;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Administrator.Services
 {
-    public sealed class ConfigurationService : IService
+    public sealed class ConfigurationService : Service
     {
         private readonly DiscordClient _client;
         private readonly LoggingService _logging;
-        
-        public ConfigurationService(DiscordClient client, LoggingService logging)
+
+        [JsonProperty("successColor")]
+        private string _successColor;
+
+        [JsonProperty("warningColor")]
+        private string _warnColor;
+
+        [JsonProperty("errorColor")]
+        private string _errorColor;
+
+        public ConfigurationService(IServiceProvider provider)
+            : base(provider)
         {
-            _client = client;
-            _logging = logging;
+            _client = _provider?.GetRequiredService<DiscordClient>();
+            _logging = _provider?.GetRequiredService<LoggingService>();
         }
 
-        public const string SUPPORT_GUILD = @"https://discord.gg/rTvGube";
+        public const string SUPPORT_GUILD = "https://discord.gg/rTvGube";
 
         [JsonProperty("token")]
         public string DiscordToken { get; private set; }
@@ -54,62 +65,28 @@ namespace Administrator.Services
         [JsonIgnore]
         public Color ErrorColor => new Color(int.Parse(_errorColor, NumberStyles.HexNumber));
 
-        [JsonProperty("successColor")]
-        private string _successColor;
-
-        [JsonProperty("warningColor")]
-        private string _warnColor;
-
-        [JsonProperty("errorColor")]
-        private string _errorColor;
-
-        public static ConfigurationService Basic
-        {
-            get
-            {
-                var config = new ConfigurationService(null, null);
-                try
-                {
-                    JsonConvert.PopulateObject(File.ReadAllText("./Data/Config.json"), config);
-
-                    if (string.IsNullOrWhiteSpace(config.DiscordToken))
-                        throw new ArgumentException("You have not supplied a token for the bot.");
-
-                    if (string.IsNullOrWhiteSpace(config.PostgresConnectionString))
-                        throw new ArgumentException(
-                            "You have not supplied a connection string for the PostgreSQL database.");
-                }
-                catch (Exception ex)
-                {
-                    new LoggingService().LogCriticalAsync(ex, "Configuration");
-                    Console.ReadKey();
-                    Environment.Exit(-1);
-                }
-
-                return config;
-            }
-        }
-        
-        async Task IService.InitializeAsync()
+        public override async Task InitializeAsync()
         {
             var config = Basic;
             DiscordToken = config.DiscordToken;
             DefaultPrefix = config.DefaultPrefix;
             PostgresConnectionString = config.PostgresConnectionString;
             OwnerIds = config.OwnerIds;
+            BackpackApiKey = config.BackpackApiKey;
+            SteamApiKey = config.SteamApiKey;
             EmojiServerIds = config.EmojiServerIds;
             _successColor = config._successColor;
             _warnColor = config._warnColor;
             _errorColor = config._errorColor;
-            
+
             if (OwnerIds.Count == 0)
             {
-                await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.", 
+                await _logging.LogDebugAsync("No owner IDs found. Fetching the bot owner's ID.",
                     "Configuration");
 
                 var app = await _client.GetCurrentApplicationAsync();
                 await _logging.LogDebugAsync($"Got owner {app.Owner}.", "Configuration");
-                
+
                 OwnerIds = new List<ulong>
                 {
                     app.Owner.Id
@@ -170,6 +147,33 @@ namespace Administrator.Services
             }
 
             await _logging.LogInfoAsync("Initialized.", "Configuration");
+        }
+
+        public static ConfigurationService Basic
+        {
+            get
+            {
+                var config = new ConfigurationService(default);
+                try
+                {
+                    JsonConvert.PopulateObject(File.ReadAllText("./Data/Config.json"), config);
+
+                    if (string.IsNullOrWhiteSpace(config.DiscordToken))
+                        throw new ArgumentException("You have not supplied a token for the bot.");
+
+                    if (string.IsNullOrWhiteSpace(config.PostgresConnectionString))
+                        throw new ArgumentException(
+                            "You have not supplied a connection string for the PostgreSQL database.");
+                }
+                catch (Exception ex)
+                {
+                    new LoggingService(default).LogCriticalAsync(ex, "Configuration");
+                    Console.ReadKey();
+                    Environment.Exit(-1);
+                }
+
+                return config;
+            }
         }
     }
 }

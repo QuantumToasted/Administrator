@@ -20,6 +20,65 @@ namespace Administrator.Migrations
                 .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            modelBuilder.Entity("Administrator.Database.CommandAlias", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("Alias");
+
+                    b.Property<string>("Command");
+
+                    b.HasKey("GuildId", "Alias");
+
+                    b.ToTable("CommandAliases");
+                });
+
+            modelBuilder.Entity("Administrator.Database.CommandCooldown", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("CommandName");
+
+                    b.Property<TimeSpan>("Cooldown");
+
+                    b.HasKey("GuildId", "CommandName");
+
+                    b.ToTable("Cooldowns");
+                });
+
+            modelBuilder.Entity("Administrator.Database.CooldownData", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("UserId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("Command");
+
+                    b.Property<DateTimeOffset>("LastRun");
+
+                    b.HasKey("GuildId", "UserId", "Command");
+
+                    b.ToTable("CooldownData");
+                });
+
+            modelBuilder.Entity("Administrator.Database.CyclingStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Text");
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Statuses");
+                });
+
             modelBuilder.Entity("Administrator.Database.GlobalUser", b =>
                 {
                     b.Property<decimal>("Id")
@@ -55,7 +114,17 @@ namespace Administrator.Migrations
                         .ValueGeneratedOnAdd()
                         .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
+                    b.Property<int>("BigEmojiSize");
+
+                    b.Property<string>("BlacklistedEmojiGuilds")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("''");
+
                     b.Property<string>("BlacklistedModmailAuthors")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("''");
+
+                    b.Property<string>("BlacklistedStarboardIds")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("''");
 
@@ -68,6 +137,8 @@ namespace Administrator.Migrations
                     b.Property<int>("LevelUpWhitelist");
 
                     b.Property<int>("MaximumReactionRoles");
+
+                    b.Property<int>("MinimumStars");
 
                     b.Property<int>("Settings");
 
@@ -343,6 +414,36 @@ namespace Administrator.Migrations
                     b.ToTable("SpecialRoles");
                 });
 
+            modelBuilder.Entity("Administrator.Database.StarboardEntry", b =>
+                {
+                    b.Property<decimal>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("AuthorId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("ChannelId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("EntryChannelId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("EntryMessageId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<string>("Stars")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("''");
+
+                    b.HasKey("MessageId");
+
+                    b.ToTable("Starboard");
+                });
+
             modelBuilder.Entity("Administrator.Database.Suggestion", b =>
                 {
                     b.Property<int>("Id")
@@ -393,6 +494,21 @@ namespace Administrator.Migrations
                     b.HasKey("GuildId", "Name");
 
                     b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("Administrator.Database.TextChannel", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("ChannelId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("Settings");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("TextChannels");
                 });
 
             modelBuilder.Entity("Administrator.Database.WarningPunishment", b =>

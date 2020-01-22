@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -202,15 +201,15 @@ namespace Administrator.Commands
                 return CommandErrorLocalized("moderation_massban_notargets");
 
             var targetString = new StringBuilder()
-                .AppendLine()
+                .AppendNewline()
                 .AppendJoin('\n', targets.Select(x => x.Tag))
                 .ToString();
 
             var password = Guid.NewGuid().ToString()[..4];
             if (targetString.Length > 1500)
             {
-                using var stream = new MemoryStream();
-                using var writer = new StreamWriter(stream);
+                var stream = new MemoryStream();
+                await using var writer = new StreamWriter(stream);
                 await writer.WriteAsync(targetString);
                 await writer.FlushAsync();
 

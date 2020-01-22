@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using Disqord;
 using Newtonsoft.Json;
+using Qommon.Collections;
 
 namespace Administrator.Common
 {
@@ -18,15 +19,16 @@ namespace Administrator.Common
         public JsonEmbed(string text, LocalEmbed embed)
         {
             Text = text;
+            if (embed is null) return;
             Title = embed.Title;
             Description = embed.Description;
             ImageUrl = embed.ImageUrl;
             ThumbnailUrl = embed.ThumbnailUrl;
             Color = embed.Color;
             Timestamp = embed.Timestamp;
-            Footer = new JsonEmbedFooter(embed.Footer);
-            Author = new JsonEmbedAuthor(embed.Author);
-            Fields = embed.Fields.Select(x => new JsonEmbedField(x)).ToImmutableArray();
+            Footer = embed.Footer is { } ? new JsonEmbedFooter(embed.Footer) : null;
+            Author = embed.Author is { } ? new JsonEmbedAuthor(embed.Author) : null; 
+            Fields = embed.Fields.Count > 0 ? embed.Fields.Select(x => new JsonEmbedField(x)).ToList() : null;
         }
 
         [JsonProperty("text")]
@@ -58,7 +60,7 @@ namespace Administrator.Common
         public JsonEmbedAuthor Author { get; private set; }
 
         [JsonProperty("fields")]
-        public ImmutableArray<JsonEmbedField> Fields { get; private set; } = ImmutableArray<JsonEmbedField>.Empty;
+        public IReadOnlyList<JsonEmbedField> Fields { get; private set; }
 
         public LocalEmbed ToLocalEmbed()
         {
@@ -76,9 +78,12 @@ namespace Administrator.Common
             if (Author is { })
                 builder.WithAuthor(Author.Name, Author.IconUrl, Author.Url);
 
-            foreach (var field in Fields)
+            if (Fields is { })
             {
-                builder.AddField(field.Name, field.Value, field.IsInline);
+                foreach (var field in Fields)
+                {
+                    builder.AddField(field.Name, field.Value, field.IsInline);
+                }
             }
 
             return builder.Build();

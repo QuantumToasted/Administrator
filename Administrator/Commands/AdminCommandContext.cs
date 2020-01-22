@@ -11,6 +11,21 @@ namespace Administrator.Commands
     public sealed class AdminCommandContext : CommandContext, IDisposable
     {
         private readonly LocalizationService _localization;
+        private CachedUser _user;
+        private CachedGuild _guild;
+        private ICachedMessageChannel _channel;
+
+        private AdminCommandContext(LocalizedLanguage language, IServiceProvider provider, CachedUser user,
+            CachedGuild guild, CachedUserMessage message, ICachedMessageChannel channel)
+            : base(provider)
+        {
+            User = user;
+            Guild = guild;
+            Message = message;
+            Channel = channel;
+            Database = new AdminDatabaseContext(provider);
+            Language = language;
+        }
 
         public AdminCommandContext(CachedUserMessage message, string prefix, LocalizedLanguage language, IServiceProvider provider)
             : base(provider)
@@ -25,15 +40,27 @@ namespace Administrator.Commands
 
         public DiscordClient Client { get; }
 
-        public CachedUser User => Message.Author;
+        public CachedUser User
+        {
+            get => _user ??= Message?.Author;
+            private set => _user = value;
+        }
 
-        public CachedGuild Guild => (Message.Channel as CachedGuildChannel)?.Guild;
+        public CachedGuild Guild
+        {
+            get => _guild ??= (Message?.Channel as CachedGuildChannel)?.Guild;
+            private set => _guild = value;
+        }
 
         public CachedUserMessage Message { get; }
 
-        public ICachedMessageChannel Channel => Message.Channel;
+        public ICachedMessageChannel Channel
+        {
+            get => _channel ??= Message.Channel;
+            private set => _channel = value;
+        }
 
-        public bool IsPrivate => Message.Channel is IPrivateChannel;
+        public bool IsPrivate => Channel is IPrivateChannel;
 
         public string Prefix { get; }
 
@@ -48,5 +75,9 @@ namespace Administrator.Commands
         {
             Database.Dispose();
         }
+
+        public static AdminCommandContext MockContext(LocalizedLanguage language, IServiceProvider provider, CachedUser user = null,
+            CachedGuild guild = null, CachedUserMessage message = null, ICachedMessageChannel channel = null)
+            => new AdminCommandContext(language, provider, user, guild, message, channel);
     }
 }
