@@ -1376,10 +1376,10 @@
       "Исполнение кода..."
     ],
     "owner_eval_complete": [
-      "Исполнение кода завершёно."
+      "Code evaluation completed."
     ],
     "owner_eval_failed": [
-      "Не удалось успешно исполнить код."
+      "Code evaluation was unsuccessful."
     ],
     "owner_eval_errors": [
       "Ошибки"
