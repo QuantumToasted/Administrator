@@ -53,7 +53,7 @@
       "Cette commande ne peut être utilisée que dans le canal {0}."
     ],
     "require_usable_emoji": [
-      "I do not have access to this emoji, so I cannot use it."
+      "Je n'ai pas accès à cet émoji, donc je ne peux pas l'utiliser."
     ],
     "operator_greaterthan": [
       "Le nombre fourni doit être supérieur à {0}."
@@ -77,10 +77,10 @@
       "Le texte fourni doit contenir moins de {0} caractères."
     ],
     "jumplinkparser_nomessage": [
-      "No message could be found with the ID from that link."
+      "Aucun message a pu être trouvé avec l'ID de ce lien."
     ],
     "jumplinkparser_format": [
-      "The supplied message jump link was not properly formatted."
+      "Le lien du message n'a pas été formaté correctement."
     ],
     "userparser_multiple": [
       "Plusieurs utilisateurs ont été trouvés pour ce nom d'utilisateur ou ce surnom."
@@ -107,13 +107,13 @@
       "Serveur introuvable."
     ],
     "emojiparser_notfound": [
-      "Emoji not found."
+      "Émoji introuvable."
     ],
     "regexparser_invalid": [
       "Le regex fourni {0} est invalide. Vous pouvez utiliser https://regex101.com/ pour valider votre regex."
     ],
     "backpackuserparser_notfound": [
-      "The supplied Steam ID or profile link was invalid."
+      "Le Steam ID fourni ou le lien du profil est invalide."
     ],
     "masspunishmentparser_errors": [
       "Les arguments de sanction massive n'ont pas été formatés correctement. Vous pouvez utiliser l'argument --help."
@@ -149,7 +149,7 @@
       "Toutes les variations de cette commande ont échouées:\n{0}"
     ],
     "commanderror_cooldown": [
-      "You are on cooldown for {0}."
+      "Vous devez recharger pour {0}."
     ],
     "punishment_case": [
       "Cas #{0}"
@@ -290,13 +290,13 @@
       "Équipe de modération du serveur {0}"
     ],
     "modmail_channel_none": [
-      "The modmail channel has not been configured in this server."
+      "Le salon modmail n'a pas été configuré pour ce serveur."
     ],
     "modmail_channel": [
-      "New modmail messages are currently sent in {0}."
+      "Les nouveaux messages modmail sont actuellement envoyés au salon {0}."
     ],
     "modmail_channel_set": [
-      "New modmail messages will now be sent in {0}."
+      "Les nouveaux messages modmail vont désormais être envoyés au salon {0}."
     ],
     "moderation_alreadybanned": [
       "{0} a déjà été banni!"
@@ -575,7 +575,7 @@
       "Créé"
     ],
     "info_owner": [
-      "Owned by"
+      "Détenu par"
     ],
     "info_ago": [
       "Il y a {0}"
@@ -587,31 +587,31 @@
       "Aucun"
     ],
     "info_category": [
-      "Category"
+      "Catégorie"
     ],
     "info_content": [
-      "Content"
+      "Contenu"
     ],
     "info_text": [
-      "Text"
+      "Texte"
     ],
     "info_jumpmessage": [
-      "Click to jump"
+      "Cliquez pour suivre le lien"
     ],
     "info_position": [
       "Position"
     ],
     "info_enabled": [
-      "Enabled"
+      "Activé"
     ],
     "info_disabled": [
-      "Disabled"
+      "Désactivé"
     ],
     "info_timeout_password": [
       "Vous avez mis trop de temps à répondre, ou votre mot de passe ne correspond pas."
     ],
     "info_timeout": [
-      "You took too long to respond."
+      "Vous avez pris trop de temps à répondre."
     ],
     "role_info_above_below": [
       "{0}/{1}, au-dessus de {2}, mais en dessous de {3}"
@@ -668,7 +668,7 @@
       "{0} n'a pas ce rôle!"
     ],
     "role_remove_success": [
-      "{0} has had the role {1} removed."
+      "{0} ne possède plus le rôle {1}."
     ],
     "role_delete_success": [
       "Le rôle {0} a été supprimé avec succès."
@@ -743,7 +743,7 @@
       "Écoute \"{0}\" par {1} sur Spotify"
     ],
     "user_info_streaming": [
-      "Streaming {0}: {1}"
+      "Streame {0}: {1}"
     ],
     "user_info_status": [
       "Statut"
@@ -761,7 +761,7 @@
       "Hors ligne"
     ],
     "user_avatar": [
-      "{0}'s avatar:"
+      "Avatar de {0}:"
     ],
     "user_search_no_results": [
       "Aucun utilisateur n'a pu être trouvé avec un nom similaire à \"{0}\"."
@@ -836,40 +836,40 @@
       "Plusieurs commandes ont été trouvées pour ce nom."
     ],
     "info_stats_author": [
-      "{0}, built on {1}"
+      "{0}, construit le {1}"
     ],
     "info_stats_uptime": [
-      "Uptime"
+      "Durée de disponibilité"
     ],
     "info_stats_presence": [
-      "Presence"
+      "Présence"
     ],
     "info_stats_presence_text": [
-      "Guilds: {0}\nText channels: {1}\nVoice channels: {2}\nTotal members: {3}"
+      "Serveurs: {0}\nSalons textuels: {1}\nSalons vocaux: {2}\nNombre total de membres: {3}"
     ],
     "info_stats_commands": [
-      "Commands executed"
+      "Commandes exécutées"
     ],
     "info_stats_messages": [
-      "Messages received"
+      "Messages reçus"
     ],
     "info_stats_messages_text": [
-      "{0} ({1} / second)"
+      "{0} ({1}/seconde)"
     ],
     "info_stats_nerds": [
-      "Stats for nerds"
+      "Stats pour les nerds"
     ],
     "info_stats_memory": [
-      "Memory usage"
+      "Utilisation de la mémoire"
     ],
     "info_stats_megabytes": [
       "{0}MB"
     ],
     "info_stats_created": [
-      "Created by {0}"
+      "Créé par {0}"
     ],
     "info_ping": [
-      "Bot latency: {0}ms"
+      "Latence du bot: {0}ms"
     ],
     "guild_language": [
       "La langue de réponse du serveur est actuellement configurée en {0}."
@@ -878,58 +878,58 @@
       "La langue de réponse du serveur a été mise à jour. Elle est désormais {0}."
     ],
     "guild_settings": [
-      "Server settings for {0}:"
+      "Paramètres du serveur pour {0}:"
     ],
     "guild_settings_enabled": [
-      "Setting {0} has been **enabled** for this server."
+      "Le paramètre {0} a été **activé** pour ce serveur."
     ],
     "guild_settings_disabled": [
-      "Setting {0} has been **disabled** for this server."
+      "Le paramètre {0} a été **désactivé** pour ce serveur."
     ],
     "guild_prefixes_none": [
-      "This server does not have any custom bot prefixes set!"
+      "Ce serveur n'a aucun préfixe personnalisé configuré!"
     ],
     "guild_prefixes": [
-      "Custom bot prefixes for {0}"
+      "Préfixes personnalisés pour {0}"
     ],
     "guild_prefixes_maximum": [
-      "You have reached the maximum amount of custom bot prefixes.\nRemove another prefix before adding this one."
+      "Vous avez atteint le nombre maximum de préfixes personnalisés.\nSupprimez un autre préfixe avant d'ajouter celui-ci."
     ],
     "guild_prefixes_exists": [
-      "That custom bot prefix already exists, so it was not added."
+      "Ce préfixe personnalisé existe déjà, il n'a donc pas été ajouté."
     ],
     "guild_prefixes_notfound": [
-      "That custom bot prefix could not be found, so it was not removed."
+      "Ce préfixe personnalisé n'a pas pu être trouvé, il n'a donc pas été supprimé."
     ],
     "guild_prefixes_added": [
-      "{0} has been added as a custom bot prefix."
+      "{0} a été ajouté comme préfixe personnalisé."
     ],
     "guild_prefixes_removed": [
-      "{0} has been removed from the list of custom bot prefixes."
+      "{0} a été supprimé de la liste des préfixes personnalisés."
     ],
     "guild_prefixes_cleared": [
-      "All custom bot prefixes have been cleared."
+      "Tous les préfixes personnalisés ont été effacés."
     ],
     "guild_xp": [
-      "Users are currently able to gain {0} server XP every {1}."
+      "Les utilisateurs peuvent actuellement gagner {0} XP tous les {1} pour le serveur."
     ],
     "guild_xp_set": [
-      "Users will now be able to gain {0} server XP every {1}."
+      "Les utilisateurs pourront désormais obtenir {0} XP tous les {1}."
     ],
     "guild_levelemoji": [
-      "The custom level-up emoji is currently set to {0}."
+      "L'émoji de level up personnalisé est actuellement {0}."
     ],
     "guild_levelemoji_set": [
-      "The custom level-up emoji has now been set to {0}."
+      "L'émoji de level up personnalisé est maintenant {0}."
     ],
     "guild_emojis_set": [
-      "Special emoji {0} now is set to {1}."
+      "L'émoji spécial {0} est désormais {1}."
     ],
     "guild_emojis_list": [
-      "Special emojis for {0}"
+      "Émojis spéciaux pour {0}"
     ],
     "guild_levelwhitelist": [
-      "Custom level-up notifications for {0}:"
+      "Notifications de level up personnalisés pour {0}:"
     ],
     "guild_levelwhitelist_set": [
       "New custom level-up notifications for {0}:"
@@ -1232,154 +1232,154 @@
       "Clear all highlights in this server. If used in DMs, clears all global highlights."
     ],
     "info_command_highlights_blacklist": [
-      "View users and channels who will not trip your highlights."
+      "Utilisateurs et salons qui ne seront pas détectés par vos mentions personnalisées."
     ],
     "info_command_highlights_blacklist_add": [
-      "Add a channel or user to your highlight blacklist."
+      "Ajouter un salon ou un utilisateur à votre liste noire de mention personnalisée."
     ],
     "info_command_highlights_blacklist_remove": [
-      "Remove a channel or user from your highlight blacklist."
+      "Retirer un salon ou un utilisateur de votre liste noire de mention personnalisée."
     ],
     "info_command_channel": [
-      "View info about a channel."
+      "Voir l'information d'un salon."
     ],
     "info_command_channel_rename": [
-      "Rename a channel."
+      "Renommer un salon."
     ],
     "info_command_channel_delete": [
-      "Delete a channel."
+      "Supprimer un salon."
     ],
     "info_command_channel_logevents": [
-      "View events which are posted in the current text channel."
+      "Voir les événements qui sont publiés dans le salon textuel actuel."
     ],
     "info_command_channel_logevent": [
-      "Enable an event to be posted in the current text channel."
+      "Activer un événement pour qu'il soit publié dans le salon textuel actuel."
     ],
     "info_command_channel_slowmode": [
-      "Set a channel's slowmode duration."
+      "Configurer la durée du mode lent pour un salon."
     ],
     "info_command_channel_create_text": [
-      "Create a new text, voice, or category channel."
+      "Créer un nouveau salon textuel, vocal ou une nouvelle catégorie."
     ],
     "info_command_guild_specialrole": [
-      "View or set a specific special role."
+      "Voir ou configurer un rôle spécial spécifique."
     ],
     "info_command_guild_specialemoji_set": [
-      "Set a specific special emoji for this server."
+      "Configurer un émoji spécial spécifique pour ce serveur."
     ],
     "info_command_guild_specialemoji": [
-      "View currently set special emoji for this server."
+      "Voir l'ensemble d'émojis spéciaux actuel pour ce serveur."
     ],
     "info_command_guild_levelrewards": [
-      "View all currently set level rewards for this server."
+      "Voir toutes les récompenses de niveau actuelles pour ce serveur."
     ],
     "info_command_guild_levelrewards_remove": [
-      "Remove all level rewards for a specific level."
+      "Retirer toutes les récompenses de level pour un niveau spécifique."
     ],
     "info_command_guild_levelrewards_add_role": [
-      "Add a new role level reward."
+      "Ajouter un nouveau rôle de récompense pour un niveau."
     ],
     "info_command_stats": [
-      "View stats about the bot."
+      "Voir les statistiques du bot."
     ],
     "info_command_modmail_channel": [
-      "View or set the modmail channel for this server."
+      "Voir ou configurer le salon modmail pour ce serveur."
     ],
     "info_command_eval": [
-      "Execute C# code."
+      "Exécuter le code C#."
     ],
     "info_command_forcestop": [
-      "Kill the bot."
+      "Tuer le bot."
     ],
     "info_command_role_mention": [
-      "Mention the specified role."
+      "Mentionner le rôle spécifié."
     ],
     "info_command_user_avatar": [
-      "View a user's avatar."
+      "Voir l'avatar d'un utilisateur."
     ],
     "info_command_tag_list": [
-      "List all of your tags on this server."
+      "Liste de tous les tags sur ce serveur."
     ],
     "info_command_tag": [
-      "Display a tag by name."
+      "Afficher un tag par nom."
     ],
     "info_command_tag_create": [
-      "Create a new tag."
+      "Créer un nouveau tag."
     ],
     "info_command_tag_info": [
-      "View an existing tag's info."
+      "Voir l'information d'un tag existant."
     ],
     "info_command_tag_delete": [
-      "Delete one of your tags, or another users' tag if you are a moderator."
+      "Supprimer un de vos tags, ou les tags des autres utilisateurs si vous être un modérateur."
     ],
     "info_command_tag_search": [
-      "Search for tags by name."
+      "Recherche de tag par nom."
     ],
     "info_command_reminder": [
-      "Create a new reminder."
+      "Créer un nouveau rappel."
     ],
     "info_command_reminder_list": [
-      "List your current reminders."
+      "Liste de vos rappels actuels."
     ],
     "info_command_reminder_delete": [
-      "Delete a reminder."
+      "Supprimer un rappel."
     ],
     "info_command_reactionrole_list": [
-      "List all reaction roles on this server."
+      "Liste de tous les rôles de réaction pour ce serveur."
     ],
     "info_command_reactionrole_add": [
-      "Add a new reaction role."
+      "Ajouter un nouveau rôle de réaction."
     ],
     "info_command_reactionrole_remove": [
-      "Delete a reaction role."
+      "Supprimer un rôle de réaction."
     ],
     "info_command_backpack": [
-      "Get a user's backpack.tf profile."
+      "Obtenir le profil backpack.tf d'un utilisateur."
     ],
     "info_command_prune": [
-      "Delete a certain number of messages from a channel."
+      "Supprimer un certain nombre de messages d'un salon."
     ],
     "info_command_prune_text": [
-      "Delete a certain number of messages from a channel containing specific text."
+      "Supprimer un certain nombre de messages d'un salon avec un contenu spécifique."
     ],
     "info_command_alias": [
-      "Create a new custom command alias."
+      "Créer un nouvel alias de commande personnalisée."
     ],
     "info_command_alias_list": [
-      "List all custom command aliases."
+      "Liste de tous les alias de commandes personnalisées."
     ],
     "info_command_alias_remove": [
-      "Remove a custom command alias."
+      "Supprimer un alias de commande personnalisée."
     ],
     "info_command_ping": [
-      "Get the bot's current latency (ping)."
+      "Obtenir la latence actuelle du bot (ping)."
     ],
     "info_command_channel_clone": [
-      "Clone a channel to create a new one just like it."
+      "Cloner un salon pour en créer un nouveau identique."
     ],
     "info_command_send": [
-      "Send a message to a specific channel as the bot."
+      "Envoyer un message à un salon spécifique en tant que le bot."
     ],
     "info_command_edit": [
-      "Edit a message sent by the bot."
+      "Modifier un message envoyé par le bot."
     ],
     "info_command_deconstruct": [
-      "Turn a message into a JSON embed you can send with the `send` command."
+      "Transformer un message en embed JSON que vous pouvez envoyer avec la commande `send`."
     ],
     "info_command_quote": [
-      "Quote a user's message in this server."
+      "Citer le message d'un utilisateur dans ce serveur."
     ],
     "owner_eval_inprogress": [
-      "Evaluating code..."
+      "Évaluation du code..."
     ],
     "owner_eval_complete": [
-      "Code evaluation completed."
+      "Évaluation du code complétée."
     ],
     "owner_eval_failed": [
-      "Code evaluation was unsuccessful."
+      "L'évaluation du code a échoué."
     ],
     "owner_eval_errors": [
-      "Errors"
+      "Erreurs"
     ],
     "owner_eval_return": [
       "Value returned"
@@ -1532,154 +1532,154 @@
       "Message updated in {0}"
     ],
     "logging_message_update_oldcontent": [
-      "Old content"
+      "Ancien contenu"
     ],
     "logging_message_update_newcontent": [
-      "New content"
+      "Nouveau contenu"
     ],
     "logging_member_join": [
-      "User joined"
+      "Nouvel utilisateur"
     ],
     "logging_member_left": [
-      "User left"
+      "Utilisateur a quitté"
     ],
     "logging_membercount": [
-      "Current member count: {0}"
+      "Nombre de membres actuel: {0}"
     ],
     "logging_member_nickname": [
-      "User nickname updated"
+      "Mise à jour du surnom de l'utilisateur"
     ],
     "logging_member_prevnick": [
-      "Previous nickname"
+      "Ancien surnom"
     ],
     "logging_member_noprevnick": [
-      "(no previous nickname)"
+      "(aucun surnom précédent)"
     ],
     "logging_member_newnick": [
-      "New nickname"
+      "Nouveau surnom"
     ],
     "logging_member_nonewnick": [
-      "(nickname was removed)"
+      "(le surnom a été retiré)"
     ],
     "logging_member_roleupdate": [
-      "User roles updated"
+      "Mise à jour des rôles de l'utilisateur"
     ],
     "logging_member_addedroles": [
-      "Added roles"
+      "Rôles ajoutés"
     ],
     "logging_member_removedroles": [
-      "Removed roles"
+      "Rôles supprimés"
     ],
     "logging_member_username": [
-      "User name updated"
+      "Mise à jour du nom de l'utilisateur"
     ],
     "logging_member_oldname": [
-      "Old username"
+      "Ancien nom d'utilisateur"
     ],
     "logging_member_newname": [
-      "New username"
+      "Nouveau nom d'utilisateur"
     ],
     "logging_reactionremove": [
-      "Reaction removed in {0}"
+      "Réaction retirée dans le salon {0}"
     ],
     "logging_reactionremove_emoji": [
-      "Emoji"
+      "Émoji"
     ],
     "logging_member_avatar": [
-      "User avatar updated"
+      "Mise à jour de l'avatar de l'utilisateur"
     ],
     "backpack_info_title": [
-      "{0}'s backpack.tf profile"
+      "Profil backpack.tf de {0}"
     ],
     "backpack_info_lastonline": [
-      "Last online"
+      "Dernière connexion"
     ],
     "backpack_info_flags": [
-      "User flags"
+      "Drapeaux de l'utilisateur"
     ],
     "backpack_info_worth": [
-      "Inventory worth"
+      "Valeur de l'inventaire"
     ],
     "backpack_info_worth_text": [
-      "{0} keys ({1} refined metal, ${2} USD)"
+      "{0} clés ({1} métaux affinés, ${2} USD)"
     ],
     "backpack_info_donated": [
-      "Amount donated"
+      "Montant donné"
     ],
     "backpack_info_premiumgifts": [
-      "Months of premium gifted"
+      "Mois prime offerts"
     ],
     "backpack_info_trust": [
-      "Trust score"
+      "Score de confiance"
     ],
     "backpack_info_caution": [
-      "Take caution! This user may be banned or a scammer. Use {0} to view more info."
+      "Attention! Cet utilisateur peut être banni ou un arnaqueur. Utilise {0} pour voir plus d'informations."
     ],
     "tag_list_none": [
-      "You don't have any tags in this server!"
+      "Vous n'avez aucun tag dans ce serveur!"
     ],
     "tag_list_title": [
-      "Your tags in {0}"
+      "Vos tags dans {0}"
     ],
     "tag_info_uses": [
-      "Uses"
+      "Utilisations"
     ],
     "tag_notfound": [
-      "No tag could be found with that name."
+      "Aucun tag n'a pu être trouvé avec ce nom."
     ],
     "tag_exists": [
-      "A tag already exists with that name!"
+      "Un tag du même nom existe déjà!"
     ],
     "tag_noresponse": [
-      "A tag must have text, an image, or both as a response."
+      "Un tag doit avoir du texte, une image, ou les deux en tant que réponse."
     ],
     "tag_created": [
-      "Tag successfully created with the name \"{0}\""
+      "Tag créé avec succès avec le nom \"{0}\""
     ],
     "tag_nopermission": [
-      "You don't have permission to remove another user's tag!"
+      "Vous n'avez pas la permission de supprimer le tag d'un autre utilisateur!"
     ],
     "tag_deleted": [
-      "Tag successfully deleted."
+      "Tag supprimé avec succès."
     ],
     "tag_search_none": [
-      "No tags could be found close to that input."
+      "Aucun tag n'a pu être trouvé avec un nom similaire à celui fourni."
     ],
     "tag_search": [
-      "Closest matches for the tag name \"{0}\""
+      "Résultats similaires pour le tag du nom de \"{0}\""
     ],
     "reminder_toolong": [
       "A reminder duration must not exceed 10 years."
     ],
     "reminder_create": [
-      "{0} New reminder created."
+      "{0} Nouveau rappel créé."
     ],
     "reminder_list_none": [
-      "You don't have any reminders set here!"
+      "Vous n'avez aucun rappel défini ici!"
     ],
     "reminder_list_title": [
-      "Your reminders"
+      "Vos rappels"
     ],
     "reminder_delete_notfound": [
-      "No reminder could be found by that ID."
+      "Aucun rappel n'a pu être trouvé avec cet ID."
     ],
     "reminder_delete": [
-      "Reminder successfully deleted."
+      "Rappel supprimé avec succès."
     ],
     "reminder_trigger": [
-      "Your reminder from {0}:"
+      "Votre rappel de {0}:"
     ],
     "alias_exists": [
-      "A command alias already exists with that name!"
+      "Un alias de commande existe déjà avec ce nom!"
     ],
     "alias_aliasexists": [
-      "A real command exists with this name, so you cannot replace it."
+      "Une vraie commande existe avec ce nom, vous ne pouvez donc pas la remplacer."
     ],
     "alias_commandnotfound": [
-      "No executable command could be found with the provided command text."
+      "Aucune commande exécutable n'a pu être trouvée avec le texte de commande fourni."
     ],
     "alias_created_title": [
-      "New command alias created."
+      "Nouvel alias de commande créé."
     ],
     "alias_created_description": [
       "The alias \"{0}\" will now execute the following command:\n\"{1}\""
@@ -1829,148 +1829,148 @@
       "The minimum stars required to reach the starboard has been updated to {0}."
     ],
     "starboard_minimum": [
-      "The minimum stars required to reach the starboard is currently {0}."
+      "Le nombre d'étoile minimum requis pour atteindre le tableau d'étoile est actuellement {0}."
     ],
     "starboard_blacklist_add": [
-      "{0} has been added to the starboard blacklist."
+      "{0} a été ajouté à la liste noire du tableau d'étoile."
     ],
     "starboard_blacklist_remove": [
-      "{0} has been removed from the starboard blacklist."
+      "{0} a été retiré de la liste noire du tableau d'étoile."
     ],
     "starboard_blacklist_none": [
-      "No users or channels are on the starboard blacklist."
+      "Aucun utilisateur ou salon ne se trouve sur la liste noire du tableau d'étoile."
     ],
     "starboard_blacklist_title": [
-      "Starboard blacklist for {0}"
+      "Liste noire du tableau d'étoile pour {0}"
     ],
     "owner_statuses_none": [
-      "You haven't set up any custom statuses!"
+      "Vous n'avez configuré aucun status personnalisé!"
     ],
     "owner_statuses_title": [
-      "All currently cycling custom statuses"
+      "Tous les statuts personnalisés actuellement en rotation"
     ],
     "owner_status_add": [
-      "{0} New custom status added."
+      "{0} Nouveau statut personnalisé ajouté."
     ],
     "owner_status_remove_notfound": [
-      "No custom status could be found with that ID."
+      "Aucun statut personnalisé n'a pu être trouvé avec cet ID."
     ],
     "owner_status_remove": [
-      "Custom status successfully removed."
+      "Statut personnalisé supprimé avec succès."
     ],
     "channel_settings_title": [
-      "Channel settings for {0}"
+      "Paramètres du salon pour {0}"
     ],
     "channel_settings_enabled": [
-      "Setting {0} has been **enabled** for {1}."
+      "Le paramètre {0} a été **activé** pour {1}."
     ],
     "channel_settings_disabled": [
-      "Setting {0} has been **disabled** for {1}."
+      "Le paramètre {0} a été **désactivé** pour {1}."
     ],
     "info_cooldown_minimum": [
-      "The custom cooldown provided must be greater than {0}!"
+      "Le temps de recharge personnalisé fourni doit être supérieur à {0}!"
     ],
     "info_cooldown_set": [
-      "The command {0} now has a cooldown of {1}."
+      "La commande {0} a maintenant un temps de recharge de {1}."
     ],
     "info_cooldown_notfound": [
-      "That command does not have a custom cooldown set!"
+      "Cette commande n'a pas de temps de recharge configuré!"
     ],
     "info_cooldown_default": [
-      "The command {0} currently has the default cooldown of {1}."
+      "La commande {0} a actuellement le temps de recharge par défaut de {1}."
     ],
     "info_cooldown": [
-      "The command {0} currently has a cooldown of {1}."
+      "La commande {0} a actuellement un temps de recharge de {1}."
     ],
     "info_cooldown_remove": [
-      "The command {0} has had its custom cooldown removed."
+      "La commande {0} a vu son temps de recharge personnalisé supprimé."
     ],
     "info_command_channel_settings": [
-      "View all available settings for the current channel."
+      "Voir tous les paramètres disponibles pour le salon actuel."
     ],
     "info_command_channel_settings_enable": [
-      "Enable or disable a specific setting for the current channel."
+      "Activer ou désactiver un paramètre spécifique pour le salon actuel."
     ],
     "info_command_cooldown": [
-      "View or set a custom cooldown for a command."
+      "Voir ou définir un temps de recharge personnalisé pour une commande."
     ],
     "info_command_cooldown_remove": [
-      "Remove a custom cooldown for a command."
+      "Supprimer un temps de recharge personnalisé pour une commande."
     ],
     "info_command_status_list": [
-      "List all rotating statuses for the bot."
+      "Liste tous les statuts de rotation du bot."
     ],
     "info_command_status_add": [
-      "Add a new rotating status to the bot."
+      "Ajouter un nouveau statut de rotation au bot."
     ],
     "info_command_status_remove": [
-      "Remove a rotating status from the bot."
+      "Retirer un statut de rotation du bot."
     ],
     "info_command_status_set": [
-      "Force the bot to set a rotating status."
+      "Forcer le bot à définir un statut de rotation."
     ],
     "info_command_star": [
-      "View a star by ID, or a random star if no ID is provided."
+      "Afficher une étoile par ID, ou une étoile aléatoire si aucun ID n'est fourni."
     ],
     "info_command_star_stats": [
-      "View starboard stats for this server."
+      "Voir les statistiques du tableau d'étoile pour ce serveur."
     ],
     "info_command_star_emoji": [
-      "View or set the star emoji for this server."
+      "Voir ou définir l'émoji étoile pour ce serveur."
     ],
     "info_command_star_channel": [
-      "View or set the starboard channel for this server."
+      "Voir ou définir le salon du tableau d'étoile pour ce serveur."
     ],
     "info_command_star_minimum": [
-      "View or set the minimum required stars for this server."
+      "Voir ou définir le nombre d'étoile minimum requis pour ce serveur."
     ],
     "info_command_star_blacklist": [
-      "View the current server starboard blacklist."
+      "Voir la liste noire du tableau d'étoile du serveur actuel."
     ],
     "info_command_star_blacklist_add": [
-      "Add a user or channel to the starboard blacklist."
+      "Ajouter un utilisateur ou un salon à la liste noire du tableau d'étoile."
     ],
     "info_command_star_blacklist_remove": [
-      "Remove a user or channel from the starboard blacklist."
+      "Retirer un utilisateur ou un salon de la liste noire du tableau d'étoile."
     ],
     "info_modules_channels": [
-      "Commands to create and manage server channels."
+      "Commandes pour créer et gérer les salons du serveur."
     ],
     "info_modules_guild": [
-      "Commands to setup and manage the server."
+      "Commandes pour configurer et gérer le serveur."
     ],
     "info_modules_highlights": [
-      "Commands to create and manage personal highlights."
+      "Commandes pour créer et gérer les mentions personnalisées personnelles."
     ],
     "info_modules_owner": [
-      "Commands usable only by the owners of the bot."
+      "Commandes utilisables uniquement par les propriétaires du bot."
     ],
     "info_modules_utility": [
-      "Commands to provide various utilities."
+      "Commandes pour fournir diverses utilités."
     ],
     "info_modules_tags": [
-      "Commands to create and manage custom server tags."
+      "Commandes pour créer et gérer les tags du serveur personnalisés."
     ],
     "info_modules_starboard": [
-      "Commands to setup and manage the server starboard."
+      "Commandes pour configurer et gérer le tableau d'étoile du serveur."
     ],
     "info_modules_reminders": [
-      "Commands to create and manage personal reminders."
+      "Commandes pour créer et gérer des rappels personnels."
     ],
     "info_modules_reactionroles": [
-      "Commands to setup and manage server reaction roles."
+      "Commandes pour configurer et gérer les rôles de réaction du serveur."
     ],
     "info_modules_prune": [
-      "Commands to prune or delete messages in various ways."
+      "Commandes pour purger ou supprimer des messages de différentes manières."
     ],
     "info_modules_emoji": [
-      "Commands to view info for and manage emojis."
+      "Commandes pour afficher de l'information sur les émojis et les gérer."
     ],
     "info_modules_backpack": [
-      "Commands to view info for backpack.tf users."
+      "Commandes pour afficher des informations pour les utilisateurs de backpack.tf."
     ],
     "info_modules_aliases": [
-      "Commands to setup and manage custom command aliases."
+      "Commandes pour configurer et gérer les alias de commandes personnalisées."
     ]
   }
 }
