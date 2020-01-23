@@ -1175,7 +1175,7 @@
       "You don't have any highlights set in {0}!"
     ],
     "highlight_list_global": [
-      "Your highlights for all servers:"
+      "Your global highlights:"
     ],
     "highlight_list_guild": [
       "Your highlights for {0}:"
@@ -1280,7 +1280,7 @@
       "Remove all level rewards for a specific level."
     ],
     "info_command_guild_levelrewards_add_role": [
-      "Add a new role level rewards."
+      "Add a new role level reward."
     ],
     "info_command_stats": [
       "View stats about the bot."
