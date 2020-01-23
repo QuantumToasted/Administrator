@@ -52,7 +52,7 @@ namespace Administrator.Commands.Reminders
                     .WithValue(reminder.Text ??
                                Markdown.Link(Localize("info_jumpmessage"),
                                    $"https://discordapp.com/channels/{reminder.GuildId?.ToString() ?? "@me"}/{reminder.ChannelId}/{reminder.MessageId}")),
-                builder: new LocalEmbedBuilder()
+                builderFunc: () => new LocalEmbedBuilder()
                     .WithTitle(Localize("reminder_list_title"))
                     .WithSuccessColor());
 

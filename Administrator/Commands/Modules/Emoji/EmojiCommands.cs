@@ -236,7 +236,7 @@ namespace Administrator.Commands.Emoji
                     x => Context.Client.GetGuild(x)?.Format(false) ?? $"??? (`{x}`)");
 
                 var pages = DefaultPaginator.GeneratePages(guild.BlacklistedEmojiGuilds,
-                    lineFunc: x => dict[x], builder: new LocalizedEmbedBuilder(this)
+                    lineFunc: x => dict[x], builderFunc: () => new LocalizedEmbedBuilder(this)
                         .WithSuccessColor()
                         .WithLocalizedTitle("emoji_blacklist"));
 

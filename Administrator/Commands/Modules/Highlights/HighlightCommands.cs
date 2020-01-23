@@ -36,8 +36,8 @@ namespace Administrator.Commands
                     ? CommandErrorLocalized("highlight_list_none_global")
                     : CommandErrorLocalized("highlight_list_none_server", args: Context.Guild.Name.Sanitize());
 
-            var pages = DefaultPaginator.GeneratePages(highlights, lineFunc: highlight => $"{highlight.Id} - \"{highlight.Text}\"", 
-                builder: new LocalEmbedBuilder().WithSuccessColor().WithTitle(Context.IsPrivate
+            var pages = DefaultPaginator.GeneratePages(highlights, lineFunc: highlight => $"{highlight.Id} - \"{highlight.Text}\"",
+                builderFunc: () => new LocalEmbedBuilder().WithSuccessColor().WithTitle(Context.IsPrivate
                     ? Localize("highlight_list_global")
                     : Localize("highlight_list_guild", Context.Guild.Name.Sanitize())));
 
@@ -161,8 +161,8 @@ namespace Administrator.Commands
                     return CommandErrorLocalized("highlight_blacklist_empty");
 
                 var pages = DefaultPaginator.GeneratePages(blacklist, 
-                    lineFunc: target => target, 
-                    builder: new LocalEmbedBuilder().WithSuccessColor().WithTitle(Localize("highlight_blacklist")));
+                    lineFunc: target => target,
+                    builderFunc: () => new LocalEmbedBuilder().WithSuccessColor().WithTitle(Localize("highlight_blacklist")));
 
                 if (pages.Count > 1)
                 {

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Administrator.Common.LocalizedEmbed;
 using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
@@ -31,25 +32,21 @@ namespace Administrator.Commands
 
         [Command("modules")]
         [IgnoresExtraArguments]
-        public AdminCommandResult GetModules()
+        public async ValueTask<AdminCommandResult> GetModulesAsync()
         {
-            var builder = new StringBuilder();
+            var pages = DefaultPaginator.GeneratePages(Commands.TopLevelModules.OrderBy(x => x.Name).ToList(), 7, module =>
+                    new LocalizedFieldBuilder(this)
+                        .WithName(module.Name)
+                        .WithLocalizedValue($"info_modules_{module.Name.ToLowerInvariant()}"),
+                builderFunc: () => new LocalizedEmbedBuilder(this).WithSuccessColor().WithLocalizedTitle("info_modules_title"));
 
-            foreach (var module in Commands.TopLevelModules.OrderBy(x => x.Name))
+            if (pages.Count > 1)
             {
-                if (module.Checks.OfType<RequireOwnerAttribute>().Any() && 
-                    !Config.OwnerIds.Contains(Context.User.Id)) continue;
-
-                builder.AppendNewline(Markdown.Bold(Markdown.Code(module.Name)))
-                    .AppendNewline(Localize($"info_modules_{module.Name.ToLower()}"))
-                    .AppendNewline();
+                await Pagination.SendPaginatorAsync(Context.Channel, new DefaultPaginator(pages, 0), pages[0]);
+                return CommandSuccess();
             }
 
-            return CommandSuccess(embed: new LocalEmbedBuilder()
-                .WithSuccessColor()
-                .WithTitle(Localize("info_modules_title"))
-                .WithDescription(builder.ToString())
-                .Build());
+            return CommandSuccess(embed: pages[0].Embed);
         }
 
         [Command("commands", "module")]
@@ -61,7 +58,7 @@ namespace Administrator.Commands
             var pages = DefaultPaginator.GeneratePages(groups, lineFunc: group => new StringBuilder()
                     .Append(Markdown.Bold(FormatCommands(group)))
                     .AppendNewline(Localize($"info_command_{group.Key.Replace(' ', '_')}")).ToString(),
-                builder: new LocalEmbedBuilder().WithSuccessColor()
+                builderFunc: () => new LocalEmbedBuilder().WithSuccessColor()
                     .WithTitle(Localize("info_module_commands", Markdown.Code(module.Name))));
             /*
             var pages = DefaultPaginator.GeneratePages(groups, 15, group => new EmbedFieldBuilder()

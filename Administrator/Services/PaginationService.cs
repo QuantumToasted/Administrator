@@ -33,12 +33,16 @@ namespace Administrator.Services
 
         public async Task HandleAsync(ReactionAddedEventArgs args)
         {
-            if (!args.Reaction.HasValue) return;
-
             if (!(_paginators.FirstOrDefault(x => x.Message.Id == args.Message.Id) is { } paginator))
                 return;
 
-            var nextPage = await paginator.GetPageAsync(args.Reaction.Value.Emoji, args.User.Id);
+            var user = args.User.HasValue
+                ? args.User.Value
+                : await args.User.Downloadable.DownloadAsync() as IUser;
+
+            if (user.IsBot) return;
+
+            var nextPage = await paginator.GetPageAsync(args.Emoji, args.User.Id);
             if (nextPage is null) return;
             await paginator.Message.ModifyAsync(x =>
             {

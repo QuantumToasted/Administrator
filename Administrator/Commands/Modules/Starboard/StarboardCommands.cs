@@ -221,7 +221,7 @@ namespace Administrator.Commands.Starboard
                 }
 
                 var pages = DefaultPaginator.GeneratePages(list, lineFunc: str => str,
-                    builder: new LocalizedEmbedBuilder(this)
+                    builderFunc: () => new LocalizedEmbedBuilder(this)
                         .WithSuccessColor()
                         .WithLocalizedTitle("starboard_blacklist_title",
                         Context.Guild.Name.Sanitize()));

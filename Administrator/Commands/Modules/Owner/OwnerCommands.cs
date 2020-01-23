@@ -115,7 +115,7 @@ namespace Administrator.Commands
                 var pages = DefaultPaginator.GeneratePages(statuses, 10, status => new LocalEmbedFieldBuilder()
                         .WithName($"{Localize("info_id")}: {status.Id}")
                         .WithValue($"{Markdown.Bold(status.Type.ToString())} {status.Text}"),
-                    builder: new LocalizedEmbedBuilder(this)
+                    builderFunc: () => new LocalizedEmbedBuilder(this)
                         .WithSuccessColor()
                         .WithLocalizedTitle("owner_statuses_title"));
 

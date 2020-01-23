@@ -39,7 +39,7 @@ namespace Administrator.Commands.ReactionRoles
 
             var pages = DefaultPaginator.GeneratePages(reactionRoles, 10, role => new LocalEmbedFieldBuilder()
                 .WithName($"{role.Emoji} => {Context.Guild.GetRole(role.RoleId).Name.Sanitize()}")
-                .WithValue($"{role.Id} - #{dict[role.ChannelId].Name} ({role.MessageId})"), builder: new LocalEmbedBuilder()
+                .WithValue($"{role.Id} - #{dict[role.ChannelId].Name} ({role.MessageId})"), builderFunc: () => new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithTitle(Localize("reactionrole_list", Context.Guild.Name.Sanitize())));
 

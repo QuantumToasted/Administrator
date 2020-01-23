@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,12 +60,12 @@ namespace Administrator.Common
         }
 
         public static List<Page> GeneratePages<T>(List<T> list, int maxLength = LocalEmbedBuilder.MAX_DESCRIPTION_LENGTH,
-            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, LocalEmbedBuilder builder = null)
+            Func<T, string> lineFunc = null, Func<string> plaintextFunc = null, Func<LocalEmbedBuilder> builderFunc = null)
         {
             var pages = new List<(string Plaintext, LocalEmbedBuilder Builder)>();
 
             var sb = new StringBuilder();
-            builder ??= new LocalEmbedBuilder();
+            var builder = builderFunc?.Invoke() ?? new LocalEmbedBuilder();
             for (var i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
@@ -93,9 +94,8 @@ namespace Administrator.Common
             {
                 for (var i = 0; i < pages.Count; i++)
                 {
-                    var page = pages[i];
-                    pages[i] = (page.Plaintext,
-                        page.Builder.WithFooter($"{i + 1}/{pages.Count}"));
+                    pages[i] = (pages[i].Plaintext,
+                        pages[i].Builder.WithFooter($"{i + 1}/{pages.Count}"));
                 }
             }
 
@@ -103,13 +103,15 @@ namespace Administrator.Common
         }
 
         public static List<Page> GeneratePages<T>(List<T> list, int numberPerPage, Func<T, LocalEmbedFieldBuilder> fieldFunc,
-            Func<string> plaintextFunc = null, LocalEmbedBuilder builder = null)
+            Func<string> plaintextFunc = null, Func<LocalEmbedBuilder> builderFunc = null)
         {
             var pages = new List<(string Plaintext, LocalEmbedBuilder Builder)>();
             var split = list.SplitBy(numberPerPage);
-            builder ??= new LocalEmbedBuilder();
+
             foreach (var group in split)
             {
+                var builder = builderFunc?.Invoke() ?? new LocalEmbedBuilder();
+
                 var text = plaintextFunc?.Invoke() ?? string.Empty;
                 foreach (var item in group)
                 {
@@ -123,9 +125,8 @@ namespace Administrator.Common
             {
                 for (var i = 0; i < pages.Count; i++)
                 {
-                    var page = pages[i];
-                    pages[i] = (page.Plaintext,
-                        page.Builder.WithFooter($"{i + 1}/{pages.Count}"));
+                    pages[i] = (pages[i].Plaintext,
+                        pages[i].Builder.WithFooter($"{i + 1}/{pages.Count}"));
                 }
             }
 

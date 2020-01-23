@@ -54,7 +54,7 @@ namespace Administrator.Commands.Aliases
 
             var pages = DefaultPaginator.GeneratePages(aliases, 10, alias => new LocalEmbedFieldBuilder()
                 .WithName($"{Context.Prefix}{alias.Alias}")
-                .WithValue($"{Context.Prefix}{alias.Command}"), builder: new LocalEmbedBuilder()
+                .WithValue($"{Context.Prefix}{alias.Command}"), builderFunc: () => new LocalEmbedBuilder()
                 .WithSuccessColor()
                 .WithTitle(Localize("alias_list_title", Context.Guild.Name.Sanitize())));
 

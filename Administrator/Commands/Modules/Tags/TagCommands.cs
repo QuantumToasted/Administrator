@@ -34,7 +34,7 @@ namespace Administrator.Commands.Tags
                 return CommandErrorLocalized("tag_list_none");
 
             var pages = DefaultPaginator.GeneratePages(tags, lineFunc: tag => tag.Name,
-                builder: new LocalEmbedBuilder().WithSuccessColor()
+                builderFunc: () => new LocalEmbedBuilder().WithSuccessColor()
                     .WithTitle(Localize("tag_list_title", Context.Guild.Name.Sanitize())));
 
             if (pages.Count > 1)

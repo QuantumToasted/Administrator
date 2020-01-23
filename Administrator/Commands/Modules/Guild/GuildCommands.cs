@@ -297,7 +297,7 @@ namespace Administrator.Commands
                         return CommandErrorLocalized("guild_levelrewards_list_none");
 
                     var pages = DefaultPaginator.GeneratePages(rewards, 5, FormatReward,
-                        builder: new LocalEmbedBuilder().WithSuccessColor().WithTitle(
+                        builderFunc: () => new LocalEmbedBuilder().WithSuccessColor().WithTitle(
                             Localize("guild_levelrewards_list", Markdown.Bold(Context.Guild.Name.Sanitize()))));
 
                     if (pages.Count > 1)
