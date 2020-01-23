@@ -1887,6 +1887,93 @@
     ],
     "info_cooldown_remove": [
       "The command {0} has had its custom cooldown removed."
-    ] 
+    ],
+    "info_command_channel_settings": [
+      "View all available settings for the current channel."
+    ],
+    "info_command_channel_settings_enable": [
+      "Enable or disable a specific setting for the current channel."
+    ],
+    "info_command_cooldown": [
+      "View or set a custom cooldown for a command."
+    ],
+    "info_command_cooldown_remove": [
+      "Remove a custom cooldown for a command."
+    ],
+    "info_command_status_list": [
+      "List all rotating statuses for the bot."
+    ],
+    "info_command_status_add": [
+      "Add a new rotating status to the bot."
+    ],
+    "info_command_status_remove": [
+      "Remove a rotating status from the bot."
+    ],
+    "info_command_status_set": [
+      "Force the bot to set a rotating status."
+    ],
+    "info_command_star": [
+      "View a star by ID, or a random star if no ID is provided."
+    ],
+    "info_command_star_stats": [
+      "View starboard stats for this server."
+    ],
+    "info_command_star_emoji": [
+      "View or set the star emoji for this server."
+    ],
+    "info_command_star_channel": [
+      "View or set the starboard channel for this server."
+    ],
+    "info_command_star_minimum": [
+      "View or set the minimum required stars for this server."
+    ],
+    "info_command_star_blacklist": [
+      "View the current server starboard blacklist."
+    ],
+    "info_command_star_blacklist_add": [
+      "Add a user or channel to the starboard blacklist."
+    ],
+    "info_command_star_blacklist_remove": [
+      "Remove a user or channel from the starboard blacklist."
+    ],
+    "info_modules_channels": [
+      "Commands to create and manage server channels."
+    ],
+    "info_modules_guild": [
+      "Commands to setup and manage the server."
+    ],
+    "info_modules_highlights": [
+      "Commands to create and manage personal highlights."
+    ],
+    "info_modules_owner": [
+      "Commands usable only by the owners of the bot."
+    ],
+    "info_modules_utility": [
+      "Commands to provide various utilities."
+    ],
+    "info_modules_tags": [
+      "Commands to create and manage custom server tags."
+    ],
+    "info_modules_starboard": [
+      "Commands to setup and manage the server starboard."
+    ],
+    "info_modules_reminders": [
+      "Commands to create and manage personal reminders."
+    ],
+    "info_modules_reactionroles": [
+      "Commands to setup and manage server reaction roles."
+    ],
+    "info_modules_prune": [
+      "Commands to prune or delete messages in various ways."
+    ],
+    "info_modules_emoji": [
+      "Commands to view info for and manage emojis."
+    ],
+    "info_modules_backpack": [
+      "Commands to view info for backpack.tf users."
+    ],
+    "info_modules_aliases": [
+      "Commands to setup and manage custom command aliases."
+    ]
   }
 }
