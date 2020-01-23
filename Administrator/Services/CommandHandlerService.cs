@@ -213,6 +213,11 @@ namespace Administrator.Services
                 set.Add($"info_command_{command.FullAliases[0].Replace(' ', '_')}");
             }
 
+            foreach (var module in _commands.TopLevelModules)
+            {
+                set.Add($"info_modules_{module.Name.ToLowerInvariant()}");
+            }
+
             var language =
                 JsonConvert.DeserializeObject<LocalizedLanguage>(
                     await File.ReadAllTextAsync("./Data/Responses/en-US.json"));
