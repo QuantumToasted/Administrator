@@ -1376,10 +1376,10 @@
       "Evaluating code..."
     ],
     "owner_eval_complete": [
-      "Code evalulation completed."
+      "Code evaluation completed."
     ],
     "owner_eval_failed": [
-      "Code evalulation was unsuccessful."
+      "Code evaluation was unsuccessful."
     ],
     "owner_eval_errors": [
       "Errors"
