@@ -1971,6 +1971,78 @@
     ],
     "info_modules_aliases": [
       "Commands to setup and manage custom command aliases."
+    ],
+    "selfrole_list_none": [
+      "This server does not have any self-assignable roles!"
+    ],
+    "selfrole_list_title": [
+      "Self-assignable roles for {0}:"
+    ],
+    "selfrole_list_groups": [
+      "Groups: {0}"
+    ],
+    "selfrole_invalid": [
+      "That role is not self-assignable!"
+    ],
+    "selfrole_add_exists": [
+      "You already have that role!"
+    ],
+    "selfrole_add_group_exists": [
+      "You already have another role from group #{0} ({1})!"
+    ],
+    "selfrole_add_success": [
+      "You've successfully added the {0} role to yourself."
+    ],
+    "selfrole_remove_none": [
+      "You do not have that role!"
+    ],
+    "selfrole_remove_success": [
+      "You've successfully removed the {0} role from yourself."
+    ],
+    "selfrole_create_exists": [
+      "That role is already self-assignable!"
+    ],
+    "selfrole_create_success": [
+      "The role {0} is now self-assignable by others."
+    ],
+    "selfrole_delete_success": [
+      "The role {0} is now no longer self-assignable by others."
+    ],
+    "selfrole_group_add_exists": [
+      "That role is already part of group #{0}!"
+    ],
+    "selfrole_group_add_success": [
+      "The role {0} is now part of the exclusive group #{1}."
+    ],
+    "selfrole_group_remove_invalid": [
+      "That role is not part of group #{0}!"
+    ],
+    "selfrole_group_remove_success": [
+      "The role {0} is now no longer part of the exclusive group #{1}."
+    ],
+    "info_command_selfrole_list": [
+      "List all self-assignable roles in the server."
+    ],
+    "info_command_selfrole_add": [
+      "Add a self-assignable role to yourself."
+    ],
+    "info_command_selfrole_remove": [
+      "Remove a self-assignable role from yourself."
+    ],
+    "info_command_selfrole_create": [
+      "Create a new self-assignable role."
+    ],
+    "info_command_selfrole_delete": [
+      "Delete and existing self-assignable role."
+    ],
+    "info_command_selfrole_group_add": [
+      "Add a self-assignable role to an exclusive group."
+    ],
+    "info_command_selfrole_group_remove": [
+      "Remove a self-assignable role from an exclusive group."
+    ],
+    "info_modules_selfroles": [
+      "Commands to create and manage self-assignable roles."
     ]
   }
 }
