@@ -163,7 +163,7 @@ namespace Administrator.Services
             await _logging.LogErrorAsync(
                 $"User {context.User.Tag} caused command '{args.Result.Command.FullAliases[0]}' to to generate an exception.",
                 "CommandHandler");
-            await _logging.LogErrorAsync($"Step: {args.Result.CommandExecutionStep.Humanize(LetterCasing.Sentence)}",
+            await _logging.LogErrorAsync($"Step: {args.Result.CommandExecutionStep.Humanize(LetterCasing.Title)}",
                 "CommandHandler");
             await _logging.LogErrorAsync(args.Result.Exception, "CommandHandler");
         }
