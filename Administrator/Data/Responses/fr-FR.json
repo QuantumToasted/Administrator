@@ -179,19 +179,19 @@
       "L'utilisateur {0} a été exclu."
     ],
     "punishment_mute": [
-      "Sourdine"
+      "Mode Muet"
     ],
     "punishment_mute_description": [
       "Vous avez été mis en sourdine dans la guilde {0}."
     ],
     "punishment_mute_description_guild": [
-      "L’utilisateur {0} a été mis en sourdine."
+      "Le mode muet a été appliqué pour l'utilisateur {0}."
     ],
     "punishment_mute_revoke_description": [
       "Votre sourdine a été retirée dans le serveur {0}."
     ],
     "punishment_mute_revoke_description_guild": [
-      "La sourdine pour l'utilisateur {0} a été retirée."
+      "Le mode muet a été appliqué pour l'utilisateur {0}."
     ],
     "punishment_warning": [
       "Avertissement"
