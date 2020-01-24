@@ -98,7 +98,7 @@
       "Plusieurs canaux ont été trouvés pour ce nom."
     ],
     "channelparser_notfound": [
-      "Canal introuvable."
+      "Salon introuvable."
     ],
     "guildparser_multiple": [
       "Plusieurs serveurs ont été trouvés pour ce nom."
@@ -452,7 +452,7 @@
       "Sanctions automatiques pour {0}"
     ],
     "punishment_mute_channel": [
-      "Canal"
+      "Salon"
     ],
     "punishment_mute_expired": [
       "La mise en sourdine a expiré."
@@ -932,58 +932,58 @@
       "Notifications de level up personnalisés pour {0}:"
     ],
     "guild_levelwhitelist_set": [
-      "New custom level-up notifications for {0}:"
+      "Nouvelles notifications de level up personnalisées pour {0}:"
     ],
     "guild_levelrewards_add_role": [
-      "New role level reward created. Use this command again to modify it."
+      "Un nouveau rôle a été ajouté comme récompense pour atteindre d'un certain niveau. Utilisez cette commande à nouveau pour le modifier."
     ],
     "guild_levelrewards_modify_role": [
-      "Choose whether to {0} or {1} a role."
+      "Choisir si vous souhaitez {0} ou {1} un rôle."
     ],
     "guild_levelrewards_modify_role_success": [
-      "Role reward successfully modified."
+      "Le rôle de récompense a été modifié avec succès."
     ],
     "guild_levelrewards_modify_role_add": [
-      "Input the role you wish to add."
+      "Entrez le rôle que vous souhaitez ajouter."
     ],
     "guild_levelrewards_modify_role_remove": [
-      "Input the role you wish to remove."
+      "Entrez le rôle que vous souhaitez supprimer."
     ],
     "guild_levelrewards_list_none": [
-      "You do not have any role rewards set up for this tier/level!"
+      "Vous n'avez aucune récompense de rôle pour ce niveau!"
     ],
     "guild_levelrewards_list": [
-      "Level rewards for {0}"
+      "Récompenses de niveau pour {0}"
     ],
     "guild_levelrewards_remove": [
-      "All level rewards removed for this tier/level."
+      "Toutes les récompenses de niveau ont été retirées pour ce niveau."
     ],
     "levelreward_role_addedroles": [
-      "Roles added:"
+      "Rôles ajoutés:"
     ],
     "levelreward_role_removedroles": [
-      "Roles removed:"
+      "Rôles retirés:"
     ],
     "levelreward_title": [
-      "Tier {0}, Level {1}"
+      "Étage {0}, Niveau {1}"
     ],
     "guild_specialrole_none": [
-      "The {0} role has not been set up, or could not be found!"
+      "Le rôle {0} n'a pas été configuré, ou n'a pas pu être trouvé!"
     ],
     "guild_specialrole": [
-      "The {0} role is currently assigned to {1}."
+      "Le rôle {0} est actuellement assigné à {1}."
     ],
     "guild_specialrole_set": [
-      "The {0} role is now assigned to {1}."
+      "Le rôle {0} est actuellement assigné à {1}."
     ],
     "guild_info_title": [
-      "Server information for {0}"
+      "Information pour le serveur {0}"
     ],
     "guild_info_presence": [
-      "Members: {0}\nBots: {1}\nText channels: {2}\nVoice channels: {3}\nCategories: {4}"
+      "Membres: {0}\nBots : {1}\nSalons textuels : {2}\nSalons vocaux : {3}\nCatégories : {4}"
     ],
     "guild_info_owner": [
-      "Server owner: {0}"
+      "Propriétaire du serveur: {0}"
     ],
     "info_command_modmail": [
       "Ouvrir un nouveau modmail."
@@ -1130,7 +1130,7 @@
       "Voir l'aide disponible pour une commande spécifique, ou obtient le message d'aide du bot."
     ],
     "info_command_guild": [
-      "View information about the server."
+      "Voir les informations sur le serveur."
     ],
     "info_command_guild_language": [
       "Afficher ou configurer la langue de réponse du bot pour ce serveur."
@@ -1139,97 +1139,97 @@
       "Voir les langues de réponse disponibles."
     ],
     "info_command_guild_xprate": [
-      "View or set the server's custom XP gain rate."
+      "Voir ou définir le taux de gain d'XP personnalisé du serveur."
     ],
     "info_command_guild_levelemoji": [
-      "View or set the server's custom level-up emoji."
+      "Voir ou configurer l'émoji de level personnalisé du serveur."
     ],
     "info_command_guild_levelwhitelist": [
-      "View or set the server's custom level-up notification whitelist, choosing what happens when a user levels up."
+      "Voir ou configurer la liste blanche des notifications de level up personnalisée, en choisissant ce qui se passe lorsqu'un utilisateur passe au niveau supérieur."
     ],
     "info_command_guild_settings": [
-      "View the custom settings enabled or disabled for this server."
+      "Voir les paramètres personnalisés activés ou désactivés pour ce serveur."
     ],
     "info_command_guild_settings_enable": [
-      "Enable or disable a specific setting for this server."
+      "Activer ou désactiver un paramètre spécifique pour ce serveur."
     ],
     "info_command_guild_prefixes": [
-      "View custom bot prefixes for this server."
+      "Voir les préfixes personnalisés du bot pour ce serveur."
     ],
     "info_command_guild_prefixes_add": [
-      "Add a new custom bot prefix to this server."
+      "Ajouter un nouveau préfixe personnalisé pour ce serveur."
     ],
     "info_command_guild_prefixes_remove": [
-      "Remove a custom bot prefix from this server."
+      "Supprimer un préfixe personnalisé pour ce serveur."
     ],
     "info_command_guild_prefixes_clear": [
-      "Clear all currently set custom bot prefixes."
+      "Effacer tous les préfixes actuellement configurés."
     ],
     "highlight_list_none_global": [
-      "You don't have any global highlights set!"
+      "Vous n'avez aucune mention personnalisée globale!"
     ],
     "highlight_list_none_server": [
-      "You don't have any highlights set in {0}!"
+      "Vous n'avez pas de mention personnalisée configuré pour le serveur {0}!"
     ],
     "highlight_list_global": [
-      "Your global highlights:"
+      "Vos mentions personnalisées globales:"
     ],
     "highlight_list_guild": [
-      "Your highlights for {0}:"
+      "Vos mentions personnalisées pour {0}:"
     ],
     "highlight_add_exists": [
-      "You already have a highlight for that!"
+      "Vous avez déjà une mention personnalisée pour cela!"
     ],
     "highlight_add_global": [
-      "{0} New global highlight created."
+      "{0} Nouvelle mention personnalisée globale créée."
     ],
     "highlight_add_guild": [
-      "{0} New highlight created for {1}."
+      "{0} Nouvelle mention personnalisée créée pour {1}."
     ],
     "highlight_blacklist_notmember": [
-      "You are not a member of that server, so you cannot blacklist that channel."
+      "Vous n'êtes pas membre de ce serveur, donc vous ne pouvez pas ajouter ce salon à votre liste noire."
     ],
     "highlight_blacklist_add": [
-      "{0} will no longer trigger highlights for you."
+      "{0} ne déclenchera plus de mentions personnalisées pour vous."
     ],
     "highlight_blacklist_remove": [
-      "{0} will now trigger highlights for you again."
+      "{0} va désormais déclencher des mentions personnalisées pour vous à nouveau."
     ],
     "highlight_blacklist": [
-      "Users and channels that will not trip your highlights:"
+      "Utilisateurs et salons qui ne seront pas détectés par vos mentions personnalisées:"
     ],
     "highlight_blacklist_empty": [
-      "Your highlight blacklist is empty!"
+      "Votre liste noire de mention personnalisée est vide!"
     ],
     "highlight_remove_notfound": [
-      "You don't have a highlight matching that text here!"
+      "Vous n'avez pas de mention personnalisée qui correspond à ce texte ici!"
     ],
     "highlight_remove_global": [
-      "Global highlight removed."
+      "Mention personnalisée globale supprimée."
     ],
     "highlight_remove_guild": [
-      "Highlight removed from {0}."
+      "Mention personnalisée retiré pour le serveur {0}."
     ],
     "highlight_cleared": [
-      "Highlights cleared."
+      "Mentions personnalisées effacées."
     ],
     "highlight_trigger_text": [
-      "You've been highlighted in {0}!"
+      "Vous avez été mentionné dans le serveur {0}!"
     ],
     "highlight_trigger_author": [
-      "{0} - in {1}"
+      "{0} - dans {1}"
     ],
     "info_command_highlights": [
-      "View your highlights for this server. If used in DMs, view your global highlights."
+      "Voir vos mentions personnalisées pour ce serveur. Si utilisée dans vos PMs, voir vos mentions personnalisées globales."
     ],
     "info_command_highlights_add": [
-      "Add a new highlight."
+      "Ajouter une nouvelle mention personnalisée."
     ],
     "info_command_highlights_remove": [
-      "Remove an existing highlight."
+      "Supprimer une mention personnalisée existante."
     ],
     "info_command_highlights_clear": [
-      "Clear all highlights in this server. If used in DMs, clears all global highlights."
+      "Effacer toutes les mentions personnalisées pour ce serveur. Si utilisée dans les PMs, efface toutes les mentions personnalisées globales."
     ],
     "info_command_highlights_blacklist": [
       "Utilisateurs et salons qui ne seront pas détectés par vos mentions personnalisées."
@@ -1382,154 +1382,154 @@
       "Erreurs"
     ],
     "owner_eval_return": [
-      "Value returned"
+      "Valeur retournée"
     ],
     "owner_eval_executiontime": [
-      "Execution time"
+      "Temps d'exécution"
     ],
     "owner_forcestop": [
-      "Shutting down."
+      "Arrêt en cours."
     ],
     "channel_info_text": [
-      "Information for text channel {0}"
+      "Informations pour le salon textuel {0}"
     ],
     "channel_info_slowmode": [
-      "Slowmode"
+      "Mode lent"
     ],
     "channel_info_voice": [
-      "Information for voice channel {0}"
+      "Informations pour le salon vocal {0}"
     ],
     "channel_info_voice_bitrate": [
-      "Bitrate"
+      "Débit d'octets"
     ],
     "channel_info_voice_connected": [
-      "Connected users ({0})"
+      "Utilisateurs connectés ({0})"
     ],
     "channel_info_category": [
-      "Information for category channel {0}"
+      "Information pour la catégorie {0}"
     ],
     "channel_info_news": [
-      "Information for news channel {0}"
+      "Informations pour le salon d'actualités {0}"
     ],
     "channel_info_category_footer": [
-      "Category: {0}"
+      "Catégorie: {0}"
     ],
     "channel_info_category_channels": [
-      "Channels in this category"
+      "Salons dans cette catégorie"
     ],
     "channel_create_text": [
-      "Text channel {0} created!"
+      "Salon textuel {0} créé!"
     ],
     "channel_create_news": [
-      "News channel {0} created!"
+      "Salon d'actualités {0} créé!"
     ],
     "channel_create_voice": [
-      "Voice channel {0} created!"
+      "Salon vocal {0} créé!"
     ],
     "channel_create_category": [
-      "Category {0} created!"
+      "Catégorie {0} créé!"
     ],
     "channel_clone": [
-      "Channel {0} successfully cloned to {1}."
+      "Salon {0} cloné avec succès vers {1}."
     ],
     "channel_rename": [
-      "Channel successfully renamed."
+      "Salon renommé avec succès."
     ],
     "channel_delete": [
-      "Channel successfully deleted."
+      "Salon supprimé avec succès."
     ],
     "channel_logging_alldisabled": [
-      "All logging has been disabled in this channel."
+      "Toutes les publications ont été désactivées pour ce salon."
     ],
     "channel_logging_ban": [
-      "Bans will now be logged in this channel."
+      "Bannissements vont désormais être publiés dans ce salon."
     ],
     "channel_logging_kick": [
-      "Kicks will now be logged in this channel."
+      "Les expulsions vont être publiées dans ce salon."
     ],
     "channel_logging_mute": [
-      "Mutes will now be logged in this channel."
+      "Les utilisateurs muets seront maintenant publiés dans ce salon."
     ],
     "channel_logging_warn": [
-      "Warnings will now be logged in this channel."
+      "Les avertissements seront maintenant publiés dans ce salon."
     ],
     "channel_logging_revoke": [
-      "Revoked punishments will now be logged in this channel."
+      "Les sanctions révoquées seront maintenant publiées dans ce salon."
     ],
     "channel_logging_appeal": [
-      "Punishment appeals will now be logged in this channel."
+      "Les mises en appel de sanctions vont désormais être publiés dans ce salon."
     ],
     "channel_logging_messagedelete": [
-      "Message deletions will now be logged in this channel."
+      "Les suppressions de messages seront maintenant publiés dans ce salon."
     ],
     "channel_logging_messageupdate": [
-      "Message updates will now be logged in this channel."
+      "Les mises à jour des messages vont désormais être publiées dans ce salon."
     ],
     "channel_logging_join": [
-      "Users joining will now be logged in this channel."
+      "Les nouveaux utilisateurs vont désormais être publiés dans ce salon."
     ],
     "channel_logging_leave": [
-      "Users leaving will now be logged in this channel."
+      "Les utilisateurs qui quittent seront maintenant publiés dans ce salon."
     ],
     "channel_logging_usernameupdate": [
-      "Username updates will now be logged in this channel."
+      "Les mises à jour des noms d'utilisateurs vont désormais être publiées dans ce salon."
     ],
     "channel_logging_nicknameupdate": [
-      "Nickname updates will now be logged in this channel."
+      "Les mises à jour des surnoms vont désormais être publiées dans ce salon."
     ],
     "channel_logging_avatarupdate": [
-      "Avatar updates will now be logged in this channel."
+      "Les mises à jour d'avatar vont désormais être publiées dans ce salon."
     ],
     "channel_logging_userroleupdate": [
-      "User role updates will now be logged in this channel."
+      "Les mises à jour de rôle d'utilisateur vont désormais être publiées dans ce salon."
     ],
     "channel_logging_reactionremove": [
-      "Reactions removed from messages will now be logged in this channel."
+      "Les réactions retirées des messages vont désormais être publiées dans ce salon."
     ],
     "channel_logging_none": [
-      "No events are currently configured to log in this channel."
+      "Aucun événement n'est actuellement configuré pour être publié dans ce salon."
     ],
     "channel_logging_list": [
-      "The following events are currently logged in this channel:"
+      "Les événements suivants sont actuellements publiés dans ce salon:"
     ],
     "channel_slowmode_set_none": [
-      "Slowmode has been disabled for {0}."
+      "Le mode lent a été désactivé pour {0}."
     ],
     "channel_slowmode_set": [
-      "Slowmode has been updated for {0}."
+      "Le mode lent a été mis à jour pour {0}."
     ],
     "channel_slowmode_set_failed": [
-      "Slowmode was unable to be updated for {0}. Check that it is below the maximum allowed value."
+      "Le mode lent n'a pas pu être mis à jour pour {0}. Vérifiez qu'il est inférieur à la valeur maximale autorisée."
     ],
     "reactionrole_list_none": [
-      "No reaction roles exist on this server!"
+      "Aucun rôle de réaction n'existe sur ce serveur!"
     ],
     "reactionrole_list": [
-      "Reaction roles for {0}"
+      "Rôles de réaction pour {0}"
     ],
     "reactionrole_add_nomessage": [
-      "No message could be found by that ID."
+      "Aucun message n'a pu être trouvé avec cet ID."
     ],
     "reactionrole_add_maximum": [
-      "This server has reached its maximum amount of available reaction roles ({0})."
+      "Ce serveur a atteint le nombre maximum de rôles de réaction disponibles ({0})."
     ],
     "reactionrole_add": [
-      "{0} Reaction role created. Users who react to message {1} in {2} with {3} receive the role {4}."
+      "{0} Rôle de réaction créé. Les utilisateurs qui réagissent au message {1} dans {2} avec {3} vont recevoir le rôle {4}."
     ],
     "reactionrole_remove_notfound": [
-      "No reaction role could be found with that ID."
+      "Aucun rôle de réaction n'a pu être trouvé avec cet ID."
     ],
     "reactionrole_remove": [
-      "Reaction role {0} successfully removed."
+      "Rôle de réaction {0} supprimé avec succès."
     ],
     "logging_message_delete": [
-      "Message deleted in {0}"
+      "Message supprimé dans le salon {0}"
     ],
     "logging_message_delete_moderator": [
-      "Message deleted by {0} in {1}"
+      "Message supprimé par {0} dans le salon {1}"
     ],
     "logging_message_update": [
-      "Message updated in {0}"
+      "Message mis à jour dans le salon {0}"
     ],
     "logging_message_update_oldcontent": [
       "Ancien contenu"
@@ -1649,7 +1649,7 @@
       "Résultats similaires pour le tag du nom de \"{0}\""
     ],
     "reminder_toolong": [
-      "A reminder duration must not exceed 10 years."
+      "La durée du rappel ne doit pas excéder 10 ans."
     ],
     "reminder_create": [
       "{0} Nouveau rappel créé."
@@ -1682,151 +1682,151 @@
       "Nouvel alias de commande créé."
     ],
     "alias_created_description": [
-      "The alias \"{0}\" will now execute the following command:\n\"{1}\""
+      "L'alias \"{0}\" va maintenant exécuter la commande suivante :\n\"{1}\""
     ],
     "alias_list_none": [
-      "No custom command aliases exist on this server!"
+      "Aucun alias de commande personnalisée n'existe sur ce serveur!"
     ],
     "alias_list_title": [
-      "Custom command aliases for {0}"
+      "Alias de commande personnalisés pour {0}"
     ],
     "alias_remove_notfound": [
-      "No custom command alias could be found with that text."
+      "Aucun alias de commande personnalisée n'a pu être trouvé avec ce texte."
     ],
     "alias_remove": [
-      "Custom command alias successfully deleted."
+      "L'alias de commande personnalisée a bien supprimé avec succès."
     ],
     "utility_send_empty": [
-      "I cannot send an empty message with no text and no attachment."
+      "Je ne peux pas envoyer un message vide sans texte ni pièce jointe."
     ],
     "utility_edit_nomessage": [
-      "No message could not be found with that ID to edit."
+      "Aucun message n'a pu être trouvé avec cet ID à modifier."
     ],
     "utility_edit_nonowner": [
-      "I cannot edit others' messages."
+      "Je ne peux pas modifier les messages des autres."
     ],
     "utility_deconstruct_nomessage": [
-      "No message could not be found with that ID to deconstruct."
+      "Aucun message n'a pu être trouvé avec cet ID à déconstruire."
     ],
     "utility_quote_nomessage": [
-      "No message could not be found with that ID to quote."
+      "Aucun message n'a pu être trouvé avec cet ID pour citer."
     ],
     "emoji_maximum": [
-      "You cannot add any more emoji to your server!"
+      "Vous ne pouvez plus ajouter d'émoji à votre serveur!"
     ],
     "emoji_maximum_animated": [
-      "You cannot add any more animated emoji to your server!"
+      "Vous ne pouvez plus ajouter d'émojis animés à votre serveur!"
     ],
     "emoji_clone_notcustom": [
-      "The supplied emoji must be a custom emoji."
+      "L'emoji fourni doit être un emoji personnalisé."
     ],
     "emoji_clone_exists": [
-      "That emoji is already on this server!"
+      "Cet emoji est déjà sur ce serveur!"
     ],
     "emoji_clone_success": [
-      "Emoji successfully cloned: {0}"
+      "Emoji cloné avec succès: {0}"
     ],
     "emoji_info_title": [
-      "Info for custom emoji {0}"
+      "Infos pour l'émoji personnalisé {0}"
     ],
     "emoji_info_animated": [
-      "Animated emoji?"
+      "Émoji animé?"
     ],
     "emoji_info_owner": [
-      "Located on server {0}"
+      "Situé sur le serveur {0}"
     ],
     "emoji_info_owner_blacklisted": [
-      "Located on blacklisted server {0}"
+      "Situé sur un serveur qui est sur la liste noire {0}"
     ],
     "emoji_blacklist_add": [
-      "The server with ID {0} has been blacklisted from usage with {1}."
+      "Le serveur avec l'ID {0} a été ajouté à la liste noire et exclu de l'utilisation avec {1}."
     ],
     "emoji_blacklist_remove": [
-      "The server with ID {0} can now be used with {1}."
+      "Le serveur avec l'ID {0} peut maintenant être utilisé avec {1}."
     ],
     "emoji_blacklist_none": [
-      "No servers are currently blacklisted!"
+      "Aucun serveur n'est actuellement sur la liste noire!"
     ],
     "emoji_blacklist": [
-      "Blacklisted emoji server IDs"
+      "IDs des serveurs d'émojis qui sont sur la liste noire"
     ],
     "emoji_create_noimage": [
-      "You must upload an image to use for the emoji."
+      "Vous devez télécharger une image à utiliser pour l'émoji."
     ],
     "emoji_create_success": [
-      "New emoji successfully created: {0}"
+      "Nouvel émoji créé avec succès : {0}"
     ],
     "emoji_image_too_large": [
-      "The supplied image was too large to be used as an emoji."
+      "L'image fournie était trop grande pour être utilisée comme un émoji."
     ],
     "require_custom_emoji": [
-      "The supplied emoji must be a custom emoji, not a default Discord emoji."
+      "L'émoji fourni doit être un émoji personnalisé et non un émoji disponible par défaut."
     ],
     "require_guild_emoji": [
-      "The supplied custom emoji must be from this server."
+      "L'émoji personnalisé fourni doit provenir de ce serveur."
     ],
     "info_command_emoji": [
-      "View info about a custom emoji."
+      "Voir de l'information sur un émoji personnalisé."
     ],
     "info_command_emoji_big": [
-      "Blow up an emoji to full size."
+      "Augmenter la taille d'un émoji au maximum."
     ],
     "info_command_emoji_create": [
-      "Create a new custom emoji for this server."
+      "Créer un nouvel émoji personnalisé pour ce serveur."
     ],
     "info_command_emoji_clone": [
-      "Clone a custom emoji from another server."
+      "Cloner un émoji personnalisé pour un autre serveur."
     ],
     "info_command_emoji_blacklist": [
-      "Toggle blacklisting of a specific server from usage with the `e big` command."
+      "Ajouter/Retirer un serveur spécifique à la liste noire pour l'utilisation de la commande `e big`."
     ],
     "starboard_no_entry_id": [
-      "No star could be found with that ID."
+      "Aucune étoile n'a pu être trouvé avec cet ID."
     ],
     "starboard_no_entry": [
-      "No stars exist on this server!"
+      "Aucune étoile existe sur ce serveur!"
     ],
     "starboard_stats_title": [
-      "Starboard stats for {0}"
+      "Statistiques du tableau d'étoile pour {0}"
     ],
     "starboard_stats_description": [
-      "{0} messages starred with {1} stars."
+      "{0} messages mis en vedette avec {1} étoiles."
     ],
     "starboard_stats_top_stars": [
-      "Top starred messages"
+      "Messages les plus populaires"
     ],
     "starboard_stats_top_starrers": [
-      "Top star givers"
+      "Plus grand donneurs d'étoiles"
     ],
     "starboard_stats_top_starrees": [
-      "Top star receivers"
+      "Plus grand receveurs d'étoiles"
     ],
     "starboard_emoji_update_same": [
-      "That emoji is already the star emoji!"
+      "Cet emoji est déjà l'émoji étoile !"
     ],
     "starboard_emoji_update": [
-      "This server's star emoji has now been updated to {0}.\nAll current stars have been invalidated."
+      "L'émoji d'étoile de ce serveur a maintenant été remplacé avec {0}.\nToutes les étoiles actuelles ont été invalidées."
     ],
     "starboard_emoji": [
-      "This server's star emoji is currently set to {0}."
+      "L'émoji étoile de ce serveur est actuellement {0}."
     ],
     "starboard_channel_same": [
-      "That channel is already the starboard channel!"
+      "Ce salon est déjà le salon du tableau d'étoile!"
     ],
     "starboard_channel_update": [
-      "This server's starboard channel has now been updated to {0}.\nOld stars will still be updated in the previous channel."
+      "Le salon du tableau d'étoile pour ce serveur a été remplacé avec {0}. Les anciennes étoiles seront toujours mises à jour dans le canal précédent."
     ],
     "starboard_channel_set": [
-      "This server's starboard channel has now been set to {0}."
+      "Le salon du tableau d'étoile pour ce serveur est maintenant {0}."
     ],
     "starboard_channel_none": [
-      "This server does not have a starboard channel set!"
+      "Ce serveur n'a pas de salon de tableau d'étoile configuré!"
     ],
     "starboard_channel": [
-      "This server's starboard channel is currently set to {0}."
+      "Le salon du tableau d'étoile pour ce serveur est actuellement {0}."
     ],
     "starboard_minimum_update": [
-      "The minimum stars required to reach the starboard has been updated to {0}."
+      "Le nombre d'étoile minimum requis pour atteindre le tableau d'étoile a été configuré à {0}."
     ],
     "starboard_minimum": [
       "Le nombre d'étoile minimum requis pour atteindre le tableau d'étoile est actuellement {0}."
