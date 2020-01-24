@@ -350,7 +350,7 @@
       "{0} a été exclu."
     ],
     "moderation_mute": [
-      "{0} a été mis en sourdine."
+      "{0} a été placé en mode muet."
     ],
     "moderation_mute_temporary": [
       "{0} a été mis en sourdine temporairement pour {1}."
@@ -368,7 +368,7 @@
       "Le role de mise en sourdine n'a pas été configuré ou a été supprimé."
     ],
     "moderation_alreadymuted": [
-      "Cet utilisateur a déjà été mis en sourdine."
+      "Cet utilisateur est déjà en mode muet."
     ],
     "moderation_additional_punishment": [
       "Sanction additionnelle pour l'avertissement #{0}."
