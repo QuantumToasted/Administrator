@@ -383,6 +383,21 @@ namespace Administrator.Migrations
                     b.ToTable("Reminders");
                 });
 
+            modelBuilder.Entity("Administrator.Database.SelfAssignableRole", b =>
+                {
+                    b.Property<decimal>("GuildId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<decimal>("RoleId")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int[]>("Groups");
+
+                    b.HasKey("GuildId", "RoleId");
+
+                    b.ToTable("SelfRoles");
+                });
+
             modelBuilder.Entity("Administrator.Database.SpecialEmoji", b =>
                 {
                     b.Property<decimal>("GuildId")

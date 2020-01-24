@@ -84,6 +84,8 @@ namespace Administrator.Database
 
         public DbSet<CooldownData> CooldownData { get; set; }
 
+        public DbSet<SelfAssignableRole> SelfRoles { get; set; }
+
         public async Task<Guild> GetOrCreateGuildAsync(ulong guildId)
         {
             if (await Guilds.FindAsync(guildId) is { } guild)
@@ -159,6 +161,14 @@ namespace Administrator.Database
             TextChannels.Add(channel);
             await SaveChangesAsync();
             return channel;
+        }
+
+        public async Task<CachedRole> GetSelfRoleAsync(ulong guildId, ulong roleId)
+        {
+            if (!(await SelfRoles.FindAsync(guildId, roleId) is { } role))
+                return null;
+
+            return _client.GetGuild(guildId).GetRole(roleId);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -372,6 +382,11 @@ namespace Administrator.Database
             modelBuilder.Entity<CooldownData>(data =>
             {
                 data.HasKey(x => new {x.GuildId, x.UserId, x.Command});
+            });
+
+            modelBuilder.Entity<SelfAssignableRole>(role =>
+            {
+                role.HasKey(x => new {x.GuildId, x.RoleId});
             });
         }
     }

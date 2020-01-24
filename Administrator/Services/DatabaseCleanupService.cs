@@ -51,6 +51,15 @@ namespace Administrator.Services
                 ctx.SpecialRoles.RemoveRange(roles);
                 await ctx.SaveChangesAsync();
             }
+
+            var selfRoles = await ctx.SelfRoles.Where(x => x.RoleId == args.Role.Id)
+                .ToListAsync();
+
+            if (selfRoles.Count > 0)
+            {
+                ctx.SelfRoles.RemoveRange(selfRoles);
+                await ctx.SaveChangesAsync();
+            }
         }
 
         public async Task HandleAsync(LeftGuildEventArgs args)
