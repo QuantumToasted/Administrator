@@ -27,7 +27,7 @@ namespace Administrator.Commands.Tags
         public async ValueTask<AdminCommandResult> ListPersonalTagsAsync()
         {
             var tags = await Context.Database.Tags.Where(x =>
-                    x.GuildId == Context.Guild.Id && x.AuthorId == Context.Guild.Id)
+                    x.GuildId == Context.Guild.Id && x.AuthorId == Context.User.Id)
                 .ToListAsync();
 
             if (tags.Count == 0)
