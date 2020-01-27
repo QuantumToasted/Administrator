@@ -56,7 +56,7 @@ namespace Administrator.Commands
 
         public ICachedMessageChannel Channel
         {
-            get => _channel ??= Message.Channel;
+            get => _channel ??= Message?.Channel;
             private set => _channel = value;
         }
 
