@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using Disqord;
 using Newtonsoft.Json;
 using Qommon.Collections;
@@ -64,6 +65,17 @@ namespace Administrator.Common
 
         public LocalEmbed ToLocalEmbed()
         {
+            if (Title is null &&
+                Description is null &&
+                ImageUrl is null &&
+                ThumbnailUrl is null &&
+                Color is null &&
+                Timestamp is null &&
+                Footer is null &&
+                Author is null &&
+                Fields is null)
+                return null;
+
             var builder = new LocalEmbedBuilder()
                 .WithTitle(Title)
                 .WithDescription(Description)
