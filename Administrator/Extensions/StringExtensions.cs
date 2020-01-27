@@ -149,57 +149,63 @@ namespace Administrator.Extensions
             str = RandomNumberRegex.Replace(str, ReplaceRandomNumber);
 
             // User
-            if (AsyncUserRegex.IsMatch(str))
+            if (context.User is { })
             {
-                var user = await context.Database.GetOrCreateGlobalUserAsync(context.User.Id);
-                str = str.Replace("{user.xp}", user.CurrentLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
-                    .Replace("{user.level}", user.Level.ToString(), StringComparison.OrdinalIgnoreCase)
-                    .Replace("{user.nextxp}", user.NextLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
-                    .Replace("{user.tier}", user.Tier.ToString(), StringComparison.OrdinalIgnoreCase);
-            }
+                if (AsyncUserRegex.IsMatch(str))
+                {
+                    var user = await context.Database.GetOrCreateGlobalUserAsync(context.User.Id);
+                    str = str.Replace("{user.xp}", user.CurrentLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                        .Replace("{user.level}", user.Level.ToString(), StringComparison.OrdinalIgnoreCase)
+                        .Replace("{user.nextxp}", user.NextLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                        .Replace("{user.tier}", user.Tier.ToString(), StringComparison.OrdinalIgnoreCase);
+                }
 
-            if (AsyncGuildUserRegex.IsMatch(str) && !context.IsPrivate)
-            {
-                var guildUser = await context.Database.GetOrCreateGuildUserAsync(context.User.Id, context.Guild.Id);
-                str = str.Replace("{user.guildxp}", guildUser.CurrentLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
-                    .Replace("{user.guildlevel}", guildUser.Level.ToString(), StringComparison.OrdinalIgnoreCase)
-                    .Replace("{user.guildnextxp}", guildUser.NextLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
-                    .Replace("{user.guildtier}", guildUser.Tier.ToString(), StringComparison.OrdinalIgnoreCase);
-            }
+                if (context.Guild is { })
+                {
+                    var member = (CachedMember) context.User;
+                    str = str.Replace("{user.nick}", member.Nick ?? context.User.Name, StringComparison.OrdinalIgnoreCase)
+                        .Replace("{user.joined}", member.JoinedAt.ToString("g", context.Language.Culture),
+                            StringComparison.OrdinalIgnoreCase);
 
-            str = str.Replace("{user}", context.User.Tag, StringComparison.OrdinalIgnoreCase)
-                .Replace("{user.id}", context.User.Id.ToString(), StringComparison.OrdinalIgnoreCase)
-                .Replace("{user.avatar}", context.User.GetAvatarUrl(), StringComparison.OrdinalIgnoreCase)
-                .Replace("{user.name}", context.User.Name, StringComparison.OrdinalIgnoreCase)
-                .Replace("{user.mention}", context.User.Mention, StringComparison.OrdinalIgnoreCase)
-                .Replace("{user.created}", context.User.Id.CreatedAt.ToString("g", context.Language.Culture),
-                    StringComparison.OrdinalIgnoreCase)
-                .Replace("{user.discrim}", context.User.Discriminator, StringComparison.OrdinalIgnoreCase);
+                    if (AsyncGuildUserRegex.IsMatch(str))
+                    {
+                        var guildUser = await context.Database.GetOrCreateGuildUserAsync(context.User.Id, context.Guild.Id);
+                        str = str.Replace("{user.guildxp}", guildUser.CurrentLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                            .Replace("{user.guildlevel}", guildUser.Level.ToString(), StringComparison.OrdinalIgnoreCase)
+                            .Replace("{user.guildnextxp}", guildUser.NextLevelXp.ToString(), StringComparison.OrdinalIgnoreCase)
+                            .Replace("{user.guildtier}", guildUser.Tier.ToString(), StringComparison.OrdinalIgnoreCase);
+                    }
+                }
 
-            if (!context.IsPrivate)
-            {
-                var member = (CachedMember) context.User;
-                str = str.Replace("{user.nick}", member.Nick ?? context.User.Name, StringComparison.OrdinalIgnoreCase)
-                    .Replace("{user.joined}", member.JoinedAt.ToString("g", context.Language.Culture),
-                        StringComparison.OrdinalIgnoreCase);
+                str = str.Replace("{user}", context.User.Tag, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.id}", context.User.Id.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.avatar}", context.User.GetAvatarUrl(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.name}", context.User.Name, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.mention}", context.User.Mention, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.created}", context.User.Id.CreatedAt.ToString("g", context.Language.Culture),
+                        StringComparison.OrdinalIgnoreCase)
+                    .Replace("{user.discrim}", context.User.Discriminator, StringComparison.OrdinalIgnoreCase);
             }
 
             // Channel
-            str = str.Replace("{channel}", context.Channel.ToString(), StringComparison.OrdinalIgnoreCase)
-                .Replace("{channel.id}", context.Channel.Id.ToString(), StringComparison.OrdinalIgnoreCase)
-                .Replace("{channel.name}", context.Channel.Name, StringComparison.OrdinalIgnoreCase)
-                .Replace("{channel.created}", context.Channel.Id.CreatedAt.ToString("g", context.Language.Culture), StringComparison.OrdinalIgnoreCase);
-
-            if (!context.IsPrivate)
+            if (context.Channel is { })
             {
-                var channel = (CachedTextChannel) context.Channel;
-                str = str.Replace("{channel.tag}", channel.Tag, StringComparison.OrdinalIgnoreCase)
-                    .Replace("{channel.topic}", channel.Topic, StringComparison.OrdinalIgnoreCase)
-                    .Replace("{channel.mention}", channel.Mention, StringComparison.OrdinalIgnoreCase);
+                str = str.Replace("{channel}", context.Channel.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{channel.id}", context.Channel.Id.ToString(), StringComparison.OrdinalIgnoreCase)
+                    .Replace("{channel.name}", context.Channel.Name, StringComparison.OrdinalIgnoreCase)
+                    .Replace("{channel.created}", context.Channel.Id.CreatedAt.ToString("g", context.Language.Culture), StringComparison.OrdinalIgnoreCase);
+
+                if (context.Guild is { })
+                {
+                    var channel = (CachedTextChannel) context.Channel;
+                    str = str.Replace("{channel.tag}", channel.Tag, StringComparison.OrdinalIgnoreCase)
+                        .Replace("{channel.topic}", channel.Topic, StringComparison.OrdinalIgnoreCase)
+                        .Replace("{channel.mention}", channel.Mention, StringComparison.OrdinalIgnoreCase);
+                }
             }
 
             // Guild
-            if (!context.IsPrivate)
+            if (context.Guild is { })
             {
                 str = str.Replace("{guild}", context.Guild.Name, StringComparison.OrdinalIgnoreCase)
                     .Replace("{guild.id}", context.Guild.Id.ToString(), StringComparison.OrdinalIgnoreCase)
