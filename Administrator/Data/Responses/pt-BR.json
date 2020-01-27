@@ -2043,6 +2043,99 @@
     ],
     "info_modules_selfroles": [
       "Commands to create and manage self-assignable roles."
+    ],
+    "guild_greeting_empty": [
+      "Your server does not have a greeting message set up!"
+    ],
+    "guild_greeting_nochannel": [
+      "This server's greeting message channel is not set up!"
+    ],
+    "guild_greeting_updated": [
+      "This server's greeting message has been updated."
+    ],
+    "guild_greeting_disabled": [
+      "This server's greeting message has been disabled."
+    ],
+    "guild_greeting_channel": [
+      "This server's greeting messages are currently posted to {0}."
+    ],
+    "guild_greeting_channel_updated": [
+      "This server's greeting messages will now be posted to {0}."
+    ],
+    "guild_greeting_duration_none": [
+      "Greeting messages are currently set to not be deleted."
+    ],
+    "guild_greeting_duration": [
+      "Greeting messages are currently set to be deleted after {0}."
+    ],
+    "guild_greeting_duration_disabled": [
+      "Greeting messages will now no longer be deleted."
+    ],
+    "guild_greeting_duration_updated": [
+      "Greeting messages will now be deleted after {0}."
+    ],
+    "guild_greeting_dm_enabled": [
+      "Greeting messages will now be sent to the user who joined instead of in a channel."
+    ],
+    "guild_greeting_dm_disabled": [
+      "Greeting messages will no longer be sent to the user who joined.\nYou will need to set the greeting channel for greetings to appear."
+    ],
+    "guild_goodbye_empty": [
+      "Your server does not have a goodbye message set up!"
+    ],
+    "guild_goodbye_nochannel": [
+      "This server's goodbye message channel is not set up!"
+    ],
+    "guild_goodbye_updated": [
+      "This server's goodbye message has been updated."
+    ],
+    "guild_goodbye_disabled": [
+      "This server's goodbye message has been disabled."
+    ],
+    "guild_goodbye_channel": [
+      "This server's goodbye messages are currently posted to {0}."
+    ],
+    "guild_goodbye_channel_updated": [
+      "This server's goodbye messages will now be posted to {0}."
+    ],
+    "guild_goodbye_duration_none": [
+      "Goodbye messages are currently set to not be deleted."
+    ],
+    "guild_goodbye_duration": [
+      "Goodbye messages are currently set to be deleted after {0}."
+    ],
+    "guild_goodbye_duration_disabled": [
+      "Goodbye messages will now no longer be deleted."
+    ],
+    "guild_goodbye_duration_updated": [
+      "Goodbye messages will now be deleted after {0}."
+    ],
+    "info_command_guild_greeting": [
+      "Set the server's greeting message, or test the existing one."
+    ],
+    "info_command_guild_greeting_disable": [
+      "Disable the server's greeting message."
+    ],
+    "info_command_guild_greeting_channel": [
+      "View or set the server's greeting channel."
+    ],
+    "info_command_guild_greeting_duration": [
+      "View or set the duration after which greeting messages are automatically deleted."
+    ],
+    "info_command_guild_greeting_dm": [
+      "Toggle greeting messages being sent to the user who joined."
+    ],
+    "info_command_guild_goodbye": [
+      "Set the server's goodbye message, or test the existing one."
+    ],
+    "info_command_guild_goodbye_disable": [
+      "Disable the server's goodbye message."
+    ],
+    "info_command_guild_goodbye_channel": [
+      "View or set the server's goodbye message channel."
+    ],
+    "info_command_guild_goodbye_duration": [
+      "View or set the duration after which goodbye messages are automatically deleted."
     ]
   }
 }
