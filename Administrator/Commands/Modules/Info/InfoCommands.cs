@@ -55,7 +55,7 @@ namespace Administrator.Commands
             var commands = CommandUtilities.EnumerateAllCommands(module);
             var groups = commands.GroupBy(x => x.FullAliases[0]).ToList();
 
-            var pages = DefaultPaginator.GeneratePages(groups, lineFunc: group => new StringBuilder()
+            var pages = DefaultPaginator.GeneratePages(groups, 1024, group => new StringBuilder()
                     .Append(Markdown.Bold(FormatCommands(group)))
                     .AppendNewline(Localize($"info_command_{group.Key.Replace(' ', '_')}")).ToString(),
                 builderFunc: () => new LocalEmbedBuilder().WithSuccessColor()

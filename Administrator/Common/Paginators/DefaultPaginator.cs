@@ -66,6 +66,7 @@ namespace Administrator.Common
 
             var sb = new StringBuilder();
             var builder = builderFunc?.Invoke() ?? new LocalEmbedBuilder();
+
             for (var i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
@@ -74,9 +75,10 @@ namespace Administrator.Common
                 {
                     pages.Add((plaintextFunc?.Invoke(),
                         builder
-                        .WithDescription(builder.ToString())));
+                        .WithDescription(sb.ToString())));
 
                     sb.Clear().AppendNewline(text);
+                    builder = builderFunc?.Invoke() ?? new LocalEmbedBuilder();
                 }
                 else if (i == list.Count - 1)
                 {

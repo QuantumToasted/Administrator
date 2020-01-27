@@ -21,6 +21,8 @@
         AvatarUpdate,
         UserRoleUpdate,
         ReactionRemove,
-        Starboard
+        Starboard,
+        Greeting,
+        Goodbye
     }
 }

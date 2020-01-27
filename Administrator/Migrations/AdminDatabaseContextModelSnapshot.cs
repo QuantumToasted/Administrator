@@ -132,6 +132,16 @@ namespace Administrator.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("'{}'");
 
+                    b.Property<bool>("DmGreeting");
+
+                    b.Property<string>("Goodbye");
+
+                    b.Property<TimeSpan?>("GoodbyeDuration");
+
+                    b.Property<string>("Greeting");
+
+                    b.Property<TimeSpan?>("GreetingDuration");
+
                     b.Property<string>("Language");
 
                     b.Property<int>("LevelUpWhitelist");

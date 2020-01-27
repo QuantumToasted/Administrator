@@ -44,5 +44,17 @@ namespace Administrator.Database
         public int BigEmojiSize { get; set; } = 256;
 
         public int MinimumStars { get; set; } = 3;
+
+        public string Greeting { get; set; }
+
+        public bool DmGreeting { get; set; }
+
+        public TimeSpan? GreetingDuration { get; set; }
+
+        public string Goodbye { get; set; }
+
+        //public bool DmGoodbye { get; set; } TODO: Why would it need to DM them lol
+
+        public TimeSpan? GoodbyeDuration { get; set; }
     }
 }

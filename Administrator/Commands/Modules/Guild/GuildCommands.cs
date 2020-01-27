@@ -7,6 +7,7 @@ using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
+using Disqord.Rest;
 using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
@@ -22,6 +23,10 @@ namespace Administrator.Commands
         public PaginationService Pagination { get; set; }
 
         public CommandHandlerService CommandHandler { get; set; }
+
+        public IServiceProvider Provider { get; set; }
+
+        public Random Random { get; set; }
 
         [RequireUserPermissions(Permission.ManageGuild)]
         public class GuildManagementCommands : GuildCommands
@@ -494,6 +499,294 @@ namespace Administrator.Commands
                     return CommandErrorLocalized("guild_specialrole_none", args: Markdown.Bold(type.ToString()));
 
                 return CommandSuccessLocalized("guild_specialrole", args: new object[] { Markdown.Bold(type.ToString()), role.Format() });
+            }
+
+            [Group("greeting")]
+            public sealed class GreetingCommands : GuildManagementCommands
+            {
+                [Command]
+                public async ValueTask<AdminCommandResult> TriggerAsync()
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    if (string.IsNullOrWhiteSpace(guild.Greeting))
+                        return CommandErrorLocalized("guild_greeting_empty");
+
+                    var channel = await Context.Database.GetLoggingChannelAsync(Context.Guild.Id,
+                        LogType.Greeting);
+
+                    var greeting = await guild.Greeting.FormatPlaceHoldersAsync(
+                        AdminCommandContext.MockContext(Context.Language, Provider, Context.User, Context.Guild), Context.User.Mention, Random);
+
+                    JsonEmbed embed;
+
+                    if (!guild.DmGreeting)
+                    {
+                        if (channel is null)
+                            return CommandErrorLocalized("guild_greeting_nochannel");
+
+                        IUserMessage message;
+                        if (JsonEmbed.TryParse(greeting, out embed))
+                        {
+                            message = await channel.SendMessageAsync(embed.Text ?? string.Empty, embed: embed.ToLocalEmbed());
+                        }
+                        else
+                        {
+                            message = await channel.SendMessageAsync(greeting);
+                        }
+
+                        if (guild.GreetingDuration.HasValue)
+                        {
+                            _ = Task.Run(async () =>
+                                await Task.Delay(guild.GreetingDuration.Value)
+                                    .ContinueWith(_ => message.DeleteAsync()));
+                        }
+
+                        await Context.Message.AddReactionAsync(EmojiTools.Checkmark);
+                        return CommandSuccess();
+                    }
+
+                    if (JsonEmbed.TryParse(greeting, out embed))
+                    {
+                        try
+                        {
+                            await Context.User.SendMessageAsync(embed.Text ?? string.Empty,
+                                embed: embed.ToLocalEmbed());
+                            await Context.Message.AddReactionAsync(EmojiTools.Checkmark);
+                        }
+                        catch (DiscordHttpException ex) when (ex.JsonErrorCode ==
+                                                              JsonErrorCode.CannotSendMessagesToThisUser)
+                        {
+                            await Context.Message.AddReactionAsync(EmojiTools.X);
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            await Context.User.SendMessageAsync(greeting);
+                            await Context.Message.AddReactionAsync(EmojiTools.Checkmark);
+                        }
+                        catch (DiscordHttpException ex) when (ex.JsonErrorCode ==
+                                                              JsonErrorCode.CannotSendMessagesToThisUser)
+                        {
+                            await Context.Message.AddReactionAsync(EmojiTools.X);
+                        }
+                    }
+
+                    return CommandSuccess();
+                }
+
+                [Command]
+                public async ValueTask<AdminCommandResult> SetTextAsync([Remainder] string text)
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    guild.Greeting = text;
+
+                    Context.Database.Guilds.Update(guild);
+                    await Context.Database.SaveChangesAsync();
+
+                    return text is null // see DisableTextAsync()
+                        ? CommandSuccessLocalized("guild_greeting_disabled")
+                        : CommandSuccessLocalized("guild_greeting_updated");
+                }
+
+                [Command("disable")]
+                public ValueTask<AdminCommandResult> DisableTextAsync()
+                    => SetTextAsync(null);
+
+                [Command("channel")]
+                public async ValueTask<AdminCommandResult> GetChannelAsync()
+                {
+                    if (!(await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Greeting) is { }
+                        channel))
+                        return CommandSuccessLocalized("guild_greeting_nochannel");
+
+                    return CommandSuccessLocalized("guild_greeting_channel", args: channel.Format());
+                }
+
+                [Command("channel")]
+                public async ValueTask<AdminCommandResult> SetChannelAsync(CachedTextChannel newChannel)
+                {
+                    if (!(await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.Greeting)
+                        is { } channel))
+                    {
+                        Context.Database.LoggingChannels.Add(new LoggingChannel(newChannel.Id, Context.Guild.Id,
+                            LogType.Greeting));
+                    }
+                    else
+                    {
+                        channel.Id = newChannel.Id;
+                        Context.Database.LoggingChannels.Update(channel);
+                    }
+
+                    await Context.Database.SaveChangesAsync();
+                    return CommandSuccessLocalized("guild_greeting_channel_updated", args: newChannel.Format());
+                }
+
+                [Command("duration")]
+                public async ValueTask<AdminCommandResult> GetDurationAsync()
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    return guild.GreetingDuration.HasValue
+                        ? CommandSuccessLocalized("guild_greeting_duration",
+                            args: guild.GreetingDuration.Value.HumanizeFormatted(Localization, Context.Language,
+                                TimeUnit.Second))
+                        : CommandSuccessLocalized("guild_greeting_duration_none");
+                }
+
+                [Command("duration")]
+                public async ValueTask<AdminCommandResult> SetDurationAsync(TimeSpan? duration)
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    guild.GreetingDuration = duration;
+
+                    Context.Database.Guilds.Update(guild);
+                    await Context.Database.SaveChangesAsync();
+
+                    return guild.GreetingDuration.HasValue
+                        ? CommandSuccessLocalized("guild_greeting_duration_updated",
+                            args: guild.GreetingDuration.Value.HumanizeFormatted(Localization, Context.Language,
+                                TimeUnit.Second))
+                        : CommandSuccessLocalized("guild_greeting_duration_disabled");
+                }
+
+                [Command("dm")]
+                public async ValueTask<AdminCommandResult> ToggleDmAsync()
+                {
+                    // TODO: If toggled on, disable the greeting channel.
+
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    guild.DmGreeting = !guild.DmGreeting;
+                    Context.Database.Guilds.Update(guild);
+
+                    if (guild.DmGreeting &&
+                        await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.Greeting) is
+                            { } channel)
+                    {
+                        Context.Database.LoggingChannels.Remove(channel);
+                    }
+
+                    await Context.Database.SaveChangesAsync();
+
+                    return guild.DmGreeting
+                        ? CommandSuccessLocalized("guild_greeting_dm_enabled") // will now be DMed.
+                        : CommandSuccessLocalized("guild_greeting_dm_disabled"); // will no longer be DMed.
+                }
+            }
+
+            [Group("goodbye")]
+            public sealed class GoodbyeCommands : GuildManagementCommands
+            {
+                [Command]
+                public async ValueTask<AdminCommandResult> TriggerAsync()
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    if (string.IsNullOrWhiteSpace(guild.Goodbye))
+                        return CommandErrorLocalized("guild_goodbye_empty");
+
+                    var channel = await Context.Database.GetLoggingChannelAsync(Context.Guild.Id,
+                        LogType.Goodbye);
+
+                    var goodbye = await guild.Goodbye.FormatPlaceHoldersAsync(
+                        AdminCommandContext.MockContext(Context.Language, Provider, Context.User, Context.Guild), Context.User.Mention, Random);
+
+                    if (channel is null)
+                        return CommandErrorLocalized("guild_goodbye_nochannel");
+
+                    IUserMessage message;
+                    if (JsonEmbed.TryParse(goodbye, out var embed))
+                    {
+                        message = await channel.SendMessageAsync(embed.Text ?? string.Empty, embed: embed.ToLocalEmbed());
+                    }
+                    else
+                    {
+                        message = await channel.SendMessageAsync(goodbye);
+                    }
+
+                    if (guild.GoodbyeDuration.HasValue)
+                    {
+                        _ = Task.Run(async () =>
+                            await Task.Delay(guild.GoodbyeDuration.Value)
+                                .ContinueWith(_ => message.DeleteAsync()));
+                    }
+
+                    await Context.Message.AddReactionAsync(EmojiTools.Checkmark);
+                    return CommandSuccess();
+                }
+
+                [Command]
+                public async ValueTask<AdminCommandResult> SetTextAsync([Remainder] string text)
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    guild.Goodbye = text;
+
+                    Context.Database.Guilds.Update(guild);
+                    await Context.Database.SaveChangesAsync();
+
+                    return text is null // see DisableTextAsync()
+                        ? CommandSuccessLocalized("guild_goodbye_disabled")
+                        : CommandSuccessLocalized("guild_goodbye_updated");
+                }
+
+                [Command("disable")]
+                public ValueTask<AdminCommandResult> DisableTextAsync()
+                    => SetTextAsync(null);
+
+                [Command("channel")]
+                public async ValueTask<AdminCommandResult> GetChannelAsync()
+                {
+                    if (!(await Context.Database.GetLoggingChannelAsync(Context.Guild.Id, LogType.Goodbye) is { }
+                        channel))
+                        return CommandSuccessLocalized("guild_goodbye_nochannel");
+
+                    return CommandSuccessLocalized("guild_goodbye_channel", args: channel.Format());
+                }
+
+                [Command("channel")]
+                public async ValueTask<AdminCommandResult> SetChannelAsync(CachedTextChannel newChannel)
+                {
+                    if (!(await Context.Database.LoggingChannels.FindAsync(Context.Guild.Id.RawValue, LogType.Goodbye)
+                        is { } channel))
+                    {
+                        Context.Database.LoggingChannels.Add(new LoggingChannel(newChannel.Id, Context.Guild.Id,
+                            LogType.Goodbye));
+                    }
+                    else
+                    {
+                        channel.Id = newChannel.Id;
+                        Context.Database.LoggingChannels.Update(channel);
+                    }
+
+                    await Context.Database.SaveChangesAsync();
+                    return CommandSuccessLocalized("guild_goodbye_channel_updated", args: newChannel.Format());
+                }
+
+                [Command("duration")]
+                public async ValueTask<AdminCommandResult> GetDurationAsync()
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    return guild.GoodbyeDuration.HasValue
+                        ? CommandSuccessLocalized("guild_goodbye_duration",
+                            args: guild.GoodbyeDuration.Value.HumanizeFormatted(Localization, Context.Language,
+                                TimeUnit.Second))
+                        : CommandSuccessLocalized("guild_goodbye_duration_none");
+                }
+
+                [Command("duration")]
+                public async ValueTask<AdminCommandResult> SetDurationAsync(TimeSpan? duration)
+                {
+                    var guild = await Context.Database.GetOrCreateGuildAsync(Context.Guild.Id);
+                    guild.GoodbyeDuration = duration;
+
+                    Context.Database.Guilds.Update(guild);
+                    await Context.Database.SaveChangesAsync();
+
+                    return guild.GoodbyeDuration.HasValue
+                        ? CommandSuccessLocalized("guild_goodbye_duration_updated",
+                            args: guild.GoodbyeDuration.Value.HumanizeFormatted(Localization, Context.Language,
+                                TimeUnit.Second))
+                        : CommandSuccessLocalized("guild_goodbye_duration_disabled");
+                }
             }
         }
 
