@@ -1,0 +1,2141 @@
+{
+  "code": "en-US",
+  "englishName": "English (US)",
+  "nativeName": "English (US)",
+  "responses": {
+    "test_hello": [
+      "Hello, {0}!",
+      "Greetings, {0}!"
+    ],
+    "test_goodbye": [
+      "Seeya, {0}!"
+    ],
+    "available_languages": [
+      "Available languages:"
+    ],
+    "requirecontext_guild": [
+      "This command can only be used in a server."
+    ],
+    "requirecontext_dm": [
+      "This command can only be used in DMs."
+    ],
+    "requireowner": [
+      "This command can only be used by one of my owners."
+    ],
+    "requirehierarchy_self": [
+      "The role hierarchy doesn't allow me to do that."
+    ],
+    "requirehierarchy_user": [
+      "The role hierarchy doesn't allow you to do that."
+    ],
+    "requirebotpermissions_guild": [
+      "This command requires me to have the following server permissions: {0}"
+    ],
+    "requirebotpermissions_channel": [
+      "This command requires me to have the following channel permissions: {0}"
+    ],
+    "requireuserpermissions_guild": [
+      "This command requires you to have the following server permissions: {0}"
+    ],
+    "requireuserpermissions_channel": [
+      "This command requires you to have the following channel permissions: {0}"
+    ],
+    "requireguildowner": [
+      "This command can only used by the server owner."
+    ],
+    "requiremember": [
+      "This command can only be used by members of {0}."
+    ],
+    "requireloggingchannel_notfound": [
+      "The {0} channel could not be found, or was not set up."
+    ],
+    "requireloggingchannel": [
+      "This command can only be used in the {0} channel."
+    ],
+    "require_usable_emoji": [
+      "I do not have access to this emoji, so I cannot use it."
+    ],
+    "operator_greaterthan": [
+      "The number supplied must be greater than {0}."
+    ],
+    "operator_equalto": [
+      "The number supplied must be equal to {0}."
+    ],
+    "operator_lessthan": [
+      "The number supplied must be less than {0}."
+    ],
+    "operator_divisibleby": [
+      "The number supplied must be divisible by {0}."
+    ],
+    "stringvalue_longerthan": [
+      "The supplied text must be longer than {0} characters."
+    ],
+    "stringvalue_exactly": [
+      "The supplied text must be exactly {0} characters."
+    ],
+    "stringvalue_shorterthan": [
+      "The supplied text must be shorter than {0} characters."
+    ],
+    "jumplinkparser_nomessage": [
+      "No message could be found with the ID from that link."
+    ],
+    "jumplinkparser_format": [
+      "The supplied message jump link was not properly formatted."
+    ],
+    "userparser_multiple": [
+      "Multiple users were found with that username or nickname."
+    ],
+    "userparser_notfound": [
+      "User not found."
+    ],
+    "roleparser_multiple": [
+      "Multiple roles were found with that name."
+    ],
+    "roleparser_notfound": [
+      "Role not found."
+    ],
+    "channelparser_multiple": [
+      "Multiple channels were found by that name."
+    ],
+    "channelparser_notfound": [
+      "Channel not found."
+    ],
+    "guildparser_multiple": [
+      "Multiple servers were found by that name."
+    ],
+    "guildparser_notfound": [
+      "Server not found."
+    ],
+    "emojiparser_notfound": [
+      "Emoji not found."
+    ],
+    "regexparser_invalid": [
+      "The supplied regex `{0}` was invalid.\nYou can use https://regex101.com/ to ensure your regex is correct."
+    ],
+    "backpackuserparser_notfound": [
+      "The supplied Steam ID or profile link was invalid."
+    ],
+    "masspunishmentparser_errors": [
+      "The mass punishment arguments were formatted incorrectly. Try using the --help argument."
+    ],
+    "timespanparser_invalid": [
+      "The supplied time span was invalid."
+    ],
+    "moduleparser_notfound": [
+      "No command module could be found with that name."
+    ],
+    "languageparser_notfound": [
+      "No language could be found with that name or code."
+    ],
+    "commanderror": [
+      "Command error"
+    ],
+    "commanderror_exception": [
+      "An unexpected error occurred while trying to use this command. Please report the following text in [the support server]({0}):\n{1}"
+    ],
+    "commanderror_paramchecks": [
+      "One or more requirements for the parameters in this command were not met:\n{0}"
+    ],
+    "commanderror_checks": [
+      "One or more requirements for this command were not met:\n{0}"
+    ],
+    "commanderror_toofewarguments": [
+      "You did not provide enough parameters for this command. It expects at least {0}."
+    ],
+    "commanderror_toomanyarguments": [
+      "You provided too many parameters for this command. It expects {0} or less."
+    ],
+    "commanderror_overloadsfailed": [
+      "All variations of this command failed:\n{0}"
+    ],
+    "commanderror_cooldown": [
+      "You are on cooldown for {0}."
+    ],
+    "punishment_case": [
+      "Case #{0}"
+    ],
+    "punishment_ban": [
+      "Ban"
+    ],
+    "punishment_ban_description": [
+      "You have been banned from {0}."
+    ],
+    "punishment_ban_description_guild": [
+      "User {0} has been banned."
+    ],
+    "punishment_ban_revoke_description": [
+      "You have been unbanned from {0}."
+    ],
+    "punishment_ban_revoke_description_guild": [
+      "User {0} has been unbanned."
+    ],
+    "punishment_kick": [
+      "Kick"
+    ],
+    "punishment_kick_description": [
+      "You have been kicked out of {0}."
+    ],
+    "punishment_kick_description_guild": [
+      "User {0} has been kicked."
+    ],
+    "punishment_mute": [
+      "Mute"
+    ],
+    "punishment_mute_description": [
+      "You have been muted in {0}."
+    ],
+    "punishment_mute_description_guild": [
+      "User {0} has been muted."
+    ],
+    "punishment_mute_revoke_description": [
+      "You have been unmuted in {0}."
+    ],
+    "punishment_mute_revoke_description_guild": [
+      "User {0} has been unmuted."
+    ],
+    "punishment_warning": [
+      "Warning"
+    ],
+    "punishment_warning_description": [
+      "You have been given a warning in {0}. This is your {1} warning."
+    ],
+    "punishment_warning_description_guild": [
+      "User {0} has been warned. This is their {1} warning."
+    ],
+    "punishment_warning_revoke_description": [
+      "Your warning has been revoked in {0}."
+    ],
+    "punishment_warning_revoke_description_guild": [
+      "User {0} has had their warning revoked."
+    ],
+    "punishment_warning_additional": [
+      "Additional punishment"
+    ],
+    "punishment_duration": [
+      "Duration"
+    ],
+    "punishment_permanent": [
+      "Permanent"
+    ],
+    "title_reason": [
+      "Reason"
+    ],
+    "punishment_noreason": [
+      "No reason provided."
+    ],
+    "punishment_needsreason": [
+      "Moderator: use {0} to give this punishment a reason."
+    ],
+    "punishment_appeal": [
+      "Appeal instructions"
+    ],
+    "punishment_tooshort": [
+      "Due to the length of your punishment ({0}), it cannot be appealed."
+    ],
+    "punishment_appeal_instructions": [
+      "Your case number is {0}. To appeal, use the command {1} and it will be reviewed by the server moderators."
+    ],
+    "punishment_moderator": [
+      "Moderator: {0}"
+    ],
+    "punishment_moderator_title": [
+      "Moderator"
+    ],
+    "modmail_send_success": [
+      "Your modmail has been successfully sent! Your ID is {0}."
+    ],
+    "modmail_reply_command": [
+      "You can reply to this thread with the command {0}, and close it with {1}."
+    ],
+    "modmail_exists": [
+      "You already have an open modmail thread with {0}. Reply to it with the command {1}, or close it with {2}."
+    ],
+    "modmail_title": [
+      "New message in modmail thread #{0}"
+    ],
+    "modmail_notfound": [
+      "Could not find any modmail by that ID."
+    ],
+    "modmail_closed_user": [
+      "You cannot reply to this modmail because you closed it."
+    ],
+    "modmail_closed_user_guild": [
+      "You cannot reply to this modmail because the user closed it."
+    ],
+    "modmail_closed_guild": [
+      "You cannot reply to this modmail because the modteam closed it."
+    ],
+    "modmail_reply_success": [
+      "You've successfully replied to this modmail."
+    ],
+    "modmail_alreadyclosed": [
+      "This modmail has already been closed."
+    ],
+    "modmail_closed_success": [
+      "You've successfully closed this modmail."
+    ],
+    "modmail_blacklist_added": [
+      "This user has been added to the modmail blacklist."
+    ],
+    "modmail_blacklist_removed": [
+      "This user has been removed from the modmail blacklist."
+    ],
+    "modmail_anonymous": [
+      "Anonymous"
+    ],
+    "modmail_message_title": [
+      "Messages for modmail thread #{0}"
+    ],
+    "modmail_modteam": [
+      "{0} modteam"
+    ],
+    "modmail_channel_none": [
+      "The modmail channel has not been configured in this server."
+    ],
+    "modmail_channel": [
+      "New modmail messages are currently sent in {0}."
+    ],
+    "modmail_channel_set": [
+      "New modmail messages will now be sent in {0}."
+    ],
+    "moderation_alreadybanned": [
+      "{0} has already been banned!"
+    ],
+    "moderation_ban": [
+      "{0} has been banned."
+    ],
+    "moderation_masspunishment_interactive": [
+      "Entering interactive mode."
+    ],
+    "moderation_masspunishment_confirmation": [
+      "To confirm this action, please type {0}."
+    ],
+    "moderation_masspunishment_interactive_prompt": [
+      "Enter a user ID, or anything else to quit."
+    ],
+    "moderation_masspunishment_interactive_canceled": [
+      "Successfully quit out of the interactive session."
+    ],
+    "moderation_massban_notargets": [
+      "No targets were availble for banning."
+    ],
+    "moderation_massban_target_single": [
+      "1 user has been selected to be banned:"
+    ],
+    "moderation_massban_target_count": [
+      "{0} users have been selected to be banned:"
+    ],
+    "moderation_massban_alreadybanned": [
+      "{0} is already banned."
+    ],
+    "moderation_massban_userpermissions": [
+      "{0} has higher permission than you, so they were not banned."
+    ],
+    "moderation_massban_botpermissions": [
+      "{0} has higher permission than me, so they were not banned."
+    ],
+    "moderation_massban": [
+      "1 user was successfully banned."
+    ],
+    "moderation_massban_multiple": [
+      "{0} users were successfully banned."
+    ],
+    "moderation_massban_none": [
+      "No users could be banned."
+    ],
+    "moderation_tempban": [
+      "{0} has been temporarily banned for {1}."
+    ],
+    "moderation_kick": [
+      "{0} has been kicked."
+    ],
+    "moderation_mute": [
+      "{0} has been muted."
+    ],
+    "moderation_mute_temporary": [
+      "{0} has been temporarily muted for {1}."
+    ],
+    "moderation_alreadyblocked": [
+      "{0} may have already been blocked, so I did not try to block them again."
+    ],
+    "moderation_block": [
+      "{0} has been blocked from {1}."
+    ],
+    "moderation_block_temporary": [
+      "{0} has been temporarily blocked from {1} for {2}."
+    ],
+    "moderation_nomuterole": [
+      "The mute role was not set up or was deleted."
+    ],
+    "moderation_alreadymuted": [
+      "This user was already muted."
+    ],
+    "moderation_additional_punishment": [
+      "Additional punishment from warning #{0}."
+    ],
+    "moderation_additional_punishment_link": [
+      "Additional punishment from [warning #{0}]({1})."
+    ],
+    "moderation_warn": [
+      "{0} has been warned."
+    ],
+    "timespanparser_nomatch": [
+      "Failed to match this text to a time span."
+    ],
+    "punishment_list_title": [
+      "Punishments for {0}"
+    ],
+    "punishment_target": [
+      "Target: {0}"
+    ],
+    "punishment_target_title": [
+      "Target"
+    ],
+    "punishment_timestamp": [
+      "Timestamp: {0}"
+    ],
+    "punishment_timestamp_title": [
+      "Timestamp"
+    ],
+    "punishment_nopunishments_guild": [
+      "No punishments could be found for this server."
+    ],
+    "punishment_nopunishments_user": [
+      "No punishments could be found for that user."
+    ],
+    "punishment_notfound_id": [
+      "No punishment could be found by that ID."
+    ],
+    "punishment_revoked": [
+      "Revoked?"
+    ],
+    "punishment_appealed": [
+      "Appealed?"
+    ],
+    "punishment_alreadyrevoked": [
+      "That punishment has already been revoked."
+    ],
+    "punishment_revoked_nounban": [
+      "Punishment successfully revoked, but the target is not currently banned."
+    ],
+    "punishment_revoked_nounmute": [
+      "Punishment successfully revoked, but the target is not currently muted."
+    ],
+    "punishment_revoked_success": [
+      "Punishment successfully revoked."
+    ],
+    "punishment_reason_exists": [
+      "That punishment already has been given a reason."
+    ],
+    "punishment_reason_missingmessage": [
+      "However, I could not find a message to modify with the reason."
+    ],
+    "punishment_reason_success": [
+      "The reason for this punishment was successfully updated."
+    ],
+    "warningpunishment_notfound_count": [
+      "No automatic punishment has been set to be given out for the {0} warning."
+    ],
+    "warningpunishment_show": [
+      "Upon being warned {0} time(s), users will receive a {1}."
+    ],
+    "warningpunishment_ban_duration": [
+      "ban for {0}"
+    ],
+    "warningpunishment_mute_duration": [
+      "mute for {0}"
+    ],
+    "warningpunishments_none": [
+      "No punishments have been set up for warnings."
+    ],
+    "warningpunishments_title": [
+      "Warning punishments for {0}"
+    ],
+    "punishment_mute_channel": [
+      "Channel"
+    ],
+    "punishment_mute_expired": [
+      "Mute has expired."
+    ],
+    "punishment_ban_expired": [
+      "Ban has expired."
+    ],
+    "punishment_alreadyappealed": [
+      "That punishment has already been appealed."
+    ],
+    "punishment_appeal_success": [
+      "Your punishment has been successfully appealed."
+    ],
+    "punishment_appeal_description_guild": [
+      "User {0} has appealed their {1}."
+    ],
+    "permissions_command_notfound": [
+      "No command could be found by that name."
+    ],
+    "permissions_module_notfound": [
+      "No module could be found by that name."
+    ],
+    "permissions_command_enabled": [
+      "Command {0} has been enabled for {1}."
+    ],
+    "permissions_command_disabled": [
+      "Command {0} has been disabled for {1}."
+    ],
+    "permissions_module_enabled": [
+      "Module {0} has been enabled for {1}."
+    ],
+    "permissions_module_disabled": [
+      "Module {0} has been disabled for {1}."
+    ],
+    "permissions_all_enabled": [
+      "All commands have been enabled for {1}."
+    ],
+    "permissions_all_disabled": [
+      "All commands have been disabled for {1}."
+    ],
+    "permissions_list": [
+      "Command permissions for {0}"
+    ],
+    "permissions_command": [
+      "Command"
+    ],
+    "permissions_module": [
+      "Module"
+    ],
+    "permissions_global": [
+      "all servers."
+    ],
+    "permissions_none": [
+      "No command permissions could be found."
+    ],
+    "permissions_notfound": [
+      "No command permission could be found by that ID."
+    ],
+    "permissions_removed": [
+      "Command permissions successfully removed."
+    ],
+    "permissions_denied": [
+      "Command permission #{0} prevented you from using this command."
+    ],
+    "suggestion_nochannel": [
+      "The suggestion channel has not been set up or was deleted."
+    ],
+    "suggestion_id": [
+      "Suggestion ID: {0}"
+    ],
+    "suggestion_successful": [
+      "You've successfully made a suggestion! Your ID is {0}."
+    ],
+    "suggestion_notfound": [
+      "No suggestion could be found with that ID."
+    ],
+    "suggestion_removed": [
+      "Suggestion successfully removed."
+    ],
+    "suggestion_noarchive": [
+      "The suggestion archive channel has not been set up or was deleted."
+    ],
+    "suggestion_approved_title": [
+      "Suggestion #{0} by {1} was approved with {2} upvotes and {3} downvotes."
+    ],
+    "suggestion_denied_title": [
+      "Suggestion #{0} by {1} was denied with {2} upvotes and {3} downvotes."
+    ],
+    "suggestion_approved_footer": [
+      "Approved by: {0}"
+    ],
+    "suggestion_denied_footer": [
+      "Denied by: {0}"
+    ],
+    "suggestion_approved": [
+      "Suggestion successfully approved."
+    ],
+    "suggestion_denied": [
+      "Suggestion successfully denied."
+    ],
+    "suggestion_channel_updated": [
+      "The suggestion channel has been updated. Suggestions will now show in {0}."
+    ],
+    "suggestion_channel": [
+      "Suggestions are currently configured to show up in {0}."
+    ],
+    "suggestion_archive_updated": [
+      "The suggestion archive channel has been updated. Suggestions will now show in {0}."
+    ],
+    "suggestion_archive": [
+      "Suggestions are currently configured to be archived in {0}."
+    ],
+    "info_id": [
+      "ID"
+    ],
+    "info_mention": [
+      "Mention"
+    ],
+    "info_created": [
+      "Created"
+    ],
+    "info_owner": [
+      "Owned by"
+    ],
+    "info_ago": [
+      "{0} ago"
+    ],
+    "info_now": [
+      "Just now"
+    ],
+    "info_none": [
+      "None"
+    ],
+    "info_category": [
+      "Category"
+    ],
+    "info_content": [
+      "Content"
+    ],
+    "info_text": [
+      "Text"
+    ],
+    "info_jumpmessage": [
+      "Click to jump"
+    ],
+    "info_position": [
+      "Position"
+    ],
+    "info_enabled": [
+      "Enabled"
+    ],
+    "info_disabled": [
+      "Disabled"
+    ],
+    "info_timeout_password": [
+      "You took too long to respond, or your password didn't match."
+    ],
+    "info_timeout": [
+      "You took too long to respond."
+    ],
+    "role_info_above_below": [
+      "{0}/{1}, above {2} but below {3}"
+    ],
+    "role_info_above": [
+      "{0}/{1}, above all other roles"
+    ],
+    "role_info_below": [
+      "{0}/{1}, below all other roles"
+    ],
+    "role_info_color": [
+      "Color"
+    ],
+    "role_info_title": [
+      "Information for role {0}"
+    ],
+    "role_info_members": [
+      "Members ({0})"
+    ],
+    "role_info_permissions": [
+      "Permissions"
+    ],
+    "colorparser_invalid": [
+      "The supplied color was invalid.\nSupported color values are hex codes (#000000-#FFFFFF) or R,G,B values from 0-255 (105,190,20)."
+    ],
+    "role_create_success": [
+      "Role {0} has been successfully created!"
+    ],
+    "role_create_success_color": [
+      "Role {0} with color {1} has been successfully created!"
+    ],
+    "role_color_default": [
+      "Role {0}'s color is currently set to the default color."
+    ],
+    "role_color": [
+      "Role {0}'s color is currently set to {1}."
+    ],
+    "role_color_modified_default": [
+      "Role {0}'s color has been reset to the default color."
+    ],
+    "role_color_modified": [
+      "Role {0}'s color has been changed to {1}."
+    ],
+    "role_give_role_exists": [
+      "{0} already has that role!"
+    ],
+    "role_give_success": [
+      "{0} has been given the {1} role."
+    ],
+    "role_give_success_multiple": [
+      "{0} has been given the following roles:\n{1}"
+    ],
+    "role_remove_role_exists": [
+      "{0} doesn't have that role!"
+    ],
+    "role_remove_success": [
+      "{0} has had the role {1} removed."
+    ],
+    "role_delete_success": [
+      "Role {0} has been successfully deleted."
+    ],
+    "role_unassignable_self": [
+      "The role {0} is either my highest role or above it so I am not able to give it to others."
+    ],
+    "role_unassignable_user": [
+      "The role {0} is either your highest role or above it so I will not give it to others."
+    ],
+    "role_move_below_everyone": [
+      "The {0} role cannot be moved or have a role moved below it."
+    ],
+    "role_move_below_unable_self": [
+      "The role {0} is either my highest role or above it so I am not able to move {1} below it."
+    ],
+    "role_move_below_unable_user": [
+      "The role {0} is either your highest role or above it so I will not move {1} below it."
+    ],
+    "role_move_below_success": [
+      "The role {0} has been moved below {1}."
+    ],
+    "role_move_above_everyone": [
+      "The {0} role cannot be moved above any other role."
+    ],
+    "role_move_above_unable_self": [
+      "The role {0} is either my highest role or above it so I am not able to move {1} above it."
+    ],
+    "role_move_above_unable_user": [
+      "The role {0} is either your highest role or above it so I will not move {1} above it."
+    ],
+    "role_move_above_success": [
+      "The role {0} has been moved above {1}."
+    ],
+    "role_rename_success": [
+      "The role {0} has been renamed to {1}."
+    ],
+    "user_nickname": [
+      "{0} goes by the nickname {1}."
+    ],
+    "user_no_nickname": [
+      "{0} does not have a nickname set."
+    ],
+    "user_nickname_updated": [
+      "Nickname updated."
+    ],
+    "user_nickname_reset": [
+      "Nickname reset."
+    ],
+    "user_info_title": [
+      "Information for user {0}"
+    ],
+    "user_info_title_bot": [
+      "Information for bot {0}"
+    ],
+    "user_info_created": [
+      "Joined Discord"
+    ],
+    "user_info_joined": [
+      "Joined {0}"
+    ],
+    "user_info_nickname": [
+      "Nickname"
+    ],
+    "user_info_roles": [
+      "Roles ({0})"
+    ],
+    "user_info_playing": [
+      "Playing {0}"
+    ],
+    "user_info_listening": [
+      "Listening to \"{0}\" by {1} on Spotify"
+    ],
+    "user_info_streaming": [
+      "Streaming {0}: {1}"
+    ],
+    "user_info_status": [
+      "Status"
+    ],
+    "user_info_online": [
+      "Online"
+    ],
+    "user_info_idle": [
+      "Idle"
+    ],
+    "user_info_dnd": [
+      "Do Not Disturb"
+    ],
+    "user_info_offline": [
+      "Offline"
+    ],
+    "user_avatar": [
+      "{0}'s avatar:"
+    ],
+    "user_search_no_results": [
+      "No users could be found with a name similar to \"{0}\"."
+    ],
+    "user_search_results": [
+      "Users found with a name similar to \"{0}\":"
+    ],
+    "user_search_format": [
+      "{0}, also known as {1} ({2})"
+    ],
+    "user_searchregex_no_results": [
+      "No users could be found matching the regex `{0}`."
+    ],
+    "user_searchregex_results": [
+      "Users found matching the regex:"
+    ],
+    "user_searchregex_timeout": [
+      "Your search was canceled due to taking longer than three seconds.\nTry a simpler regex instead."
+    ],
+    "user_levelup_global": [
+      "Global level up!"
+    ],
+    "user_levelup_guild": [
+      "Server level up!"
+    ],
+    "user_levelup": [
+      "Nice job leveling up, {0}! You're now Tier {1}, Level {2}."
+    ],
+    "user_language": [
+      "Your personal response language is currently set to {0}."
+    ],
+    "user_language_set": [
+      "Your personal response language has been updated to {0}."
+    ],
+    "info_modules_title": [
+      "Available command modules:"
+    ],
+    "info_modules_info": [
+      "Commands to get information about the bot or help with commands."
+    ],
+    "info_modules_modmail": [
+      "Commands to communicate with users who have submitted mail to your server."
+    ],
+    "info_modules_moderation": [
+      "Commands to ban, kick, mute, or warn users."
+    ],
+    "info_modules_permissions": [
+      "Commands to modify module and command permissions to restrict their usage."
+    ],
+    "info_modules_punishments": [
+      "Commands to manage punishments created by the Moderation module."
+    ],
+    "info_modules_roles": [
+      "Commands to view, create, and modify server roles."
+    ],
+    "info_modules_suggestions": [
+      "Commands to create, approve, or deny server suggestions."
+    ],
+    "info_modules_users": [
+      "Commands to view information about and search for users, or modify your own personal settings."
+    ],
+    "info_module_commands": [
+      "List of commands for {0} module:"
+    ],
+    "info_module_reference": [
+      "Module: {0}"
+    ],
+    "info_help_notfound": [
+      "No command could be found with that name or path."
+    ],
+    "info_help_multiple": [
+      "Multiple commands were found with that name."
+    ],
+    "info_stats_author": [
+      "{0}, built on {1}"
+    ],
+    "info_stats_uptime": [
+      "Uptime"
+    ],
+    "info_stats_presence": [
+      "Presence"
+    ],
+    "info_stats_presence_text": [
+      "Guilds: {0}\nText channels: {1}\nVoice channels: {2}\nTotal members: {3}"
+    ],
+    "info_stats_commands": [
+      "Commands executed"
+    ],
+    "info_stats_messages": [
+      "Messages received"
+    ],
+    "info_stats_messages_text": [
+      "{0} ({1} / second)"
+    ],
+    "info_stats_nerds": [
+      "Stats for nerds"
+    ],
+    "info_stats_memory": [
+      "Memory usage"
+    ],
+    "info_stats_megabytes": [
+      "{0}MB"
+    ],
+    "info_stats_created": [
+      "Created by {0}"
+    ],
+    "info_ping": [
+      "Bot latency: {0}ms"
+    ],
+    "guild_language": [
+      "The server response language is currently set to {0}."
+    ],
+    "guild_language_set": [
+      "The server response language has been updated to {0}."
+    ],
+    "guild_settings": [
+      "Server settings for {0}:"
+    ],
+    "guild_settings_enabled": [
+      "Setting {0} has been **enabled** for this server."
+    ],
+    "guild_settings_disabled": [
+      "Setting {0} has been **disabled** for this server."
+    ],
+    "guild_prefixes_none": [
+      "This server does not have any custom bot prefixes set!"
+    ],
+    "guild_prefixes": [
+      "Custom bot prefixes for {0}"
+    ],
+    "guild_prefixes_maximum": [
+      "You have reached the maximum amount of custom bot prefixes.\nRemove another prefix before adding this one."
+    ],
+    "guild_prefixes_exists": [
+      "That custom bot prefix already exists, so it was not added."
+    ],
+    "guild_prefixes_notfound": [
+      "That custom bot prefix could not be found, so it was not removed."
+    ],
+    "guild_prefixes_added": [
+      "{0} has been added as a custom bot prefix."
+    ],
+    "guild_prefixes_removed": [
+      "{0} has been removed from the list of custom bot prefixes."
+    ],
+    "guild_prefixes_cleared": [
+      "All custom bot prefixes have been cleared."
+    ],
+    "guild_xp": [
+      "Users are currently able to gain {0} server XP every {1}."
+    ],
+    "guild_xp_set": [
+      "Users will now be able to gain {0} server XP every {1}."
+    ],
+    "guild_levelemoji": [
+      "The custom level-up emoji is currently set to {0}."
+    ],
+    "guild_levelemoji_set": [
+      "The custom level-up emoji has now been set to {0}."
+    ],
+    "guild_emojis_set": [
+      "Special emoji {0} now is set to {1}."
+    ],
+    "guild_emojis_list": [
+      "Special emojis for {0}"
+    ],
+    "guild_levelwhitelist": [
+      "Custom level-up notifications for {0}:"
+    ],
+    "guild_levelwhitelist_set": [
+      "New custom level-up notifications for {0}:"
+    ],
+    "guild_levelrewards_add_role": [
+      "New role level reward created. Use this command again to modify it."
+    ],
+    "guild_levelrewards_modify_role": [
+      "Choose whether to {0} or {1} a role."
+    ],
+    "guild_levelrewards_modify_role_success": [
+      "Role reward successfully modified."
+    ],
+    "guild_levelrewards_modify_role_add": [
+      "Input the role you wish to add."
+    ],
+    "guild_levelrewards_modify_role_remove": [
+      "Input the role you wish to remove."
+    ],
+    "guild_levelrewards_list_none": [
+      "You do not have any role rewards set up for this tier/level!"
+    ],
+    "guild_levelrewards_list": [
+      "Level rewards for {0}"
+    ],
+    "guild_levelrewards_remove": [
+      "All level rewards removed for this tier/level."
+    ],
+    "levelreward_role_addedroles": [
+      "Roles added:"
+    ],
+    "levelreward_role_removedroles": [
+      "Roles removed:"
+    ],
+    "levelreward_title": [
+      "Tier {0}, Level {1}"
+    ],
+    "guild_specialrole_none": [
+      "The {0} role has not been set up, or could not be found!"
+    ],
+    "guild_specialrole": [
+      "The {0} role is currently assigned to {1}."
+    ],
+    "guild_specialrole_set": [
+      "The {0} role is now assigned to {1}."
+    ],
+    "guild_info_title": [
+      "Server information for {0}"
+    ],
+    "guild_info_presence": [
+      "Members: {0}\nBots: {1}\nText channels: {2}\nVoice channels: {3}\nCategories: {4}"
+    ],
+    "guild_info_owner": [
+      "Server owner: {0}"
+    ],
+    "info_command_modmail": [
+      "Open a new modmail thread."
+    ],
+    "info_command_modmail_reply": [
+      "Reply to an open modmail thread."
+    ],
+    "info_command_modmail_close": [
+      "Close an open modmail thread."
+    ],
+    "info_command_modmail_blacklist": [
+      "Blacklist a user or modmail thread author from opening new threads."
+    ],
+    "info_command_modmail_show": [
+      "Display message history for a modmail thread."
+    ],
+    "info_command_ban": [
+      "Ban a user from your server."
+    ],
+    "info_command_tempban": [
+      "Temporarily ban a user from your server."
+    ],
+    "info_command_massban": [
+      "Ban a large number of users from your server at once."
+    ],
+    "info_command_kick": [
+      "Kick a user from your server."
+    ],
+    "info_command_mute": [
+      "Mute a user from sending messages or talking in your server."
+    ],
+    "info_command_warn": [
+      "Warn a user in your server.\nAdditional punishments may automatically be added depending on your server configuration."
+    ],
+    "info_command_block": [
+      "Block a user from sending messages or adding reactions in a text channel."
+    ],
+    "info_command_permissions": [
+      "List all custom command permissions."
+    ],
+    "info_command_permissions_remove": [
+      "Remove a custom command permission."
+    ],
+    "info_command_permissions_enable_command": [
+      "Enable or disable a single command or module."
+    ],
+    "info_command_permissions_enable_all": [
+      "Enable or disable ALL commands."
+    ],
+    "info_command_appeal": [
+      "Appeal an existing punishment."
+    ],
+    "info_command_punishments": [
+      "List all punishments on this server, starting with the most recent."
+    ],
+    "info_command_punishment": [
+      "List detailed information about a punishment."
+    ],
+    "info_command_revoke": [
+      "Revoke an existing punishment."
+    ],
+    "info_command_reason": [
+      "Add a reason to a punishment which does not have one."
+    ],
+    "info_command_warningpunishment": [
+      "View or set a specific warning punishment."
+    ],
+    "info_command_warningpunishments": [
+      "View all current warning punishments."
+    ],
+    "info_command_role": [
+      "View information about a role."
+    ],
+    "info_command_role_color": [
+      "Modify the color of an existing role."
+    ],
+    "info_command_role_create": [
+      "Create a new role."
+    ],
+    "info_command_role_delete": [
+      "Delete an existing role."
+    ],
+    "info_command_role_give": [
+      "Give an existing role to a user on your server."
+    ],
+    "info_command_role_remove": [
+      "Remove an existing role from a user on your server."
+    ],
+    "info_command_role_move": [
+      "Move an existing role above or below another."
+    ],
+    "info_command_role_rename": [
+      "Rename an existing role."
+    ],
+    "info_command_suggestions_create": [
+      "Create a new server suggestion."
+    ],
+    "info_command_suggestions_remove": [
+      "Remove an existing server suggestion."
+    ],
+    "info_command_suggestions_approve": [
+      "Approve or deny an existing server suggestion."
+    ],
+    "info_command_suggestions_channel": [
+      "View or set the channel suggestions are posted to."
+    ],
+    "info_command_suggestions_archive": [
+      "View or set the channel suggestions are archived to when they are approved or denied."
+    ],
+    "info_command_user": [
+      "View information about a user."
+    ],
+    "info_command_user_xp": [
+      "View a user's XP stats."
+    ],
+    "info_command_user_language": [
+      "View or set your personal bot response language."
+    ],
+    "info_command_user_languages": [
+      "View available response languages."
+    ],
+    "info_command_user_search": [
+      "Search for a user on the server."
+    ],
+    "info_command_user_searchregex": [
+      "Search for a user on this server using RegEx."
+    ],
+    "info_command_user_nickname": [
+      "View a user's nickname on this server."
+    ],
+    "info_command_user_nickname_set": [
+      "Set a user's nickname, or your own."
+    ],
+    "info_command_user_nickname_reset": [
+      "Reset (remove) a user's nickname."
+    ],
+    "info_command_modules": [
+      "List available command modules."
+    ],
+    "info_command_commands": [
+      "List available commands for a module."
+    ],
+    "info_command_help": [
+      "View available help for a specific command, or get the bot help message."
+    ],
+    "info_command_guild": [
+      "View information about the server."
+    ],
+    "info_command_guild_language": [
+      "View or set the server's bot response language."
+    ],
+    "info_command_guild_languages": [
+      "View available response languages."
+    ],
+    "info_command_guild_xprate": [
+      "View or set the server's custom XP gain rate."
+    ],
+    "info_command_guild_levelemoji": [
+      "View or set the server's custom level-up emoji."
+    ],
+    "info_command_guild_levelwhitelist": [
+      "View or set the server's custom level-up notification whitelist, choosing what happens when a user levels up."
+    ],
+    "info_command_guild_settings": [
+      "View the custom settings enabled or disabled for this server."
+    ],
+    "info_command_guild_settings_enable": [
+      "Enable or disable a specific setting for this server."
+    ],
+    "info_command_guild_prefixes": [
+      "View custom bot prefixes for this server."
+    ],
+    "info_command_guild_prefixes_add": [
+      "Add a new custom bot prefix to this server."
+    ],
+    "info_command_guild_prefixes_remove": [
+      "Remove a custom bot prefix from this server."
+    ],
+    "info_command_guild_prefixes_clear": [
+      "Clear all currently set custom bot prefixes."
+    ],
+    "highlight_list_none_global": [
+      "You don't have any global highlights set!"
+    ],
+    "highlight_list_none_server": [
+      "You don't have any highlights set in {0}!"
+    ],
+    "highlight_list_global": [
+      "Your global highlights:"
+    ],
+    "highlight_list_guild": [
+      "Your highlights for {0}:"
+    ],
+    "highlight_add_exists": [
+      "You already have a highlight for that!"
+    ],
+    "highlight_add_global": [
+      "{0} New global highlight created."
+    ],
+    "highlight_add_guild": [
+      "{0} New highlight created for {1}."
+    ],
+    "highlight_blacklist_notmember": [
+      "You are not a member of that server, so you cannot blacklist that channel."
+    ],
+    "highlight_blacklist_add": [
+      "{0} will no longer trigger highlights for you."
+    ],
+    "highlight_blacklist_remove": [
+      "{0} will now trigger highlights for you again."
+    ],
+    "highlight_blacklist": [
+      "Users and channels that will not trip your highlights:"
+    ],
+    "highlight_blacklist_empty": [
+      "Your highlight blacklist is empty!"
+    ],
+    "highlight_remove_notfound": [
+      "You don't have a highlight matching that text here!"
+    ],
+    "highlight_remove_global": [
+      "Global highlight removed."
+    ],
+    "highlight_remove_guild": [
+      "Highlight removed from {0}."
+    ],
+    "highlight_cleared": [
+      "Highlights cleared."
+    ],
+    "highlight_trigger_text": [
+      "You've been highlighted in {0}!"
+    ],
+    "highlight_trigger_author": [
+      "{0} - in {1}"
+    ],
+    "info_command_highlights": [
+      "View your highlights for this server. If used in DMs, view your global highlights."
+    ],
+    "info_command_highlights_add": [
+      "Add a new highlight."
+    ],
+    "info_command_highlights_remove": [
+      "Remove an existing highlight."
+    ],
+    "info_command_highlights_clear": [
+      "Clear all highlights in this server. If used in DMs, clears all global highlights."
+    ],
+    "info_command_highlights_blacklist": [
+      "View users and channels who will not trip your highlights."
+    ],
+    "info_command_highlights_blacklist_add": [
+      "Add a channel or user to your highlight blacklist."
+    ],
+    "info_command_highlights_blacklist_remove": [
+      "Remove a channel or user from your highlight blacklist."
+    ],
+    "info_command_channel": [
+      "View info about a channel."
+    ],
+    "info_command_channel_rename": [
+      "Rename a channel."
+    ],
+    "info_command_channel_delete": [
+      "Delete a channel."
+    ],
+    "info_command_channel_logevents": [
+      "View events which are posted in the current text channel."
+    ],
+    "info_command_channel_logevent": [
+      "Enable an event to be posted in the current text channel."
+    ],
+    "info_command_channel_slowmode": [
+      "Set a channel's slowmode duration."
+    ],
+    "info_command_channel_create_text": [
+      "Create a new text, voice, or category channel."
+    ],
+    "info_command_guild_specialrole": [
+      "View or set a specific special role."
+    ],
+    "info_command_guild_specialemoji_set": [
+      "Set a specific special emoji for this server."
+    ],
+    "info_command_guild_specialemoji": [
+      "View currently set special emoji for this server."
+    ],
+    "info_command_guild_levelrewards": [
+      "View all currently set level rewards for this server."
+    ],
+    "info_command_guild_levelrewards_remove": [
+      "Remove all level rewards for a specific level."
+    ],
+    "info_command_guild_levelrewards_add_role": [
+      "Add a new role level reward."
+    ],
+    "info_command_stats": [
+      "View stats about the bot."
+    ],
+    "info_command_modmail_channel": [
+      "View or set the modmail channel for this server."
+    ],
+    "info_command_eval": [
+      "Execute C# code."
+    ],
+    "info_command_forcestop": [
+      "Kill the bot."
+    ],
+    "info_command_role_mention": [
+      "Mention the specified role."
+    ],
+    "info_command_user_avatar": [
+      "View a user's avatar."
+    ],
+    "info_command_tag_list": [
+      "List all of your tags on this server."
+    ],
+    "info_command_tag": [
+      "Display a tag by name."
+    ],
+    "info_command_tag_create": [
+      "Create a new tag."
+    ],
+    "info_command_tag_info": [
+      "View an existing tag's info."
+    ],
+    "info_command_tag_delete": [
+      "Delete one of your tags, or another users' tag if you are a moderator."
+    ],
+    "info_command_tag_search": [
+      "Search for tags by name."
+    ],
+    "info_command_reminder": [
+      "Create a new reminder."
+    ],
+    "info_command_reminder_list": [
+      "List your current reminders."
+    ],
+    "info_command_reminder_delete": [
+      "Delete a reminder."
+    ],
+    "info_command_reactionrole_list": [
+      "List all reaction roles on this server."
+    ],
+    "info_command_reactionrole_add": [
+      "Add a new reaction role."
+    ],
+    "info_command_reactionrole_remove": [
+      "Delete a reaction role."
+    ],
+    "info_command_backpack": [
+      "Get a user's backpack.tf profile."
+    ],
+    "info_command_prune": [
+      "Delete a certain number of messages from a channel."
+    ],
+    "info_command_prune_text": [
+      "Delete a certain number of messages from a channel containing specific text."
+    ],
+    "info_command_alias": [
+      "Create a new custom command alias."
+    ],
+    "info_command_alias_list": [
+      "List all custom command aliases."
+    ],
+    "info_command_alias_remove": [
+      "Remove a custom command alias."
+    ],
+    "info_command_ping": [
+      "Get the bot's current latency (ping)."
+    ],
+    "info_command_channel_clone": [
+      "Clone a channel to create a new one just like it."
+    ],
+    "info_command_send": [
+      "Send a message to a specific channel as the bot."
+    ],
+    "info_command_edit": [
+      "Edit a message sent by the bot."
+    ],
+    "info_command_deconstruct": [
+      "Turn a message into a JSON embed you can send with the `send` command."
+    ],
+    "info_command_quote": [
+      "Quote a user's message in this server."
+    ],
+    "owner_eval_inprogress": [
+      "Evaluating code..."
+    ],
+    "owner_eval_complete": [
+      "Code evaluation completed."
+    ],
+    "owner_eval_failed": [
+      "Code evaluation was unsuccessful."
+    ],
+    "owner_eval_errors": [
+      "Errors"
+    ],
+    "owner_eval_return": [
+      "Value returned"
+    ],
+    "owner_eval_executiontime": [
+      "Execution time"
+    ],
+    "owner_forcestop": [
+      "Shutting down."
+    ],
+    "channel_info_text": [
+      "Information for text channel {0}"
+    ],
+    "channel_info_slowmode": [
+      "Slowmode"
+    ],
+    "channel_info_voice": [
+      "Information for voice channel {0}"
+    ],
+    "channel_info_voice_bitrate": [
+      "Bitrate"
+    ],
+    "channel_info_voice_connected": [
+      "Connected users ({0})"
+    ],
+    "channel_info_category": [
+      "Information for category channel {0}"
+    ],
+    "channel_info_news": [
+      "Information for news channel {0}"
+    ],
+    "channel_info_category_footer": [
+      "Category: {0}"
+    ],
+    "channel_info_category_channels": [
+      "Channels in this category"
+    ],
+    "channel_create_text": [
+      "Text channel {0} created!"
+    ],
+    "channel_create_news": [
+      "News channel {0} created!"
+    ],
+    "channel_create_voice": [
+      "Voice channel {0} created!"
+    ],
+    "channel_create_category": [
+      "Category {0} created!"
+    ],
+    "channel_clone": [
+      "Channel {0} successfully cloned to {1}."
+    ],
+    "channel_rename": [
+      "Channel successfully renamed."
+    ],
+    "channel_delete": [
+      "Channel successfully deleted."
+    ],
+    "channel_logging_alldisabled": [
+      "All logging has been disabled in this channel."
+    ],
+    "channel_logging_ban": [
+      "Bans will now be logged in this channel."
+    ],
+    "channel_logging_kick": [
+      "Kicks will now be logged in this channel."
+    ],
+    "channel_logging_mute": [
+      "Mutes will now be logged in this channel."
+    ],
+    "channel_logging_warn": [
+      "Warnings will now be logged in this channel."
+    ],
+    "channel_logging_revoke": [
+      "Revoked punishments will now be logged in this channel."
+    ],
+    "channel_logging_appeal": [
+      "Punishment appeals will now be logged in this channel."
+    ],
+    "channel_logging_messagedelete": [
+      "Message deletions will now be logged in this channel."
+    ],
+    "channel_logging_messageupdate": [
+      "Message updates will now be logged in this channel."
+    ],
+    "channel_logging_join": [
+      "Users joining will now be logged in this channel."
+    ],
+    "channel_logging_leave": [
+      "Users leaving will now be logged in this channel."
+    ],
+    "channel_logging_usernameupdate": [
+      "Username updates will now be logged in this channel."
+    ],
+    "channel_logging_nicknameupdate": [
+      "Nickname updates will now be logged in this channel."
+    ],
+    "channel_logging_avatarupdate": [
+      "Avatar updates will now be logged in this channel."
+    ],
+    "channel_logging_userroleupdate": [
+      "User role updates will now be logged in this channel."
+    ],
+    "channel_logging_reactionremove": [
+      "Reactions removed from messages will now be logged in this channel."
+    ],
+    "channel_logging_none": [
+      "No events are currently configured to log in this channel."
+    ],
+    "channel_logging_list": [
+      "The following events are currently logged in this channel:"
+    ],
+    "channel_slowmode_set_none": [
+      "Slowmode has been disabled for {0}."
+    ],
+    "channel_slowmode_set": [
+      "Slowmode has been updated for {0}."
+    ],
+    "channel_slowmode_set_failed": [
+      "Slowmode was unable to be updated for {0}. Check that it is below the maximum allowed value."
+    ],
+    "reactionrole_list_none": [
+      "No reaction roles exist on this server!"
+    ],
+    "reactionrole_list": [
+      "Reaction roles for {0}"
+    ],
+    "reactionrole_add_nomessage": [
+      "No message could be found by that ID."
+    ],
+    "reactionrole_add_maximum": [
+      "This server has reached its maximum amount of available reaction roles ({0})."
+    ],
+    "reactionrole_add": [
+      "{0} Reaction role created. Users who react to message {1} in {2} with {3} receive the role {4}."
+    ],
+    "reactionrole_remove_notfound": [
+      "No reaction role could be found with that ID."
+    ],
+    "reactionrole_remove": [
+      "Reaction role {0} successfully removed."
+    ],
+    "logging_message_delete": [
+      "Message deleted in {0}"
+    ],
+    "logging_message_delete_moderator": [
+      "Message deleted by {0} in {1}"
+    ],
+    "logging_message_update": [
+      "Message updated in {0}"
+    ],
+    "logging_message_update_oldcontent": [
+      "Old content"
+    ],
+    "logging_message_update_newcontent": [
+      "New content"
+    ],
+    "logging_member_join": [
+      "User joined"
+    ],
+    "logging_member_left": [
+      "User left"
+    ],
+    "logging_membercount": [
+      "Current member count: {0}"
+    ],
+    "logging_member_nickname": [
+      "User nickname updated"
+    ],
+    "logging_member_prevnick": [
+      "Previous nickname"
+    ],
+    "logging_member_noprevnick": [
+      "(no previous nickname)"
+    ],
+    "logging_member_newnick": [
+      "New nickname"
+    ],
+    "logging_member_nonewnick": [
+      "(nickname was removed)"
+    ],
+    "logging_member_roleupdate": [
+      "User roles updated"
+    ],
+    "logging_member_addedroles": [
+      "Added roles"
+    ],
+    "logging_member_removedroles": [
+      "Removed roles"
+    ],
+    "logging_member_username": [
+      "User name updated"
+    ],
+    "logging_member_oldname": [
+      "Old username"
+    ],
+    "logging_member_newname": [
+      "New username"
+    ],
+    "logging_reactionremove": [
+      "Reaction removed in {0}"
+    ],
+    "logging_reactionremove_emoji": [
+      "Emoji"
+    ],
+    "logging_member_avatar": [
+      "User avatar updated"
+    ],
+    "backpack_info_title": [
+      "{0}'s backpack.tf profile"
+    ],
+    "backpack_info_lastonline": [
+      "Last online"
+    ],
+    "backpack_info_flags": [
+      "User flags"
+    ],
+    "backpack_info_worth": [
+      "Inventory worth"
+    ],
+    "backpack_info_worth_text": [
+      "{0} keys ({1} refined metal, ${2} USD)"
+    ],
+    "backpack_info_donated": [
+      "Amount donated"
+    ],
+    "backpack_info_premiumgifts": [
+      "Months of premium gifted"
+    ],
+    "backpack_info_trust": [
+      "Trust score"
+    ],
+    "backpack_info_caution": [
+      "Take caution! This user may be banned or a scammer. Use {0} to view more info."
+    ],
+    "tag_list_none": [
+      "You don't have any tags in this server!"
+    ],
+    "tag_list_title": [
+      "Your tags in {0}"
+    ],
+    "tag_info_uses": [
+      "Uses"
+    ],
+    "tag_notfound": [
+      "No tag could be found with that name."
+    ],
+    "tag_exists": [
+      "A tag already exists with that name!"
+    ],
+    "tag_noresponse": [
+      "A tag must have text, an image, or both as a response."
+    ],
+    "tag_created": [
+      "Tag successfully created with the name \"{0}\""
+    ],
+    "tag_nopermission": [
+      "You don't have permission to remove another user's tag!"
+    ],
+    "tag_deleted": [
+      "Tag successfully deleted."
+    ],
+    "tag_search_none": [
+      "No tags could be found close to that input."
+    ],
+    "tag_search": [
+      "Closest matches for the tag name \"{0}\""
+    ],
+    "reminder_toolong": [
+      "A reminder duration must not exceed 10 years."
+    ],
+    "reminder_create": [
+      "{0} New reminder created."
+    ],
+    "reminder_list_none": [
+      "You don't have any reminders set here!"
+    ],
+    "reminder_list_title": [
+      "Your reminders"
+    ],
+    "reminder_delete_notfound": [
+      "No reminder could be found by that ID."
+    ],
+    "reminder_delete": [
+      "Reminder successfully deleted."
+    ],
+    "reminder_trigger": [
+      "Your reminder from {0}:"
+    ],
+    "alias_exists": [
+      "A command alias already exists with that name!"
+    ],
+    "alias_aliasexists": [
+      "A real command exists with this name, so you cannot replace it."
+    ],
+    "alias_commandnotfound": [
+      "No executable command could be found with the provided command text."
+    ],
+    "alias_created_title": [
+      "New command alias created."
+    ],
+    "alias_created_description": [
+      "The alias \"{0}\" will now execute the following command:\n\"{1}\""
+    ],
+    "alias_list_none": [
+      "No custom command aliases exist on this server!"
+    ],
+    "alias_list_title": [
+      "Custom command aliases for {0}"
+    ],
+    "alias_remove_notfound": [
+      "No custom command alias could be found with that text."
+    ],
+    "alias_remove": [
+      "Custom command alias successfully deleted."
+    ],
+    "utility_send_empty": [
+      "I cannot send an empty message with no text and no attachment."
+    ],
+    "utility_edit_nomessage": [
+      "No message could not be found with that ID to edit."
+    ],
+    "utility_edit_nonowner": [
+      "I cannot edit others' messages."
+    ],
+    "utility_deconstruct_nomessage": [
+      "No message could not be found with that ID to deconstruct."
+    ],
+    "utility_quote_nomessage": [
+      "No message could not be found with that ID to quote."
+    ],
+    "emoji_maximum": [
+      "You cannot add any more emoji to your server!"
+    ],
+    "emoji_maximum_animated": [
+      "You cannot add any more animated emoji to your server!"
+    ],
+    "emoji_clone_notcustom": [
+      "The supplied emoji must be a custom emoji."
+    ],
+    "emoji_clone_exists": [
+      "That emoji is already on this server!"
+    ],
+    "emoji_clone_success": [
+      "Emoji successfully cloned: {0}"
+    ],
+    "emoji_info_title": [
+      "Info for custom emoji {0}"
+    ],
+    "emoji_info_animated": [
+      "Animated emoji?"
+    ],
+    "emoji_info_owner": [
+      "Located on server {0}"
+    ],
+    "emoji_info_owner_blacklisted": [
+      "Located on blacklisted server {0}"
+    ],
+    "emoji_blacklist_add": [
+      "The server with ID {0} has been blacklisted from usage with {1}."
+    ],
+    "emoji_blacklist_remove": [
+      "The server with ID {0} can now be used with {1}."
+    ],
+    "emoji_blacklist_none": [
+      "No servers are currently blacklisted!"
+    ],
+    "emoji_blacklist": [
+      "Blacklisted emoji server IDs"
+    ],
+    "emoji_create_noimage": [
+      "You must upload an image to use for the emoji."
+    ],
+    "emoji_create_success": [
+      "New emoji successfully created: {0}"
+    ],
+    "emoji_image_too_large": [
+      "The supplied image was too large to be used as an emoji."
+    ],
+    "require_custom_emoji": [
+      "The supplied emoji must be a custom emoji, not a default Discord emoji."
+    ],
+    "require_guild_emoji": [
+      "The supplied custom emoji must be from this server."
+    ],
+    "info_command_emoji": [
+      "View info about a custom emoji."
+    ],
+    "info_command_emoji_big": [
+      "Blow up an emoji to full size."
+    ],
+    "info_command_emoji_create": [
+      "Create a new custom emoji for this server."
+    ],
+    "info_command_emoji_clone": [
+      "Clone a custom emoji from another server."
+    ],
+    "info_command_emoji_blacklist": [
+      "Toggle blacklisting of a specific server from usage with the `e big` command."
+    ],
+    "starboard_no_entry_id": [
+      "No star could be found with that ID."
+    ],
+    "starboard_no_entry": [
+      "No stars exist on this server!"
+    ],
+    "starboard_stats_title": [
+      "Starboard stats for {0}"
+    ],
+    "starboard_stats_description": [
+      "{0} messages starred with {1} stars."
+    ],
+    "starboard_stats_top_stars": [
+      "Top starred messages"
+    ],
+    "starboard_stats_top_starrers": [
+      "Top star givers"
+    ],
+    "starboard_stats_top_starrees": [
+      "Top star receivers"
+    ],
+    "starboard_emoji_update_same": [
+      "That emoji is already the star emoji!"
+    ],
+    "starboard_emoji_update": [
+      "This server's star emoji has now been updated to {0}.\nAll current stars have been invalidated."
+    ],
+    "starboard_emoji": [
+      "This server's star emoji is currently set to {0}."
+    ],
+    "starboard_channel_same": [
+      "That channel is already the starboard channel!"
+    ],
+    "starboard_channel_update": [
+      "This server's starboard channel has now been updated to {0}.\nOld stars will still be updated in the previous channel."
+    ],
+    "starboard_channel_set": [
+      "This server's starboard channel has now been set to {0}."
+    ],
+    "starboard_channel_none": [
+      "This server does not have a starboard channel set!"
+    ],
+    "starboard_channel": [
+      "This server's starboard channel is currently set to {0}."
+    ],
+    "starboard_minimum_update": [
+      "The minimum stars required to reach the starboard has been updated to {0}."
+    ],
+    "starboard_minimum": [
+      "The minimum stars required to reach the starboard is currently {0}."
+    ],
+    "starboard_blacklist_add": [
+      "{0} has been added to the starboard blacklist."
+    ],
+    "starboard_blacklist_remove": [
+      "{0} has been removed from the starboard blacklist."
+    ],
+    "starboard_blacklist_none": [
+      "No users or channels are on the starboard blacklist."
+    ],
+    "starboard_blacklist_title": [
+      "Starboard blacklist for {0}"
+    ],
+    "owner_statuses_none": [
+      "You haven't set up any custom statuses!"
+    ],
+    "owner_statuses_title": [
+      "All currently cycling custom statuses"
+    ],
+    "owner_status_add": [
+      "{0} New custom status added."
+    ],
+    "owner_status_remove_notfound": [
+      "No custom status could be found with that ID."
+    ],
+    "owner_status_remove": [
+      "Custom status successfully removed."
+    ],
+    "channel_settings_title": [
+      "Channel settings for {0}"
+    ],
+    "channel_settings_enabled": [
+      "Setting {0} has been **enabled** for {1}."
+    ],
+    "channel_settings_disabled": [
+      "Setting {0} has been **disabled** for {1}."
+    ],
+    "info_cooldown_minimum": [
+      "The custom cooldown provided must be greater than {0}!"
+    ],
+    "info_cooldown_set": [
+      "The command {0} now has a cooldown of {1}."
+    ],
+    "info_cooldown_notfound": [
+      "That command does not have a custom cooldown set!"
+    ],
+    "info_cooldown_default": [
+      "The command {0} currently has the default cooldown of {1}."
+    ],
+    "info_cooldown": [
+      "The command {0} currently has a cooldown of {1}."
+    ],
+    "info_cooldown_remove": [
+      "The command {0} has had its custom cooldown removed."
+    ],
+    "info_command_channel_settings": [
+      "View all available settings for the current channel."
+    ],
+    "info_command_channel_settings_enable": [
+      "Enable or disable a specific setting for the current channel."
+    ],
+    "info_command_cooldown": [
+      "View or set a custom cooldown for a command."
+    ],
+    "info_command_cooldown_remove": [
+      "Remove a custom cooldown for a command."
+    ],
+    "info_command_status_list": [
+      "List all rotating statuses for the bot."
+    ],
+    "info_command_status_add": [
+      "Add a new rotating status to the bot."
+    ],
+    "info_command_status_remove": [
+      "Remove a rotating status from the bot."
+    ],
+    "info_command_status_set": [
+      "Force the bot to set a rotating status."
+    ],
+    "info_command_star": [
+      "View a star by ID, or a random star if no ID is provided."
+    ],
+    "info_command_star_stats": [
+      "View starboard stats for this server."
+    ],
+    "info_command_star_emoji": [
+      "View or set the star emoji for this server."
+    ],
+    "info_command_star_channel": [
+      "View or set the starboard channel for this server."
+    ],
+    "info_command_star_minimum": [
+      "View or set the minimum required stars for this server."
+    ],
+    "info_command_star_blacklist": [
+      "View the current server starboard blacklist."
+    ],
+    "info_command_star_blacklist_add": [
+      "Add a user or channel to the starboard blacklist."
+    ],
+    "info_command_star_blacklist_remove": [
+      "Remove a user or channel from the starboard blacklist."
+    ],
+    "info_modules_channels": [
+      "Commands to create and manage server channels."
+    ],
+    "info_modules_guild": [
+      "Commands to setup and manage the server."
+    ],
+    "info_modules_highlights": [
+      "Commands to create and manage personal highlights."
+    ],
+    "info_modules_owner": [
+      "Commands usable only by the owners of the bot."
+    ],
+    "info_modules_utility": [
+      "Commands to provide various utilities."
+    ],
+    "info_modules_tags": [
+      "Commands to create and manage custom server tags."
+    ],
+    "info_modules_starboard": [
+      "Commands to setup and manage the server starboard."
+    ],
+    "info_modules_reminders": [
+      "Commands to create and manage personal reminders."
+    ],
+    "info_modules_reactionroles": [
+      "Commands to setup and manage server reaction roles."
+    ],
+    "info_modules_prune": [
+      "Commands to prune or delete messages in various ways."
+    ],
+    "info_modules_emoji": [
+      "Commands to view info for and manage emojis."
+    ],
+    "info_modules_backpack": [
+      "Commands to view info for backpack.tf users."
+    ],
+    "info_modules_aliases": [
+      "Commands to setup and manage custom command aliases."
+    ],
+    "selfrole_list_none": [
+      "This server does not have any self-assignable roles!"
+    ],
+    "selfrole_list_title": [
+      "Self-assignable roles for {0}:"
+    ],
+    "selfrole_list_groups": [
+      "Groups: {0}"
+    ],
+    "selfrole_invalid": [
+      "That role is not self-assignable!"
+    ],
+    "selfrole_add_exists": [
+      "You already have that role!"
+    ],
+    "selfrole_add_group_exists": [
+      "You already have another role from group #{0} ({1})!"
+    ],
+    "selfrole_add_success": [
+      "You've successfully added the {0} role to yourself."
+    ],
+    "selfrole_remove_none": [
+      "You do not have that role!"
+    ],
+    "selfrole_remove_success": [
+      "You've successfully removed the {0} role from yourself."
+    ],
+    "selfrole_create_exists": [
+      "That role is already self-assignable!"
+    ],
+    "selfrole_create_success": [
+      "The role {0} is now self-assignable by others."
+    ],
+    "selfrole_delete_success": [
+      "The role {0} is now no longer self-assignable by others."
+    ],
+    "selfrole_group_add_exists": [
+      "That role is already part of group #{0}!"
+    ],
+    "selfrole_group_add_success": [
+      "The role {0} is now part of the exclusive group #{1}."
+    ],
+    "selfrole_group_remove_invalid": [
+      "That role is not part of group #{0}!"
+    ],
+    "selfrole_group_remove_success": [
+      "The role {0} is now no longer part of the exclusive group #{1}."
+    ],
+    "info_command_selfrole_list": [
+      "List all self-assignable roles in the server."
+    ],
+    "info_command_selfrole_add": [
+      "Add a self-assignable role to yourself."
+    ],
+    "info_command_selfrole_remove": [
+      "Remove a self-assignable role from yourself."
+    ],
+    "info_command_selfrole_create": [
+      "Create a new self-assignable role."
+    ],
+    "info_command_selfrole_delete": [
+      "Delete and existing self-assignable role."
+    ],
+    "info_command_selfrole_group_add": [
+      "Add a self-assignable role to an exclusive group."
+    ],
+    "info_command_selfrole_group_remove": [
+      "Remove a self-assignable role from an exclusive group."
+    ],
+    "info_modules_selfroles": [
+      "Commands to create and manage self-assignable roles."
+    ],
+    "guild_greeting_empty": [
+      "Your server does not have a greeting message set up!"
+    ],
+    "guild_greeting_nochannel": [
+      "This server's greeting message channel is not set up!"
+    ],
+    "guild_greeting_updated": [
+      "This server's greeting message has been updated."
+    ],
+    "guild_greeting_disabled": [
+      "This server's greeting message has been disabled."
+    ],
+    "guild_greeting_channel": [
+      "This server's greeting messages are currently posted to {0}."
+    ],
+    "guild_greeting_channel_updated": [
+      "This server's greeting messages will now be posted to {0}."
+    ],
+    "guild_greeting_duration_none": [
+      "Greeting messages are currently set to not be deleted."
+    ],
+    "guild_greeting_duration": [
+      "Greeting messages are currently set to be deleted after {0}."
+    ],
+    "guild_greeting_duration_disabled": [
+      "Greeting messages will now no longer be deleted."
+    ],
+    "guild_greeting_duration_updated": [
+      "Greeting messages will now be deleted after {0}."
+    ],
+    "guild_greeting_dm_enabled": [
+      "Greeting messages will now be sent to the user who joined instead of in a channel."
+    ],
+    "guild_greeting_dm_disabled": [
+      "Greeting messages will no longer be sent to the user who joined.\nYou will need to set the greeting channel for greetings to appear."
+    ],
+    "guild_goodbye_empty": [
+      "Your server does not have a goodbye message set up!"
+    ],
+    "guild_goodbye_nochannel": [
+      "This server's goodbye message channel is not set up!"
+    ],
+    "guild_goodbye_updated": [
+      "This server's goodbye message has been updated."
+    ],
+    "guild_goodbye_disabled": [
+      "This server's goodbye message has been disabled."
+    ],
+    "guild_goodbye_channel": [
+      "This server's goodbye messages are currently posted to {0}."
+    ],
+    "guild_goodbye_channel_updated": [
+      "This server's goodbye messages will now be posted to {0}."
+    ],
+    "guild_goodbye_duration_none": [
+      "Goodbye messages are currently set to not be deleted."
+    ],
+    "guild_goodbye_duration": [
+      "Goodbye messages are currently set to be deleted after {0}."
+    ],
+    "guild_goodbye_duration_disabled": [
+      "Goodbye messages will now no longer be deleted."
+    ],
+    "guild_goodbye_duration_updated": [
+      "Goodbye messages will now be deleted after {0}."
+    ],
+    "info_command_guild_greeting": [
+      "Set the server's greeting message, or test the existing one."
+    ],
+    "info_command_guild_greeting_disable": [
+      "Disable the server's greeting message."
+    ],
+    "info_command_guild_greeting_channel": [
+      "View or set the server's greeting channel."
+    ],
+    "info_command_guild_greeting_duration": [
+      "View or set the duration after which greeting messages are automatically deleted."
+    ],
+    "info_command_guild_greeting_dm": [
+      "Toggle greeting messages being sent to the user who joined."
+    ],
+    "info_command_guild_goodbye": [
+      "Set the server's goodbye message, or test the existing one."
+    ],
+    "info_command_guild_goodbye_disable": [
+      "Disable the server's goodbye message."
+    ],
+    "info_command_guild_goodbye_channel": [
+      "View or set the server's goodbye message channel."
+    ],
+    "info_command_guild_goodbye_duration": [
+      "View or set the duration after which goodbye messages are automatically deleted."
+    ]
+  }
+}
