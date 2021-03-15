@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Disqord\src\Disqord.Bot\Disqord.Bot.csproj" />
+      <ProjectReference Include="..\Disqord\src\Disqord.Core\Disqord.Core.csproj" />
+      <ProjectReference Include="..\Disqord\src\Disqord.Extensions.Interactivity\Disqord.Extensions.Interactivity.csproj" />
+      <ProjectReference Include="..\Disqord\src\Disqord.Gateway.Api\Disqord.Gateway.Api.csproj" />
+      <ProjectReference Include="..\Disqord\src\Disqord.Gateway\Disqord.Gateway.csproj" />
+      <ProjectReference Include="..\Disqord\src\Disqord.Rest.Api\Disqord.Rest.Api.csproj" />
+      <ProjectReference Include="..\Disqord\src\Disqord.Rest\Disqord.Rest.csproj" />
+      <ProjectReference Include="..\Disqord\src\Disqord\Disqord.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+      <PackageReference Include="Serilog" Version="2.10.0" />
+      <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+      <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Commands\Parsers" />
+      <Folder Include="Common\Logging" />
+    </ItemGroup>
+
+</Project>
