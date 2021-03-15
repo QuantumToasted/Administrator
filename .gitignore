@@ -333,3 +333,4 @@ ASALocalRun/
 Administrator/Data/Config\.json
 
 global\.json
+/Administrator/Administrator.csproj.DotSettings
