@@ -31,7 +31,6 @@ var host = new HostBuilder()
     .ConfigureLogging(x =>
     {
         var logger = new LoggerConfiguration()
-            .Destructure.ToMaximumDepth(1)
             .Destructure.With<DestructuringPolicy>()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
             .Filter.With<LogEventFilter>()
