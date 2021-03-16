@@ -19,18 +19,16 @@ namespace Administrator
 {
     public sealed class AdministratorBot : DiscordBot
     {
-        public AdministratorBot(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IPrefixProvider prefixes, ICommandQueue queue, CommandService commands, IServiceProvider services, DiscordClient client) 
+        public AdministratorBot(IOptions<DiscordBotConfiguration> options, ILogger<AdministratorBot> logger, IPrefixProvider prefixes, ICommandQueue queue, CommandService commands, IServiceProvider services, DiscordClient client) 
             : base(options, logger, prefixes, queue, commands, services, client)
         { }
 
-        protected override DiscordCommandContext CreateCommandContext(IPrefix prefix, IGatewayUserMessage message, CachedTextChannel channel)
-        {
-            return new AdminCommandContext(this, prefix, message, Services);
-        }
-        
         protected override async Task HandleFailedResultAsync(DiscordCommandContext context, FailedResult result)
         {
             // TODO: Don't send message per text channel settings
+            
+            if (result is CommandNotFoundResult)
+                return;
 
             var embedBuilder = new LocalEmbedBuilder()
                 .WithErrorColor()
@@ -103,13 +101,13 @@ namespace Administrator
                         .Append(string.Join('\n', failedChecks.Select(x => x.Result.FailureReason)));
                     break;
                 case ExecutionFailedResult executionResult:
-                    Logger.LogError(executionResult.Exception, "An exception was thrown executing the command {$Command}. ID: {Id}",
-                        fullPath, context.Message.Id.RawValue);
+                    Logger.LogError(executionResult.Exception, "An exception was thrown executing the command {Command}. Context: {@Context}",
+                        fullPath, context);
 
                     builder.AppendNewline("An unhandled exception was thrown attempting to run this command.")
                         .Append("Please report the following ID to the support channel in ")
                         .AppendNewline(Markdown.Link("my support server:", Services.GetRequiredService<IConfiguration>()["SUPPORT_LINK"]))
-                        .AppendNewline(Markdown.Code(context.Message.Id.ToString()));
+                        .AppendNewline(Markdown.CodeBlock(context.Message.Id.ToString()));
                     break;
                 case OverloadsFailedResult overloadsFailedResult:
                     foreach (var overloadField in overloadsFailedResult.FailedOverloads.Select(x =>
@@ -147,25 +145,30 @@ namespace Administrator
             }
             catch (RestApiException ex) when (ex.ErrorModel.Code == RestApiErrorCode.CannotSendMessagesToThisUser)
             { }
-            catch (RestApiException ex) when (ex.ErrorModel.Code == RestApiErrorCode.MissingPermissions)
+            catch (RestApiException ex) when (ex.ErrorModel.Code == RestApiErrorCode.MissingPermissions &&
+                                              context is DiscordGuildCommandContext guildContext)
             {
-                /* TODO: Missing methods/properties on DQ
+                var permissions = Discord.Permissions.CalculatePermissions(guildContext.Guild, guildContext.Channel,
+                    guildContext.CurrentMember, guildContext.CurrentMember.GetRoles().Values);
+
+
                 // Was it because we can't send messages at all?
-                if (!member.Permissions.SendMessages ||
-                    !member.GetPermissionsFor(channel).SendMessages)
+                if (!permissions.Has(Permission.SendMessages))
                 {
-                    _ = context.User.SendMessageAsync(
+                    /* TODO: Wait for IUser#SendMessageAsync
+                    _ = context.Author.SendMessageAsync(
                         $"Hello. I attempted to reply to your command in {channel.Mention}, but I don't have permissions to send messages.\n" +
                         "Please contact a moderator so they can grant me proper permissions to reply to commands.");
+                    */
                 }
                 // Was it because we can't send embeds?
-                else if (!member.Permissions.EmbedLinks ||
-                         !member.GetPermissionsFor(channel).EmbedLinks)
+                else if (!permissions.Has(Permission.EmbedLinks))
                 {
-                    await SendMessageAsync(channel.Id,
-                        "I was unable to reply to your command properly because I lack Embed Links permissions in this channel.");
+                    await context.Bot.SendMessageAsync(context.ChannelId,
+                        new LocalMessageBuilder()
+                            .WithContent("I was unable to reply to your command properly because I lack Embed Links permissions in this channel.")
+                            .Build());
                 }
-                */
             }
         }
     }

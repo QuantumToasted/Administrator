@@ -17,8 +17,15 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Humanizer.Core" Version="2.8.26" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
       <PackageReference Include="Serilog" Version="2.10.0" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
       <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
@@ -27,7 +34,6 @@
 
     <ItemGroup>
       <Folder Include="Commands\Parsers" />
-      <Folder Include="Common\Logging" />
     </ItemGroup>
 
 </Project>

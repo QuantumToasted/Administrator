@@ -10,7 +10,7 @@ namespace Administrator.Commands
     {
         private static readonly HashSet<Snowflake> OwnerIds = new() {167452465317281793};
         
-        public override async ValueTask<CheckResult> CheckAsync(DiscordCommandContext context)
+        public override ValueTask<CheckResult> CheckAsync(DiscordCommandContext context)
         {
             if (!OwnerIds.Contains(context.Author.Id))
                 return Failure(string.Empty);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Disqord.Bot;
 using Qmmands;
 
 namespace Administrator.Commands
@@ -12,7 +13,7 @@ namespace Administrator.Commands
     {
         public ValueTask<ArgumentParserResult> ParseAsync(CommandContext _)
         {
-            var context = (AdminCommandContext) _;
+            var context = (DiscordCommandContext) _;
             var command = context.Command;
 
             var rawArguments = context.RawArguments.AsSpan();
