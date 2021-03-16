@@ -23,7 +23,7 @@ namespace Administrator
             : base(options, logger, prefixes, queue, commands, services, client)
         { }
 
-        protected override async Task HandleFailedResultAsync(DiscordCommandContext context, FailedResult result)
+        protected override async ValueTask HandleFailedResultAsync(DiscordCommandContext context, FailedResult result)
         {
             // TODO: Don't send message per text channel settings
             

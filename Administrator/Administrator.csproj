@@ -33,6 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Commands\Checks" />
       <Folder Include="Commands\Parsers" />
     </ItemGroup>
 
