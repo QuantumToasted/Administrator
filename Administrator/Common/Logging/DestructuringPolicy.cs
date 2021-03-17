@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Gateway;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -44,6 +45,8 @@ namespace Administrator.Common
 
                     // TODO: This probably shouldn't need a ? but DQ????
                     channelProperties["Tag"] = new ScalarValue(guildContext.Channel?.Tag);
+                    channelProperties["$getChannelType"] = new ScalarValue(guildContext.Bot
+                        .GetChannel(guildContext.GuildId, guildContext.ChannelId)?.GetType().Name);
                     contextProperties["Guild"] =
                         new StructureValue(guildProperties.Select(x => new LogEventProperty(x.Key, x.Value)));
                 }
