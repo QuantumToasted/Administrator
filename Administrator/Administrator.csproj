@@ -5,6 +5,10 @@
         <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DefineConstants>TRACECOREAPP;MIGRATION_MODE</DefineConstants>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\Disqord\src\Disqord.Bot\Disqord.Bot.csproj" />
       <ProjectReference Include="..\Disqord\src\Disqord.Core\Disqord.Core.csproj" />
@@ -31,11 +35,6 @@
       <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
       <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
       <PackageReference Include="Svg" Version="3.2.3" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Commands\Checks" />
-      <Folder Include="Commands\Parsers" />
     </ItemGroup>
 
 </Project>

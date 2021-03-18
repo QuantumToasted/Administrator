@@ -1,4 +1,4 @@
-﻿// oh yeah we on that GOOD shit
+﻿#undef MIGRATION_MODE
 
 using System;
 using System.Linq;
@@ -17,8 +17,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
+
+#if MIGRATION_MODE
+    throw new InvalidOperationException("Undefine MIGRATION_MODE to run this.");
+#endif
 
 var host = new HostBuilder()
     .ConfigureHostConfiguration(x =>
@@ -53,7 +56,6 @@ var host = new HostBuilder()
     {
         services.AddSingleton<HttpClient>();
         
-        services.AddMemoryCache();
         services.AddEntityFrameworkNpgsql();
         services.AddMemoryCache();
         services.AddDbContext<AdminDbContext>((provider, builder) =>

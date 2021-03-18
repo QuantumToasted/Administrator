@@ -48,5 +48,8 @@ namespace Administrator.Common
             => throw new InvalidOperationException();
 
         public string Name => PrimaryName;
+
+        public override string ToString()
+            => Surrogates;
     }
 }

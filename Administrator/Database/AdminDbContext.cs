@@ -1,7 +1,8 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Administrator.Common;
 using Administrator.Extensions;
+using Administrator.Services;
 using Disqord;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -14,17 +15,23 @@ namespace Administrator.Database
     {
         private readonly ILogger<AdminDbContext> _logger;
         private readonly IMemoryCache _cache;
+        private readonly EmojiService _emojiService;
         
-        public AdminDbContext(ILogger<AdminDbContext> logger, IMemoryCache cache, DbContextOptions options)
+        public AdminDbContext(ILogger<AdminDbContext> logger, IMemoryCache cache, 
+            EmojiService emojiService, DbContextOptions options)
             : base(options)
         {
             _logger = logger;
             _cache = cache;
+            _emojiService = emojiService;
         }
         
         public DbSet<Guild> Guilds { get; set; }
+        
+        public DbSet<Punishment> Punishments { get; set; }
 
         public async ValueTask<Guild> GetOrCreateGuildAsync(IGuild guild)
+#if !MIGRATION_MODE
         {
             if (_cache.TryGetValue($"G:{guild.Id}", out Guild cacheGuild))
                 return cacheGuild;
@@ -32,10 +39,13 @@ namespace Administrator.Database
             if (await FindAsync<Guild>(guild.Id) is { } dbGuild)
                 return dbGuild;
 
-            var entry = Add(new Guild {Id = guild.Id, Name = guild.Name});
+            var entry = Add(new Guild(guild));
             await SaveChangesAsync();
             return entry.Entity;
         }
+#else
+            => default;
+#endif
 
         public override async ValueTask<TEntity> FindAsync<TEntity>(params object[] keyValues)
         {
@@ -57,10 +67,12 @@ namespace Administrator.Database
             {
                 switch (entry.State)
                 {
+                    case EntityState.Detached:
+                        break;
                     case EntityState.Deleted:
                         _cache.Remove(entry.Entity.CacheKey);
                         break;
-                    case EntityState.Added:
+                    default:
                         _cache.Set(entry.Entity.CacheKey, entry.Entity,
                             new MemoryCacheEntryOptions().SetSlidingExpiration(entry.Entity.SlidingExpiration));
                         break;
@@ -74,6 +86,8 @@ namespace Administrator.Database
         {
             builder.ApplyConfigurationsFromAssembly(typeof(Guild).Assembly);
             builder.DefineGlobalConversion<Snowflake, ulong>(x => x.RawValue, x => new Snowflake(x));
+            builder.DefineGlobalConversion<Upload, string>(x => x.ToString(), x => Upload.Parse(x));
+            builder.DefineGlobalConversion<IEmoji, string>(x => x.ToString(), x => _emojiService.ParseEmoji(x));
 
             foreach (var entity in builder.Model.GetEntityTypes())
             {

@@ -72,6 +72,9 @@ namespace Administrator.Common
             return true;
         }
 
+        public override string ToString()
+            => Uri.ToString();
+
         public void Dispose()
             => _stream.Dispose();
         

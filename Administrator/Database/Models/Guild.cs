@@ -10,24 +10,27 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Administrator.Database
 {
     public sealed class Guild : IEntityTypeConfiguration<Guild>, 
-        ICached,
-        ICleanupHandler<LeftGuildEventArgs>//,
-        //IUpdateHandler<GuildUpdatedEventArgs>
+        ICached
     {
+#if !MIGRATION_MODE
+        public Guild(IGuild guild)
+        {
+            Id = guild.Id;
+            Name = guild.Name;
+        }
+#endif
+        
         public Snowflake Id { get; set; }
         
         public string Name { get; set; }
+        
+        public Snowflake MuteRoleId { get; set; }
 
-        public string CacheKey => $"G:{Id}";
-        
-        public TimeSpan SlidingExpiration => TimeSpan.FromMinutes(1);
-        
-        public void Configure(EntityTypeBuilder<Guild> builder)
+        string ICached.CacheKey => $"G:{Id}";
+        TimeSpan ICached.SlidingExpiration => TimeSpan.FromMinutes(1);
+        void IEntityTypeConfiguration<Guild>.Configure(EntityTypeBuilder<Guild> builder)
         {
             builder.HasKey(x => x.Id);
         }
-
-        public Task<List<object>> FindMatches(AdminDbContext ctx, LeftGuildEventArgs e)
-            => ctx.Guilds.Where(x => x.Id == e.GuildId).Cast<object>().ToListAsync();
     }
 }
