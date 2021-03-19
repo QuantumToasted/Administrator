@@ -27,7 +27,6 @@ namespace Administrator.Database
         public Snowflake MuteRoleId { get; set; }
 
         string ICached.CacheKey => $"G:{Id}";
-        TimeSpan ICached.SlidingExpiration => TimeSpan.FromMinutes(1);
         void IEntityTypeConfiguration<Guild>.Configure(EntityTypeBuilder<Guild> builder)
         {
             builder.HasKey(x => x.Id);

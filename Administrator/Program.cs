@@ -7,6 +7,7 @@ using Administrator;
 using Administrator.Commands;
 using Administrator.Common;
 using Administrator.Database;
+using Administrator.Services;
 using Disqord.Bot;
 using Disqord.Bot.Hosting;
 using Disqord.Extensions.Interactivity;

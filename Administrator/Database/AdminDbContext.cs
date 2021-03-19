@@ -1,4 +1,8 @@
-﻿using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Extensions;
@@ -29,6 +33,10 @@ namespace Administrator.Database
         public DbSet<Guild> Guilds { get; set; }
         
         public DbSet<Punishment> Punishments { get; set; }
+        
+        public DbSet<SpecialRole> SpecialRoles { get; set; }
+        
+        public DbSet<SpecialEmoji> SpecialEmojis { get; set; }
 
         public async ValueTask<Guild> GetOrCreateGuildAsync(IGuild guild)
 #if !MIGRATION_MODE
@@ -47,6 +55,15 @@ namespace Administrator.Database
             => default;
 #endif
 
+        public async ValueTask<List<Punishment>> GetAllPunishmentsAsync(IGuild guild)
+        {
+            if (_cache.TryGetValue($"P:{guild.Id}", out List<Punishment> punishments))
+                return punishments;
+
+            return _cache.Set($"P:{guild.Id}", await Punishments.Where(x => x.GuildId == guild.Id).ToListAsync(),
+                TimeSpan.FromMinutes(10));
+        }
+
         public override async ValueTask<TEntity> FindAsync<TEntity>(params object[] keyValues)
         {
             var entity = await base.FindAsync<TEntity>(keyValues);
@@ -55,7 +72,7 @@ namespace Administrator.Database
             {
                 _logger.LogInformation("Hi! Caching entity with key {CacheKey} now.", cached.CacheKey);
                 _cache.Set(cached.CacheKey, entity,
-                    new MemoryCacheEntryOptions().SetSlidingExpiration(cached.SlidingExpiration));
+                    new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
             }
 
             return entity;
@@ -74,7 +91,7 @@ namespace Administrator.Database
                         break;
                     default:
                         _cache.Set(entry.Entity.CacheKey, entry.Entity,
-                            new MemoryCacheEntryOptions().SetSlidingExpiration(entry.Entity.SlidingExpiration));
+                            new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
                         break;
                 }
             }

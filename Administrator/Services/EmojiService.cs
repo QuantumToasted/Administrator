@@ -61,7 +61,7 @@ namespace Administrator.Services
             output.Seek(0, SeekOrigin.Begin);
 
             return new MemoryStream(_cache.Set(emoji.Surrogates, output.ToArray(),
-                new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(15))));
+                new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10))));
         }
 
         public bool TryParseEmoji(string emojiString, out IEmoji emoji)
