@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Administrator.Commands;
+using Administrator.Commands.Parsers;
+using Administrator.Database;
 using Administrator.Extensions;
 using Disqord;
 using Disqord.Bot;
@@ -19,9 +20,21 @@ namespace Administrator
 {
     public sealed class AdministratorBot : DiscordBot
     {
-        public AdministratorBot(IOptions<DiscordBotConfiguration> options, ILogger<AdministratorBot> logger, IPrefixProvider prefixes, ICommandQueue queue, CommandService commands, IServiceProvider services, DiscordClient client) 
+        public AdministratorBot(IOptions<DiscordBotConfiguration> options, ILogger<AdministratorBot> logger,
+            IPrefixProvider prefixes, ICommandQueue queue, CommandService commands, IServiceProvider services,
+            DiscordClient client)
             : base(options, logger, prefixes, queue, commands, services, client)
         { }
+
+        protected override void AddTypeParsers()
+        {
+            Commands.AddTypeParser(new KeyedTypeParser<Punishment>());
+            Commands.AddTypeParser(new EmojiTypeParser<IEmoji>(Services));
+            Commands.AddTypeParser(new EmojiTypeParser<ICustomEmoji>(Services));
+            Commands.AddTypeParser(new EmojiTypeParser<IGuildEmoji>(Services));
+
+            base.AddTypeParsers();
+        }
 
         protected override async ValueTask HandleFailedResultAsync(DiscordCommandContext context, FailedResult result)
         {

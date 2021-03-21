@@ -56,6 +56,7 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
         services.AddSingleton<HttpClient>();
+        services.AddSingleton<Random>();
         
         services.AddEntityFrameworkNpgsql();
         services.AddMemoryCache();

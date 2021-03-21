@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DefineConstants>TRACE;COREAPP;</DefineConstants>
+      <DefineConstants>MIGRATION_MODE;TRACE;COREAPP</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

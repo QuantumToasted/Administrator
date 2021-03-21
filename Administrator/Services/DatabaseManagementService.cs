@@ -18,6 +18,22 @@ namespace Administrator.Services
         {
             _services = bot.Services;
             Client.LeftGuild += HandleLeftGuildAsync;
+            Client.GuildUpdated += HandleGuildUpdatedAsync;
+        }
+
+        private async Task HandleGuildUpdatedAsync(object sender, GuildUpdatedEventArgs e)
+        {
+            using var scope = _services.CreateScope();
+            await using var ctx = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+
+            if (!string.IsNullOrWhiteSpace(e.NewGuild.Name) && // Discord sends garbage sometimes
+                await ctx.FindAsync<Guild>(e.GuildId) is { } guild &&
+                !guild.Name.Equals(e.NewGuild.Name))
+            {
+                guild.Name = e.NewGuild.Name;
+            }
+
+            await ctx.SaveChangesAsync();
         }
 
         private async Task HandleLeftGuildAsync(object sender, LeftGuildEventArgs e)

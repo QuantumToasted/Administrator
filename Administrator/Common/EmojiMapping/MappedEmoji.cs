@@ -31,25 +31,15 @@ namespace Administrator.Common
         [JsonProperty("assetUrl")]
         public Uri AssetUrl { get; set; }
 
-        public IClient Client => throw new InvalidOperationException();
-        
-        public bool Equals(IEmoji other)
+        IClient IEntity.Client => throw new NotImplementedException();
+        bool IEquatable<IEmoji>.Equals(IEmoji other) => other switch
         {
-            return other switch
-            {
-                Emoji emoji => emoji.GetMessageFormat().Equals(Surrogates),
-                LocalEmoji localEmoji => localEmoji.GetMessageFormat().Equals(Surrogates),
-                MappedEmoji mappedEmoji => mappedEmoji.Surrogates.Equals(Surrogates),
-                _ => false
-            };
-        }
-
-        public void Update(EmojiJsonModel model)
-            => throw new InvalidOperationException();
-
-        public string Name => PrimaryName;
-
-        public override string ToString()
-            => Surrogates;
+            Emoji emoji => emoji.GetMessageFormat().Equals(Surrogates),
+            LocalEmoji localEmoji => localEmoji.GetMessageFormat().Equals(Surrogates),
+            MappedEmoji mappedEmoji => mappedEmoji.Surrogates.Equals(Surrogates),
+            _ => false
+        };
+        void IJsonUpdatable<EmojiJsonModel>.Update(EmojiJsonModel model) => throw new NotImplementedException();
+        string IEmoji.Name => Surrogates;
     }
 }

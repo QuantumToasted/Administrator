@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Disqord;
-using Disqord.Gateway;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,7 +20,16 @@ namespace Administrator.Database
         
         public string Name { get; set; }
         
-        public Snowflake MuteRoleId { get; set; }
+        public List<string> Prefixes { get; set; }
+
+        public bool AddPrefix(string prefix)
+        {
+            if (Prefixes.Contains(prefix))
+                return false;
+            
+            Prefixes.Add(prefix);
+            return true;
+        }
 
         string ICached.CacheKey => $"G:{Id}";
         void IEntityTypeConfiguration<Guild>.Configure(EntityTypeBuilder<Guild> builder)

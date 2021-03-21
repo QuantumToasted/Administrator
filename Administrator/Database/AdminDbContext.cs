@@ -37,6 +37,8 @@ namespace Administrator.Database
         public DbSet<SpecialRole> SpecialRoles { get; set; }
         
         public DbSet<SpecialEmoji> SpecialEmojis { get; set; }
+        
+        public DbSet<BigEmoji> BigEmojis { get; set; }
 
         public async ValueTask<Guild> GetOrCreateGuildAsync(IGuild guild)
 #if !MIGRATION_MODE
@@ -55,13 +57,22 @@ namespace Administrator.Database
             => default;
 #endif
 
-        public async ValueTask<List<Punishment>> GetAllPunishmentsAsync(IGuild guild)
+        public async ValueTask<List<Punishment>> GetAllPunishmentsAsync(Snowflake guildId)
         {
-            if (_cache.TryGetValue($"P:{guild.Id}", out List<Punishment> punishments))
+            if (_cache.TryGetValue($"P:{guildId}", out List<Punishment> punishments))
                 return punishments;
 
-            return _cache.Set($"P:{guild.Id}", await Punishments.Where(x => x.GuildId == guild.Id).ToListAsync(),
+            return _cache.Set($"P:{guildId}", await Punishments.Where(x => x.GuildId == guildId).ToListAsync(),
                 TimeSpan.FromMinutes(10));
+        }
+
+        public async ValueTask<List<BigEmoji>> GetAllBigEmojisAsync()
+        {
+            if (_cache.TryGetValue("BigEmojis", out List<BigEmoji> emojis))
+                return emojis;
+
+            return _cache.Set("BigEmojis", await BigEmojis.ToListAsync(),
+                new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
         }
 
         public override async ValueTask<TEntity> FindAsync<TEntity>(params object[] keyValues)
@@ -70,6 +81,7 @@ namespace Administrator.Database
 
             if (entity is ICached cached)
             {
+                // TODO: Remove this
                 _logger.LogInformation("Hi! Caching entity with key {CacheKey} now.", cached.CacheKey);
                 _cache.Set(cached.CacheKey, entity,
                     new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
@@ -94,6 +106,16 @@ namespace Administrator.Database
                             new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
                         break;
                 }
+            }
+
+            foreach (var entry in ChangeTracker.Entries<Punishment>().DistinctBy(x => x.Entity.GuildId))
+            {
+                _cache.Remove($"P:{entry.Entity.GuildId}");
+            }
+
+            if (ChangeTracker.Entries<BigEmoji>().Any())
+            {
+                _cache.Remove("BigEmojis");
             }
             
             return base.SaveChangesAsync(cancellationToken);

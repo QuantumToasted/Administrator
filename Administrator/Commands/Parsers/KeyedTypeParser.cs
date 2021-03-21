@@ -7,7 +7,7 @@ using Qmmands;
 
 namespace Administrator.Commands.Parsers
 {
-    public sealed class KeyedParser<TKeyed> : TypeParser<TKeyed>
+    public sealed class KeyedTypeParser<TKeyed> : TypeParser<TKeyed>
         where TKeyed : Keyed
     {
         public override async ValueTask<TypeParserResult<TKeyed>> ParseAsync(Parameter parameter, string value, CommandContext _)

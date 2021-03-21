@@ -1,5 +1,4 @@
-﻿using System;
-using Administrator.Common;
+﻿using Administrator.Common;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
