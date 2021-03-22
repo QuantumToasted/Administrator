@@ -12,12 +12,21 @@ namespace Administrator.Common
         private const int CHUNK_SIZE = 4096;
         private static readonly HttpClient Http = new();
         private readonly MemoryStream _stream = new();
+
+        public Upload(Uri uri)
+        {
+            Uri = uri;
+        }
+        
+        public Upload(string url)
+            : this(new Uri(url))
+        { }
         
         public Uri Uri { get; private init; }
 
         public string Filename => Path.GetFileNameWithoutExtension(Uri.LocalPath);
 
-        public string Extension => Path.GetExtension(Uri.LocalPath)[1..];
+        public string Extension => Path.GetExtension(Uri.LocalPath)[1..].ToLowerInvariant();
 
         public MemoryStream Stream
         {
@@ -87,7 +96,7 @@ namespace Administrator.Common
                 if (filename.Contains('.') &&
                     (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps))
                 {
-                    upload = new Upload { Uri = result };
+                    upload = new Upload(result);
                     return true;
                 }
             }
@@ -101,6 +110,6 @@ namespace Administrator.Common
             : throw new FormatException("Failed to parse an attachment or upload URL.");
 
         public static implicit operator Upload(Attachment attachment)
-            => new() {Uri = new Uri(attachment.Url)};
+            => new(attachment.Url);
     }
 }

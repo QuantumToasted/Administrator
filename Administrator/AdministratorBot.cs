@@ -32,7 +32,7 @@ namespace Administrator
             Commands.AddTypeParser(new EmojiTypeParser<IEmoji>(Services));
             Commands.AddTypeParser(new EmojiTypeParser<ICustomEmoji>(Services));
             Commands.AddTypeParser(new EmojiTypeParser<IGuildEmoji>(Services));
-
+            
             base.AddTypeParsers();
         }
 

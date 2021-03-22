@@ -13,6 +13,7 @@ namespace Administrator.Database
         {
             Id = guild.Id;
             Name = guild.Name;
+            BigEmojiSizeMultiplier = 100;
         }
 #endif
         
@@ -21,6 +22,8 @@ namespace Administrator.Database
         public string Name { get; set; }
         
         public List<string> Prefixes { get; set; }
+        
+        public int BigEmojiSizeMultiplier { get; set; }
 
         public bool AddPrefix(string prefix)
         {

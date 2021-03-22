@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Administrator.Common;
+using Administrator.Extensions;
 using Disqord;
 using Disqord.Hosting;
 using Microsoft.Extensions.Caching.Memory;
@@ -43,7 +44,7 @@ namespace Administrator.Services
             if (_cache.TryGetValue(emoji.Surrogates, out byte[] bytes))
                 return new MemoryStream(bytes);
 
-            await using var svgStream = await _http.GetStreamAsync(emoji.AssetUrl);
+            await using var svgStream = await _http.GetMemoryStreamAsync(emoji.AssetUrl);
             var doc = SvgDocument.Open<SvgDocument>(svgStream);
             
             var ratio = Math.Max(doc.Width / doc.Height, doc.Height / doc.Width);
@@ -58,7 +59,6 @@ namespace Administrator.Services
             await using var output = new MemoryStream();
             using var bitmap = doc.Draw();
             bitmap.Save(output, ImageFormat.Png);
-            output.Seek(0, SeekOrigin.Begin);
 
             return new MemoryStream(_cache.Set(emoji.Surrogates, output.ToArray(),
                 new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10))));
