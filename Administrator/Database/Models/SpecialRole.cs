@@ -7,20 +7,21 @@ namespace Administrator.Database
 {
     public sealed class SpecialRole : ICached, IEntityTypeConfiguration<SpecialRole>
     {
-#if !MIGRATION_MODE
-        public SpecialRole(IGuild guild, IRole role, SpecialRoleType type)
-        {
-            GuildId = guild.Id;
-            RoleId = role.Id;
-            Type = type;
-        }
-#endif
-        
         public Snowflake GuildId { get; set; }
         
         public SpecialRoleType Type { get; set; }
 
         public Snowflake RoleId { get; set; }
+
+        public static SpecialRole Create(IGuild guild, IRole role, SpecialRoleType type)
+        {
+            return new()
+            {
+                GuildId = guild.Id,
+                RoleId = role.Id,
+                Type = type
+            };
+        }
 
         string ICached.CacheKey => $"SR:{GuildId}:{Type:D}";
         void IEntityTypeConfiguration<SpecialRole>.Configure(EntityTypeBuilder<SpecialRole> builder)

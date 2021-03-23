@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Administrator.Commands.Parsers;
+using Administrator.Commands;
 using Administrator.Database;
 using Administrator.Extensions;
 using Disqord;
@@ -26,14 +27,14 @@ namespace Administrator
             : base(options, logger, prefixes, queue, commands, services, client)
         { }
 
-        protected override void AddTypeParsers()
+        protected override ValueTask AddTypeParsersAsync(CancellationToken cancellationToken = default)
         {
             Commands.AddTypeParser(new KeyedTypeParser<Punishment>());
-            Commands.AddTypeParser(new EmojiTypeParser<IEmoji>(Services));
-            Commands.AddTypeParser(new EmojiTypeParser<ICustomEmoji>(Services));
-            Commands.AddTypeParser(new EmojiTypeParser<IGuildEmoji>(Services));
-            
-            base.AddTypeParsers();
+            Commands.AddTypeParser(new EmojiTypeParser<IEmoji>());
+            Commands.AddTypeParser(new EmojiTypeParser<ICustomEmoji>());
+            Commands.AddTypeParser(new EmojiTypeParser<IGuildEmoji>());
+            Commands.AddTypeParser(new SanitizedStringTypeParser());
+            return base.AddTypeParsersAsync(cancellationToken);
         }
 
         protected override async ValueTask HandleFailedResultAsync(DiscordCommandContext context, FailedResult result)
@@ -123,9 +124,14 @@ namespace Administrator
                         .AppendNewline(Markdown.CodeBlock(context.Message.Id.ToString()));
                     break;
                 case OverloadsFailedResult overloadsFailedResult:
+                    if (overloadsFailedResult.FailedOverloads.Count == 1)
+                    {
+                        await HandleFailedResultAsync(context, overloadsFailedResult.FailedOverloads.First().Value);
+                        return;
+                    }
                     foreach (var overloadField in overloadsFailedResult.FailedOverloads.Select(x =>
                         new LocalEmbedFieldBuilder()
-                            .WithName($"{fullPath}{x.Key.FormatArguments()}")
+                            .WithName(Markdown.Code($"{fullPath}{x.Key.FormatArguments()}"))
                             .WithValue(x.Value.FailureReason)))
                     {
                         embedBuilder.AddField(overloadField);
@@ -142,8 +148,7 @@ namespace Administrator
                     if (string.IsNullOrWhiteSpace(typeParseResult.FailureReason))
                         break;
 
-                    builder.AppendNewline($"{context.Prefix}{fullPath}{context.Command.FormatArguments()}")
-                        .AppendNewline()
+                    builder.AppendNewline(Markdown.CodeBlock($"{fullPath}{context.Command.FormatArguments()}"))
                         .AppendNewline($"{Markdown.Code(typeParseResult.Parameter.Name)}: {typeParseResult.FailureReason}");
                     break;
             }

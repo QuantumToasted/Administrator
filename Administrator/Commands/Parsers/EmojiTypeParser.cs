@@ -6,35 +6,52 @@ using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Gateway;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
-namespace Administrator.Commands.Parsers
+namespace Administrator.Commands
 {
-    public sealed class EmojiTypeParser<TEmoji> : TypeParser<TEmoji>
+    public sealed class EmojiTypeParser<TEmoji> : DiscordTypeParser<TEmoji>
         where TEmoji : IEmoji
     {
-        private readonly Random _random;
-        private readonly EmojiService _emojiService;
-        private readonly IServiceProvider _services;
-
-        public EmojiTypeParser(IServiceProvider services)
-        {
-            _random = services.GetRequiredService<Random>();
-            _emojiService = services.GetRequiredService<EmojiService>();
-        }
+        private Random _random;
+        private EmojiService _emojiService;
         
-        public override async ValueTask<TypeParserResult<TEmoji>> ParseAsync(Parameter parameter, string value, CommandContext _)
+        public override async ValueTask<TypeParserResult<TEmoji>> ParseAsync(Parameter parameter, string value, DiscordCommandContext context)
         {
-            var context = (DiscordCommandContext) _;
+            _random ??= context.Bot.Services.GetRequiredService<Random>();
+            _emojiService ??= context.Bot.Services.GetRequiredService<EmojiService>();
+
+            if (typeof(TEmoji) == typeof(IGuildEmoji) && context.GuildId.HasValue &&
+                context.Bot.GetGuild(context.GuildId.Value) is { } guild)
+            {
+                IGuildEmoji guildEmoji;
+                if (LocalCustomEmoji.TryParse(value, out var customEmoji))
+                {
+                    guildEmoji = guild.Emojis.Values.FirstOrDefault(x => x.Id == customEmoji.Id);
+                }
+                else if (!Snowflake.TryParse(value, out var id) ||
+                    !guild.Emojis.TryGetValue(id, out guildEmoji))
+                {
+                    var matchingGuildEmojis = guild.Emojis.Values.Where(x =>
+                        x.Name.Equals(value, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+                    guildEmoji = matchingGuildEmojis.Count > 0 ? matchingGuildEmojis.GetRandomElement(_random) : null;
+                }
+
+                if (guildEmoji is not null)
+                    return Success((TEmoji) guildEmoji);
+            }
             
             if (_emojiService.TryParseEmoji(value, out var parsedEmoji) && parsedEmoji is TEmoji emoji)
             {
                 return Success(emoji);
             }
 
-            using var scope = _services.CreateScope();
+            using var scope = context.Bot.Services.CreateScope();
             await using var ctx = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+            
             var allEmojis = await ctx.GetAllBigEmojisAsync();
             var approvedEmojis = allEmojis.OfType<ApprovedBigEmoji>().ToList();
             var approvedIds = approvedEmojis.Select(x => x.Id).ToList();
@@ -47,9 +64,21 @@ namespace Administrator.Commands.Parsers
             {
                 return Success(guildEmojis.GetRandomElement(_random));
             }
-            
-            // TODO: Enumerate over all valid emojis, find a random one with the same name as value
-            return Failure("This parser has not been finished yet.");
+
+            if (!context.Bot.CacheProvider.TryGetGuilds(out var guilds))
+                return Failure("The guild cache is not currently available to fetch available emojis.");
+
+            var matchingEmojis = guilds.Values.SelectMany(x => x.Emojis.Values)
+                .Where(x => approvedIds.Contains(x.Id) &&
+                            x.Name.Equals(value, StringComparison.InvariantCultureIgnoreCase)).Cast<TEmoji>().ToList();
+
+            if (matchingEmojis.Count > 0)
+            {
+                return Success(matchingEmojis.GetRandomElement(_random));
+            }
+
+            return Failure("An emoji could not be found with that name or formatting.\n" +
+                           "(You may need to request the emoji be added to the whitelist if it hasn't been already.)");
         }
     }
 }

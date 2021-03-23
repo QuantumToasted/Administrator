@@ -8,15 +8,6 @@ namespace Administrator.Database
     public sealed class Guild : IEntityTypeConfiguration<Guild>, 
         ICached
     {
-#if !MIGRATION_MODE
-        public Guild(IGuild guild)
-        {
-            Id = guild.Id;
-            Name = guild.Name;
-            BigEmojiSizeMultiplier = 100;
-        }
-#endif
-        
         public Snowflake Id { get; set; }
         
         public string Name { get; set; }
@@ -34,10 +25,22 @@ namespace Administrator.Database
             return true;
         }
 
+        public static Guild Create(IGuild guild)
+        {
+            return new()
+            {
+                Id = guild.Id,
+                Name = guild.Name,
+                BigEmojiSizeMultiplier = 100
+            };
+        }
+
         string ICached.CacheKey => $"G:{Id}";
         void IEntityTypeConfiguration<Guild>.Configure(EntityTypeBuilder<Guild> builder)
         {
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.Prefixes)
+                .HasDefaultValueSql("'{}'");
         }
     }
 }

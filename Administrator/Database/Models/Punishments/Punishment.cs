@@ -9,20 +9,6 @@ namespace Administrator.Database
     public abstract class Punishment : Keyed, IGuildDbEntity,
         IEntityTypeConfiguration<Punishment>
     {
-#if !MIGRATION_MODE
-        protected Punishment(IGuild guild, IUser target, IUser moderator, string reason = null, Upload attachment = null)
-        {
-            GuildId = guild.Id;
-            TargetId = target.Id;
-            TargetTag = target.Tag;
-            ModeratorId = moderator.Id;
-            ModeratorTag = moderator.Tag;
-            Reason = reason;
-            CreatedAt = DateTimeOffset.UtcNow;
-            Attachment = attachment;
-        }
-#endif
-
         public Snowflake GuildId { get; set; }
         
         public Snowflake TargetId { get; set; }

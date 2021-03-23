@@ -10,21 +10,25 @@ namespace Administrator.Database
         IEntityTypeConfiguration<ApprovedBigEmoji>,
         ICustomEmoji
     {
-#if !MIGRATION_MODE
-        public ApprovedBigEmoji(RequestedBigEmoji emoji, IUser approver)
-            : base(emoji.GuildId, emoji.Id, emoji.Name, emoji.IsAnimated)
-        {
-            ApproverId = approver.Id;
-            ApproverTag = approver.Tag;
-            ApprovedAt = DateTimeOffset.UtcNow;
-        }
-#endif
-
         public Snowflake ApproverId { get; set; }
 
         public string ApproverTag { get; set; }
 
         public DateTimeOffset ApprovedAt { get; set; }
+        
+        public static ApprovedBigEmoji Create(RequestedBigEmoji emoji, IUser approver)
+        {
+            return new()
+            {
+                Id = emoji.Id,
+                Name = emoji.Name,
+                IsAnimated = emoji.IsAnimated,
+                GuildId = emoji.GuildId,
+                ApproverId = approver.Id,
+                ApproverTag = approver.Tag,
+                ApprovedAt = DateTimeOffset.UtcNow
+            };
+        }
 
         void IEntityTypeConfiguration<ApprovedBigEmoji>.Configure(EntityTypeBuilder<ApprovedBigEmoji> builder)
         {

@@ -35,9 +35,9 @@ namespace Administrator.Services
             _cache = bot.Services.GetRequiredService<IMemoryCache>();
         }
         
-        public IReadOnlyDictionary<string, MappedEmoji> Surrogates { get; private set; }
+        public static IReadOnlyDictionary<string, MappedEmoji> Surrogates { get; private set; }
 
-        public IReadOnlyDictionary<string, MappedEmoji> Names { get; private set; }
+        public static IReadOnlyDictionary<string, MappedEmoji> Names { get; private set; }
 
         public async ValueTask<MemoryStream> GetOrCreateDefaultEmojiAsync(MappedEmoji emoji)
         {

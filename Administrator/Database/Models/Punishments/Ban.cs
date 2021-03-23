@@ -8,11 +8,22 @@ namespace Administrator.Database
 {
     public sealed class Ban : RevocablePunishment, IEntityTypeConfiguration<Ban>
     {
-#if !MIGRATION_MODE
-        public Ban(IGuild guild, IUser target, IUser moderator, TimeSpan? duration = null, string reason = null, Upload attachment = null) 
-            : base(guild, target, moderator, duration, reason, attachment)
-        { }
-#endif
+        public static Ban Create(IGuild guild, IUser target, IUser moderator, TimeSpan? duration = null, 
+            string reason = null, Upload attachment = null)
+        {
+            return new()
+            {
+                GuildId = guild.Id,
+                TargetId = target.Id,
+                TargetTag = target.Tag,
+                ModeratorId = moderator.Id,
+                ModeratorTag = moderator.Tag,
+                Reason = reason,
+                Attachment = attachment,
+                CreatedAt = DateTimeOffset.UtcNow,
+                ExpiresAt = DateTimeOffset.UtcNow + duration
+            };
+        }
         
         void IEntityTypeConfiguration<Ban>.Configure(EntityTypeBuilder<Ban> builder)
         {

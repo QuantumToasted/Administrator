@@ -1,6 +1,4 @@
-﻿#undef MIGRATION_MODE
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Net.Http;
 using Administrator;
@@ -19,10 +17,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
-
-#if MIGRATION_MODE
-    throw new InvalidOperationException("Undefine MIGRATION_MODE to run this.");
-#endif
 
 var host = new HostBuilder()
     .ConfigureHostConfiguration(x =>
@@ -58,16 +52,17 @@ var host = new HostBuilder()
         services.AddSingleton<HttpClient>();
         services.AddSingleton<Random>();
         
-        services.AddEntityFrameworkNpgsql();
         services.AddMemoryCache();
+        services.AddEntityFrameworkNpgsql();
         services.AddDbContext<AdminDbContext>((provider, builder) =>
         {
             builder.UseNpgsql(context.Configuration["DB_CONNECTION_STRING"]);
             builder.UseInternalServiceProvider(provider);
         });
-        
+
         services.AddInteractivity();
         services.AddPrefixProvider<AdminPrefixProvider>();
+
         services.AddCommands(x =>
         {
             x.DefaultArgumentParser = new AdminArgumentParser();

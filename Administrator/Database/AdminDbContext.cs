@@ -41,7 +41,6 @@ namespace Administrator.Database
         public DbSet<BigEmoji> BigEmojis { get; set; }
 
         public async ValueTask<Guild> GetOrCreateGuildAsync(IGuild guild)
-#if !MIGRATION_MODE
         {
             if (_cache.TryGetValue($"G:{guild.Id}", out Guild cacheGuild))
                 return cacheGuild;
@@ -49,13 +48,10 @@ namespace Administrator.Database
             if (await FindAsync<Guild>(guild.Id) is { } dbGuild)
                 return dbGuild;
 
-            var entry = Add(new Guild(guild));
+            var entry = Add(Guild.Create(guild));
             await SaveChangesAsync();
             return entry.Entity;
         }
-#else
-            => default;
-#endif
 
         public async ValueTask<List<Punishment>> GetAllPunishmentsAsync(Snowflake guildId)
         {
@@ -81,8 +77,6 @@ namespace Administrator.Database
 
             if (entity is ICached cached)
             {
-                // TODO: Remove this
-                _logger.LogInformation("Hi! Caching entity with key {CacheKey} now.", cached.CacheKey);
                 _cache.Set(cached.CacheKey, entity,
                     new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
             }
@@ -124,7 +118,7 @@ namespace Administrator.Database
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfigurationsFromAssembly(typeof(Guild).Assembly);
-            builder.DefineGlobalConversion<Snowflake, ulong>(x => x.RawValue, x => new Snowflake(x));
+            builder.DefineGlobalConversion<Snowflake, ulong>(x => x, x => x);
             builder.DefineGlobalConversion<Upload, string>(x => x.ToString(), x => Upload.Parse(x));
             builder.DefineGlobalConversion<IEmoji, string>(x => x.ToString(), x => _emojiService.ParseEmoji(x));
 

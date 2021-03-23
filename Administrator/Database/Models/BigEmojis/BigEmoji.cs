@@ -6,18 +6,6 @@ namespace Administrator.Database
 {
     public abstract class BigEmoji : IEntityTypeConfiguration<BigEmoji>
     {
-#if !MIGRATION_MODE
-        protected BigEmoji(Snowflake guildId, Snowflake emojiId, string emojiName, bool emojiIsAnimated)
-        {
-            
-            Id = emojiId;
-            Name = emojiName;
-            IsAnimated = emojiIsAnimated;
-            
-            GuildId = guildId;
-        }
-#endif
-        
         public Snowflake Id { get; set; }
 
         public Snowflake GuildId { get; set; }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Administrator.Common;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,14 +7,6 @@ namespace Administrator.Database
 {
     public abstract class RevocablePunishment : Punishment, IEntityTypeConfiguration<RevocablePunishment>
     {
-#if !MIGRATION_MODE
-        protected RevocablePunishment(IGuild guild, IUser target, IUser moderator, TimeSpan? duration = null, string reason = null, Upload attachment = null)
-            : base(guild, target, moderator, reason, attachment)
-        {
-            Expires = CreatedAt + duration;
-        }
-#endif
-        
         public DateTimeOffset? RevokedAt { get; set; }
 
         public Snowflake RevokerId { get; set; }
@@ -28,9 +19,9 @@ namespace Administrator.Database
 
         public string AppealReason { get; set; }
 
-        public DateTimeOffset? Expires { get; set; }
+        public DateTimeOffset? ExpiresAt { get; set; }
 
-        public bool IsExpired => DateTimeOffset.UtcNow > Expires;
+        public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAt;
 
         public void Revoke(IUser revoker, string reason)
         {

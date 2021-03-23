@@ -13,27 +13,25 @@ namespace Administrator.Commands
     public sealed class AdminPrefixProvider : IPrefixProvider
     {
         private readonly IPrefix _defaultPrefix;
-        private readonly IServiceProvider _services;
 
-        public AdminPrefixProvider(IConfiguration configuration, IServiceProvider services)
+        public AdminPrefixProvider(IConfiguration configuration)
         {
             _defaultPrefix = new StringPrefix(configuration["DEFAULT_PREFIX"]);
-            _services = services;
         }
         
-        // TODO: fill out db stuff
         public async ValueTask<IEnumerable<IPrefix>> GetPrefixesAsync(IGatewayUserMessage message)
         {
             var prefixes = new List<IPrefix> {_defaultPrefix};
+            var bot = (AdministratorBot) message.Client;
 
-            if (!message.GuildId.HasValue)
+            if (!message.GuildId.HasValue || bot.GetGuild(message.GuildId.Value) is not { } g)
                 return prefixes;
 
-            using var scope = _services.CreateScope();
+            using var scope = bot.Services.CreateScope();
             await using var ctx = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
-
-            if (await ctx.FindAsync<Guild>(message.GuildId.Value) is { } guild && 
-                guild.Prefixes.Count > 0)
+            
+            var guild = await ctx.GetOrCreateGuildAsync(g);
+            if (guild.Prefixes.Count > 0)
             {
                 prefixes.AddRange(guild.Prefixes.Select(x => new StringPrefix(x)));
             }

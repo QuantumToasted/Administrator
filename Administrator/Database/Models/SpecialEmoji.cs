@@ -7,20 +7,21 @@ namespace Administrator.Database
 {
     public sealed class SpecialEmoji : ICached, IEntityTypeConfiguration<SpecialEmoji>
     {
-#if !MIGRATION_MODE
-        public SpecialEmoji(IGuild guild, IEmoji emoji, SpecialEmojiType type)
-        {
-            GuildId = guild.Id;
-            Emoji = emoji;
-            Type = type;
-        }
-#endif
-        
         public Snowflake GuildId { get; set; }
 
         public SpecialEmojiType Type { get; set; }
         
         public IEmoji Emoji { get; set; }
+
+        public static SpecialEmoji Create(IGuild guild, IEmoji emoji, SpecialEmojiType type)
+        {
+            return new()
+            {
+                GuildId = guild.Id,
+                Emoji = emoji,
+                Type = type
+            };
+        }
         
         string ICached.CacheKey => $"SE:{GuildId}:{Type:D}";
         void IEntityTypeConfiguration<SpecialEmoji>.Configure(EntityTypeBuilder<SpecialEmoji> builder)
