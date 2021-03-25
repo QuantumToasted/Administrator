@@ -13,13 +13,9 @@ namespace Administrator.Commands
 {
     public sealed class EmojiRequestMenu : PagedMenu
     {
-        private readonly DiscordBotBase _bot;
-
-        public EmojiRequestMenu(DiscordCommandContext context, IList<RequestedBigEmoji> emojis) 
-            : base(context.Author.Id, new EmojiRequestPageProvider(emojis), false)
+        public EmojiRequestMenu(Snowflake userId, IList<RequestedBigEmoji> emojis) 
+            : base(userId, new EmojiRequestPageProvider(emojis), false)
         {
-            _bot = context.Bot;
-            
             AddButtonAsync(new Button(EmojiService.Names["arrow_left"], e => ChangePageAsync(CurrentPageIndex - 1), 0));
             AddButtonAsync(new Button(EmojiService.Names["arrow_right"], e => ChangePageAsync(CurrentPageIndex + 1), 1));
             AddButtonAsync(new Button(EmojiService.Names["white_check_mark"], e => ApproveOrDenyAsync(CurrentPageIndex, true), 2));
@@ -28,6 +24,8 @@ namespace Administrator.Commands
 
         public new EmojiRequestPageProvider PageProvider => (EmojiRequestPageProvider) base.PageProvider;
 
+        public DiscordBotBase Bot => (DiscordBotBase) Client;
+ 
         private async Task ApproveOrDenyAsync(int index, bool approval)
         {
             var (builder, emoji, alreadyDenied) = PageProvider.List[index];
@@ -39,10 +37,10 @@ namespace Administrator.Commands
 
             PageProvider.List[index] = (builder, emoji, approval);
 
-            using var scope = _bot.Services.CreateScope();
+            using var scope = Bot.Services.CreateScope();
             await using var ctx = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
             
-            var user = await _bot.GetOrFetchUserAsync(UserId);
+            var user = await Bot.GetOrFetchUserAsync(UserId);
 
             if (approval)
             {

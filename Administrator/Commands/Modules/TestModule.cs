@@ -16,5 +16,9 @@ namespace Administrator.Commands
             var guild = await Database.GetOrCreateGuildAsync(Context.Guild);
             return Reply(guild.Name);
         }
+
+        [Command("test")]
+        public DiscordCommandResult Test(int test)
+            => Reply(test.ToString());
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Administrator.Database;
 using Administrator.Extensions;
 using Administrator.Services;
+using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Extensions.Interactivity.Menus.Paged;
@@ -13,12 +14,9 @@ namespace Administrator.Commands
 {
     public sealed class EmojiListMenu : PagedMenu
     {
-        private readonly DiscordBotBase _bot;
-
-        public EmojiListMenu(DiscordCommandContext context, IList<ApprovedBigEmoji> bigEmojis, int currentPage, bool isOwner = false)
-            : base(context.Author.Id, new EmojiListPageProvider(bigEmojis), false)
+        public EmojiListMenu(Snowflake userId, IList<ApprovedBigEmoji> bigEmojis, int currentPage, bool isOwner = false)
+            : base(userId, new EmojiListPageProvider(bigEmojis), false)
         {
-            _bot = context.Bot;
             CurrentPageIndex = Math.Min(currentPage, bigEmojis.Count) - 1;
 
             AddButtonAsync(new Button(EmojiService.Names["arrow_left"], e => ChangePageAsync(CurrentPageIndex - 1), 0));
@@ -30,13 +28,15 @@ namespace Administrator.Commands
             }
         }
 
-        public EmojiListMenu(DiscordCommandContext context, IList<ApprovedBigEmoji> bigEmojis, string startingName, bool isOwner = false)
-            : this(context, bigEmojis, Math.Max(0, bigEmojis.FirstIndexOf(x =>
+        public EmojiListMenu(Snowflake userId, IList<ApprovedBigEmoji> bigEmojis, string startingName, bool isOwner = false)
+            : this(userId, bigEmojis, Math.Max(0, bigEmojis.FirstIndexOf(x =>
                 x.Name.Equals(startingName, StringComparison.InvariantCultureIgnoreCase))) + 1, isOwner)
         { }
 
+        public DiscordBotBase Bot => (DiscordBotBase) Client;
+ 
         public new EmojiListPageProvider PageProvider => (EmojiListPageProvider) base.PageProvider;
-
+        
         private async Task RemoveEmojiAsync(int index)
         {
             var (builder, emoji, alreadyDenied) = PageProvider.List[index];
@@ -48,18 +48,18 @@ namespace Administrator.Commands
             }
 
             PageProvider.List[index] = (builder, emoji, true);
-
-            using var scope = _bot.Services.CreateScope();
+            
+            using var scope = Bot.Services.CreateScope();
             await using var ctx = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
             
-            var user = await _bot.GetOrFetchUserAsync(UserId);
+            var user = await Bot.GetOrFetchUserAsync(UserId);
 
             ctx.BigEmojis.Remove(emoji);
             await ctx.SaveChangesAsync();
 
             ctx.BigEmojis.Add(DeniedBigEmoji.Create(emoji, user));
             await ctx.SaveChangesAsync();
-            
+
             await ChangePageAsync(index + 1);
         }
     }

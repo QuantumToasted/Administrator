@@ -68,7 +68,7 @@ namespace Administrator.Commands
             
             [Command("create", "add", "new"), RunMode(RunMode.Parallel)]
             public async Task<DiscordCommandResult> CreateEmojiAsync([Image, MaxSize(256, FileSize.KiB)] Upload upload,
-                [Maximum(32), Regex(@"[\w]+")] string name = null)
+                [Maximum(32), Regex(@"^[\w]+$")] string name = null)
             {
                 using var _ = Context.Bot.BeginTyping(Context.ChannelId);
                 name ??= upload.Filename.TrimTo(32);
@@ -87,7 +87,7 @@ namespace Administrator.Commands
 
             [Command("clone", "steal", "copy")]
             public async Task<DiscordCommandResult> CloneEmojiAsync(ICustomEmoji emoji,
-                [Maximum(32), Regex(@"[\w]+")] string newName = null)
+                [Maximum(32), Regex(@"^[\w]+$")] string newName = null)
             {
                 newName ??= emoji.Name;
                 
@@ -108,8 +108,6 @@ namespace Administrator.Commands
             public HttpClient Http { get; set; }
             
             public EmojiService EmojiService { get; set; }
-            
-            public InteractivityExtension Interactivity { get; set; }
             
             [Command, RunMode(RunMode.Parallel)]
             public async Task<DiscordCommandResult> GetBigEmojiAsync(IEmoji emoji)
@@ -173,6 +171,7 @@ namespace Administrator.Commands
             {
                 var allEmojis = await Database.GetAllBigEmojisAsync();
                 var approvedEmojis = allEmojis.OfType<ApprovedBigEmoji>().ToList();
+                var interactivity = Context.Bot.GetRequiredExtension<InteractivityExtension>();
 
                 if (approvedEmojis.Count == 0)
                 {
@@ -181,15 +180,16 @@ namespace Administrator.Commands
                 }
 
                 var check = await new RequireBotOwnerAttribute().CheckAsync(Context);
-                var menu = new EmojiListMenu(Context, approvedEmojis, page, check.IsSuccessful);
-                await Interactivity.StartMenuAsync(Context.ChannelId, menu);
+                var menu = new EmojiListMenu(Context.Author.Id, approvedEmojis, page, check.IsSuccessful);
+                await interactivity.StartMenuAsync(Context.ChannelId, menu);
             }
 
             [Command("list")]
-            public async Task ListEmojisAsync([Regex(@"[\w]+")] string startingName)
+            public async Task ListEmojisAsync([Regex(@"^[\w]+$")] string startingName)
             {
                 var allEmojis = await Database.GetAllBigEmojisAsync();
                 var approvedEmojis = allEmojis.OfType<ApprovedBigEmoji>().ToList();
+                var interactivity = Context.Bot.GetRequiredExtension<InteractivityExtension>();
 
                 if (approvedEmojis.Count == 0)
                 {
@@ -198,8 +198,8 @@ namespace Administrator.Commands
                 }
 
                 var check = await new RequireBotOwnerAttribute().CheckAsync(Context);
-                var menu = new EmojiListMenu(Context, approvedEmojis, startingName, check.IsSuccessful);
-                await Interactivity.StartMenuAsync(Context.ChannelId, menu);
+                var menu = new EmojiListMenu(Context.Author.Id, approvedEmojis, startingName, check.IsSuccessful);
+                await interactivity.StartMenuAsync(Context.ChannelId, menu);
             }
 
             [Group("request")]
@@ -323,7 +323,7 @@ namespace Administrator.Commands
                         return;
                     }
 
-                    var menu = new EmojiRequestMenu(Context, requestedEmojis);
+                    var menu = new EmojiRequestMenu(Context.Author.Id, requestedEmojis);
                     var interactivity = Context.Bot.GetRequiredExtension<InteractivityExtension>();
                     await interactivity.StartMenuAsync(Context.ChannelId, menu);
                 }
