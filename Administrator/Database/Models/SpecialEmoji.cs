@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database
 {
-    public sealed class SpecialEmoji : ICached, IEntityTypeConfiguration<SpecialEmoji>
+    public sealed class SpecialEmoji : IEntityTypeConfiguration<SpecialEmoji>,
+        IGuildDbEntity,
+        ICached
     {
         public Snowflake GuildId { get; set; }
 

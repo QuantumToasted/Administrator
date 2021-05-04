@@ -37,7 +37,7 @@ namespace Administrator.Commands
  
         public new EmojiListPageProvider PageProvider => (EmojiListPageProvider) base.PageProvider;
         
-        private async Task RemoveEmojiAsync(int index)
+        private async ValueTask RemoveEmojiAsync(int index)
         {
             var (builder, emoji, alreadyDenied) = PageProvider.List[index];
 

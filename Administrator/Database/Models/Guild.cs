@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Administrator.Common;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -15,6 +16,12 @@ namespace Administrator.Database
         public List<string> Prefixes { get; set; }
         
         public int BigEmojiSizeMultiplier { get; set; }
+        
+        public GuildSetting Settings { get; set; }
+        
+        public int? BanPruneDays { get; set; }
+        
+        public List<string> BlacklistedEmojiNames { get; set; }
 
         public bool AddPrefix(string prefix)
         {
@@ -31,7 +38,8 @@ namespace Administrator.Database
             {
                 Id = guild.Id,
                 Name = guild.Name,
-                BigEmojiSizeMultiplier = 100
+                BigEmojiSizeMultiplier = 100,
+                Settings = GuildSetting.Punishments
             };
         }
 
@@ -40,6 +48,8 @@ namespace Administrator.Database
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Prefixes)
+                .HasDefaultValueSql("'{}'");
+            builder.Property(x => x.BlacklistedEmojiNames)
                 .HasDefaultValueSql("'{}'");
         }
     }

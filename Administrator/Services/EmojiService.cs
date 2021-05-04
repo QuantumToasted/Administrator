@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Administrator.Common;
 using Administrator.Extensions;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Hosting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +29,7 @@ namespace Administrator.Services
         private readonly HttpClient _http;
         private readonly IMemoryCache _cache;
 
-        public EmojiService(ILogger<EmojiService> logger, AdministratorBot bot)
+        public EmojiService(ILogger<EmojiService> logger, DiscordBotBase bot)
             : base(logger, bot)
         {
             _http = bot.Services.GetRequiredService<HttpClient>();
@@ -129,7 +130,7 @@ namespace Administrator.Services
             }
         }
 
-        private void PopulateMaps(EmojiMappingData data)
+        private static void PopulateMaps(EmojiMappingData data)
         {
             var surrogates = new Dictionary<string, MappedEmoji>();
             var names = new Dictionary<string, MappedEmoji>();

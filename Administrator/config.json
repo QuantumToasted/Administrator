@@ -1,0 +1,11 @@
+﻿{
+    "DefaultPrefix": "??",
+    "SupportServer": {
+        "Name": "Administrator Support Hotline",
+        "Code": "rTvGube"
+    },
+    "AppealServer": {
+        "Name": "ctf_turbine",
+        "Code": "A2kRT4wpUm"
+    }
+}

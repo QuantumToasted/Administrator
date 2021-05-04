@@ -7,7 +7,7 @@ using Qmmands;
 
 namespace Administrator.Commands
 {
-    public sealed class KeyedTypeParser<TKeyed> : DiscordTypeParser<TKeyed>
+    public class KeyedTypeParser<TKeyed> : DiscordTypeParser<TKeyed>
         where TKeyed : Keyed
     {
         public override async ValueTask<TypeParserResult<TKeyed>> ParseAsync(Parameter parameter, string value, DiscordCommandContext context)

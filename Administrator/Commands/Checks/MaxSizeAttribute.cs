@@ -1,10 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Administrator.Common;
+using Disqord.Bot;
 using Qmmands;
 
 namespace Administrator.Commands
 {
-    public sealed class MaxSizeAttribute : ParameterCheckAttribute
+    public sealed class MaxSizeAttribute : DiscordParameterCheckAttribute
     {
         private readonly double _value;
         private readonly FileSize _measure;
@@ -15,7 +16,7 @@ namespace Administrator.Commands
             _measure = measure;
         }
         
-        public override async ValueTask<CheckResult> CheckAsync(object argument, CommandContext context)
+        public override async ValueTask<CheckResult> CheckAsync(object argument, DiscordCommandContext context)
         {
             var upload = (Upload) argument;
             var maxSizeInBytes = (long) (_value * (long) _measure);

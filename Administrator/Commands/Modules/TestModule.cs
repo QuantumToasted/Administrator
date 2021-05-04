@@ -1,11 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Administrator.Database;
+using Disqord;
 using Disqord.Bot;
+using Disqord.Gateway;
+using Disqord.Rest;
 using Qmmands;
 
 namespace Administrator.Commands
 {
-    public sealed class TestModule : DiscordGuildModuleBase
+    public class TestModule : DiscordGuildModuleBase
     {
         public AdminDbContext Database { get; set; }
 
@@ -16,9 +19,5 @@ namespace Administrator.Commands
             var guild = await Database.GetOrCreateGuildAsync(Context.Guild);
             return Reply(guild.Name);
         }
-
-        [Command("test")]
-        public DiscordCommandResult Test(int test)
-            => Reply(test.ToString());
     }
 }

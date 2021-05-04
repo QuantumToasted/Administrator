@@ -35,7 +35,7 @@ namespace Administrator.Common
             => ((IEquatable<IEmoji>) this).Equals(obj as IEmoji);
 
         public override int GetHashCode()
-            => Discord.Comparers.Emoji.GetHashCode(this);
+            => Comparers.Emoji.GetHashCode(this);
 
         bool IEquatable<IEmoji>.Equals(IEmoji other) => other switch
         {

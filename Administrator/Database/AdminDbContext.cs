@@ -8,6 +8,7 @@ using Administrator.Common;
 using Administrator.Extensions;
 using Administrator.Services;
 using Disqord;
+using Disqord.Gateway;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -39,6 +40,10 @@ namespace Administrator.Database
         public DbSet<SpecialEmoji> SpecialEmojis { get; set; }
         
         public DbSet<BigEmoji> BigEmojis { get; set; }
+        
+        public DbSet<WarningPunishment> WarningPunishments { get; set; }
+        
+        public DbSet<Highlight> Highlights { get; set; }
 
         public async ValueTask<Guild> GetOrCreateGuildAsync(IGuild guild)
         {
@@ -61,6 +66,14 @@ namespace Administrator.Database
             return _cache.Set($"P:{guildId}", await Punishments.Where(x => x.GuildId == guildId).ToListAsync(),
                 TimeSpan.FromMinutes(10));
         }
+        
+        public async ValueTask<List<TPunishment>> GetPunishmentsAsync<TPunishment>(Snowflake guildId, Func<TPunishment, bool> predicate = null)
+        {
+            var allPunishments = await GetAllPunishmentsAsync(guildId);
+            return (predicate is not null
+                ? allPunishments.OfType<TPunishment>().Where(predicate)
+                : allPunishments.OfType<TPunishment>()).ToList();
+        }
 
         public async ValueTask<List<BigEmoji>> GetAllBigEmojisAsync()
         {
@@ -68,6 +81,48 @@ namespace Administrator.Database
                 return emojis;
 
             return _cache.Set("BigEmojis", await BigEmojis.ToListAsync(),
+                new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
+        }
+
+        public async ValueTask<LoggingChannel> GetLoggingChannelAsync(Snowflake guildId, LoggingChannelType type)
+        {
+            if (_cache.TryGetValue($"LC:{guildId}:{type:D}", out LoggingChannel cacheChannel))
+                return cacheChannel;
+
+            if (await FindAsync<LoggingChannel>(guildId, type) is { } dbChannel)
+                return dbChannel;
+
+            return null;
+        }
+        
+        public async ValueTask<SpecialEmoji> GetSpecialEmojiAsync(Snowflake guildId, SpecialEmojiType type)
+        {
+            if (_cache.TryGetValue($"SE:{guildId}:{type:D}", out SpecialEmoji cacheEmoji))
+                return cacheEmoji;
+
+            if (await FindAsync<SpecialEmoji>(guildId, type) is { } dbEmoji)
+                return dbEmoji;
+
+            return null;
+        }
+        
+        public async ValueTask<SpecialRole> GetSpecialRoleAsync(Snowflake guildId, SpecialRoleType type)
+        {
+            if (_cache.TryGetValue($"SR:{guildId}:{type:D}", out SpecialRole cacheRole))
+                return cacheRole;
+
+            if (await FindAsync<SpecialRole>(guildId, type) is { } dbRole)
+                return dbRole;
+
+            return null;
+        }
+
+        public async Task<List<Highlight>> GetHighlightsAsync()
+        {
+            if (_cache.TryGetValue("Highlights", out List<Highlight> cacheHighlights))
+                return cacheHighlights;
+            
+            return _cache.Set(Highlights, await Highlights.ToListAsync(),
                 new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
         }
 
@@ -112,6 +167,11 @@ namespace Administrator.Database
                 _cache.Remove("BigEmojis");
             }
             
+            if (ChangeTracker.Entries<Highlight>().Any())
+            {
+                _cache.Remove("Highlights");
+            }
+            
             return base.SaveChangesAsync(cancellationToken);
         }
 
@@ -119,6 +179,7 @@ namespace Administrator.Database
         {
             builder.ApplyConfigurationsFromAssembly(typeof(Guild).Assembly);
             builder.DefineGlobalConversion<Snowflake, ulong>(x => x, x => x);
+            builder.DefineGlobalConversion<Snowflake?, ulong?>(x => x, x => x);
             builder.DefineGlobalConversion<Upload, string>(x => x.ToString(), x => Upload.Parse(x));
             builder.DefineGlobalConversion<IEmoji, string>(x => x.ToString(), x => _emojiService.ParseEmoji(x));
 

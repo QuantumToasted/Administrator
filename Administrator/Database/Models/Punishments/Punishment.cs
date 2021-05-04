@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Administrator.Common;
 using Disqord;
+using Disqord.Bot;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database
 {
-    public abstract class Punishment : Keyed, IGuildDbEntity,
-        IEntityTypeConfiguration<Punishment>
+    public abstract class Punishment : Keyed, 
+        IEntityTypeConfiguration<Punishment>,
+        IGuildDbEntity,
+        IUserDbEntity
     {
         public Snowflake GuildId { get; set; }
         
@@ -29,6 +33,10 @@ namespace Administrator.Database
         
         public Upload Attachment { get; set; }
 
+        public abstract Task<LocalMessage> FormatLogMessageAsync(DiscordBotBase bot);
+
+        public abstract Task<LocalMessage> FormatDmMessageAsync(DiscordBotBase bot);
+
         public void SetLogMessage(IUserMessage message)
         {
             LogMessageId = message.Id;
@@ -45,6 +53,12 @@ namespace Administrator.Database
                 .HasValue<Kick>("kick")
                 .HasValue<Mute>("mute")
                 .HasValue<Warning>("warning");
+        }
+
+        Snowflake IUserDbEntity.UserId
+        {
+            get => TargetId;
+            set => TargetId = value;
         }
     }
 }

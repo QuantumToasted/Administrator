@@ -26,7 +26,7 @@ namespace Administrator.Commands
 
         public DiscordBotBase Bot => (DiscordBotBase) Client;
  
-        private async Task ApproveOrDenyAsync(int index, bool approval)
+        private async ValueTask ApproveOrDenyAsync(int index, bool approval)
         {
             var (builder, emoji, alreadyDenied) = PageProvider.List[index];
 

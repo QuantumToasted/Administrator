@@ -23,6 +23,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Administrator.Commands
 {
+    [Name("Emojis")]
     [Group("emoji", "em", "e")]
     public sealed class EmojiModule : DiscordModuleBase
     {
@@ -60,7 +61,7 @@ namespace Administrator.Commands
                 .Build());
         }
 
-        [RequireUserGuildPermissions(Permission.ManageEmojis)]
+        [RequireAuthorGuildPermissions(Permission.ManageEmojis)]
         [RequireBotGuildPermissions(Permission.ManageEmojis)]
         public sealed class EmojiManagementModule : DiscordGuildModuleBase
         {
@@ -92,7 +93,7 @@ namespace Administrator.Commands
                 newName ??= emoji.Name;
                 
                 if (Context.Guild.Emojis.Values.Count(x => x.IsAnimated && emoji.IsAnimated) >= Context.Guild.GetEmojiLimit())
-                    return Response($"You cannot create any more {(emoji.IsAnimated ? "animated" : " ")} emojis on this server!");
+                    return Response($"You cannot create any more {(emoji.IsAnimated ? "animated" : "")}emojis on this server!");
 
                 await using var stream = await Http.GetMemoryStreamAsync(Discord.Cdn.GetCustomEmojiUrl(emoji.Id, emoji.IsAnimated));
                 var newEmoji = await Context.Guild.CreateEmojiAsync(newName, stream);
@@ -223,7 +224,7 @@ namespace Administrator.Commands
                 }
 
                 [Command]
-                [RequireUserGuildPermissions(Permission.ManageEmojis)]
+                [RequireAuthorGuildPermissions(Permission.ManageEmojis)]
                 public async Task<DiscordCommandResult> RequestEmojisAsync(params IGuildEmoji[] emojis)
                 {
                     if (emojis.Length == 0)
@@ -266,7 +267,7 @@ namespace Administrator.Commands
                 }
 
                 [Command("all")]
-                [RequireUserGuildPermissions(Permission.ManageEmojis)]
+                [RequireAuthorGuildPermissions(Permission.ManageEmojis)]
                 public async Task<DiscordCommandResult> RequestAllEmojisAsync()
                 {
                     var guild = Context.Bot.GetGuild(Context.GuildId!.Value);

@@ -39,6 +39,9 @@ namespace Administrator
 
         protected override LocalMessageBuilder FormatFailureMessage(DiscordCommandContext context, FailedResult result)
         {
+            if (result is CommandNotFoundResult)
+                return null;
+            
             var commandPath = string.Join(' ', context.Path);
             var descriptionBuilder = new StringBuilder();
             var builder = new LocalMessageBuilder()
@@ -110,15 +113,17 @@ namespace Administrator
                     descriptionBuilder.AppendNewline("One or more requirements for this command were not met:")
                         .Append(string.Join('\n', failedChecks.Select(x => x.Result.FailureReason)));
                     break;
-                case ExecutionFailedResult executionResult:
+                case CommandExecutionFailedResult executionResult:
                     Logger.LogError(executionResult.Exception, 
                         "An exception was thrown executing the command {Command}. Context: {@Context}",
                         commandPath, context);
 
+                    var config = Services.GetRequiredService<IConfiguration>();
+
                     descriptionBuilder.AppendNewline("An unhandled exception was thrown attempting to run this command.")
                         .Append("Please report the following ID to the support channel in ")
-                        .AppendNewline(Markdown.Link("my support server:", 
-                            Services.GetRequiredService<IConfiguration>()["SUPPORT_LINK"]))
+                        .AppendNewline(Markdown.Link($"{config["SupportServer:Name"]}:", 
+                            $"https://discord.gg/{config["SupportServer:Code"]}"))
                         .AppendNewline(Markdown.CodeBlock(context.Message.Id.ToString()));
                     break;
                 case OverloadsFailedResult overloadResult:

@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Text;
+using Disqord;
 
 namespace Administrator.Extensions
 {
     public static class StringExtensions
     {
+        public static string Sanitize(this string str)
+            => Markdown.Escape(str);
+        
         public static StringBuilder AppendNewline(this StringBuilder builder, string text = null)
             => builder.Append($"{text}\n");
         

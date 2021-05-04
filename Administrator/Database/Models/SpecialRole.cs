@@ -5,20 +5,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database
 {
-    public sealed class SpecialRole : ICached, IEntityTypeConfiguration<SpecialRole>
+    public sealed class SpecialRole : IEntityTypeConfiguration<SpecialRole>,
+        IGuildDbEntity,
+        ICached
     {
         public Snowflake GuildId { get; set; }
         
         public SpecialRoleType Type { get; set; }
 
-        public Snowflake RoleId { get; set; }
+        public Snowflake Id { get; set; }
 
         public static SpecialRole Create(IGuild guild, IRole role, SpecialRoleType type)
         {
             return new()
             {
                 GuildId = guild.Id,
-                RoleId = role.Id,
+                Id = role.Id,
                 Type = type
             };
         }

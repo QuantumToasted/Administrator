@@ -10,17 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Disqord\src\Disqord.Bot\Disqord.Bot.csproj" />
-      <ProjectReference Include="..\Disqord\src\Disqord.Core\Disqord.Core.csproj" />
-      <ProjectReference Include="..\Disqord\src\Disqord.Extensions.Interactivity\Disqord.Extensions.Interactivity.csproj" />
-      <ProjectReference Include="..\Disqord\src\Disqord.Gateway.Api\Disqord.Gateway.Api.csproj" />
-      <ProjectReference Include="..\Disqord\src\Disqord.Gateway\Disqord.Gateway.csproj" />
-      <ProjectReference Include="..\Disqord\src\Disqord.Rest.Api\Disqord.Rest.Api.csproj" />
-      <ProjectReference Include="..\Disqord\src\Disqord.Rest\Disqord.Rest.csproj" />
-      <ProjectReference Include="..\Disqord\src\Disqord\Disqord.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
+      <PackageReference Include="Disqord.Bot" Version="1.0.0-04242021-16" />
       <PackageReference Include="Humanizer.Core" Version="2.8.26" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">
@@ -30,6 +20,7 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
+      <PackageReference Include="Qmmands" Version="4.0.1-nightly-00256" />
       <PackageReference Include="Serilog" Version="2.10.0" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
       <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
@@ -37,6 +28,12 @@
       <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4-alpha.0.5" />
       <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11.4" />
       <PackageReference Include="Svg" Version="3.2.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="config.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

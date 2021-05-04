@@ -43,6 +43,10 @@ namespace Administrator.Commands
                 if (guildEmoji is not null)
                     return Success((TEmoji) guildEmoji);
             }
+            else
+            {
+                guild = null;
+            }
             
             if (_emojiService.TryParseEmoji(value, out var parsedEmoji) && parsedEmoji is TEmoji emoji)
             {
@@ -67,6 +71,15 @@ namespace Administrator.Commands
 
             if (!context.Bot.CacheProvider.TryGetGuilds(out var guilds))
                 return Failure("The guild cache is not currently available to fetch available emojis.");
+
+            if (guild is not null)
+            {
+                var dbGuild = await ctx.GetOrCreateGuildAsync(guild);
+                if (dbGuild.BlacklistedEmojiNames.Contains(value, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    return Failure("The provided emoji name has been blacklisted by this server.");
+                }
+            }
 
             var matchingEmojis = guilds.Values.SelectMany(x => x.Emojis.Values)
                 .Where(x => approvedIds.Contains(x.Id) &&

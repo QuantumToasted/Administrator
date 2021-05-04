@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,6 +24,14 @@ namespace Administrator.Database
         public DateTimeOffset? ExpiresAt { get; set; }
 
         public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAt;
+
+        public bool IsRevoked => RevokedAt.HasValue;
+
+        public abstract Task<LocalMessage> FormatRevokedMessageAsync(DiscordBotBase bot);
+
+        public abstract Task<LocalMessage> FormatRevokedDmMessageAsync(DiscordBotBase bot);
+
+        public abstract Task<LocalMessage> FormatAppealMessageAsync(DiscordBotBase bot);
 
         public void Revoke(IUser revoker, string reason)
         {

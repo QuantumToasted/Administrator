@@ -16,7 +16,7 @@ namespace Administrator.Commands
 
         public AdminPrefixProvider(IConfiguration configuration)
         {
-            _defaultPrefix = new StringPrefix(configuration["DEFAULT_PREFIX"]);
+            _defaultPrefix = new StringPrefix(configuration["DefaultPrefix"]);
         }
         
         public async ValueTask<IEnumerable<IPrefix>> GetPrefixesAsync(IGatewayUserMessage message)

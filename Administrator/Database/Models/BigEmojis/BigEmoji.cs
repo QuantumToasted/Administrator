@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database
 {
-    public abstract class BigEmoji : IEntityTypeConfiguration<BigEmoji>
+    public abstract class BigEmoji : IEntityTypeConfiguration<BigEmoji>,
+        IGuildDbEntity
     {
         public Snowflake Id { get; set; }
 

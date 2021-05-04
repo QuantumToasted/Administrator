@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Administrator.Common;
 using Disqord;
+using Disqord.Bot;
 using Qmmands;
 
 namespace Administrator.Commands
 {
-    public class AllowedExtensionsAttribute : ParameterCheckAttribute
+    public class AllowedExtensionsAttribute : DiscordParameterCheckAttribute
     {
         private readonly IReadOnlyList<string> _allowedExtensions;
         
@@ -20,7 +21,7 @@ namespace Administrator.Commands
             _allowedExtensions = allowedExtensions.ToList();
         }
         
-        public override ValueTask<CheckResult> CheckAsync(object argument, CommandContext context)
+        public override ValueTask<CheckResult> CheckAsync(object argument, DiscordCommandContext context)
         {
             var upload = (Upload) argument;
             return _allowedExtensions.Contains(upload.Extension)

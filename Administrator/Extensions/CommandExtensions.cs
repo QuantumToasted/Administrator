@@ -18,9 +18,8 @@ namespace Administrator.Extensions
         public static string FormatArguments(this Command command)
         {
             var builder = new StringBuilder();
-            for (var i = 0; i < command.Parameters.Count; i++)
+            foreach (var parameter in command.Parameters)
             {
-                var parameter = command.Parameters[i];
                 builder.Append(' ')
                     .Append(parameter.IsOptional ? '[' : '<')
                     .Append(parameter.Name)

@@ -6,6 +6,7 @@ using Administrator.Commands;
 using Administrator.Common;
 using Administrator.Database;
 using Administrator.Services;
+using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Hosting;
 using Disqord.Extensions.Interactivity;
@@ -27,6 +28,7 @@ var host = new HostBuilder()
     {
         x.AddCommandLine(args);
         x.AddEnvironmentVariables("ADMIN_");
+        x.AddJsonFile("config.json");
     })
     .ConfigureLogging(x =>
     {
@@ -73,6 +75,7 @@ var host = new HostBuilder()
         bot.Token = context.Configuration["TOKEN"];
         bot.UseMentionPrefix = true;
         bot.Intents = GatewayIntents.All;
+        bot.OwnerIds = new Snowflake[] {167452465317281793, 227578898521653249};
     })
     .Build();
 

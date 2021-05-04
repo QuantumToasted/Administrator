@@ -6,15 +6,15 @@ using Qmmands;
 
 namespace Administrator.Commands
 {
-    public sealed class SameGuildAttribute : DiscordGuildParameterCheckAttribute
+    public sealed class SameUserAttribute : DiscordGuildParameterCheckAttribute
     {
         public override ValueTask<CheckResult> CheckAsync(object argument, DiscordGuildCommandContext context)
         {
-            var entity = (IGuildDbEntity) argument;
+            var entity = (IUserDbEntity) argument;
 
-            return entity.GuildId == context.GuildId
+            return entity.UserId == context.Author.Id
                 ? Success()
-                : Failure($"This {Parameter.Name.Humanize(LetterCasing.LowerCase)} is not from this server!");
+                : Failure($"This {Parameter.Name.Humanize(LetterCasing.LowerCase)} does not belong to you!");
         }
     }
 }
