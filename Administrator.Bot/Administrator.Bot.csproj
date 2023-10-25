@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Chronic.Core" Version="0.4.0" />
+      <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.56" />
+      <PackageReference Include="Svg" Version="3.4.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Administrator.Core\Administrator.Core.csproj" />
+      <ProjectReference Include="..\Administrator.Database\Administrator.Database.csproj" />
+    </ItemGroup>
+
+</Project>
