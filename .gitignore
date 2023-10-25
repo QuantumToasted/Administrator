@@ -33,3 +33,5 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 *.DotSettings
+config.json
+*.dll
