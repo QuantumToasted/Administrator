@@ -10,7 +10,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
+public class DiscordPlaceholderFormatter : IPlaceholderFormatter
 {
     private static readonly Regex UserPlaceholderRegex =
         new(@"{user\.(?:xp|level|nextxp|tier|img)}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -19,7 +19,7 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
         new(@"{user\.(?:guildxp|guildlevel|guildnextxp|guildtier|img)}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex RandomNumberRegex =
-        new(@"{random(\d{1,})-(\d{1,})}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        new(@"{random(\d{1,10})-(\d{1,10})}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public async ValueTask<string> ReplacePlaceholdersAsync(string str, IDiscordGuildCommandContext? context)
     {
@@ -97,7 +97,7 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
         {
             try
             {
-                return context.Bot.Services.GetRequiredService<Random>()
+                return Random.Shared
                     .Next(int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value))
                     .ToString();
             }

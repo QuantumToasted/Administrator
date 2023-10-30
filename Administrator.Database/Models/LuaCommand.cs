@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -6,7 +7,7 @@ namespace Administrator.Database;
 [Table("lua_commands")]
 [PrimaryKey(nameof(GuildId), nameof(Name))]
 public sealed record LuaCommand(
-    [property: Column("guild")] ulong GuildId, 
+    [property: Column("guild")] Snowflake GuildId, 
     [property: Column("name")] string Name,
     byte[] Metadata,
     byte[] Command)

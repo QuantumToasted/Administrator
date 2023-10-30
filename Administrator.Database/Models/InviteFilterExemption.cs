@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -16,9 +17,9 @@ public enum InviteFilterExemptionType
 [PrimaryKey(nameof(Id))]
 [Index(nameof(GuildId))]
 public sealed record InviteFilterExemption(
-    [property: Column("guild")] ulong GuildId, 
+    [property: Column("guild")] Snowflake GuildId, 
     [property: Column("type")] InviteFilterExemptionType ExemptionType, 
-    [property: Column("target")] ulong? TargetId, 
+    [property: Column("target")] Snowflake? TargetId, 
     [property: Column("invite_code")] string? InviteCode)
 {
     [Column("id")] 

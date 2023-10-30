@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -15,12 +16,12 @@ public enum ReminderRepeatMode
 [Index(nameof(ExpiresAt))]
 public sealed record Reminder(
     [property: Column("text")] string Text, 
-    [property: Column("author")] ulong AuthorId, 
-    [property: Column("channel")] ulong ChannelId,
+    [property: Column("author")] Snowflake AuthorId, 
+    [property: Column("channel")] Snowflake ChannelId,
     DateTimeOffset ExpiresAt,
     //[property: Column("timezone")] TimeZoneInfo AuthorTimeZone, 
     [property: Column("mode")] ReminderRepeatMode? RepeatMode, 
-    [property: Column("interval")] double? RepeatInterval) : INumberKeyedDbEntity<int>
+    [property: Column("interval")] double? RepeatInterval) : INumberKeyedDbEntity<int>, IExpiringDbEntity
 {
     [Column("id")] 
     public int Id { get; init; }
@@ -33,4 +34,6 @@ public sealed record Reminder(
     
     [ForeignKey(nameof(AuthorId))]
     public GlobalUser? Author { get; init; }
+
+    DateTimeOffset? IExpiringDbEntity.ExpiresAt => ExpiresAt;
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -6,7 +7,7 @@ namespace Administrator.Database;
 [Table("warning_punishments")]
 [PrimaryKey(nameof(GuildId), nameof(WarningCount))]
 public sealed record WarningPunishment(
-    [property: Column("guild")] ulong GuildId, 
+    [property: Column("guild")] Snowflake GuildId, 
     [property: Column("warnings")] int WarningCount,
     PunishmentType PunishmentType,
     TimeSpan? PunishmentDuration)
@@ -14,7 +15,7 @@ public sealed record WarningPunishment(
     [Column("type")] 
     public PunishmentType PunishmentType { get; set; } = PunishmentType;
 
-    [Column("duration")] 
+    [Column("duration")]
     public TimeSpan? PunishmentDuration { get; set; } = PunishmentDuration;
     
     [ForeignKey(nameof(GuildId))]

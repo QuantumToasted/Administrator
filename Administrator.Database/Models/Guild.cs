@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Administrator.Core;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -48,7 +47,7 @@ public enum GuildSettingFlags
 [Table("guilds")]
 [PrimaryKey(nameof(Id))]
 public sealed record Guild(
-    [property: Column("id")] ulong Id)
+    [property: Column("id")] Snowflake Id)
 {
     public const string DEFAULT_LEVEL_UP_EMOJI = "🎉";
     
@@ -89,26 +88,31 @@ public sealed record Guild(
     public byte[]? ApiKeyHash { get; set; }
     
     [Column("xp_exempt_channels")]
-    public HashSet<ulong> XpExemptChannelIds { get; set; } = new();
+    public HashSet<Snowflake> XpExemptChannelIds { get; set; } = new();
 
     [Column("auto_quote_exempt_channels")]
-    public HashSet<ulong> AutoQuoteExemptChannelIds { get; set; } = new();
+    public HashSet<Snowflake> AutoQuoteExemptChannelIds { get; set; } = new();
+
+    [Column("ban_prune_days")] 
+    public int DefaultBanPruneDays { get; set; } = 1;
     
-    public List<LoggingChannel> LoggingChannels { get; init; }
+    public List<LoggingChannel>? LoggingChannels { get; init; }
     
-    public List<ButtonRole> ButtonRoles { get; init; }
+    public List<ButtonRole>? ButtonRoles { get; init; }
     
-    public List<EmojiStats> EmojiStats { get; init; }
+    public List<EmojiStats>? EmojiStats { get; init; }
     
-    public List<ForumAutoTag> ForumAutoTags { get; init; }
+    public List<ForumAutoTag>? ForumAutoTags { get; init; }
     
-    public List<InviteFilterExemption> InviteFilterExemptions { get; init; }
+    public List<InviteFilterExemption>? InviteFilterExemptions { get; init; }
     
-    public List<LuaCommand> LuaCommands { get; init; }
+    public List<LuaCommand>? LuaCommands { get; init; }
     
-    public List<RoleLevelReward> LevelRewards { get; init; }
+    public List<RoleLevelReward>? LevelRewards { get; init; }
     
-    public List<Tag> Tags { get; init; }
+    public List<Tag>? Tags { get; init; }
     
-    public List<WarningPunishment> WarningPunishments { get; init; }
+    public List<WarningPunishment>? WarningPunishments { get; init; }
+    
+    public List<Punishment>? Punishments { get; init; }
 }

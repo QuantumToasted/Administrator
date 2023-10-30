@@ -1,9 +1,8 @@
-﻿using Disqord;
-using Disqord.Extensions.Interactivity.Menus;
+﻿using Disqord.Extensions.Interactivity.Menus;
 
 namespace Administrator.Bot;
 
-public class AdminTextMenu(ViewBase view, Snowflake messageId) : DefaultTextMenu(view, messageId)
+public class AdminTextMenu(ViewBase view) : DefaultTextMenu(view)
 {
     public override ValueTask DisposeAsync()
     {

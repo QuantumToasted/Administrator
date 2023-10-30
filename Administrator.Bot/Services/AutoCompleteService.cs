@@ -1,29 +1,14 @@
 ﻿using Administrator.Core;
 using Disqord;
 using Disqord.Bot.Commands.Application;
-using Disqord.Bot.Hosting;
-using Microsoft.Extensions.Logging;
 using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class AutoCompleteService : DiscordBotService
+[ScopedService]
+public sealed class AutoCompleteService(IClient client)
 {
-    private readonly Dictionary<Type, IAutoCompleteFormatter> _formatters = new();
-
-    public override Task StartAsync(CancellationToken cancellationToken)
-    {
-        foreach (var type in GetType().Assembly.GetTypes().Where(x => typeof(IAutoCompleteFormatter).IsAssignableFrom(x) && !x.IsInterface))
-        {
-            var interfaceType = type.GetInterfaces().Single(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IAutoCompleteFormatter<,>));
-            
-            _formatters[interfaceType.GenericTypeArguments[0]] = (IAutoCompleteFormatter) Activator.CreateInstance(type)!;
-        }
-        
-        Logger.LogInformation("Registered {Count} auto-complete formatters.", _formatters.Count);
-        
-        return base.StartAsync(cancellationToken);
-    }
+    private static readonly Dictionary<Type, IAutoCompleteFormatter> Formatters = new();
 
     public void AutoComplete<TModel, TAutoCompleteValue>(AutoComplete<TAutoCompleteValue> autoComplete, ICollection<TModel> collection)
         where TModel : notnull
@@ -31,7 +16,7 @@ public sealed class AutoCompleteService : DiscordBotService
     {
         Guard.IsTrue(autoComplete.IsFocused); // Enforce checking in the autocomplete method to reduce db/cache stress
         
-        if (!_formatters.TryGetValue(typeof(TModel), out var formatter))
+        if (!Formatters.TryGetValue(typeof(TModel), out var formatter))
             throw new Exception($"Auto-complete formatter not registered for type {typeof(TModel)}!");
 
         if (collection.Count == 0)
@@ -40,7 +25,7 @@ public sealed class AutoCompleteService : DiscordBotService
         if (string.IsNullOrWhiteSpace(autoComplete.RawArgument))
         {
             autoComplete.Choices.AddRange(collection.Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
-                .ToDictionary(x => formatter.FormatAutoCompleteName(Bot, x), x => (TAutoCompleteValue) formatter.FormatAutoCompleteValue(Bot, x)));
+                .ToDictionary(x => formatter.FormatAutoCompleteName(client, x), x => (TAutoCompleteValue) formatter.FormatAutoCompleteValue(client, x)));
             
             return;
         }
@@ -48,7 +33,7 @@ public sealed class AutoCompleteService : DiscordBotService
         var comparisonDict = collection.ToDictionary(x => formatter.ComparisonSelector.Invoke(x));
         if (comparisonDict.FirstOrDefault(x => x.Key.Equals(autoComplete.RawArgument, StringComparison.InvariantCultureIgnoreCase)) is TModel exactMatch)
         {
-            autoComplete.Choices.Add(formatter.FormatAutoCompleteName(Bot, exactMatch), (TAutoCompleteValue) formatter.FormatAutoCompleteValue(Bot, exactMatch));
+            autoComplete.Choices.Add(formatter.FormatAutoCompleteName(client, exactMatch), (TAutoCompleteValue) formatter.FormatAutoCompleteValue(client, exactMatch));
             return;
         }
 
@@ -57,7 +42,17 @@ public sealed class AutoCompleteService : DiscordBotService
         if (closeMatches.Count > 0)
         {
             autoComplete.Choices.AddRange(closeMatches.Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
-                .ToDictionary(x => formatter.FormatAutoCompleteName(Bot, x), x => (TAutoCompleteValue) formatter.FormatAutoCompleteValue(Bot, x)));
+                .ToDictionary(x => formatter.FormatAutoCompleteName(client, x), x => (TAutoCompleteValue) formatter.FormatAutoCompleteValue(client, x)));
+        }
+    }
+
+    static AutoCompleteService()
+    {
+        foreach (var type in typeof(AutoCompleteService).Assembly.GetTypes().Where(x => typeof(IAutoCompleteFormatter).IsAssignableFrom(x) && !x.IsInterface))
+        {
+            var interfaceType = type.GetInterfaces().Single(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IAutoCompleteFormatter<,>));
+            
+            Formatters[interfaceType.GenericTypeArguments[0]] = (IAutoCompleteFormatter) Activator.CreateInstance(type)!;
         }
     }
 }

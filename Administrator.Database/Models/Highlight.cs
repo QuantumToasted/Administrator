@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -7,9 +8,9 @@ namespace Administrator.Database;
 [PrimaryKey(nameof(Id))]
 [Index(nameof(Text))]
 public sealed record Highlight(
-    [property: Column("author")] ulong AuthorId, 
-    [property: Column("guild")] ulong? GuildId, 
-    [property: Column("text")] string Text)
+    [property: Column("author")] Snowflake AuthorId, 
+    [property: Column("guild")] Snowflake? GuildId, 
+    [property: Column("text")] string Text) : INumberKeyedDbEntity<int>
 {
     [Column("id")]
     public int Id { get; init; }

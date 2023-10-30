@@ -6,14 +6,13 @@ using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Svg;
 
 namespace Administrator.Bot;
 
-public sealed class EmojiService(HttpClient http, IMemoryCache cache, IHost host) : DiscordBotService
+public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordBotService
 {
     private const int MAPPED_EMOJI_SIZE = 1000;
     private const string REMOTE_DATA_LOCATION = "https://static.emzi0767.com/misc/discordEmojiMap.json";

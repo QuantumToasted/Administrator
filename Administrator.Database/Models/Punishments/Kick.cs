@@ -1,10 +1,12 @@
-﻿namespace Administrator.Database;
+﻿using Disqord;
+
+namespace Administrator.Database;
 
 public sealed record Kick(
-        ulong GuildId,
-        ulong TargetId,
+        Snowflake GuildId,
+        Snowflake TargetId,
         string TargetName,
-        ulong ModeratorId,
+        Snowflake ModeratorId,
         string ModeratorName,
         string? Reason)
     : Punishment(GuildId, TargetId, TargetName, ModeratorId, ModeratorName, Reason)

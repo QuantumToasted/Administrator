@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 
 namespace Administrator.Database;
 
 public sealed record Warning(
-        ulong GuildId, 
-        ulong TargetId, 
+        Snowflake GuildId, 
+        Snowflake TargetId, 
         string TargetName, 
-        ulong ModeratorId, 
+        Snowflake ModeratorId, 
         string ModeratorName, 
         string? Reason)
     : RevocablePunishment(GuildId, TargetId, TargetName, ModeratorId, ModeratorName, Reason)

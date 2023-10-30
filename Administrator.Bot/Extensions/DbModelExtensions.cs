@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Numerics;
+using System.Security.Cryptography;
 using System.Text;
 using Administrator.Database;
 using Disqord;
@@ -11,8 +12,17 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public static class DbModelExtensions
+public static partial class DbModelExtensions
 {
+    public static string FormatKey<T>(this INumberKeyedDbEntity<T> entity)
+        where T : INumber<T>
+    {
+        return $"`[#{entity.Id}]`";
+    }
+
+    public static bool IsImageAttachment(this Attachment attachment)
+        => Path.GetExtension(attachment.FileName) is { } extension && new[] { "png", "jpeg", "jpg", "webp" }.Contains(extension[1..], StringComparer.InvariantCultureIgnoreCase); 
+    
     public static TUser IncrementXp<TUser>(this TUser user, int xp, TimeSpan xpGainInterval, out bool leveledUp)
         where TUser : User
     {
@@ -33,8 +43,8 @@ public static class DbModelExtensions
         return user;
     }
 
-    public static bool HasSetting(this Guild configuration, GuildSettings setting)
-        => configuration.Settings.HasFlag(setting);
+    public static bool HasSetting(this Guild guild, GuildSettings setting)
+        => guild.Settings.HasFlag(setting);
 
     public static Task ApplyAsync(this RoleLevelReward reward, IMember member)
         => member.ModifyAsync(x => x.RoleIds = Optional.Create(member.RoleIds.Except(reward.RevokedRoleIds.Select(static y => new Snowflake(y)))
@@ -89,9 +99,9 @@ public static class DbModelExtensions
         return embed;
     }
     
-    public static string RegenerateApiKey(this Guild configuration)
+    public static string RegenerateApiKey(this Guild guild)
     {
-        var idBytes = Encoding.Unicode.GetBytes(configuration.Id.ToString());
+        var idBytes = Encoding.Unicode.GetBytes(guild.Id.ToString());
         var cryptoBytes = new byte[32];
         var saltBytes = new byte[16];
         
@@ -109,8 +119,8 @@ public static class DbModelExtensions
         Array.Copy(saltBytes, 0, hashBytes, 0, 16);
         Array.Copy(hash, 0, hashBytes, 16, 32);
 
-        configuration.ApiKeySalt = saltBytes;
-        configuration.ApiKeyHash = hashBytes;
+        guild.ApiKeySalt = saltBytes;
+        guild.ApiKeyHash = hashBytes;
 
         return new StringBuilder()
             .Append(Convert.ToBase64String(idBytes))

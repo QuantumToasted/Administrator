@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -18,10 +19,10 @@ public enum PunishmentType
 [Index(nameof(GuildId))]
 [Index(nameof(TargetId))]
 public abstract record Punishment(
-    [property: Column("guild")] ulong GuildId, 
-    [property: Column("target")] ulong TargetId, 
+    [property: Column("guild")] Snowflake GuildId, 
+    [property: Column("target")] Snowflake TargetId, 
     [property: Column("target_name")] string TargetName, 
-    [property: Column("moderator")] ulong ModeratorId, 
+    [property: Column("moderator")] Snowflake ModeratorId, 
     [property: Column("moderator_name")] string ModeratorName,
     string? Reason) : INumberKeyedDbEntity<int>
 {
@@ -38,22 +39,25 @@ public abstract record Punishment(
     public string? Reason { get; set; } = Reason;
     
     [Column("log_channel")]
-    public ulong? LogChannelId { get; set; }
+    public Snowflake? LogChannelId { get; set; }
     
     [Column("log_message")]
-    public ulong? LogMessageId { get; set; }
+    public Snowflake? LogMessageId { get; set; }
     
     [Column("dm_channel")]
-    public ulong? DmChannelId { get; set; }
+    public Snowflake? DmChannelId { get; set; }
     
     [Column("dm_message")]
-    public ulong? DmMessageId { get; set; }
+    public Snowflake? DmMessageId { get; set; }
     
     [Column("attachment")]
     public Guid? AttachmentId { get; set; }
     
     [ForeignKey(nameof(AttachmentId))]
     public Attachment? Attachment { get; set; }
+    
+    [ForeignKey(nameof(GuildId))]
+    public Guild? Guild { get; init; }
     
     /*
     void IEntityTypeConfiguration<Punishment>.Configure(EntityTypeBuilder<Punishment> punishment)

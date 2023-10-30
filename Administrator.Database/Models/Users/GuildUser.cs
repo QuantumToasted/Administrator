@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -6,8 +7,8 @@ namespace Administrator.Database;
 [Table("guild_users")]
 [PrimaryKey(nameof(GuildId), nameof(UserId))]
 public sealed record GuildUser(
-    [property: Column("guild")] ulong GuildId,
-    ulong UserId) : User(UserId)
+    [property: Column("guild")] Snowflake GuildId,
+    Snowflake UserId) : User(UserId)
 {
     private static readonly string[] InitialBlurbChoices =
     {
@@ -25,7 +26,7 @@ public sealed record GuildUser(
     [Column("blurb")] 
     public string Blurb { get; set; } = CreateInitialBlurb();
     
-    public List<Tag> Tags { get; init; }
+    public List<Tag>? Tags { get; init; }
 
     private static string CreateInitialBlurb()
         => Random.Shared.GetItems(InitialBlurbChoices, 1)[0];

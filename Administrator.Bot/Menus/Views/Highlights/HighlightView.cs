@@ -58,8 +58,7 @@ public sealed class HighlightView : ViewBase
  
     public async ValueTask BlacklistAuthorAsync(ButtonEventArgs e)
     {
-        using var scope = Bot.Services.CreateScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
         var globalUser = await db.GetOrCreateGlobalUserAsync(e.AuthorId);
         globalUser.BlacklistedHighlightUserIds.Add(_message.Author.Id);
@@ -71,8 +70,7 @@ public sealed class HighlightView : ViewBase
 
     public async ValueTask BlacklistChannelAsync(ButtonEventArgs e)
     {
-        using var scope = Bot.Services.CreateScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
         var globalUser = await db.GetOrCreateGlobalUserAsync(e.AuthorId);
         globalUser.BlacklistedHighlightChannelIds.Add(_message.ChannelId);

@@ -12,7 +12,7 @@ public static class UriExtensions
     }
 
     public static bool HasImageExtension(this Uri uri)
-        => uri.HasAnyExtension("png", "jpeg", "jpg", "bmp", "webp", "gif");
+        => uri.HasAnyExtension("png", "jpeg", "jpg", "webp", "gif");
 
     public static bool HasAnyExtension(this Uri uri, params string[] extensions)
     {

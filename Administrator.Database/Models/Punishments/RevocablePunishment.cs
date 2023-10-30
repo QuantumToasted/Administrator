@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Disqord;
 
 namespace Administrator.Database;
 
@@ -14,10 +13,10 @@ public enum AppealStatus
 }
 
 public abstract record RevocablePunishment(
-        ulong GuildId, 
-        ulong TargetId, 
+        Snowflake GuildId, 
+        Snowflake TargetId, 
         string TargetName, 
-        ulong ModeratorId, 
+        Snowflake ModeratorId, 
         string ModeratorName, 
         string? Reason)
     : Punishment(GuildId, TargetId, TargetName, ModeratorId, ModeratorName, Reason)
@@ -26,7 +25,7 @@ public abstract record RevocablePunishment(
     public DateTimeOffset? RevokedAt { get; set; }
     
     [Column("revoker")]
-    public ulong? RevokerId { get; set; }
+    public Snowflake? RevokerId { get; set; }
     
     [Column("revoker_name")]
     public string? RevokerName { get; set; }
@@ -44,8 +43,8 @@ public abstract record RevocablePunishment(
     public AppealStatus? AppealStatus { get; set; }
     
     [Column("appeal_channel")]
-    public ulong? AppealChannelId { get; set; }
+    public Snowflake? AppealChannelId { get; set; }
     
     [Column("appeal_message")]
-    public ulong? AppealMessageId { get; set; }
+    public Snowflake? AppealMessageId { get; set; }
 }

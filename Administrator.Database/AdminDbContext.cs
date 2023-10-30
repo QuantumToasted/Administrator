@@ -1,8 +1,5 @@
-﻿using Administrator.Core;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.ValueConversion;
 
 namespace Administrator.Database;
 
@@ -57,8 +54,14 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options) : D
         configurationBuilder.Properties<TimeZoneInfo?>()
             .HaveConversion(typeof(TimeZoneInfoConverter));
 
-        configurationBuilder.Properties<HashSet<ulong>>()
-            .HaveConversion(typeof(HashSetArrayConverter<ulong>), typeof(HashSetValueComparer<ulong>));
+        configurationBuilder.Properties<HashSet<Snowflake>>()
+            .HaveConversion(typeof(SnowflakeHashSetConverter), typeof(HashSetValueComparer<Snowflake>));
+
+        configurationBuilder.Properties<Snowflake>()
+            .HaveConversion(typeof(SnowflakeConverter));
+
+        configurationBuilder.Properties<Snowflake?>()
+            .HaveConversion(typeof(NullableSnowflakeConverter));
     }
 }
 #pragma warning restore CS8618

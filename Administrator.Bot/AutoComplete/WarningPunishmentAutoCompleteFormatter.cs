@@ -2,7 +2,6 @@
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;
-using Disqord.Bot;
 using Humanizer;
 using Humanizer.Localisation;
 
@@ -34,5 +33,5 @@ public sealed class WarningPunishmentAutoCompleteFormatter : IAutoCompleteFormat
     public int FormatAutoCompleteValue(IClient client, WarningPunishment model)
         => model.WarningCount;
 
-    public Func<WarningPunishment, string> ComparisonSelector => warningPunishment => warningPunishment.WarningCount.ToString();
+    public Func<WarningPunishment, string> ComparisonSelector => static warningPunishment => warningPunishment.WarningCount.ToString();
 }

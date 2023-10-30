@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -7,7 +7,7 @@ namespace Administrator.Database;
 [Table("global_users")]
 [PrimaryKey(nameof(UserId))]
 public sealed record GlobalUser(
-    ulong UserId) 
+    Snowflake UserId) 
     : User(UserId)
 {
     [Column("sent_initial_join_message")]
@@ -20,12 +20,18 @@ public sealed record GlobalUser(
     public DateTimeOffset? HighlightsSnoozedUntil { get; set; }
     
     [Column("blacklisted_highlight_users")]
-    public HashSet<ulong> BlacklistedHighlightUserIds { get; init; } = new();
+    public HashSet<Snowflake> BlacklistedHighlightUserIds { get; init; } = new();
 
     [Column("blacklisted_highlight_channels")]
-    public HashSet<ulong> BlacklistedHighlightChannelIds { get; init; } = new();
+    public HashSet<Snowflake> BlacklistedHighlightChannelIds { get; init; } = new();
+
+    [Column("resume_highlights_count")]
+    public int ResumeHighlightsAfterMessageCount { get; set; } = 25;
     
-    public List<Highlight> Highlights { get; init; }
+    [Column("resume_highlights_interval")]
+    public TimeSpan ResumeHighlightsAfterInterval { get; set; } = TimeSpan.FromMinutes(10);
     
-    public List<Reminder> Reminders { get; init; }
+    public List<Highlight>? Highlights { get; init; }
+    
+    public List<Reminder>? Reminders { get; init; }
 }

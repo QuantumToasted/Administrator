@@ -6,6 +6,4 @@ public interface INumberKeyedDbEntity<T>
     where T : INumber<T>
 {
     T Id { get; }
-
-    string FormatKey() => $"`[#{Id}]`";
 }

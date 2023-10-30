@@ -1,19 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 
 namespace Administrator.Database;
 
 public sealed record Block(
-        ulong GuildId,
-        ulong TargetId,
+        Snowflake GuildId,
+        Snowflake TargetId,
         string TargetName,
-        ulong ModeratorId,
+        Snowflake ModeratorId,
         string ModeratorName,
         string? Reason,
-        [property: Column("channel")] ulong ChannelId,
+        [property: Column("channel")] Snowflake ChannelId,
         [property: Column("expires")] DateTimeOffset? ExpiresAt,
-        [property: Column("previous_allow_permissions")] ulong? PreviousChannelAllowPermissions,
-        [property: Column("previous_deny_permissions")] ulong? PreviousChannelDenyPermissions)
-    : RevocablePunishment(GuildId, TargetId, TargetName, ModeratorId, ModeratorName, Reason)
+        [property: Column("previous_allow_permissions")] Permissions? PreviousChannelAllowPermissions,
+        [property: Column("previous_deny_permissions")] Permissions? PreviousChannelDenyPermissions)
+    : RevocablePunishment(GuildId, TargetId, TargetName, ModeratorId, ModeratorName, Reason), IExpiringDbEntity
 {
     public override PunishmentType Type { get; init; } = PunishmentType.Block;
 }

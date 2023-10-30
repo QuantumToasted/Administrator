@@ -1,8 +1,6 @@
 ﻿using Disqord;
-using Disqord.Bot;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Rest;
-using Microsoft.Extensions.DependencyInjection;
 using Qommon;
 
 namespace Administrator.Bot;

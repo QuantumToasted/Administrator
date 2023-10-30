@@ -53,6 +53,7 @@ var host = new HostBuilder()
     {
         services.AddSingleton<HttpClient>();
         services.AddScopedServices();
+        services.AddScoped<IPlaceholderFormatter>(x => x.GetRequiredService<DiscordPlaceholderFormatter>());
         
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(context.Configuration["DB_CONNECTION_STRING"]);
         dataSourceBuilder.AddTypeResolverFactory(new CustomJsonSerializerTypeHandlerResolverFactory(

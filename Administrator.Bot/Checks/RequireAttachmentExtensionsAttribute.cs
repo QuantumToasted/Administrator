@@ -1,7 +1,6 @@
 ﻿using Disqord;
 using Disqord.Bot.Commands;
 using Qmmands;
-using Qommon;
 
 namespace Administrator.Bot;
 

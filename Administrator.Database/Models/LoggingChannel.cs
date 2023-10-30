@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -49,12 +49,12 @@ public enum LogEventType
 [Table("logging_channels")]
 [PrimaryKey(nameof(GuildId), nameof(EventType))]
 public sealed record LoggingChannel(
-    [property: Column("guild")] ulong GuildId, 
+    [property: Column("guild")] Snowflake GuildId, 
     [property: Column("type")] LogEventType EventType,
-    ulong ChannelId)
+    Snowflake ChannelId)
 {
     [Column("channel")] 
-    public ulong ChannelId { get; set; } = ChannelId;
+    public Snowflake ChannelId { get; set; } = ChannelId;
     
     [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }

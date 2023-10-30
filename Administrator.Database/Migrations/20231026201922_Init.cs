@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Administrator.Core;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -30,12 +31,12 @@ namespace Administrator.Database.Migrations
                 name: "global_users",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false),
                     sent_initial_join_message = table.Column<bool>(type: "boolean", nullable: false),
                     timezone = table.Column<string>(type: "text", nullable: true),
                     highlights_snoozed_until = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    blacklisted_highlight_users = table.Column<decimal[]>(type: "numeric(20,0)[]", nullable: false),
-                    blacklisted_highlight_channels = table.Column<decimal[]>(type: "numeric(20,0)[]", nullable: false),
+                    blacklisted_highlight_users = table.Column<List<long>>(type: "bigint[]", nullable: false),
+                    blacklisted_highlight_channels = table.Column<List<long>>(type: "bigint[]", nullable: false),
                     xp = table.Column<int>(type: "integer", nullable: false),
                     last_xp_gain = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     last_level_up = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
@@ -49,8 +50,8 @@ namespace Administrator.Database.Migrations
                 name: "guild_users",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     blurb = table.Column<string>(type: "text", nullable: false),
                     xp = table.Column<int>(type: "integer", nullable: false),
                     last_xp_gain = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -65,7 +66,7 @@ namespace Administrator.Database.Migrations
                 name: "guilds",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false),
                     settings = table.Column<int>(type: "integer", nullable: false),
                     max_tags = table.Column<int>(type: "integer", nullable: true),
                     level_up_emoji = table.Column<string>(type: "text", nullable: false),
@@ -78,65 +79,12 @@ namespace Administrator.Database.Migrations
                     xp_interval = table.Column<TimeSpan>(type: "interval", nullable: true),
                     api_salt = table.Column<byte[]>(type: "bytea", nullable: true),
                     api_hash = table.Column<byte[]>(type: "bytea", nullable: true),
-                    xp_exempt_channels = table.Column<decimal[]>(type: "numeric(20,0)[]", nullable: false),
-                    auto_quote_exempt_channels = table.Column<decimal[]>(type: "numeric(20,0)[]", nullable: false)
+                    xp_exempt_channels = table.Column<List<long>>(type: "bigint[]", nullable: false),
+                    auto_quote_exempt_channels = table.Column<List<long>>(type: "bigint[]", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_guilds", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "punishments",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    target = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    target_name = table.Column<string>(type: "text", nullable: false),
-                    moderator = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    moderator_name = table.Column<string>(type: "text", nullable: false),
-                    type = table.Column<int>(type: "integer", nullable: false),
-                    created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    reason = table.Column<string>(type: "text", nullable: true),
-                    log_channel = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    log_message = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    dm_channel = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    dm_message = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    attachment = table.Column<Guid>(type: "uuid", nullable: true),
-                    message_prune_days = table.Column<int>(type: "integer", nullable: true),
-                    expires = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    revoked = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    revoker = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    revoker_name = table.Column<string>(type: "text", nullable: true),
-                    revocation_reason = table.Column<string>(type: "text", nullable: true),
-                    appealed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    appeal = table.Column<string>(type: "text", nullable: true),
-                    appeal_status = table.Column<int>(type: "integer", nullable: true),
-                    appeal_channel = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    appeal_message = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    channel = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    previous_allow_permissions = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    previous_deny_permissions = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    role = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    mode = table.Column<int>(type: "integer", nullable: true),
-                    manually_revoked = table.Column<bool>(type: "boolean", nullable: true),
-                    additional_punishment = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_punishments", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_punishments_attachments_attachment",
-                        column: x => x.attachment,
-                        principalTable: "attachments",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_punishments_punishments_additional_punishment",
-                        column: x => x.additional_punishment,
-                        principalTable: "punishments",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -145,7 +93,7 @@ namespace Administrator.Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    author = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    author = table.Column<long>(type: "bigint", nullable: false),
                     guild = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
                     text = table.Column<string>(type: "text", nullable: false)
                 },
@@ -167,8 +115,8 @@ namespace Administrator.Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     text = table.Column<string>(type: "text", nullable: false),
-                    author = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    channel = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    author = table.Column<long>(type: "bigint", nullable: false),
+                    channel = table.Column<long>(type: "bigint", nullable: false),
                     mode = table.Column<int>(type: "integer", nullable: true),
                     interval = table.Column<double>(type: "double precision", nullable: true),
                     created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -191,14 +139,14 @@ namespace Administrator.Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    channel = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    message = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
+                    channel = table.Column<long>(type: "bigint", nullable: false),
+                    message = table.Column<long>(type: "bigint", nullable: false),
                     row = table.Column<int>(type: "integer", nullable: false),
                     position = table.Column<int>(type: "integer", nullable: false),
                     emoji = table.Column<string>(type: "text", nullable: true),
                     text = table.Column<string>(type: "text", nullable: true),
-                    role = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    role = table.Column<long>(type: "bigint", nullable: false),
                     exclusive_group = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -216,8 +164,8 @@ namespace Administrator.Database.Migrations
                 name: "emoji_stats",
                 columns: table => new
                 {
-                    emoji = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    emoji = table.Column<long>(type: "bigint", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     uses = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -237,11 +185,11 @@ namespace Administrator.Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    channel = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    channel = table.Column<long>(type: "bigint", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     text = table.Column<string>(type: "text", nullable: false),
                     regex = table.Column<bool>(type: "boolean", nullable: false),
-                    tag = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    tag = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -260,7 +208,7 @@ namespace Administrator.Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     type = table.Column<int>(type: "integer", nullable: false),
                     target = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
                     invite_code = table.Column<string>(type: "text", nullable: true)
@@ -280,11 +228,11 @@ namespace Administrator.Database.Migrations
                 name: "level_rewards",
                 columns: table => new
                 {
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     tier = table.Column<int>(type: "integer", nullable: false),
                     level = table.Column<int>(type: "integer", nullable: false),
-                    granted_roles = table.Column<decimal[]>(type: "numeric(20,0)[]", nullable: false),
-                    revoked_roles = table.Column<decimal[]>(type: "numeric(20,0)[]", nullable: false)
+                    granted_roles = table.Column<List<long>>(type: "bigint[]", nullable: false),
+                    revoked_roles = table.Column<List<long>>(type: "bigint[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -301,9 +249,9 @@ namespace Administrator.Database.Migrations
                 name: "logging_channels",
                 columns: table => new
                 {
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     type = table.Column<int>(type: "integer", nullable: false),
-                    channel = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    channel = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -320,7 +268,7 @@ namespace Administrator.Database.Migrations
                 name: "lua_commands",
                 columns: table => new
                 {
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     metadata = table.Column<byte[]>(type: "bytea", nullable: false),
                     command = table.Column<byte[]>(type: "bytea", nullable: false)
@@ -337,12 +285,71 @@ namespace Administrator.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "punishments",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
+                    target = table.Column<long>(type: "bigint", nullable: false),
+                    target_name = table.Column<string>(type: "text", nullable: false),
+                    moderator = table.Column<long>(type: "bigint", nullable: false),
+                    moderator_name = table.Column<string>(type: "text", nullable: false),
+                    type = table.Column<int>(type: "integer", nullable: false),
+                    created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    reason = table.Column<string>(type: "text", nullable: true),
+                    log_channel = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    log_message = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    dm_channel = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    dm_message = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    attachment = table.Column<Guid>(type: "uuid", nullable: true),
+                    message_prune_days = table.Column<int>(type: "integer", nullable: true),
+                    expires = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    revoked = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    revoker = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    revoker_name = table.Column<string>(type: "text", nullable: true),
+                    revocation_reason = table.Column<string>(type: "text", nullable: true),
+                    appealed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    appeal = table.Column<string>(type: "text", nullable: true),
+                    appeal_status = table.Column<int>(type: "integer", nullable: true),
+                    appeal_channel = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    appeal_message = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    channel = table.Column<long>(type: "bigint", nullable: true),
+                    previous_allow_permissions = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    previous_deny_permissions = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    role = table.Column<long>(type: "bigint", nullable: true),
+                    mode = table.Column<int>(type: "integer", nullable: true),
+                    manually_revoked = table.Column<bool>(type: "boolean", nullable: true),
+                    additional_punishment = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_punishments", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_punishments_attachments_attachment",
+                        column: x => x.attachment,
+                        principalTable: "attachments",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_punishments_guilds_guild",
+                        column: x => x.guild,
+                        principalTable: "guilds",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_punishments_punishments_additional_punishment",
+                        column: x => x.additional_punishment,
+                        principalTable: "punishments",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tags",
                 columns: table => new
                 {
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    owner = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    owner = table.Column<long>(type: "bigint", nullable: false),
                     created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     message = table.Column<JsonMessage>(type: "jsonb", nullable: true),
                     uses = table.Column<int>(type: "integer", nullable: false),
@@ -375,7 +382,7 @@ namespace Administrator.Database.Migrations
                 name: "warning_punishments",
                 columns: table => new
                 {
-                    guild = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    guild = table.Column<long>(type: "bigint", nullable: false),
                     warnings = table.Column<int>(type: "integer", nullable: false),
                     type = table.Column<int>(type: "integer", nullable: false),
                     duration = table.Column<TimeSpan>(type: "interval", nullable: true)

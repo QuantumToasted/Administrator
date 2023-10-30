@@ -10,6 +10,7 @@
     <ItemGroup>
       <PackageReference Include="Chronic.Core" Version="0.4.0" />
       <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.56" />
+      <PackageReference Include="Laylua" Version="0.0.1-11" />
       <PackageReference Include="Svg" Version="3.4.4" />
     </ItemGroup>
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 
 namespace Administrator.Database;
 
@@ -13,7 +14,7 @@ public enum Grade
 }
 
 public abstract record User(
-    [property: Column("id")] ulong UserId)
+    [property: Column("user")] Snowflake UserId)
 {
     public const int XP_INCREMENT_RATE = 50;
 

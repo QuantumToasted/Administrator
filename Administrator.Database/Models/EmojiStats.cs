@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;
@@ -6,8 +7,8 @@ namespace Administrator.Database;
 [Table("emoji_stats")]
 [PrimaryKey(nameof(EmojiId))]
 public sealed record EmojiStats(
-    [property: Column("emoji")] ulong EmojiId,
-    [property: Column("guild")] ulong GuildId)
+    [property: Column("emoji")] Snowflake EmojiId,
+    [property: Column("guild")] Snowflake GuildId)
 {
     [Column("uses")]
     public int Uses { get; set; }

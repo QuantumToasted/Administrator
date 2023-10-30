@@ -9,22 +9,20 @@ using Disqord.Rest;
 namespace Administrator.Bot;
 
 public sealed class XpExemptChannelsConfigurationView(IDiscordApplicationGuildCommandContext context,
-        ICollection<ulong> exemptChannelIds)
+        HashSet<Snowflake> exemptChannelIds)
     : GuildConfigurationViewBase(context)
 {
     public const string SELECTION_TEXT = "XP Exempt Channels";
 
-    private readonly HashSet<ulong> _exemptChannelIds = exemptChannelIds.ToHashSet();
-
     protected override string FormatContent()
     {
         var builder = new StringBuilder(SELECTION_TEXT);
-        if (_exemptChannelIds.Count > 0)
+        if (exemptChannelIds.Count > 0)
         {
             builder.AppendNewline()
                 .AppendNewline(Markdown.Bold("Currently exempt channels:"))
                 .AppendJoin('\n',
-                    _exemptChannelIds.Select(x =>
+                    exemptChannelIds.Select(x =>
                         _context.Bot.GetChannel(_context.GuildId, x)?.Mention ?? x.ToString()));
         }
         else
@@ -45,14 +43,14 @@ public sealed class XpExemptChannelsConfigurationView(IDiscordApplicationGuildCo
         const int maximumChannels = 50;
         foreach (var entity in e.SelectedEntities)
         {
-            if (_exemptChannelIds.Count >= maximumChannels)
+            if (exemptChannelIds.Count >= maximumChannels)
             {
                 await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
                     .WithContent($"You cannot add more than {Markdown.Bold(maximumChannels.ToString())} exempt channels!")
                     .WithIsEphemeral());
             }
 
-            _exemptChannelIds.Add(entity.Id);
+            exemptChannelIds.Add(entity.Id);
         }
         
         await UpdateExemptChannelsAsync();
@@ -64,7 +62,7 @@ public sealed class XpExemptChannelsConfigurationView(IDiscordApplicationGuildCo
         MinimumSelectedOptions = 1)]
     public async ValueTask RemoveChannelsAsync(SelectionEventArgs e)
     {
-        _exemptChannelIds.Remove(e.SelectedEntities[0].Id);
+        exemptChannelIds.Remove(e.SelectedEntities[0].Id);
         await UpdateExemptChannelsAsync();
     }
 
@@ -72,7 +70,7 @@ public sealed class XpExemptChannelsConfigurationView(IDiscordApplicationGuildCo
     {
         await using var scope = _context.Bot.Services.CreateAsyncScopeWithDatabase(out var db);
         var guildConfig = await db.GetOrCreateGuildConfigAsync(_context.GuildId);
-        guildConfig.XpExemptChannelIds = _exemptChannelIds;
+        guildConfig.XpExemptChannelIds = exemptChannelIds;
         await db.SaveChangesAsync();
         ReportChanges();
     }
