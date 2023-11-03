@@ -1,16 +1,17 @@
 ﻿using System.Text.Json.Serialization;
+using Administrator.Core;
 using Administrator.Database;
 
 namespace Administrator.Api;
 
 public sealed record BlockModel(
             int Id, 
-            UserModel Target, 
-            UserModel Moderator, 
+            UserSnapshot Target, 
+            UserSnapshot Moderator, 
             DateTimeOffset CreatedAt, 
             string? Reason, 
             DateTimeOffset? RevokedAt, 
-            UserModel? Revoker, 
+            UserSnapshot? Revoker, 
             string? RevocationReason, 
             DateTimeOffset? AppealedAt, 
             string? AppealText, 
@@ -23,14 +24,12 @@ public sealed record BlockModel(
 {
     public BlockModel(Block block)
         : this(block.Id,
-            new UserModel(block.TargetId, block.TargetName),
-            new UserModel(block.ModeratorId, block.ModeratorName),
+            block.Target,
+            block.Moderator,
             block.CreatedAt, 
             block.Reason,
             block.RevokedAt, 
-            block.RevokerId.HasValue 
-                ? new UserModel(block.RevokerId.Value, block.RevokerName!)
-                : null,
+            block.Revoker,
             block.RevocationReason,
             block.AppealedAt,
             block.AppealText,

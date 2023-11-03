@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Administrator.Database.Migrations
 {
     [DbContext(typeof(AdminDbContext))]
-    [Migration("20231026201922_Init")]
+    [Migration("20231101144151_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -99,7 +99,7 @@ namespace Administrator.Database.Migrations
                         .HasName("pk_button_roles");
 
                     b.HasIndex("GuildId")
-                        .HasDatabaseName("ix_button_roles_guild");
+                        .HasDatabaseName("ix_button_roles_guild_id");
 
                     b.ToTable("button_roles", (string)null);
                 });
@@ -122,7 +122,7 @@ namespace Administrator.Database.Migrations
                         .HasName("pk_emoji_stats");
 
                     b.HasIndex("GuildId")
-                        .HasDatabaseName("ix_emoji_stats_guild");
+                        .HasDatabaseName("ix_emoji_stats_guild_id");
 
                     b.ToTable("emoji_stats", (string)null);
                 });
@@ -146,7 +146,7 @@ namespace Administrator.Database.Migrations
 
                     b.Property<bool>("IsRegex")
                         .HasColumnType("boolean")
-                        .HasColumnName("regex");
+                        .HasColumnName("is_regex");
 
                     b.Property<long>("TagId")
                         .HasColumnType("bigint")
@@ -160,12 +160,11 @@ namespace Administrator.Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_forum_auto_tags");
 
-                    b.HasIndex("GuildId")
-                        .HasDatabaseName("ix_forum_auto_tags_guild");
+                    b.HasIndex("ChannelId")
+                        .HasDatabaseName("ix_forum_auto_tags_channel_id");
 
-                    b.HasIndex("Text")
-                        .IsUnique()
-                        .HasDatabaseName("ix_forum_auto_tags_text");
+                    b.HasIndex("GuildId")
+                        .HasDatabaseName("ix_forum_auto_tags_guild_id");
 
                     b.ToTable("forum_auto_tags", (string)null);
                 });
@@ -174,17 +173,17 @@ namespace Administrator.Database.Migrations
                 {
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("user");
 
                     b.Property<List<long>>("BlacklistedHighlightChannelIds")
                         .IsRequired()
                         .HasColumnType("bigint[]")
-                        .HasColumnName("blacklisted_highlight_channels");
+                        .HasColumnName("highlights_channel_blacklist");
 
                     b.Property<List<long>>("BlacklistedHighlightUserIds")
                         .IsRequired()
                         .HasColumnType("bigint[]")
-                        .HasColumnName("blacklisted_highlight_users");
+                        .HasColumnName("highlights_user_blacklist");
 
                     b.Property<DateTimeOffset?>("HighlightsSnoozedUntil")
                         .HasColumnType("timestamp with time zone")
@@ -197,6 +196,14 @@ namespace Administrator.Database.Migrations
                     b.Property<DateTimeOffset>("LastXpGain")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_xp_gain");
+
+                    b.Property<TimeSpan>("ResumeHighlightsAfterInterval")
+                        .HasColumnType("interval")
+                        .HasColumnName("highlights_resume_interval");
+
+                    b.Property<int>("ResumeHighlightsAfterMessageCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("highlights_resume_count");
 
                     b.Property<string>("TimeZone")
                         .HasColumnType("text")
@@ -218,9 +225,9 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.Guild", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<long>("GuildId")
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("guild");
 
                     b.Property<byte[]>("ApiKeyHash")
                         .HasColumnType("bytea")
@@ -233,7 +240,7 @@ namespace Administrator.Database.Migrations
                     b.Property<List<long>>("AutoQuoteExemptChannelIds")
                         .IsRequired()
                         .HasColumnType("bigint[]")
-                        .HasColumnName("auto_quote_exempt_channels");
+                        .HasColumnName("autoquote_exempt_channels");
 
                     b.Property<string>("CustomPunishmentText")
                         .HasColumnType("text")
@@ -246,6 +253,10 @@ namespace Administrator.Database.Migrations
                     b.Property<int?>("CustomXpRate")
                         .HasColumnType("integer")
                         .HasColumnName("xp_rate");
+
+                    b.Property<int>("DefaultBanPruneDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("ban_prune_days");
 
                     b.Property<bool>("DmGreetingMessage")
                         .HasColumnType("boolean")
@@ -266,7 +277,7 @@ namespace Administrator.Database.Migrations
 
                     b.Property<int?>("MaximumTagsPerUser")
                         .HasColumnType("integer")
-                        .HasColumnName("max_tags");
+                        .HasColumnName("max_tags_per_users");
 
                     b.Property<int>("Settings")
                         .HasColumnType("integer")
@@ -281,7 +292,7 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("bigint[]")
                         .HasColumnName("xp_exempt_channels");
 
-                    b.HasKey("Id")
+                    b.HasKey("GuildId")
                         .HasName("pk_guilds");
 
                     b.ToTable("guilds", (string)null);
@@ -295,7 +306,7 @@ namespace Administrator.Database.Migrations
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("user");
 
                     b.Property<string>("Blurb")
                         .IsRequired()
@@ -333,8 +344,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("author");
 
-                    b.Property<decimal?>("GuildId")
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("GuildId")
+                        .HasColumnType("bigint")
                         .HasColumnName("guild");
 
                     b.Property<string>("Text")
@@ -346,10 +357,7 @@ namespace Administrator.Database.Migrations
                         .HasName("pk_highlights");
 
                     b.HasIndex("AuthorId")
-                        .HasDatabaseName("ix_highlights_author");
-
-                    b.HasIndex("Text")
-                        .HasDatabaseName("ix_highlights_text");
+                        .HasDatabaseName("ix_highlights_author_id");
 
                     b.ToTable("highlights", (string)null);
                 });
@@ -375,15 +383,15 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("invite_code");
 
-                    b.Property<decimal?>("TargetId")
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("TargetId")
+                        .HasColumnType("bigint")
                         .HasColumnName("target");
 
                     b.HasKey("Id")
                         .HasName("pk_invite_filter_exemptions");
 
                     b.HasIndex("GuildId")
-                        .HasDatabaseName("ix_invite_filter_exemptions_guild");
+                        .HasDatabaseName("ix_invite_filter_exemptions_guild_id");
 
                     b.ToTable("invite_filter_exemptions", (string)null);
                 });
@@ -449,51 +457,43 @@ namespace Administrator.Database.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created");
+                        .HasColumnName("created_at");
 
-                    b.Property<decimal?>("DmChannelId")
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("DmChannelId")
+                        .HasColumnType("bigint")
                         .HasColumnName("dm_channel");
 
-                    b.Property<decimal?>("DmMessageId")
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("DmMessageId")
+                        .HasColumnType("bigint")
                         .HasColumnName("dm_message");
 
                     b.Property<long>("GuildId")
                         .HasColumnType("bigint")
                         .HasColumnName("guild");
 
-                    b.Property<decimal?>("LogChannelId")
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("LogChannelId")
+                        .HasColumnType("bigint")
                         .HasColumnName("log_channel");
 
-                    b.Property<decimal?>("LogMessageId")
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("LogMessageId")
+                        .HasColumnType("bigint")
                         .HasColumnName("log_message");
 
-                    b.Property<long>("ModeratorId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("moderator");
-
-                    b.Property<string>("ModeratorName")
+                    b.Property<UserSnapshot>("Moderator")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("moderator_name");
+                        .HasColumnType("jsonb")
+                        .HasColumnName("moderator");
 
                     b.Property<string>("Reason")
                         .HasColumnType("text")
                         .HasColumnName("reason");
 
-                    b.Property<long>("TargetId")
-                        .HasColumnType("bigint")
+                    b.Property<UserSnapshot>("Target")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
                         .HasColumnName("target");
 
-                    b.Property<string>("TargetName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("target_name");
-
-                    b.Property<int>("Type")
+                    b.Property<int>("type")
                         .HasColumnType("integer")
                         .HasColumnName("type");
 
@@ -501,17 +501,14 @@ namespace Administrator.Database.Migrations
                         .HasName("pk_punishments");
 
                     b.HasIndex("AttachmentId")
-                        .HasDatabaseName("ix_punishments_attachment");
+                        .HasDatabaseName("ix_punishments_attachment_id");
 
                     b.HasIndex("GuildId")
-                        .HasDatabaseName("ix_punishments_guild");
+                        .HasDatabaseName("ix_punishments_guild_id");
 
-                    b.HasIndex("TargetId")
-                        .HasDatabaseName("ix_punishments_target");
+                    b.ToTable("punishments", (string)null);
 
-                    b.ToTable("punishments");
-
-                    b.HasDiscriminator<int>("Type");
+                    b.HasDiscriminator<int>("type");
 
                     b.UseTphMappingStrategy();
                 });
@@ -543,11 +540,11 @@ namespace Administrator.Database.Migrations
 
                     b.Property<double?>("RepeatInterval")
                         .HasColumnType("double precision")
-                        .HasColumnName("interval");
+                        .HasColumnName("repeat_interval");
 
                     b.Property<int?>("RepeatMode")
                         .HasColumnType("integer")
-                        .HasColumnName("mode");
+                        .HasColumnName("repeat_mode");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -558,10 +555,10 @@ namespace Administrator.Database.Migrations
                         .HasName("pk_reminders");
 
                     b.HasIndex("AuthorId")
-                        .HasDatabaseName("ix_reminders_author");
+                        .HasDatabaseName("ix_reminders_author_id");
 
                     b.HasIndex("ExpiresAt")
-                        .HasDatabaseName("ix_reminders_expires");
+                        .HasDatabaseName("ix_reminders_expires_at");
 
                     b.ToTable("reminders", (string)null);
                 });
@@ -630,17 +627,26 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("uses");
 
+                    b.Property<string[]>("_aliases")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("aliases");
+
                     b.HasKey("GuildId", "Name")
                         .HasName("pk_tags");
 
                     b.HasIndex("AttachmentId")
-                        .HasDatabaseName("ix_tags_attachment");
+                        .HasDatabaseName("ix_tags_attachment_id");
 
                     b.HasIndex("OwnerId")
-                        .HasDatabaseName("ix_tags_owner");
+                        .HasDatabaseName("ix_tags_owner_id");
+
+                    b.HasIndex("_aliases")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tags__aliases");
 
                     b.HasIndex("GuildId", "OwnerId")
-                        .HasDatabaseName("ix_tags_guild_owner");
+                        .HasDatabaseName("ix_tags_guild_id_owner_id");
 
                     b.ToTable("tags", (string)null);
                 });
@@ -669,34 +675,53 @@ namespace Administrator.Database.Migrations
                     b.ToTable("warning_punishments", (string)null);
                 });
 
-            modelBuilder.Entity("Administrator.Database.Ban", b =>
+            modelBuilder.Entity("Administrator.Database.Kick", b =>
                 {
                     b.HasBaseType("Administrator.Database.Punishment");
 
-                    b.Property<decimal?>("AppealChannelId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
+                    b.HasDiscriminator().HasValue(2);
+                });
+
+            modelBuilder.Entity("Administrator.Database.RevocablePunishment", b =>
+                {
+                    b.HasBaseType("Administrator.Database.Punishment");
+
+                    b.Property<long?>("AppealChannelId")
+                        .HasColumnType("bigint")
                         .HasColumnName("appeal_channel");
 
-                    b.Property<decimal?>("AppealMessageId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
+                    b.Property<long?>("AppealMessageId")
+                        .HasColumnType("bigint")
                         .HasColumnName("appeal_message");
 
                     b.Property<int?>("AppealStatus")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("integer")
                         .HasColumnName("appeal_status");
 
                     b.Property<string>("AppealText")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("text")
                         .HasColumnName("appeal");
 
                     b.Property<DateTimeOffset?>("AppealedAt")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("appealed");
+
+                    b.Property<string>("RevocationReason")
+                        .HasColumnType("text")
+                        .HasColumnName("revocation_reason");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked");
+
+                    b.Property<UserSnapshot>("Revoker")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("revoker");
+                });
+
+            modelBuilder.Entity("Administrator.Database.Ban", b =>
+                {
+                    b.HasBaseType("Administrator.Database.RevocablePunishment");
 
                     b.Property<DateTimeOffset?>("ExpiresAt")
                         .ValueGeneratedOnUpdateSometimes()
@@ -705,61 +730,14 @@ namespace Administrator.Database.Migrations
 
                     b.Property<int?>("MessagePruneDays")
                         .HasColumnType("integer")
-                        .HasColumnName("message_prune_days");
-
-                    b.Property<string>("RevocationReason")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revocation_reason");
-
-                    b.Property<DateTimeOffset?>("RevokedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revoked");
-
-                    b.Property<decimal?>("RevokerId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("revoker");
-
-                    b.Property<string>("RevokerName")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revoker_name");
-
-                    b.ToTable("punishments");
+                        .HasColumnName("prune_days");
 
                     b.HasDiscriminator().HasValue(0);
                 });
 
             modelBuilder.Entity("Administrator.Database.Block", b =>
                 {
-                    b.HasBaseType("Administrator.Database.Punishment");
-
-                    b.Property<decimal?>("AppealChannelId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_channel");
-
-                    b.Property<decimal?>("AppealMessageId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_message");
-
-                    b.Property<int?>("AppealStatus")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("integer")
-                        .HasColumnName("appeal_status");
-
-                    b.Property<string>("AppealText")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("appeal");
-
-                    b.Property<DateTimeOffset?>("AppealedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("appealed");
+                    b.HasBaseType("Administrator.Database.RevocablePunishment");
 
                     b.Property<long>("ChannelId")
                         .HasColumnType("bigint")
@@ -778,68 +756,12 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("previous_deny_permissions");
 
-                    b.Property<string>("RevocationReason")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revocation_reason");
-
-                    b.Property<DateTimeOffset?>("RevokedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revoked");
-
-                    b.Property<decimal?>("RevokerId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("revoker");
-
-                    b.Property<string>("RevokerName")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revoker_name");
-
-                    b.ToTable("punishments");
-
                     b.HasDiscriminator().HasValue(1);
-                });
-
-            modelBuilder.Entity("Administrator.Database.Kick", b =>
-                {
-                    b.HasBaseType("Administrator.Database.Punishment");
-
-                    b.ToTable("punishments");
-
-                    b.HasDiscriminator().HasValue(2);
                 });
 
             modelBuilder.Entity("Administrator.Database.TimedRole", b =>
                 {
-                    b.HasBaseType("Administrator.Database.Punishment");
-
-                    b.Property<decimal?>("AppealChannelId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_channel");
-
-                    b.Property<decimal?>("AppealMessageId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_message");
-
-                    b.Property<int?>("AppealStatus")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("integer")
-                        .HasColumnName("appeal_status");
-
-                    b.Property<string>("AppealText")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("appeal");
-
-                    b.Property<DateTimeOffset?>("AppealedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("appealed");
+                    b.HasBaseType("Administrator.Database.RevocablePunishment");
 
                     b.Property<DateTimeOffset?>("ExpiresAt")
                         .ValueGeneratedOnUpdateSometimes()
@@ -850,155 +772,39 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("mode");
 
-                    b.Property<string>("RevocationReason")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revocation_reason");
-
-                    b.Property<DateTimeOffset?>("RevokedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revoked");
-
-                    b.Property<decimal?>("RevokerId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("revoker");
-
-                    b.Property<string>("RevokerName")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revoker_name");
-
                     b.Property<long>("RoleId")
                         .HasColumnType("bigint")
                         .HasColumnName("role");
-
-                    b.ToTable("punishments");
 
                     b.HasDiscriminator().HasValue(3);
                 });
 
             modelBuilder.Entity("Administrator.Database.Timeout", b =>
                 {
-                    b.HasBaseType("Administrator.Database.Punishment");
-
-                    b.Property<decimal?>("AppealChannelId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_channel");
-
-                    b.Property<decimal?>("AppealMessageId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_message");
-
-                    b.Property<int?>("AppealStatus")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("integer")
-                        .HasColumnName("appeal_status");
-
-                    b.Property<string>("AppealText")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("appeal");
-
-                    b.Property<DateTimeOffset?>("AppealedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("appealed");
+                    b.HasBaseType("Administrator.Database.RevocablePunishment");
 
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires");
 
-                    b.Property<string>("RevocationReason")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revocation_reason");
-
-                    b.Property<DateTimeOffset?>("RevokedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revoked");
-
-                    b.Property<decimal?>("RevokerId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("revoker");
-
-                    b.Property<string>("RevokerName")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revoker_name");
-
                     b.Property<bool>("WasManuallyRevoked")
                         .HasColumnType("boolean")
                         .HasColumnName("manually_revoked");
-
-                    b.ToTable("punishments");
 
                     b.HasDiscriminator().HasValue(4);
                 });
 
             modelBuilder.Entity("Administrator.Database.Warning", b =>
                 {
-                    b.HasBaseType("Administrator.Database.Punishment");
+                    b.HasBaseType("Administrator.Database.RevocablePunishment");
 
                     b.Property<int?>("AdditionalPunishmentId")
                         .HasColumnType("integer")
                         .HasColumnName("additional_punishment");
 
-                    b.Property<decimal?>("AppealChannelId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_channel");
-
-                    b.Property<decimal?>("AppealMessageId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("appeal_message");
-
-                    b.Property<int?>("AppealStatus")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("integer")
-                        .HasColumnName("appeal_status");
-
-                    b.Property<string>("AppealText")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("appeal");
-
-                    b.Property<DateTimeOffset?>("AppealedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("appealed");
-
-                    b.Property<string>("RevocationReason")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revocation_reason");
-
-                    b.Property<DateTimeOffset?>("RevokedAt")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revoked");
-
-                    b.Property<decimal?>("RevokerId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("numeric(20,0)")
-                        .HasColumnName("revoker");
-
-                    b.Property<string>("RevokerName")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text")
-                        .HasColumnName("revoker_name");
-
                     b.HasIndex("AdditionalPunishmentId")
-                        .HasDatabaseName("ix_punishments_additional_punishment");
-
-                    b.ToTable("punishments");
+                        .HasDatabaseName("ix_punishments_additional_punishment_id");
 
                     b.HasDiscriminator().HasValue(5);
                 });
@@ -1010,7 +816,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_button_roles_guilds_guild");
+                        .HasConstraintName("fk_button_roles_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1022,7 +828,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_emoji_stats_guilds_guild");
+                        .HasConstraintName("fk_emoji_stats_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1034,7 +840,19 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_forum_auto_tags_guilds_guild");
+                        .HasConstraintName("fk_forum_auto_tags_guilds_guild_id");
+
+                    b.Navigation("Guild");
+                });
+
+            modelBuilder.Entity("Administrator.Database.GuildUser", b =>
+                {
+                    b.HasOne("Administrator.Database.Guild", "Guild")
+                        .WithMany("Users")
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_guild_users_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1046,7 +864,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_highlights_global_users_author");
+                        .HasConstraintName("fk_highlights_global_users_author_id");
 
                     b.Navigation("Author");
                 });
@@ -1058,7 +876,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_invite_filter_exemptions_guilds_guild");
+                        .HasConstraintName("fk_invite_filter_exemptions_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1070,7 +888,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_logging_channels_guilds_guild");
+                        .HasConstraintName("fk_logging_channels_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1082,7 +900,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_lua_commands_guilds_guild");
+                        .HasConstraintName("fk_lua_commands_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1092,14 +910,14 @@ namespace Administrator.Database.Migrations
                     b.HasOne("Administrator.Database.Attachment", "Attachment")
                         .WithMany()
                         .HasForeignKey("AttachmentId")
-                        .HasConstraintName("fk_punishments_attachments_attachment");
+                        .HasConstraintName("fk_punishments_attachments_attachment_id");
 
                     b.HasOne("Administrator.Database.Guild", "Guild")
                         .WithMany("Punishments")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_punishments_guilds_guild");
+                        .HasConstraintName("fk_punishments_guilds_guild_id");
 
                     b.Navigation("Attachment");
 
@@ -1113,7 +931,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_reminders_global_users_author");
+                        .HasConstraintName("fk_reminders_global_users_author_id");
 
                     b.Navigation("Author");
                 });
@@ -1125,7 +943,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_level_rewards_guilds_guild");
+                        .HasConstraintName("fk_level_rewards_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1135,21 +953,21 @@ namespace Administrator.Database.Migrations
                     b.HasOne("Administrator.Database.Attachment", "Attachment")
                         .WithMany()
                         .HasForeignKey("AttachmentId")
-                        .HasConstraintName("fk_tags_attachments_attachment");
+                        .HasConstraintName("fk_tags_attachment_attachment_id");
 
                     b.HasOne("Administrator.Database.Guild", "Guild")
                         .WithMany("Tags")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_tags_guilds_guild");
+                        .HasConstraintName("fk_tags_guilds_guild_id");
 
                     b.HasOne("Administrator.Database.GuildUser", "Owner")
                         .WithMany("Tags")
                         .HasForeignKey("GuildId", "OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_tags_guild_users_guild_owner");
+                        .HasConstraintName("fk_tags_guild_users_owner_temp_id");
 
                     b.Navigation("Attachment");
 
@@ -1165,7 +983,7 @@ namespace Administrator.Database.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_warning_punishments_guilds_guild");
+                        .HasConstraintName("fk_warning_punishments_guilds_guild_id");
 
                     b.Navigation("Guild");
                 });
@@ -1175,7 +993,7 @@ namespace Administrator.Database.Migrations
                     b.HasOne("Administrator.Database.Punishment", "AdditionalPunishment")
                         .WithMany()
                         .HasForeignKey("AdditionalPunishmentId")
-                        .HasConstraintName("fk_punishments_punishments_additional_punishment");
+                        .HasConstraintName("fk_punishments_punishments_additional_punishment_id");
 
                     b.Navigation("AdditionalPunishment");
                 });
@@ -1206,6 +1024,8 @@ namespace Administrator.Database.Migrations
                     b.Navigation("Punishments");
 
                     b.Navigation("Tags");
+
+                    b.Navigation("Users");
 
                     b.Navigation("WarningPunishments");
                 });

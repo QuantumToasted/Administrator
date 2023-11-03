@@ -1,4 +1,5 @@
-﻿using Administrator.Database;
+﻿using Administrator.Core;
+using Administrator.Database;
 using Disqord.AuditLogs;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
@@ -37,12 +38,12 @@ public sealed class PunishmentAuditLogService : DiscordBotService
         {
             case IMemberBannedAuditLog :
             {
-                await punishments.ProcessPunishmentAsync(new Ban(e.GuildId, target.Id, target.Name, moderator.Id, moderator.Name, reason, null, null),
+                await punishments.ProcessPunishmentAsync(new Ban(e.GuildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, null, null),
                     null, true);
                 return;
             }
             case IMemberUnbannedAuditLog when guild.Punishments!.OfType<Ban>()
-                .FirstOrDefault(x => x.TargetId == target.Id && !x.RevokedAt.HasValue) is { } ban:
+                .FirstOrDefault(x => x.Target.Id == target.Id && !x.RevokedAt.HasValue) is { } ban:
             {
                 await punishments.RevokePunishmentAsync(ban.Id, moderator, reason, true);
                 return;
@@ -53,11 +54,11 @@ public sealed class PunishmentAuditLogService : DiscordBotService
                 if (!change.OldValue.HasValue && change.NewValue.HasValue)
                 {
                     await punishments.ProcessPunishmentAsync(
-                        new Timeout(e.GuildId, target.Id, target.Name, moderator.Id, moderator.Name, reason, change.NewValue.Value), null, true);
+                        new Timeout(e.GuildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, change.NewValue.Value), null, true);
                 }
                 // timeout -> no timeout
                 else if (change.OldValue.HasValue && !change.NewValue.HasValue && guild.Punishments!.OfType<Timeout>()
-                         .FirstOrDefault(x => x.TargetId == target.Id && !x.RevokedAt.HasValue) is { } timeout)
+                         .FirstOrDefault(x => x.Target.Id == target.Id && !x.RevokedAt.HasValue) is { } timeout)
                 {
                     await punishments.RevokePunishmentAsync(timeout.Id, moderator, reason, true);
                 }
@@ -66,7 +67,7 @@ public sealed class PunishmentAuditLogService : DiscordBotService
             }
             case IMemberKickedAuditLog:
             {
-                await punishments.ProcessPunishmentAsync(new Kick(e.GuildId, target.Id, target.Name, moderator.Id, moderator.Name, reason), null, true);
+                await punishments.ProcessPunishmentAsync(new Kick(e.GuildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason), null, true);
                 return;
             }
         }

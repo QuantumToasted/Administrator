@@ -18,7 +18,6 @@ public sealed class SendMessageEditView : MessageEditView
     {
         var message = new LocalMessage {Content = Message.Content, Embeds = Message.Embeds};
         await Menu.Client.SendMessageAsync(_channelId, message);
-        ChangesSaved = true;
         ClearComponents();
         await Menu.ApplyChangesAsync(e);
         Menu.Stop();

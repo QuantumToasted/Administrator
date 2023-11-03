@@ -1,46 +1,54 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Administrator.Core;
+﻿using Administrator.Core;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-[Table("tags")]
-[PrimaryKey(nameof(GuildId), nameof(Name))]
-[Index(nameof(OwnerId))]
-[Index(nameof(Aliases), IsUnique = true)]
-public sealed record Tag(
-    [property: Column("guild")] Snowflake GuildId,
-    Snowflake OwnerId,
-    [property: Column("name")] string Name)
+public sealed record Tag(Snowflake GuildId, Snowflake OwnerId, string Name) : IStaticEntityTypeConfiguration<Tag>
 {
-    [Column("aliases")] 
-    public List<string> Aliases { get; set; } = new();
+    private string[] _aliases = Array.Empty<string>();
+
+    public IReadOnlyList<string> Aliases
+    {
+        get => _aliases.ToList();
+        set => _aliases = value.ToArray();
+    }
     
-    [Column("owner")]
     public Snowflake OwnerId { get; set; } = OwnerId;
     
-    [Column("created")]
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
     
-    [Column("message", TypeName = "jsonb")]
     public JsonMessage? Message { get; set; }
     
-    [Column("uses")]
     public int Uses { get; set; }
     
-    [Column("last_used")]
     public DateTimeOffset? LastUsedAt { get; set; }
     
-    [Column("attachment")]
     public Guid? AttachmentId { get; set; }
     
-    [ForeignKey(nameof(AttachmentId))]
     public Attachment? Attachment { get; set; }
     
-    [ForeignKey("GuildId,OwnerId")]
     public GuildUser? Owner { get; init; }
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<Tag>.ConfigureBuilder(EntityTypeBuilder<Tag> tag)
+    {
+        tag.ToTable("tags");
+        tag.HasKey(x => new { x.GuildId, x.Name });
+        tag.HasIndex(x => x.OwnerId);
+        tag.HasIndex(x => x._aliases).IsUnique();
+
+        tag.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        tag.HasPropertyWithColumnName(x => x.OwnerId, "owner");
+        tag.HasPropertyWithColumnName(x => x.Name, "name");
+        tag.HasPropertyWithColumnName(x => x._aliases, "aliases");
+        tag.Ignore(x => x.Aliases);
+        tag.HasPropertyWithColumnName(x => x.CreatedAt, "created");
+        tag.HasPropertyWithColumnName(x => x.Message, "message").HasColumnType("jsonb");
+        tag.HasPropertyWithColumnName(x => x.Uses, "uses");
+        tag.HasPropertyWithColumnName(x => x.LastUsedAt, "last_used");
+        tag.HasPropertyWithColumnName(x => x.AttachmentId, "attachment");
+    }
 }

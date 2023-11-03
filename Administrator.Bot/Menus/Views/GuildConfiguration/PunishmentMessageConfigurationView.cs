@@ -2,7 +2,7 @@
 
 namespace Administrator.Bot;
 
-public class PunishmentMessageConfigurationView(IDiscordApplicationGuildCommandContext context) 
+public sealed class PunishmentMessageConfigurationView(IDiscordApplicationGuildCommandContext context) 
     : GuildConfigurationViewBase(context)
 {
     public const string SELECTION_TEXT = "Custom Punishment Message";

@@ -9,7 +9,7 @@ namespace Administrator.Bot.AutoComplete;
 
 public sealed class HighlightAutoCompleteFormatter : IAutoCompleteFormatter<Highlight, int>
 {
-    public string FormatAutoCompleteName(IClient client, Highlight model)
+    public string[] FormatAutoCompleteNames(IClient client, Highlight model)
     {
         var bot = (DiscordBotBase)client;
         var builder = new StringBuilder($"#{model.Id}")
@@ -18,11 +18,11 @@ public sealed class HighlightAutoCompleteFormatter : IAutoCompleteFormatter<High
                 ? $"In {bot.GetGuild(model.GuildId.Value)?.Name ?? model.GuildId.Value.ToString()}"
                 : "[GLOBAL]");
 
-        return builder.ToString();
+        return new[] { builder.ToString() };
     }
 
     public int FormatAutoCompleteValue(IClient client, Highlight model)
         => model.Id;
 
-    public Func<Highlight, string> ComparisonSelector => static highlight => highlight.Text;
+    public Func<Highlight, string[]> ComparisonSelector => static highlight => new[] { highlight.Text };
 }

@@ -2,6 +2,7 @@
 using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Microsoft.Extensions.DependencyInjection;
 using Qommon;
 
 namespace Administrator.Bot;
@@ -10,6 +11,23 @@ public sealed class MessageEditMenu(MessageEditView view, IUserInteraction inter
     : AdminInteractionMenu(view, interaction)
 {
     public DiscordBotBase Bot { get; } = (DiscordBotBase) interaction.Client;
+    
+    public InteractionReceivedEventArgs? LastEventArgs { get; private set; }
+    
+    protected override async ValueTask<Snowflake> InitializeAsync(CancellationToken cancellationToken)
+    {
+        var id = await base.InitializeAsync(cancellationToken);
+        var bot = (DiscordBotBase) Client;
+        var service = bot.Services.GetRequiredService<MessageEditViewService>();
+        service.Views[id] = (MessageEditView) View!;
+        return id;
+    }
+
+    protected override ValueTask HandleInteractionAsync(InteractionReceivedEventArgs e)
+    {
+        LastEventArgs = e;
+        return base.HandleInteractionAsync(e);
+    }
 
     public override async ValueTask ApplyChangesAsync(InteractionReceivedEventArgs? e = null)
     {

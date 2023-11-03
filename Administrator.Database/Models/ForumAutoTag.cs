@@ -1,22 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-[Table("forum_auto_tags")]
-[PrimaryKey(nameof(Id))]
-[Index(nameof(ChannelId))]
-public sealed record ForumAutoTag(
-    [property: Column("channel")] Snowflake ChannelId,
-    [property: Column("guild")] Snowflake GuildId,
-    [property: Column("text")] string Text,
-    [property: Column("regex")] bool IsRegex,
-    [property: Column("tag")] Snowflake TagId)
+public sealed record ForumAutoTag(Snowflake ChannelId, Snowflake GuildId, string Text, bool IsRegex, Snowflake TagId) 
+    : IStaticEntityTypeConfiguration<ForumAutoTag>
 {
-    [Column("id")] 
     public int Id { get; init; }
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<ForumAutoTag>.ConfigureBuilder(EntityTypeBuilder<ForumAutoTag> autoTag)
+    {
+        autoTag.ToTable("forum_auto_tags");
+        autoTag.HasKey(x => x.Id);
+        autoTag.HasIndex(x => x.ChannelId);
+
+        autoTag.HasPropertyWithColumnName(x => x.ChannelId, "channel");
+        autoTag.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        autoTag.HasPropertyWithColumnName(x => x.Text, "text");
+        autoTag.HasPropertyWithColumnName(x => x.IsRegex, "is_regex");
+        autoTag.HasPropertyWithColumnName(x => x.TagId, "tag");
+    }
 }

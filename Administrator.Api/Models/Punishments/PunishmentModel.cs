@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Administrator.Core;
 using Administrator.Database;
 using Timeout = Administrator.Database.Timeout;
 
@@ -6,8 +7,8 @@ namespace Administrator.Api;
 
 public abstract record PunishmentModel(
         int Id, 
-        UserModel Target, 
-        UserModel Moderator, 
+        UserSnapshot Target, 
+        UserSnapshot Moderator, 
     [property: JsonPropertyName("created")]
         DateTimeOffset CreatedAt, 
         string? Reason)

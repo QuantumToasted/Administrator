@@ -1,16 +1,17 @@
 ﻿using System.Text.Json.Serialization;
+using Administrator.Core;
 using Administrator.Database;
 
 namespace Administrator.Api;
 
 public sealed record BanModel(
             int Id, 
-            UserModel Target, 
-            UserModel Moderator, 
+            UserSnapshot Target,
+            UserSnapshot Moderator,
             DateTimeOffset CreatedAt, 
             string? Reason, 
             DateTimeOffset? RevokedAt, 
-            UserModel? Revoker, 
+            UserSnapshot? Revoker, 
             string? RevocationReason, 
             DateTimeOffset? AppealedAt, 
             string? AppealText, 
@@ -22,14 +23,12 @@ public sealed record BanModel(
 {
     public BanModel(Ban ban)
         : this(ban.Id,
-            new UserModel(ban.TargetId, ban.TargetName),
-            new UserModel(ban.ModeratorId, ban.ModeratorName),
+            ban.Target,
+            ban.Moderator,
             ban.CreatedAt, 
             ban.Reason,
             ban.RevokedAt, 
-            ban.RevokerId.HasValue 
-                ? new UserModel(ban.RevokerId.Value, ban.RevokerName!)
-                : null,
+            ban.Revoker,
             ban.RevocationReason,
             ban.AppealedAt,
             ban.AppealText,

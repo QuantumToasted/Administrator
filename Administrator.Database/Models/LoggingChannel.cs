@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -46,16 +46,19 @@ public enum LogEventType
     UserRoleUpdate
 }
 
-[Table("logging_channels")]
-[PrimaryKey(nameof(GuildId), nameof(EventType))]
-public sealed record LoggingChannel(
-    [property: Column("guild")] Snowflake GuildId, 
-    [property: Column("type")] LogEventType EventType,
-    Snowflake ChannelId)
+public sealed record LoggingChannel(Snowflake GuildId, LogEventType EventType, Snowflake ChannelId) : IStaticEntityTypeConfiguration<LoggingChannel>
 {
-    [Column("channel")] 
     public Snowflake ChannelId { get; set; } = ChannelId;
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<LoggingChannel>.ConfigureBuilder(EntityTypeBuilder<LoggingChannel> channel)
+    {
+        channel.ToTable("logging_channels");
+        channel.HasKey(x => new { x.GuildId, x.EventType });
+
+        channel.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        channel.HasPropertyWithColumnName(x => x.EventType, "type");
+        channel.HasPropertyWithColumnName(x => x.ChannelId, "channel");
+    }
 }

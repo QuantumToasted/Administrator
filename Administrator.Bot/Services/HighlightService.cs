@@ -1,210 +1,61 @@
-﻿using System.Collections.Concurrent;
+﻿using Administrator.Core;
+using Administrator.Database;
 using Disqord;
-using Disqord.Bot.Hosting;
-using Disqord.Extensions.Interactivity.Menus;
+using Disqord.Bot.Commands;
+using Disqord.Bot.Commands.Application;
+using Disqord.Bot.Commands.Interaction;
 using Disqord.Gateway;
-using Disqord.Http;
-using Disqord.Rest;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;
 
-public sealed class HighlightService : DiscordBotService
+[ScopedService]
+public sealed class HighlightService(AdminDbContext db, ICommandContextAccessor contextAccessor, AutoCompleteService autoComplete, 
+    HighlightHandlingService highlights)
 {
-    private readonly ConcurrentDictionary<Snowflake, HashSet<Snowflake>> _previouslyHighlightedUsers = new();
-    
-    protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
+    private readonly IDiscordInteractionCommandContext _context = (IDiscordInteractionCommandContext)contextAccessor.Context;
+
+    public async Task<Result<Highlight>> CreateHighlightAsync(string text)
     {
-        if (e.Message is not IGatewayUserMessage message || string.IsNullOrWhiteSpace(message.Content) || e.GuildId is not { } guildId)
-            return;
-        
-        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var highlights = await db.Highlights
-            .Include(x => x.Author)
-            .Where(x => !x.GuildId.HasValue || x.GuildId == guildId)
-            .ToListAsync();
+        var guild = _context.GuildId.HasValue
+            ? _context.Bot.GetGuild(_context.GuildId.Value)
+            : null;
 
-        if (highlights.Count == 0)
-            return;
-
-        var guild = Bot.GetGuild(guildId)!;
-        var channel = e.Channel ?? Bot.GetChannel(guildId, e.ChannelId) as IMessageGuildChannel;
-        var author = message.Author as IMember;
-        
-        var now = e.Message.CreatedAt();
-        var memberCache = new Dictionary<(Snowflake GuildId, Snowflake MemberId), IMember>();
-        var userCache = new Dictionary<Snowflake, IUser>();
-        var recentMessages = Bot.CacheProvider.TryGetMessages(e.ChannelId, out var messages)
-            ? messages.Values.OrderByDescending(x => x.Id).ToList()
-            : new List<CachedUserMessage>();
-
-        foreach (var highlight in highlights.Where(x => x.IsMatch(e.Message)).DistinctBy(x => x.AuthorId))
+        if (await db.Highlights
+                .FirstOrDefaultAsync(x => x.AuthorId == _context.AuthorId && x.GuildId == _context.GuildId && x.Text.Equals(text)) is not null)
         {
-            if (highlight.Author?.HighlightsSnoozedUntil > now)
-                continue; // don't highlight users who have snoozed them
-
-            var filteredMessages = recentMessages
-                .Where(x => now - x.CreatedAt() < highlight.Author!.ResumeHighlightsAfterInterval)
-                .Take(highlight.Author!.ResumeHighlightsAfterMessageCount)
-                .ToList();
-            
-            if (highlight.AuthorId == message.Author.Id || // Don't highlight the person who sent this message
-                highlight.GuildId?.Equals(guildId) == false || // Don't highlight them if this is a different guild (and not a global highlight)
-                filteredMessages.Any(x => x.Author.Id == highlight.AuthorId)) // Don't highlight them if any recent messages were sent by them
-            {
-                continue;
-            }
-
-            if (!memberCache.TryGetValue((guildId, highlight.AuthorId), out var member))
-            {
-                member = await Bot.GetOrFetchMemberAsync(guildId, highlight.AuthorId);
-                if (member is null)
-                    continue;
-
-                memberCache[(guildId, highlight.AuthorId)] = member;
-            }
-
-            if (!member.CalculateChannelPermissions(channel).HasFlag(Permissions.ViewChannels))
-            {
-                continue;
-            }
-
-            if (!userCache.TryGetValue(highlight.AuthorId, out var user))
-            {
-                user = await Bot.GetOrFetchUserAsync(highlight.AuthorId);
-                if (user is null)
-                    continue;
-
-                userCache[highlight.AuthorId] = user;
-            }
-            
-            try
-            {
-                var dmChannel = await Bot.CreateDirectChannelAsync(highlight.AuthorId);
-
-                var view = new InitialHighlightView(message, channel, x =>
-                {
-                    x.WithContent($"You've been highlighted in {guild.Name} by {author!.GetDisplayName()}!")
-                        .AddEmbed(new LocalEmbed()
-                            .WithUnusualColor()
-                            .WithDescription(message.Content)
-                            .WithAuthor($"{author!.GetDisplayName()} - in {channel.Tag}", author!.GetGuildAvatarUrl())
-                            .WithFooter($"Highlighted text: {highlight.Text}")
-                            .WithTimestamp(message.CreatedAt()));
-
-                    if (message.Attachments.FirstOrDefault(y => new Uri(y.Url).HasImageExtension()) is { } image)
-                    {
-                        x.Embeds.Value[0].WithImageUrl(image.Url);
-                    }
-                });
-
-                await Bot.StartMenuAsync(dmChannel.Id, new AdminTextMenu(view), TimeSpan.FromHours(12));
-            }
-            catch (RestApiException ex) when (ex.StatusCode == HttpResponseStatusCode.Forbidden)
-            { }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "An exception occurred attempting to highlight user {UserId}.",
-                    highlight.AuthorId.RawValue);
-            }
+            return guild is not null
+                ? $"You already have a highlight in {Markdown.Bold(guild.Name)} for the text \"{text}\"!"
+                : $"You already have a global highlight for the text \"{text}\"!";
         }
+
+        var highlight = new Highlight(_context.AuthorId, _context.GuildId, text);
+        
+        db.Highlights.Add(highlight);
+        await db.SaveChangesAsync();
+        highlights.InvalidateCache();
+
+        return highlight;
     }
 
-    private async ValueTask HighlightAsync(IGatewayUserMessage message, IMessageGuildChannel channel)
+    public async Task<Result<Highlight>> RemoveHighlightAsync(int id)
     {
-        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var highlights = await db.Highlights
-            .Include(x => x.Author)
-            .Where(x => !x.GuildId.HasValue || x.GuildId == channel.GuildId)
+        if (await db.Highlights.FirstOrDefaultAsync(x => x.AuthorId == _context.AuthorId && x.Id == id) is not { } highlight)
+            return $"You don't have a highlight with the ID {Markdown.Bold(id)}.";
+
+        db.Highlights.Remove(highlight);
+        await db.SaveChangesAsync();
+        highlights.InvalidateCache();
+
+        return highlight;
+    }
+
+    public async Task AutoCompleteHighlightsAsync(AutoComplete<int> id)
+    {
+        var highlights = await db.Highlights.Where(x => x.AuthorId == _context.AuthorId)
+            .OrderByDescending(x => x.Id)
             .ToListAsync();
-
-        if (highlights.Count == 0)
-            return;
-
-        var guild = Bot.GetGuild(channel.GuildId)!;
-        var author = message.Author as IMember;
         
-        var now = message.CreatedAt();
-        var memberCache = new Dictionary<(Snowflake GuildId, Snowflake MemberId), IMember>();
-        var userCache = new Dictionary<Snowflake, IUser>();
-        var recentMessages = Bot.CacheProvider.TryGetMessages(channel.Id, out var messages)
-            ? messages.Values.OrderByDescending(x => x.Id).ToList()
-            : new List<CachedUserMessage>();
-
-        foreach (var highlight in highlights.Where(x => x.IsMatch(message)).DistinctBy(x => x.AuthorId))
-        {
-            if (highlight.Author?.HighlightsSnoozedUntil > now)
-                continue; // Don't highlight users who have snoozed them
-
-            var filteredMessages = recentMessages
-                .Where(x => now - x.CreatedAt() < highlight.Author!.ResumeHighlightsAfterInterval)
-                .Take(highlight.Author!.ResumeHighlightsAfterMessageCount)
-                .ToList();
-            
-            if (highlight.AuthorId == message.Author.Id || // Don't highlight the person who sent this message
-                highlight.GuildId?.Equals(channel.GuildId) == false || // Don't highlight them if this is a different guild (and not a global highlight)
-                filteredMessages.Any(x => x.Author.Id == highlight.AuthorId)) // Don't highlight them if any recent messages were sent by them
-            {
-                continue;
-            }
-
-            if (!memberCache.TryGetValue((channel.GuildId, highlight.AuthorId), out var member))
-            {
-                member = await Bot.GetOrFetchMemberAsync(channel.GuildId, highlight.AuthorId);
-                if (member is null)
-                    continue;
-
-                memberCache[(channel.GuildId, highlight.AuthorId)] = member;
-            }
-
-            if (!member.CalculateChannelPermissions(channel).HasFlag(Permissions.ViewChannels))
-            {
-                continue;
-            }
-
-            if (!userCache.TryGetValue(highlight.AuthorId, out var user))
-            {
-                user = await Bot.GetOrFetchUserAsync(highlight.AuthorId);
-                if (user is null)
-                    continue;
-
-                userCache[highlight.AuthorId] = user;
-            }
-            
-            var previouslyHighlightedUsers = _previouslyHighlightedUsers.GetOrAdd(message.Id, static _ => new HashSet<Snowflake>());
-            if (!previouslyHighlightedUsers.Add(highlight.AuthorId))
-                continue; // already highlighted by this message
-            
-            try
-            {
-                var dmChannel = await Bot.CreateDirectChannelAsync(highlight.AuthorId);
-
-                var view = new InitialHighlightView(message, channel, x =>
-                {
-                    x.WithContent($"You've been highlighted in {guild.Name} by {author!.GetDisplayName()}!")
-                        .AddEmbed(new LocalEmbed()
-                            .WithUnusualColor()
-                            .WithDescription(message.Content)
-                            .WithAuthor($"{author!.GetDisplayName()} - in {channel.Tag}", author!.GetGuildAvatarUrl())
-                            .WithFooter($"Highlighted text: {highlight.Text}")
-                            .WithTimestamp(message.CreatedAt()));
-
-                    if (message.Attachments.FirstOrDefault(y => new Uri(y.Url).HasImageExtension()) is { } image)
-                    {
-                        x.Embeds.Value[0].WithImageUrl(image.Url);
-                    }
-                });
-
-                await Bot.StartMenuAsync(dmChannel.Id, new AdminTextMenu(view), TimeSpan.FromHours(12));
-            }
-            catch (RestApiException ex) when (ex.StatusCode == HttpResponseStatusCode.Forbidden)
-            { }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "An exception occurred attempting to highlight user {UserId}.",
-                    highlight.AuthorId.RawValue);
-            }
-        }
+        autoComplete.AutoComplete(id, highlights);
     }
 }

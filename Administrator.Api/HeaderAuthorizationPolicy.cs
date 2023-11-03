@@ -2,7 +2,7 @@
 
 namespace Administrator.Api;
 
-public class HeaderAuthorizationPolicy : AuthorizationPolicy
+public sealed class HeaderAuthorizationPolicy : AuthorizationPolicy
 {
     public HeaderAuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> authenticationSchemes) : base(requirements, authenticationSchemes)
     {

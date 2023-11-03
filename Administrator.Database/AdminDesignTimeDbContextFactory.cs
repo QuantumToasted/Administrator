@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Administrator.Database;
 
-public class AdminDesignTimeDbContextFactory : IDesignTimeDbContextFactory<AdminDbContext>
+public sealed class AdminDesignTimeDbContextFactory : IDesignTimeDbContextFactory<AdminDbContext>
 {
     public AdminDbContext CreateDbContext(string[] args)
     {

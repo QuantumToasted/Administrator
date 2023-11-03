@@ -5,9 +5,9 @@ namespace Administrator.Core;
 public sealed class Result<T>
     where T : class
 {
-    private Result(bool isSuccess)
+    private Result(bool isSuccessful)
     {
-        IsSuccess = isSuccess;
+        IsSuccessful = isSuccessful;
     }
     
     public T? Value { get; private init; }
@@ -16,7 +16,7 @@ public sealed class Result<T>
     
     [MemberNotNullWhen(true, nameof(Value))]
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
-    public bool IsSuccess { get; }
+    public bool IsSuccessful { get; }
 
     public static Result<T> Success(T value) => new(true) { Value = value };
     public static Result<T> Failure(string errorMessage) => new(false) { ErrorMessage = errorMessage };

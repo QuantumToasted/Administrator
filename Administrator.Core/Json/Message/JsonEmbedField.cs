@@ -4,7 +4,7 @@ using Qommon;
 
 namespace Administrator.Core;
 
-public class JsonEmbedField
+public sealed class JsonEmbedField
 {
     public string Name { get; init; } = null!;
 

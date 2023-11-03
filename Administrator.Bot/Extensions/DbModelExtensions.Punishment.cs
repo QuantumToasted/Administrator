@@ -18,80 +18,34 @@ public static partial class DbModelExtensions
 {
     public static LogEventType GetLogEventType(this Punishment punishment)
     {
-        return punishment.Type switch
+        return punishment switch
         {
-            PunishmentType.Ban => LogEventType.Ban,
-            PunishmentType.Block => LogEventType.Block,
-            PunishmentType.Kick => LogEventType.Kick,
-            PunishmentType.TimedRole => LogEventType.TimedRole,
-            PunishmentType.Timeout => LogEventType.Timeout,
-            PunishmentType.Warning => LogEventType.Warning,
-            _ => throw new ArgumentOutOfRangeException()
+            Kick => LogEventType.Kick,
+            Block => LogEventType.Block,
+            Ban => LogEventType.Ban,
+            TimedRole => LogEventType.TimedRole,
+            Timeout => LogEventType.Timeout,
+            Warning => LogEventType.Warning,
+            _ => throw new ArgumentOutOfRangeException(nameof(punishment))
         };
     }
-    
+
     public static Task ApplyAsync(this Punishment punishment, DiscordBotBase bot)
     {
-        /* TODO: move this section to `/block` / PunishmentService
-            var channel = await bot.FetchChannelAsync(.ChannelId) as ITextChannel;
-            if (channel?.Overwrites.FirstOrDefault(x => x.TargetId == block.TargetId) is { } overwrite)
-            {
-                using var scope = bot.Services.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
-
-                PreviousChannelAllowPermissions = overwrite.Permissions.Allowed;
-                PreviousChannelDenyPermissions = overwrite.Permissions.Denied;
-                await db.SaveChangesAsync();
-            }
-        */
-        
         var options = punishment.GetApplyRestRequestOptions();
         return punishment switch
         {
-            Kick => bot.KickMemberAsync(punishment.GuildId, punishment.TargetId, options),
-            Block block => bot.SetOverwriteAsync(block.ChannelId, LocalOverwrite.Member(block.TargetId,
+            Kick => bot.KickMemberAsync(punishment.GuildId, punishment.Target.Id, options),
+            Block block => bot.SetOverwriteAsync(block.ChannelId, LocalOverwrite.Member(block.Target.Id,
                 new OverwritePermissions().Deny(Permissions.SendMessages | Permissions.AddReactions))),
-            Ban ban => bot.CreateBanAsync(ban.GuildId, ban.TargetId, deleteMessageDays: ban.MessagePruneDays, options: options),
+            Ban ban => bot.CreateBanAsync(ban.GuildId, ban.Target.Id, deleteMessageDays: ban.MessagePruneDays, options: options),
             TimedRole timedRole => timedRole.Mode is TimedRoleApplyMode.Grant
-                ? bot.GrantRoleAsync(timedRole.GuildId, timedRole.TargetId, timedRole.RoleId, options)
-                : bot.RevokeRoleAsync(timedRole.GuildId, timedRole.TargetId, timedRole.RoleId, options),
-            Timeout timeout => bot.ModifyMemberAsync(punishment.GuildId, punishment.TargetId, x => x.TimedOutUntil = timeout.ExpiresAt, options),
+                ? bot.GrantRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId, options)
+                : bot.RevokeRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId, options),
+            Timeout timeout => bot.ModifyMemberAsync(punishment.GuildId, punishment.Target.Id, x => x.TimedOutUntil = timeout.ExpiresAt, options),
             Warning => Task.CompletedTask,
             _ => throw new ArgumentOutOfRangeException(nameof(punishment))
         };
-
-        
-
-        /*
-       static async Task ApplyWarningAsync(Warning warning, DiscordBotBase bot)
-       {
-
-           using var scope = bot.Services.CreateScope();
-           await using var db = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
-           var warningCount = await db.Punishments.OfType<Warning>()
-               .CountAsync(x => x.GuildId == warning.GuildId && x.TargetId == warning.TargetId && !x.RevokedAt.HasValue);
-
-           if (await db.WarningPunishments.FindAsync(warning.GuildId, warningCount) is not { } warningPunishment)
-               return;
-
-           //var punishmentService = bot.Services.GetRequiredService<PunishmentService>();
-           var expiresAt = warning.CreatedAt + warningPunishment.PunishmentDuration;
-           Punishment punishmentToApply = warningPunishment.PunishmentType switch
-           {
-               PunishmentType.Timeout => new Timeout(warning.GuildId, warning.TargetId, warning.TargetName, warning.ModeratorId,
-                   warning.ModeratorName, $"Automatic timeout: See case {warning.FormatKey()}.", expiresAt!.Value),
-               PunishmentType.Kick => new Kick(warning.GuildId, warning.TargetId, warning.TargetName, warning.ModeratorId,
-                   warning.ModeratorName, $"Automatic timeout: See case {warning.FormatKey()}."),
-               PunishmentType.Ban => new Ban(warning.GuildId, warning.TargetId, warning.TargetName, warning.ModeratorId,
-                   warning.ModeratorName, $"Automatic timeout: See case {warning.FormatKey()}.", warning.Guild!.DefaultBanPruneDays, expiresAt),
-               _ => throw new ArgumentOutOfRangeException()
-           };
-
-           await punishmentService.ProcessPunishmentAsync(punishmentToApply, null);
-           AdditionalPunishmentId = punishmentToApply.Id;
-           await db.SaveChangesAsync();
-        }
-        */
     }
 
     public static Task RevokeAsync(this RevocablePunishment punishment, DiscordBotBase bot)
@@ -99,17 +53,17 @@ public static partial class DbModelExtensions
         var options = punishment.GetRevokeRestRequestOptions();
         return punishment switch
         {
-            Ban => bot.DeleteBanAsync(punishment.GuildId, punishment.TargetId, options),
+            Ban => bot.DeleteBanAsync(punishment.GuildId, punishment.Target.Id, options),
             Block block => block.PreviousChannelAllowPermissions.HasValue
-                ? bot.SetOverwriteAsync(block.ChannelId, LocalOverwrite.Member(block.TargetId, new OverwritePermissions()
-                    .Allow((Permissions) block.PreviousChannelAllowPermissions.Value)
-                    .Deny((Permissions) block.PreviousChannelDenyPermissions!.Value)))
-                : bot.DeleteOverwriteAsync(block.ChannelId, block.TargetId),
+                ? bot.SetOverwriteAsync(block.ChannelId, LocalOverwrite.Member(block.Target.Id, new OverwritePermissions()
+                    .Allow(block.PreviousChannelAllowPermissions.Value)
+                    .Deny(block.PreviousChannelDenyPermissions!.Value)))
+                : bot.DeleteOverwriteAsync(block.ChannelId, block.Target.Id),
             TimedRole timedRole => timedRole.Mode is TimedRoleApplyMode.Grant
-                ? bot.RevokeRoleAsync(timedRole.GuildId, timedRole.TargetId, timedRole.RoleId)
-                : bot.GrantRoleAsync(timedRole.GuildId, timedRole.TargetId, timedRole.RoleId),
+                ? bot.RevokeRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId)
+                : bot.GrantRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId),
             Timeout timeout => timeout.WasManuallyRevoked 
-                ? bot.ModifyMemberAsync(timeout.GuildId, timeout.TargetId, x => x.TimedOutUntil = null)
+                ? bot.ModifyMemberAsync(timeout.GuildId, timeout.Target.Id, x => x.TimedOutUntil = null)
                 : Task.CompletedTask,
             Warning => Task.CompletedTask,
             _ => throw new ArgumentOutOfRangeException(nameof(punishment))
@@ -118,7 +72,7 @@ public static partial class DbModelExtensions
     
     public static async ValueTask<string> FormatCommandResponseStringAsync(this Punishment punishment, DiscordBotBase bot)
     {
-        var builder = new StringBuilder($"{punishment.FormatKey()} {Markdown.Bold(punishment.TargetName)} ({Markdown.Code(punishment.TargetId)}) has");
+        var builder = new StringBuilder($"{punishment.FormatKey()} {Markdown.Bold(punishment.Target.Name)} ({Markdown.Code(punishment.Target.Id)}) has");
 
         builder.Append(punishment switch
         {
@@ -156,7 +110,7 @@ public static partial class DbModelExtensions
 
             await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
             var warningCount = await db.Punishments.OfType<Warning>()
-                .CountAsync(x => x.GuildId == warning.GuildId && x.TargetId == warning.TargetId && !x.RevokedAt.HasValue);
+                .CountAsync(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && !x.RevokedAt.HasValue);
 
             var builder = new StringBuilder($"been given their {Markdown.Bold(warningCount.ToOrdinalWords())} warning.");
             if (warning.AdditionalPunishment is { } additionalPunishment)
@@ -189,8 +143,8 @@ public static partial class DbModelExtensions
 
         if (punishment.Guild.HasSetting(GuildSettings.LogModeratorsInPunishments))
         {
-            var moderator = bot.GetMember(punishment.GuildId, punishment.ModeratorId) ?? bot.GetUser(punishment.ModeratorId);
-            embed.WithFooter($"Moderator: {punishment.ModeratorName}", moderator?.GetAvatarUrl());
+            var moderator = bot.GetMember(punishment.GuildId, punishment.Moderator.Id) ?? bot.GetUser(punishment.Moderator.Id);
+            embed.WithFooter($"Moderator: {punishment.Moderator.Name}", moderator?.GetAvatarUrl());
         }
 
         if (punishment.Guild.HasSetting(GuildSettings.LogImagesInPunishments) && punishment.Attachment is { } attachment)
@@ -255,8 +209,8 @@ public static partial class DbModelExtensions
             .WithValveColor()
             .WithTitle(punishment.FormatEmbedTitle())
             .WithDescription(punishment.AppealStatus is AppealStatus.Sent or AppealStatus.NeedsInfo
-                ? $"{Markdown.Bold(punishment.TargetName)} ({punishment.TargetId}) has updated their {punishment.FormatPunishmentName(LetterCasing.LowerCase)} appeal."
-                : $"{Markdown.Bold(punishment.TargetName)} ({punishment.TargetId}) has appealed their {punishment.FormatPunishmentName(LetterCasing.LowerCase)}.")
+                ? $"{Markdown.Bold(punishment.Target.Name)} ({punishment.Target.Id}) has updated their {punishment.FormatPunishmentName(LetterCasing.LowerCase)} appeal."
+                : $"{Markdown.Bold(punishment.Target.Name)} ({punishment.Target.Id}) has appealed their {punishment.FormatPunishmentName(LetterCasing.LowerCase)}.")
             .AddField("Appeal", punishment.AppealText!)
             .WithTimestamp(punishment.AppealedAt ?? DateTimeOffset.UtcNow);
 
@@ -322,18 +276,10 @@ public static partial class DbModelExtensions
             .AddField(punishment.FormatRevocationReasonField())
             .WithTimestamp(punishment.RevokedAt!.Value);
         
-        if (punishment.Guild.HasSetting(GuildSettings.LogModeratorsInPunishments))
+        if (punishment.Guild.HasSetting(GuildSettings.LogModeratorsInPunishments) && punishment.Revoker is { } revoker)
         {
-            var revokerId = punishment.RevokerId.HasValue && punishment.RevokerId != bot.CurrentUser.Id
-                ? punishment.RevokerId.Value
-                : punishment.ModeratorId;
-            
-            var revokerName = punishment.RevokerId.HasValue && punishment.RevokerId != bot.CurrentUser.Id
-                ? punishment.RevokerName!
-                : punishment.ModeratorName;
-
-            embed.WithFooter($"Revoker: {revokerName}", bot.GetMember(punishment.GuildId, revokerId)?.GetGuildAvatarUrl()
-                                                        ?? bot.GetUser(revokerId)?.GetAvatarUrl());
+            embed.WithFooter($"Revoker: {revoker.Name}", bot.GetMember(punishment.GuildId, revoker.Id)?.GetGuildAvatarUrl()
+                                                        ?? bot.GetUser(revoker.Id)?.GetAvatarUrl());
         }
         
         message.AddEmbed(embed);
@@ -355,12 +301,12 @@ public static partial class DbModelExtensions
 
         return message;
     }
+    
+    public static string FormatPunishmentName(this Punishment punishment, LetterCasing casing = LetterCasing.Title)
+        => punishment.GetType().Name.Humanize(casing);
 
     private static string FormatEmbedTitle(this Punishment punishment)
         => $"{punishment.FormatPunishmentName()} - Case #{punishment.Id}";
-
-    private static string FormatPunishmentName(this Punishment punishment, LetterCasing casing = LetterCasing.Title)
-        => punishment.GetType().Name.Humanize(casing);
 
     private static LocalEmbedField FormatReasonField(this Punishment punishment, DiscordBotBase bot, bool isLogMessage)
     {
@@ -397,7 +343,7 @@ public static partial class DbModelExtensions
 
     private static string FormatLogEmbedDescription(this Punishment punishment, DiscordBotBase bot)
     {
-        var builder = new StringBuilder($"{Markdown.Bold(punishment.TargetName)} ({Markdown.Code(punishment.TargetId)}) has ")
+        var builder = new StringBuilder($"{Markdown.Bold(punishment.Target.Name)} ({Markdown.Code(punishment.Target.Id)}) has ")
             .Append(punishment switch
             {
                 Kick => "been kicked out",
@@ -428,7 +374,7 @@ public static partial class DbModelExtensions
             using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
             
             var punishments = db.Punishments.AsNoTracking().Where(x => x.GuildId == warning.GuildId).ToList();
-            var warningCount = punishments.OfType<Warning>().Count(x => x.TargetId == warning.TargetId && !x.RevokedAt.HasValue);
+            var warningCount = punishments.OfType<Warning>().Count(x => x.Target.Id == warning.Target.Id && !x.RevokedAt.HasValue);
 
             return $" been given a warning.\nThis is their {Markdown.Bold(warningCount.ToOrdinalWords())} warning";
         }
@@ -468,7 +414,7 @@ public static partial class DbModelExtensions
             using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
             
             var punishments = db.Punishments.AsNoTracking().Where(x => x.GuildId == warning.GuildId).ToList();
-            var warningCount = punishments.OfType<Warning>().Count(x => x.TargetId == warning.TargetId && !x.RevokedAt.HasValue);
+            var warningCount = punishments.OfType<Warning>().Count(x => x.Target.Id == warning.Target.Id && !x.RevokedAt.HasValue);
 
             return $" been given a warning.\nThis is your {Markdown.Bold(warningCount.ToOrdinalWords())} warning in ";
         }
@@ -476,7 +422,7 @@ public static partial class DbModelExtensions
 
     private static string FormatRevocationLogEmbedDescription(this RevocablePunishment punishment, DiscordBotBase bot)
     {
-        var builder = new StringBuilder($"{Markdown.Bold(punishment.TargetName)} ({Markdown.Code(punishment.TargetId)}) has ")
+        var builder = new StringBuilder($"{Markdown.Bold(punishment.Target.Name)} ({Markdown.Code(punishment.Target.Id)}) has ")
             .Append(punishment switch
             {
                 Block block => $"been unblocked from {Mention.Channel(block.ChannelId)} ({Markdown.Code(block.ChannelId)})",
@@ -535,16 +481,22 @@ public static partial class DbModelExtensions
             using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
             
             var punishments = db.Punishments.AsNoTracking().Where(x => x.GuildId == warning.GuildId).ToList();
-            var warningCount = punishments.OfType<Warning>().Count(x => x.TargetId == warning.TargetId && !x.RevokedAt.HasValue);
+            var warningCount = punishments.OfType<Warning>().Count(x => x.Target.Id == warning.Target.Id && !x.RevokedAt.HasValue);
 
             return $" been given a warning.\nThis is your {Markdown.Bold(warningCount.ToOrdinalWords())} warning in ";
         }
     }
 
     private static LocalEmbedField FormatExpiryField(this IExpiringDbEntity entity)
-        => new LocalEmbedField().WithName("Expires").WithValue(entity.ExpiresAt.HasValue
-            ? Markdown.Timestamp(entity.ExpiresAt.Value, Markdown.TimestampFormat.RelativeTime)
-            : "never (permanent)");
+    {
+        return new LocalEmbedField()
+            .WithName(entity.ExpiresAt is { } expiresAt && expiresAt < DateTimeOffset.UtcNow
+                ? "Expired"
+                : "Expires")
+            .WithValue(entity.ExpiresAt.HasValue
+                ? Markdown.Timestamp(entity.ExpiresAt.Value, Markdown.TimestampFormat.RelativeTime)
+                : "never (permanent)");
+    }
     
     private static DefaultRestRequestOptions GetApplyRestRequestOptions(this Punishment punishment)
     {

@@ -1,23 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-[Table("lua_commands")]
-[PrimaryKey(nameof(GuildId), nameof(Name))]
-public sealed record LuaCommand(
-    [property: Column("guild")] Snowflake GuildId, 
-    [property: Column("name")] string Name,
-    byte[] Metadata,
-    byte[] Command)
+public sealed record LuaCommand(Snowflake GuildId, string Name, byte[] Metadata, byte[] Command) : IStaticEntityTypeConfiguration<LuaCommand>
 {
-    [property: Column("metadata")]
     public byte[] Metadata { get; set; } = Metadata;
 
-    [property: Column("command")]
     public byte[] Command { get; set; } = Command;
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<LuaCommand>.ConfigureBuilder(EntityTypeBuilder<LuaCommand> command)
+    {
+        command.ToTable("lua_commands");
+        command.HasKey(x => new { x.GuildId, x.Name });
+
+        command.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        command.HasPropertyWithColumnName(x => x.Name, "name");
+        command.HasPropertyWithColumnName(x => x.Metadata, "metadata");
+        command.HasPropertyWithColumnName(x => x.Command, "command");
+    }
 }

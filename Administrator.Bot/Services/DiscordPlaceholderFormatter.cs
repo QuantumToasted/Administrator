@@ -10,7 +10,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public class DiscordPlaceholderFormatter : IPlaceholderFormatter
+public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
 {
     private static readonly Regex UserPlaceholderRegex =
         new(@"{user\.(?:xp|level|nextxp|tier|img)}", RegexOptions.Compiled | RegexOptions.IgnoreCase);

@@ -7,7 +7,6 @@ using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Gateway;
 using Disqord.Rest;
-using Humanizer;
 using Qommon;
 
 namespace Administrator.Bot;
@@ -101,7 +100,7 @@ public static partial class DbModelExtensions
     
     public static string RegenerateApiKey(this Guild guild)
     {
-        var idBytes = Encoding.Unicode.GetBytes(guild.Id.ToString());
+        var idBytes = Encoding.Unicode.GetBytes(guild.GuildId.ToString());
         var cryptoBytes = new byte[32];
         var saltBytes = new byte[16];
         
@@ -127,36 +126,6 @@ public static partial class DbModelExtensions
             .Append('.')
             .Append(Convert.ToBase64String(cryptoBytes))
             .ToString();
-    }
-
-    public static LocalMessage FormatExpiryMessage(this Reminder reminder)
-    {
-        var contentBuilder = new StringBuilder(Mention.User(reminder.AuthorId));
-        contentBuilder.AppendNewline(reminder.RepeatMode.HasValue
-            ? $", your reminder {reminder} for every {Markdown.Code(reminder.FormatRepeatDuration())}:"
-            : $", your reminder {reminder} from {Markdown.Timestamp(reminder.CreatedAt, Markdown.TimestampFormat.RelativeTime)}:");
-        
-        contentBuilder.Append(reminder.Text);
-        return new LocalMessage()
-            .WithContent(contentBuilder.ToString())
-            .WithAllowedMentions(new LocalAllowedMentions().WithUserIds(reminder.AuthorId));
-    }
-    
-    public static string FormatRepeatDuration(this Reminder reminder)
-    {
-        if (!reminder.RepeatMode.HasValue)
-            throw new InvalidOperationException("Only repeating reminders can be formatted in this way.");
-
-        var value = reminder.RepeatMode.Value switch
-        {
-            ReminderRepeatMode.Hourly => TimeSpan.FromHours(reminder.RepeatInterval!.Value),
-            ReminderRepeatMode.Daily => TimeSpan.FromDays(reminder.RepeatInterval!.Value),
-            ReminderRepeatMode.Weekly => TimeSpan.FromDays(reminder.RepeatInterval!.Value * 7),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        return value.Humanize();
-        //return value.Humanize(int.MaxValue, maxUnit: TimeUnit.Week, minUnit: TimeUnit.Minute);
     }
 
     public static TimeZoneInfo GetTimeZone(this GlobalUser user)

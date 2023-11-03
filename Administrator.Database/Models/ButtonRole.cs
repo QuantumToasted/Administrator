@@ -1,28 +1,33 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
 // TODO: implement button roles
-[Table("button_roles")]
-[PrimaryKey(nameof(Id))]
-public sealed record ButtonRole(
-    [property: Column("guild")] Snowflake GuildId,
-    [property: Column("channel")] Snowflake ChannelId,
-    [property: Column("message")] Snowflake MessageId,
-    [property: Column("row")] int Row,
-    [property: Column("position")] int Position,
-    [property: Column("emoji")] string? Emoji,
-    [property: Column("text")] string? Text,
-    [property: Column("role")] Snowflake RoleId)
+public sealed record ButtonRole(Snowflake GuildId, Snowflake ChannelId, Snowflake MessageId, int Row, int Position, string? Emoji, string? Text, Snowflake RoleId) 
+    : IStaticEntityTypeConfiguration<ButtonRole>
 {
-    [Column("id")]
     public int Id { get; init; }
     
-    [Column("exclusive_group")]
     public int? ExclusiveGroupId { get; set; }
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<ButtonRole>.ConfigureBuilder(EntityTypeBuilder<ButtonRole> buttonRole)
+    {
+        buttonRole.ToTable("button_roles");
+        buttonRole.HasKey(x => x.Id);
+
+        buttonRole.HasPropertyWithColumnName(x => x.Id, "id");
+        buttonRole.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        buttonRole.HasPropertyWithColumnName(x => x.ChannelId, "channel");
+        buttonRole.HasPropertyWithColumnName(x => x.MessageId, "message");
+        buttonRole.HasPropertyWithColumnName(x => x.Row, "row");
+        buttonRole.HasPropertyWithColumnName(x => x.Position, "position");
+        buttonRole.HasPropertyWithColumnName(x => x.Emoji, "emoji");
+        buttonRole.HasPropertyWithColumnName(x => x.Text, "text");
+        buttonRole.HasPropertyWithColumnName(x => x.RoleId, "role");
+        buttonRole.HasPropertyWithColumnName(x => x.ExclusiveGroupId, "exclusive_group");
+    }
 }

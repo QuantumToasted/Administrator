@@ -5,7 +5,7 @@ using Disqord;
 
 namespace Administrator.Core;
 
-public class ColorJsonConverter : JsonConverter<Color>
+public sealed class ColorJsonConverter : JsonConverter<Color>
 {
     /*
     public override void WriteJson(JsonWriter writer, Color value, JsonSerializer serializer)
@@ -48,7 +48,5 @@ public class ColorJsonConverter : JsonConverter<Color>
     }
 
     public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value.ToString());
-    }
+        => writer.WriteStringValue(value.ToString());
 }

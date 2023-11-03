@@ -29,7 +29,6 @@ public sealed class ModifyMessageEditView : MessageEditView
             x.Embeds = message.Embeds.GetValueOrDefault()?.ToList() ?? Optional<IEnumerable<LocalEmbed>>.Empty;
         });
 
-        ChangesSaved = true;
         ClearComponents();
         await Menu.ApplyChangesAsync(e);
         Menu.Stop();

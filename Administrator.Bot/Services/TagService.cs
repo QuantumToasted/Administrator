@@ -15,7 +15,7 @@ namespace Administrator.Bot;
 public sealed class TagService(AdminDbContext db, ICommandContextAccessor contextAccessor, 
     AttachmentService attachments, SlashCommandMentionService mentions, AutoCompleteService autoComplete)
 {
-    private readonly IDiscordInteractionGuildCommandContext _context = (IDiscordInteractionGuildCommandContext) contextAccessor.Context;
+    private readonly IDiscordInteractionGuildCommandContext _context = (IDiscordInteractionGuildCommandContext)contextAccessor.Context;
     
     public async Task<Result<Tag>> CreateTagAsync(string name, IAttachment? attachment)
     {
@@ -47,22 +47,25 @@ public sealed class TagService(AdminDbContext db, ICommandContextAccessor contex
         return tag;
     }
 
-    public async Task<Result<Tag>> FindTagAsync(string name)
+    public async Task<Result<Tag>> FindTagAsync(string name, bool requireOwner = false)
     {
         if (await db.Tags.FindAsync(_context.GuildId, name) is not { } tag)
             return $"No tag exists with the name \"{name}\"!";
+        
+        if (requireOwner && tag.OwnerId != _context.AuthorId)
+            return $"You don't own the tag \"{name}\"!";
 
         return tag;
     }
 
-    public async Task<Result<Tag>> DeleteTagAsync(string name)
+    public async Task<Result<Tag>> DeleteTagAsync(string name, bool requireOwner = true)
     {
         var findResult = await FindTagAsync(name);
-        if (!findResult.IsSuccess)
+        if (!findResult.IsSuccessful)
             return findResult.ErrorMessage;
 
         var tag = findResult.Value;
-        if (tag.OwnerId != _context.AuthorId)
+        if (requireOwner && tag.OwnerId != _context.AuthorId)
             return $"You don't own the tag \"{name}\"!";
 
         db.Tags.Remove(tag);
@@ -70,23 +73,27 @@ public sealed class TagService(AdminDbContext db, ICommandContextAccessor contex
         return tag;
     }
 
-    public async Task<Result<Tag>> TransferTagAsync(string name, IMember newOwner)
+    public async Task<Result<Tag>> TransferTagAsync(string name, IMember newOwner, bool requireOwner = true)
     {
         var findResult = await FindTagAsync(name);
-        if (!findResult.IsSuccess)
+        if (!findResult.IsSuccessful)
             return findResult.ErrorMessage;
         
         var tag = findResult.Value;
-        if (tag.OwnerId != _context.AuthorId)
-            return $"You don't own the tag \"{name}\"!";
+
+        if (requireOwner)
+        {
+            if (tag.OwnerId != _context.AuthorId)
+                return $"You don't own the tag \"{name}\"!";
         
-        var view = new PromptView(x => x.WithContent($"Tag transfer started for tag \"{name}\". {newOwner.Mention}, you will need to confirm this transfer.")
-            .WithAllowedMentions(new LocalAllowedMentions().WithUserIds(newOwner.Id)));
+            var view = new PromptView(x => x.WithContent($"Tag transfer started for tag \"{name}\". {newOwner.Mention}, you will need to confirm this transfer.")
+                .WithAllowedMentions(new LocalAllowedMentions().WithUserIds(newOwner.Id)));
 
-        await _context.Bot.RunMenuAsync(_context.ChannelId, new AdminInteractionMenu(view, _context.Interaction));
+            await _context.Bot.RunMenuAsync(_context.ChannelId, new AdminInteractionMenu(view, _context.Interaction));
 
-        if (!view.Result)
-            return "The transfer request was denied or expired.";
+            if (!view.Result)
+                return "The transfer request was denied or expired.";
+        }
 
         tag.OwnerId = newOwner.Id;
         await db.SaveChangesAsync();
@@ -96,7 +103,7 @@ public sealed class TagService(AdminDbContext db, ICommandContextAccessor contex
     public async Task<Result<Tag>> ClaimTagAsync(string name)
     {
         var findResult = await FindTagAsync(name);
-        if (!findResult.IsSuccess)
+        if (!findResult.IsSuccessful)
             return findResult.ErrorMessage;
         
         var tag = findResult.Value;

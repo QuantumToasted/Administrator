@@ -1,16 +1,17 @@
 ﻿using System.Text.Json.Serialization;
+using Administrator.Core;
 using Administrator.Database;
 
 namespace Administrator.Api;
 
 public sealed record WarningModel(
             int Id, 
-            UserModel Target, 
-            UserModel Moderator, 
+            UserSnapshot Target, 
+            UserSnapshot Moderator, 
             DateTimeOffset CreatedAt, 
             string? Reason, 
             DateTimeOffset? RevokedAt, 
-            UserModel? Revoker, 
+            UserSnapshot? Revoker, 
             string? RevocationReason, 
             DateTimeOffset? AppealedAt, 
             string? AppealText, 
@@ -21,14 +22,12 @@ public sealed record WarningModel(
 {
     public WarningModel(Warning warning)
         : this(warning.Id,
-            new UserModel(warning.TargetId, warning.TargetName),
-            new UserModel(warning.ModeratorId, warning.ModeratorName),
+            warning.Target,
+            warning.Moderator,
             warning.CreatedAt, 
             warning.Reason,
             warning.RevokedAt, 
-            warning.RevokerId.HasValue 
-                ? new UserModel(warning.RevokerId.Value, warning.RevokerName!)
-                : null,
+            warning.Revoker,
             warning.RevocationReason,
             warning.AppealedAt,
             warning.AppealText,

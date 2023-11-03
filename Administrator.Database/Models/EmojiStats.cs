@@ -1,18 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-[Table("emoji_stats")]
-[PrimaryKey(nameof(EmojiId))]
-public sealed record EmojiStats(
-    [property: Column("emoji")] Snowflake EmojiId,
-    [property: Column("guild")] Snowflake GuildId)
+public sealed record EmojiStats(Snowflake EmojiId, Snowflake GuildId) : IStaticEntityTypeConfiguration<EmojiStats>
 {
-    [Column("uses")]
     public int Uses { get; set; }
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<EmojiStats>.ConfigureBuilder(EntityTypeBuilder<EmojiStats> stats)
+    {
+        stats.ToTable("emoji_stats");
+        stats.HasKey(x => x.EmojiId);
+        stats.HasIndex(x => x.GuildId);
+
+        stats.HasPropertyWithColumnName(x => x.EmojiId, "emoji");
+        stats.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        stats.HasPropertyWithColumnName(x => x.Uses, "uses");
+    }
 }

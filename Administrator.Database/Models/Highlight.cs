@@ -1,20 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-[Table("highlights")]
-[PrimaryKey(nameof(Id))]
-[Index(nameof(Text))]
-public sealed record Highlight(
-    [property: Column("author")] Snowflake AuthorId, 
-    [property: Column("guild")] Snowflake? GuildId, 
-    [property: Column("text")] string Text) : INumberKeyedDbEntity<int>
+public sealed record Highlight(Snowflake AuthorId, Snowflake? GuildId, string Text) : INumberKeyedDbEntity<int>, 
+    IStaticEntityTypeConfiguration<Highlight>
 {
-    [Column("id")]
     public int Id { get; init; }
     
-    [ForeignKey(nameof(AuthorId))]
     public GlobalUser? Author { get; init; }
+
+    static void IStaticEntityTypeConfiguration<Highlight>.ConfigureBuilder(EntityTypeBuilder<Highlight> highlight)
+    {
+        highlight.ToTable("highlights");
+        highlight.HasKey(x => x.Id);
+
+        highlight.HasPropertyWithColumnName(x => x.Id, "id");
+        highlight.HasPropertyWithColumnName(x => x.AuthorId, "author");
+        highlight.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        highlight.HasPropertyWithColumnName(x => x.Text, "text");
+    }
 }

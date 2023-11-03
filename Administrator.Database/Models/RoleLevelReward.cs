@@ -1,22 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-[Table("level_rewards")]
-[PrimaryKey(nameof(GuildId), nameof(Tier), nameof(Level))]
-public sealed record RoleLevelReward(
-    [property: Column("guild")] Snowflake GuildId, 
-    [property: Column("tier")] int Tier, 
-    [property: Column("level")] int Level)
+public sealed record RoleLevelReward(Snowflake GuildId, int Tier, int Level) : IStaticEntityTypeConfiguration<RoleLevelReward>
 {
-    [Column("granted_roles")] 
-    public HashSet<Snowflake> GrantedRoleIds { get; init; } = new();
+    public HashSet<Snowflake> GrantedRoleIds { get; set; } = new();
 
-    [Column("revoked_roles")] 
-    public HashSet<Snowflake> RevokedRoleIds { get; init; } = new();
+    public HashSet<Snowflake> RevokedRoleIds { get; set; } = new();
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<RoleLevelReward>.ConfigureBuilder(EntityTypeBuilder<RoleLevelReward> reward)
+    {
+        reward.ToTable("level_rewards");
+        reward.HasKey(x => new { x.GuildId, x.Tier, x.Level });
+
+        reward.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        reward.HasPropertyWithColumnName(x => x.Tier, "tier");
+        reward.HasPropertyWithColumnName(x => x.Level, "level");
+        reward.HasPropertyWithColumnName(x => x.GrantedRoleIds, "granted_roles");
+        reward.HasPropertyWithColumnName(x => x.RevokedRoleIds, "revoked_roles");
+    }
 }

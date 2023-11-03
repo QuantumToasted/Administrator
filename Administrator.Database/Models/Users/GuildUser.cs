@@ -1,14 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-[Table("guild_users")]
-[PrimaryKey(nameof(GuildId), nameof(UserId))]
-public sealed record GuildUser(
-    [property: Column("guild")] Snowflake GuildId,
-    Snowflake UserId) : User(UserId)
+public sealed record GuildUser(Snowflake GuildId, Snowflake UserId) : User(UserId), IStaticEntityTypeConfiguration<GuildUser>
 {
     private static readonly string[] InitialBlurbChoices =
     {
@@ -26,8 +23,24 @@ public sealed record GuildUser(
     [Column("blurb")] 
     public string Blurb { get; set; } = CreateInitialBlurb();
     
-    public List<Tag>? Tags { get; init; }
+    public Guild? Guild { get; init; }
+    
+#pragma warning disable CS8618
+    public List<Tag> Tags { get; init; }
+#pragma warning restore CS8618
 
     private static string CreateInitialBlurb()
         => Random.Shared.GetItems(InitialBlurbChoices, 1)[0];
+
+    static void IStaticEntityTypeConfiguration<GuildUser>.ConfigureBuilder(EntityTypeBuilder<GuildUser> user)
+    {
+        user.ToTable("guild_users");
+        user.HasKey(x => new { x.GuildId, x.UserId });
+
+        user.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        user.HasPropertyWithColumnName(x => x.UserId, "user");
+        user.HasPropertyWithColumnName(x => x.Blurb, "blurb");
+
+        user.HasMany(x => x.Tags).WithOne(x => x.Owner).HasForeignKey(x => new { x.GuildId, x.OwnerId });
+    }
 }

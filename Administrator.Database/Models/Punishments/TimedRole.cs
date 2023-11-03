@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Administrator.Core;
 using Disqord;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -9,17 +10,18 @@ public enum TimedRoleApplyMode
     Revoke
 }
 
-public sealed record TimedRole(
-        Snowflake GuildId,
-        Snowflake TargetId,
-        string TargetName,
-        Snowflake ModeratorId,
-        string ModeratorName,
-        string? Reason,
-        [property: Column("role")] Snowflake RoleId,
-        [property: Column("mode")] TimedRoleApplyMode Mode,
-        [property: Column("expires")] DateTimeOffset? ExpiresAt)
-    : RevocablePunishment(GuildId, TargetId, TargetName, ModeratorId, ModeratorName, Reason), IExpiringDbEntity
+public sealed record TimedRole(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason, 
+        Snowflake RoleId, TimedRoleApplyMode Mode, DateTimeOffset? ExpiresAt)
+    : RevocablePunishment(GuildId, Target, Moderator, Reason), IExpiringDbEntity, IStaticEntityTypeConfiguration<TimedRole>
 {
-    public override PunishmentType Type { get; init; } = PunishmentType.TimedRole;
+    //public override PunishmentType Type { get; init; } = PunishmentType.TimedRole;
+    
+    static void IStaticEntityTypeConfiguration<TimedRole>.ConfigureBuilder(EntityTypeBuilder<TimedRole> timedRole)
+    {
+        timedRole.HasBaseType<RevocablePunishment>();
+
+        timedRole.HasPropertyWithColumnName(x => x.RoleId, "role");
+        timedRole.HasPropertyWithColumnName(x => x.Mode, "mode");
+        timedRole.HasPropertyWithColumnName(x => x.ExpiresAt, "expires");
+    }
 }

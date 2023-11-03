@@ -6,25 +6,18 @@ using Laylua;
 
 namespace Administrator.Bot;
 
-public sealed class DiscordCommandContextLibrary : DiscordLuaLibraryBase
+public sealed class DiscordCommandContextLibrary(IDiscordApplicationGuildCommandContext context) : DiscordLuaLibraryBase
 {
-    private readonly IDiscordApplicationGuildCommandContext _context;
-
-    public DiscordCommandContextLibrary(IDiscordApplicationGuildCommandContext context)
-    {
-        _context = context;
-    }
-    
     public override string Name => "context";
 
     protected override IEnumerable<string> RegisterGlobals(Lua lua)
     {
-        var discordChannel = _context.Bot.GetChannel(_context.GuildId, _context.ChannelId)!;
-        var discordGuild = _context.Bot.GetGuild(_context.GuildId)!;
+        var discordChannel = context.Bot.GetChannel(context.GuildId, context.ChannelId)!;
+        var discordGuild = context.Bot.GetGuild(context.GuildId)!;
         
         using (var ctx = lua.CreateTable())
         {
-            using (var author = lua.ConvertEntity(_context.Author))
+            using (var author = lua.ConvertEntity(context.Author))
             {
                 ctx.SetValue("author", author);
             }
@@ -41,13 +34,13 @@ public sealed class DiscordCommandContextLibrary : DiscordLuaLibraryBase
             
             using (var command = lua.CreateTable())
             {
-                command.SetValue("name", _context.Interaction.CommandName);
-                command.SetValue("id", (long) (ulong) _context.Interaction.CommandId);
+                command.SetValue("name", context.Interaction.CommandName);
+                command.SetValue("id", (long) (ulong) context.Interaction.CommandId);
 
                 ctx.SetValue("command", command);
             }
 
-            if (_context.Interaction is ISlashCommandInteraction { Options: { Count: > 0 } rawOptions } interaction)
+            if (context.Interaction is ISlashCommandInteraction { Options: { Count: > 0 } rawOptions } interaction)
             {
                 var options = GetOptionsWithValues(rawOptions);
 
@@ -120,6 +113,6 @@ public sealed class DiscordCommandContextLibrary : DiscordLuaLibraryBase
     private void Reply(LuaTable msg)
     {
         var message = ConvertMessage<LocalInteractionFollowup>(msg);
-        RunWait(() => _context.Interaction.Followup().SendAsync(message));
+        RunWait(() => context.Interaction.Followup().SendAsync(message));
     }
 }

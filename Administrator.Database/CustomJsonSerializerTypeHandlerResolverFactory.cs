@@ -7,7 +7,7 @@ using Administrator.Core;
 namespace Administrator.Database;
 
 // see https://github.com/npgsql/efcore.pg/issues/1107#issuecomment-945126627
-public class CustomJsonSerializerTypeHandlerResolverFactory(JsonSerializerOptions options) : TypeHandlerResolverFactory
+public sealed class CustomJsonSerializerTypeHandlerResolverFactory(JsonSerializerOptions options) : TypeHandlerResolverFactory
 {
     public override TypeHandlerResolver Create(NpgsqlConnector connector)
         => new JsonOverrideTypeHandlerResolver(connector, options);

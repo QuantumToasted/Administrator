@@ -1,23 +1,35 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
 [Table("warning_punishments")]
-[PrimaryKey(nameof(GuildId), nameof(WarningCount))]
-public sealed record WarningPunishment(
-    [property: Column("guild")] Snowflake GuildId, 
-    [property: Column("warnings")] int WarningCount,
-    PunishmentType PunishmentType,
-    TimeSpan? PunishmentDuration)
+public sealed record WarningPunishment(Snowflake GuildId, int WarningCount, PunishmentType PunishmentType, TimeSpan? PunishmentDuration) 
+    : IStaticEntityTypeConfiguration<WarningPunishment>
 {
-    [Column("type")] 
     public PunishmentType PunishmentType { get; set; } = PunishmentType;
 
-    [Column("duration")]
     public TimeSpan? PunishmentDuration { get; set; } = PunishmentDuration;
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    // Follow this example
+    static void IStaticEntityTypeConfiguration<WarningPunishment>.ConfigureBuilder(EntityTypeBuilder<WarningPunishment> warningPunishment)
+    {
+        // Table
+        warningPunishment.ToTable("warning_punishments");
+        warningPunishment.HasKey(x => new { x.GuildId, x.WarningCount });
+
+        
+        // Properties
+        warningPunishment.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        warningPunishment.HasPropertyWithColumnName(x => x.WarningCount, "warnings");
+        warningPunishment.HasPropertyWithColumnName(x => x.PunishmentType, "type");
+        warningPunishment.HasPropertyWithColumnName(x => x.PunishmentDuration, "duration");
+        
+        // Relations
+        // Extras
+    }
 }

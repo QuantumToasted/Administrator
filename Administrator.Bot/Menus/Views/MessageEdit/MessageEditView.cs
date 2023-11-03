@@ -1,6 +1,7 @@
 ﻿using Disqord;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Rest;
+using Microsoft.Extensions.DependencyInjection;
 using Qommon;
 
 namespace Administrator.Bot;
@@ -8,6 +9,7 @@ namespace Administrator.Bot;
 public abstract partial class MessageEditView : ViewBase
 {
     private bool _firstFormat = true;
+    private MessageEditViewService? _service;
     private int _embedIndex;
     private int _fieldIndex;
 
@@ -22,7 +24,7 @@ public abstract partial class MessageEditView : ViewBase
 
     public LocalMessageBase Message { get; }
 
-    public bool ChangesSaved { get; protected set; }
+    public abstract ValueTask SaveChangesAsync(ButtonEventArgs e);
 
     public void RegenerateComponents()
     {
@@ -39,6 +41,14 @@ public abstract partial class MessageEditView : ViewBase
         AddComponent(ModifyEmbedFooterButton);
         AddComponent(ModifyEmbedFieldSelection);
         AddComponent(SaveChangesButton);
+    }
+
+    public override ValueTask UpdateAsync()
+    {
+        _service ??= Menu.Bot.Services.GetRequiredService<MessageEditViewService>();
+        _service.Views.TryAdd(Menu.MessageId, this);
+        
+        return base.UpdateAsync();
     }
 
     public override void FormatLocalMessage(LocalMessageBase message)
@@ -207,7 +217,11 @@ public abstract partial class MessageEditView : ViewBase
 
     // TODO: Timestamp
 
-    public abstract ValueTask SaveChangesAsync(ButtonEventArgs e);
+    public override ValueTask DisposeAsync()
+    {
+        _service?.Views.Remove(Menu.MessageId);
+        return base.DisposeAsync();
+    }
 
     /*
     public async Task ModifyMessageAsync(Action<ModifyWebhookMessageActionProperties> action)

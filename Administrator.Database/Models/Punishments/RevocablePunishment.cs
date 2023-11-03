@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Administrator.Core;
 using Disqord;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -12,39 +14,36 @@ public enum AppealStatus
     Ignored
 }
 
-public abstract record RevocablePunishment(
-        Snowflake GuildId, 
-        Snowflake TargetId, 
-        string TargetName, 
-        Snowflake ModeratorId, 
-        string ModeratorName, 
-        string? Reason)
-    : Punishment(GuildId, TargetId, TargetName, ModeratorId, ModeratorName, Reason)
+public abstract record RevocablePunishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason)
+    : Punishment(GuildId, Target, Moderator, Reason), IStaticEntityTypeConfiguration<RevocablePunishment>
 {
-    [Column("revoked")]
     public DateTimeOffset? RevokedAt { get; set; }
     
-    [Column("revoker")]
-    public Snowflake? RevokerId { get; set; }
+    public UserSnapshot? Revoker { get; set; }
     
-    [Column("revoker_name")]
-    public string? RevokerName { get; set; }
-    
-    [Column("revocation_reason")]
     public string? RevocationReason { get; set; }
     
-    [Column("appealed")]
     public DateTimeOffset? AppealedAt { get; set; }
     
-    [Column("appeal")]
     public string? AppealText { get; set; }
     
-    [Column("appeal_status")]
     public AppealStatus? AppealStatus { get; set; }
     
-    [Column("appeal_channel")]
     public Snowflake? AppealChannelId { get; set; }
     
-    [Column("appeal_message")]
     public Snowflake? AppealMessageId { get; set; }
+
+    static void IStaticEntityTypeConfiguration<RevocablePunishment>.ConfigureBuilder(EntityTypeBuilder<RevocablePunishment> punishment)
+    {
+        punishment.HasBaseType<Punishment>();
+        
+        punishment.HasPropertyWithColumnName(x => x.RevokedAt, "revoked");
+        punishment.HasPropertyWithColumnName(x => x.Revoker, "revoker").HasColumnType("jsonb");
+        punishment.HasPropertyWithColumnName(x => x.RevocationReason, "revocation_reason");
+        punishment.HasPropertyWithColumnName(x => x.AppealedAt, "appealed");
+        punishment.HasPropertyWithColumnName(x => x.AppealText, "appeal");
+        punishment.HasPropertyWithColumnName(x => x.AppealStatus, "appeal_status");
+        punishment.HasPropertyWithColumnName(x => x.AppealChannelId, "appeal_channel");
+        punishment.HasPropertyWithColumnName(x => x.AppealMessageId, "appeal_message");
+    }
 }

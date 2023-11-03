@@ -63,6 +63,8 @@ public sealed class HighlightView : ViewBase
         var globalUser = await db.GetOrCreateGlobalUserAsync(e.AuthorId);
         globalUser.BlacklistedHighlightUserIds.Add(_message.Author.Id);
         await db.SaveChangesAsync();
+        
+        Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
 
         e.Button.IsDisabled = true;
         e.Button.Label = $"{_message.Author.Tag} blacklisted.";
@@ -75,6 +77,8 @@ public sealed class HighlightView : ViewBase
         var globalUser = await db.GetOrCreateGlobalUserAsync(e.AuthorId);
         globalUser.BlacklistedHighlightChannelIds.Add(_message.ChannelId);
         await db.SaveChangesAsync();
+        
+        Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
 
         /*
         await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
@@ -113,6 +117,8 @@ public sealed class HighlightView : ViewBase
         var snoozedUntil = DateTimeOffset.UtcNow.AddMinutes(minutes);
         globalUser.HighlightsSnoozedUntil = snoozedUntil;
         await db.SaveChangesAsync();
+        Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
+        
         await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
             .WithContent($"You've snoozed {Markdown.Underline("all")} highlights until " +
                          $"{Markdown.Timestamp(snoozedUntil, Markdown.TimestampFormat.LongDateTime)}.\n" +

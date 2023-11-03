@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
 
-public class LoggingChannelConfigurationView : GuildConfigurationViewBase
+public sealed class LoggingChannelConfigurationView : GuildConfigurationViewBase
 {
     public const string SELECTION_TEXT = "Logging Channels";
     

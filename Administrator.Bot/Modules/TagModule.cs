@@ -22,7 +22,7 @@ public sealed class TagModule(TagService tags)
         name = name.ToLowerInvariant();
 
         var result = await tags.CreateTagAsync(name, attachment);
-        if (!result.IsSuccess)
+        if (!result.IsSuccessful)
             return Response(result.ErrorMessage).AsEphemeral();
 
         var tag = result.Value;
@@ -42,7 +42,7 @@ public sealed class TagModule(TagService tags)
         name = name.ToLowerInvariant();
 
         var result = await tags.FindTagAsync(name);
-        if (!result.IsSuccess)
+        if (!result.IsSuccessful)
             return Response(result.ErrorMessage).AsEphemeral();
 
         var tag = result.Value;
@@ -61,7 +61,7 @@ public sealed class TagModule(TagService tags)
         name = name.ToLowerInvariant();
 
         var result = await tags.FindTagAsync(name);
-        if (!result.IsSuccess)
+        if (!result.IsSuccessful)
             return Response(result.ErrorMessage).AsEphemeral();
 
         var tag = result.Value;
@@ -77,8 +77,8 @@ public sealed class TagModule(TagService tags)
     {
         name = name.ToLowerInvariant();
         
-        var result = await tags.FindTagAsync(name);
-        if (!result.IsSuccess)
+        var result = await tags.FindTagAsync(name, true);
+        if (!result.IsSuccessful)
             return Response(result.ErrorMessage).AsEphemeral();
 
         var tag = result.Value;
@@ -98,7 +98,7 @@ public sealed class TagModule(TagService tags)
         name = name.ToLowerInvariant();
         
         var result = await tags.DeleteTagAsync(name);
-        if (!result.IsSuccess)
+        if (!result.IsSuccessful)
             return Response(result.ErrorMessage).AsEphemeral();
 
         return Response($"You've deleted your tag \"{name}\".");
@@ -117,7 +117,7 @@ public sealed class TagModule(TagService tags)
         name = name.ToLowerInvariant();
 
         var result = await tags.TransferTagAsync(name, newOwner);
-        if (!result.IsSuccess)
+        if (!result.IsSuccessful)
             return Response(result.ErrorMessage).AsEphemeral();
 
         return Response($"Tag \"{name}\" successfully transferred to {newOwner.Mention}.");
@@ -132,7 +132,7 @@ public sealed class TagModule(TagService tags)
         name = name.ToLowerInvariant();
 
         var result = await tags.ClaimTagAsync(name);
-        if (!result.IsSuccess)
+        if (!result.IsSuccessful)
             return Response(result.ErrorMessage).AsEphemeral();
         
         return Response($"You've successfully claimed the dormant tag \"{name}\".");
@@ -141,23 +141,11 @@ public sealed class TagModule(TagService tags)
     [AutoComplete("delete")]
     [AutoComplete("transfer")]
     [AutoComplete("modify")]
-    public async Task AutoCompleteUserTagsAsync(
-        AutoComplete<string> name)
-    {
-        if (!name.IsFocused)
-            return;
+    public Task AutoCompleteUserTagsAsync(AutoComplete<string> name)
+        => name.IsFocused ? tags.AutoCompleteTagsAsync(name, Context.Author) : Task.CompletedTask;
 
-        await tags.AutoCompleteTagsAsync(name, Context.Author);
-    }
-    
     [AutoComplete("claim")]
     [AutoComplete("show")]
-    public async Task AutoCompleteAllTagsAsync(
-        AutoComplete<string> name)
-    {
-        if (!name.IsFocused)
-            return;
-
-        await tags.AutoCompleteTagsAsync(name);
-    }
+    public Task AutoCompleteAllTagsAsync(AutoComplete<string> name)
+        => name.IsFocused ? tags.AutoCompleteTagsAsync(name) : Task.CompletedTask;
 }

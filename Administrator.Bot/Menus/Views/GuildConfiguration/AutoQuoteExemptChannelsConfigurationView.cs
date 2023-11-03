@@ -8,7 +8,7 @@ using Disqord.Rest;
 
 namespace Administrator.Bot;
 
-public class AutoQuoteExemptChannelsConfigurationView(IDiscordApplicationGuildCommandContext context,
+public sealed class AutoQuoteExemptChannelsConfigurationView(IDiscordApplicationGuildCommandContext context,
         HashSet<Snowflake> exemptChannelIds)
     : GuildConfigurationViewBase(context)
 {

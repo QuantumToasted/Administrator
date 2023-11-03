@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Administrator.Core;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -14,66 +15,56 @@ public enum PunishmentType
     Warning
 }
 
-[Table("punishments")]
-[PrimaryKey(nameof(Id))]
-[Index(nameof(GuildId))]
-[Index(nameof(TargetId))]
-public abstract record Punishment(
-    [property: Column("guild")] Snowflake GuildId, 
-    [property: Column("target")] Snowflake TargetId, 
-    [property: Column("target_name")] string TargetName, 
-    [property: Column("moderator")] Snowflake ModeratorId, 
-    [property: Column("moderator_name")] string ModeratorName,
-    string? Reason) : INumberKeyedDbEntity<int>
+public abstract record Punishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason) : INumberKeyedDbEntity<int>, IStaticEntityTypeConfiguration<Punishment>
 {
-    [Column("id")]
     public int Id { get; init; }
     
-    [Column("type")]
-    public abstract PunishmentType Type { get; init; }
+    //public abstract PunishmentType Type { get; init; }
     
-    [Column("created")]
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
-
-    [Column("reason")]
+    
     public string? Reason { get; set; } = Reason;
     
-    [Column("log_channel")]
     public Snowflake? LogChannelId { get; set; }
     
-    [Column("log_message")]
     public Snowflake? LogMessageId { get; set; }
     
-    [Column("dm_channel")]
     public Snowflake? DmChannelId { get; set; }
     
-    [Column("dm_message")]
     public Snowflake? DmMessageId { get; set; }
     
-    [Column("attachment")]
     public Guid? AttachmentId { get; set; }
     
-    [ForeignKey(nameof(AttachmentId))]
     public Attachment? Attachment { get; set; }
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
     
-    /*
-    void IEntityTypeConfiguration<Punishment>.Configure(EntityTypeBuilder<Punishment> punishment)
+    static void IStaticEntityTypeConfiguration<Punishment>.ConfigureBuilder(EntityTypeBuilder<Punishment> punishment)
     {
-        punishment.HasKey(x => x.Id);
-        punishment.HasDiscriminator<string>("type")
-            .HasValue<Ban>("ban")
-            .HasValue<Block>("block")
-            .HasValue<Kick>("kick")
-            .HasValue<Timeout>("timeout")
-            .HasValue<Warning>("warning")
-            .HasValue<TimedRole>("timed_role");
-        
-        // TODO: https://github.com/efcore/EFCore.NamingConventions/issues/184
-        // remove when fixed
         punishment.ToTable("punishments");
+        punishment.HasKey(x => x.Id);
+        punishment.HasIndex(x => x.GuildId);
+        // punishment.HasIndex(x => x.Target.Id); can't do jsonb indexes :/
+
+        punishment.HasPropertyWithColumnName(x => x.Id, "id");
+        punishment.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        punishment.HasPropertyWithColumnName(x => x.Target, "target").HasColumnType("jsonb");
+        punishment.HasPropertyWithColumnName(x => x.Moderator, "moderator").HasColumnType("jsonb");
+        punishment.HasPropertyWithColumnName(x => x.Reason, "reason");
+        punishment.HasPropertyWithColumnName(x => x.LogChannelId, "log_channel");
+        punishment.HasPropertyWithColumnName(x => x.LogMessageId, "log_message");
+        punishment.HasPropertyWithColumnName(x => x.DmChannelId, "dm_channel");
+        punishment.HasPropertyWithColumnName(x => x.DmMessageId, "dm_message");
+        punishment.HasPropertyWithColumnName(x => x.AttachmentId, "attachment");
+
+        punishment.HasOne(x => x.Attachment);
+        punishment.HasDiscriminator<PunishmentType>("type")
+            .HasValue<Ban>(PunishmentType.Ban)
+            .HasValue<Block>(PunishmentType.Block)
+            .HasValue<Kick>(PunishmentType.Kick)
+            .HasValue<TimedRole>(PunishmentType.TimedRole)
+            .HasValue<Timeout>(PunishmentType.Timeout)
+            .HasValue<Warning>(PunishmentType.Warning)
+            .IsComplete();
     }
-    */
 }

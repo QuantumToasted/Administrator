@@ -2,7 +2,7 @@
 
 namespace Administrator.Bot;
 
-public class AdminTextMenu(ViewBase view) : DefaultTextMenu(view)
+public sealed class AdminTextMenu(ViewBase view) : DefaultTextMenu(view)
 {
     public override ValueTask DisposeAsync()
     {

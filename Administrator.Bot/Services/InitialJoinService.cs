@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Text;
+﻿using System.Text;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;

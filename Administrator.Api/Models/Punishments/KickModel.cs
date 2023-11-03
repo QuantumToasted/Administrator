@@ -1,19 +1,20 @@
-﻿using Administrator.Database;
+﻿using Administrator.Core;
+using Administrator.Database;
 
 namespace Administrator.Api;
 
 public sealed record KickModel(
         int Id,
-        UserModel Target,
-        UserModel Moderator,
+        UserSnapshot Target,
+        UserSnapshot Moderator,
         DateTimeOffset CreatedAt,
         string? Reason)
     : PunishmentModel(Id, Target, Moderator, CreatedAt, Reason)
 {
     public KickModel(Kick kick) 
         : this(kick.Id,
-        new UserModel(kick.TargetId, kick.TargetName),
-        new UserModel(kick.ModeratorId, kick.ModeratorName),
+        kick.Target, 
+        kick.Moderator,
         kick.CreatedAt, 
         kick.Reason)
     { }

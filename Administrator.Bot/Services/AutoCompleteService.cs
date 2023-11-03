@@ -16,24 +16,30 @@ public sealed class AutoCompleteService(IClient client)
     {
         Guard.IsTrue(autoComplete.IsFocused); // Enforce checking in the autocomplete method to reduce db/cache stress
         
-        if (!Formatters.TryGetValue(typeof(TModel), out var formatter))
-            throw new Exception($"Auto-complete formatter not registered for type {typeof(TModel)}!");
+        if (Formatters.GetValueOrDefault(typeof(TModel)) is not IAutoCompleteFormatter<TModel, TAutoCompleteValue> formatter)
+            throw new Exception($"Auto-complete formatter not registered for types [{typeof(TModel)},{typeof(TAutoCompleteValue)}]!");
 
         if (collection.Count == 0)
             return;
 
         if (string.IsNullOrWhiteSpace(autoComplete.RawArgument))
         {
-            autoComplete.Choices.AddRange(collection.Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
-                .ToDictionary(x => formatter.FormatAutoCompleteName(client, x), x => (TAutoCompleteValue) formatter.FormatAutoCompleteValue(client, x)));
-            
+            AddRange(autoComplete, collection, formatter);
             return;
         }
 
-        var comparisonDict = collection.ToDictionary(x => formatter.ComparisonSelector.Invoke(x));
+        var comparisonDict = new Dictionary<string, TModel>();
+        foreach (var modelWithValues in collection.Select(x => new { Model = x, Values = formatter.ComparisonSelector.Invoke(x) }))
+        {
+            foreach (var value in modelWithValues.Values)
+            {
+                comparisonDict.Add(value, modelWithValues.Model);
+            }
+        }
+        
         if (comparisonDict.FirstOrDefault(x => x.Key.Equals(autoComplete.RawArgument, StringComparison.InvariantCultureIgnoreCase)) is TModel exactMatch)
         {
-            autoComplete.Choices.Add(formatter.FormatAutoCompleteName(client, exactMatch), (TAutoCompleteValue) formatter.FormatAutoCompleteValue(client, exactMatch));
+            Add(autoComplete, exactMatch, formatter);
             return;
         }
 
@@ -41,8 +47,40 @@ public sealed class AutoCompleteService(IClient client)
             .Select(x => x.Value).ToList();
         if (closeMatches.Count > 0)
         {
-            autoComplete.Choices.AddRange(closeMatches.Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
-                .ToDictionary(x => formatter.FormatAutoCompleteName(client, x), x => (TAutoCompleteValue) formatter.FormatAutoCompleteValue(client, x)));
+            AddRange(autoComplete, closeMatches, formatter);
+        }
+    }
+
+    private void Add<TModel, TAutoCompleteValue>(AutoComplete<TAutoCompleteValue> autoComplete, TModel model, IAutoCompleteFormatter<TModel, TAutoCompleteValue> formatter)
+        where TModel : notnull
+        where TAutoCompleteValue : notnull
+    {
+        var names = formatter.FormatAutoCompleteNames(client, model)
+            .Select(x => x.Truncate(Discord.Limits.ApplicationCommand.Option.Choice.MaxNameLength))
+            .Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount);
+        
+        var value = formatter.FormatAutoCompleteValue(client, model);
+
+        autoComplete.Choices!.AddRange(names.ToDictionary(x => x.Truncate(Discord.Limits.ApplicationCommand.Option.Choice.MaxNameLength), _ => value));
+    }
+
+    private void AddRange<TModel, TAutoCompleteValue>(AutoComplete<TAutoCompleteValue> autoComplete, IEnumerable<TModel> enumerable, IAutoCompleteFormatter<TModel, TAutoCompleteValue> formatter)
+        where TModel : notnull
+        where TAutoCompleteValue : notnull
+    {
+        const int maxChoices = Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount;
+        
+        foreach (var model in enumerable)
+        {
+            var names = formatter.FormatAutoCompleteNames(client, model)
+                .Select(x => x.Truncate(Discord.Limits.ApplicationCommand.Option.Choice.MaxNameLength))
+                .Take(Math.Max(maxChoices - autoComplete.Choices!.Count, 0));
+        
+            var value = formatter.FormatAutoCompleteValue(client, model);
+            autoComplete.Choices!.AddRange(names.ToDictionary(x => x.Truncate(Discord.Limits.ApplicationCommand.Option.Choice.MaxNameLength), _ => value));
+
+            if (autoComplete.Choices.Count == maxChoices)
+                break;
         }
     }
 

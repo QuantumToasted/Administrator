@@ -1,16 +1,17 @@
 ﻿using System.Text.Json.Serialization;
+using Administrator.Core;
 using Administrator.Database;
 
 namespace Administrator.Api;
 
 public sealed record TimedRoleModel(
             int Id, 
-            UserModel Target, 
-            UserModel Moderator, 
+            UserSnapshot Target, 
+            UserSnapshot Moderator, 
             DateTimeOffset CreatedAt, 
             string? Reason, 
             DateTimeOffset? RevokedAt, 
-            UserModel? Revoker, 
+            UserSnapshot? Revoker, 
             string? RevocationReason, 
             DateTimeOffset? AppealedAt, 
             string? AppealText, 
@@ -24,14 +25,12 @@ public sealed record TimedRoleModel(
 {
     public TimedRoleModel(TimedRole timedRole)
         : this(timedRole.Id,
-            new UserModel(timedRole.TargetId, timedRole.TargetName),
-            new UserModel(timedRole.ModeratorId, timedRole.ModeratorName),
+            timedRole.Target, 
+            timedRole.Moderator,
             timedRole.CreatedAt, 
             timedRole.Reason,
             timedRole.RevokedAt, 
-            timedRole.RevokerId.HasValue 
-                ? new UserModel(timedRole.RevokerId.Value, timedRole.RevokerName!)
-                : null,
+            timedRole.Revoker,
             timedRole.RevocationReason,
             timedRole.AppealedAt,
             timedRole.AppealText,

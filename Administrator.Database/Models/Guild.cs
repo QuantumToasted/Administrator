@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 using Administrator.Core;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -44,75 +44,96 @@ public enum GuildSettingFlags
     AutoQuote = 1 << 6
 }
 
-[Table("guilds")]
-[PrimaryKey(nameof(Id))]
-public sealed record Guild(
-    [property: Column("id")] Snowflake Id)
+public sealed record Guild(Snowflake GuildId) : IStaticEntityTypeConfiguration<Guild>
 {
     public const string DEFAULT_LEVEL_UP_EMOJI = "🎉";
     
-    [Column("settings")]
     public GuildSettings Settings { get; set; } = GuildSettings.Default;
     
-    [Column("max_tags")]
     public int? MaximumTagsPerUser { get; set; }
 
-    [Column("level_up_emoji")]
     public string LevelUpEmoji { get; set; } = DEFAULT_LEVEL_UP_EMOJI;
     
-    [Column("greeting", TypeName = "jsonb")]
     public JsonMessage? GreetingMessage { get; set; }
     
-    [Column("dm_greeting")]
     public bool DmGreetingMessage { get; set; }
     
-    [Column("goodbye", TypeName = "jsonb")]
     public JsonMessage? GoodbyeMessage { get; set; }
     
-    [Column("was_visited")]
     public bool WasVisited { get; set; }
     
-    [Column("punishment_text")]
     public string? CustomPunishmentText { get; set; }
     
-    [Column("xp_rate")]
     public int? CustomXpRate { get; set; }
     
-    [Column("xp_interval")]
     public TimeSpan? CustomXpInterval { get; set; }
     
-    [Column("api_salt")]
     public byte[]? ApiKeySalt { get; set; }
     
-    [Column("api_hash")]
     public byte[]? ApiKeyHash { get; set; }
     
-    [Column("xp_exempt_channels")]
     public HashSet<Snowflake> XpExemptChannelIds { get; set; } = new();
 
-    [Column("auto_quote_exempt_channels")]
     public HashSet<Snowflake> AutoQuoteExemptChannelIds { get; set; } = new();
 
-    [Column("ban_prune_days")] 
     public int DefaultBanPruneDays { get; set; } = 1;
     
-    public List<LoggingChannel>? LoggingChannels { get; init; }
+#pragma warning disable CS8618
+    public List<GuildUser> Users { get; init; }
     
-    public List<ButtonRole>? ButtonRoles { get; init; }
+    public List<LoggingChannel> LoggingChannels { get; init; }
     
-    public List<EmojiStats>? EmojiStats { get; init; }
+    public List<ButtonRole> ButtonRoles { get; init; }
     
-    public List<ForumAutoTag>? ForumAutoTags { get; init; }
+    public List<EmojiStats> EmojiStats { get; init; }
     
-    public List<InviteFilterExemption>? InviteFilterExemptions { get; init; }
+    public List<ForumAutoTag> ForumAutoTags { get; init; }
     
-    public List<LuaCommand>? LuaCommands { get; init; }
+    public List<InviteFilterExemption> InviteFilterExemptions { get; init; }
     
-    public List<RoleLevelReward>? LevelRewards { get; init; }
+    public List<LuaCommand> LuaCommands { get; init; }
     
-    public List<Tag>? Tags { get; init; }
+    public List<RoleLevelReward> LevelRewards { get; init; }
     
-    public List<WarningPunishment>? WarningPunishments { get; init; }
+    public List<Tag> Tags { get; init; }
     
-    public List<Punishment>? Punishments { get; init; }
+    public List<WarningPunishment> WarningPunishments { get; init; }
+    
+    public List<Punishment> Punishments { get; init; }
+#pragma warning restore CS8618
+    
+    static void IStaticEntityTypeConfiguration<Guild>.ConfigureBuilder(EntityTypeBuilder<Guild> guild)
+    {
+        guild.ToTable("guilds");
+        guild.HasKey(x => x.GuildId);
+
+        guild.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        guild.HasPropertyWithColumnName(x => x.Settings, "settings");
+        guild.HasPropertyWithColumnName(x => x.MaximumTagsPerUser, "max_tags_per_users");
+        guild.HasPropertyWithColumnName(x => x.LevelUpEmoji, "level_up_emoji");
+        guild.HasPropertyWithColumnName(x => x.GreetingMessage, "greeting").HasColumnType("jsonb");
+        guild.HasPropertyWithColumnName(x => x.DmGreetingMessage, "dm_greeting");
+        guild.HasPropertyWithColumnName(x => x.GoodbyeMessage, "goodbye").HasColumnType("jsonb");
+        guild.HasPropertyWithColumnName(x => x.WasVisited, "was_visited");
+        guild.HasPropertyWithColumnName(x => x.CustomPunishmentText, "punishment_text");
+        guild.HasPropertyWithColumnName(x => x.CustomXpRate, "xp_rate");
+        guild.HasPropertyWithColumnName(x => x.CustomXpInterval, "xp_interval");
+        guild.HasPropertyWithColumnName(x => x.ApiKeySalt, "api_salt");
+        guild.HasPropertyWithColumnName(x => x.ApiKeyHash, "api_hash");
+        guild.HasPropertyWithColumnName(x => x.XpExemptChannelIds, "xp_exempt_channels");
+        guild.HasPropertyWithColumnName(x => x.AutoQuoteExemptChannelIds, "autoquote_exempt_channels");
+        guild.HasPropertyWithColumnName(x => x.DefaultBanPruneDays, "ban_prune_days");
+
+        guild.HasMany(x => x.Users).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.LoggingChannels).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.ButtonRoles).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.EmojiStats).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.ForumAutoTags).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.InviteFilterExemptions).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.LuaCommands).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.LevelRewards).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.Tags).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.WarningPunishments).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+        guild.HasMany(x => x.Punishments).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.Cascade);
+    }
 }

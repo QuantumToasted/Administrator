@@ -20,7 +20,6 @@ public sealed class TagMessageEditView(string tagName, LocalMessageBase message)
             .WithContent("Changes saved.")
             .WithIsEphemeral());
         
-        ChangesSaved = true;
         ClearComponents();
         await Menu.ApplyChangesAsync(e);
         Menu.Stop();

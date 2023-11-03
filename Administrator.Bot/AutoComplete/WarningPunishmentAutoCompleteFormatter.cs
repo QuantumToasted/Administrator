@@ -9,7 +9,7 @@ namespace Administrator.Bot.AutoComplete;
 
 public sealed class WarningPunishmentAutoCompleteFormatter : IAutoCompleteFormatter<WarningPunishment, int>
 {
-    public string FormatAutoCompleteName(IClient client, WarningPunishment model) => FormatWarningPunishment(model);
+    public string[] FormatAutoCompleteNames(IClient client, WarningPunishment model) => new[] { FormatWarningPunishment(model) };
 
     public static string FormatWarningPunishment(WarningPunishment warningPunishment)
     {
@@ -33,5 +33,5 @@ public sealed class WarningPunishmentAutoCompleteFormatter : IAutoCompleteFormat
     public int FormatAutoCompleteValue(IClient client, WarningPunishment model)
         => model.WarningCount;
 
-    public Func<WarningPunishment, string> ComparisonSelector => static warningPunishment => warningPunishment.WarningCount.ToString();
+    public Func<WarningPunishment, string[]> ComparisonSelector => static warningPunishment => new[] { warningPunishment.WarningCount.ToString() };
 }

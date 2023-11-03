@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Administrator.Database;
 
-public class TimeZoneInfoConverter() : ValueConverter<TimeZoneInfo?, string?>(ConvertToProviderExpression, ConvertFromProviderExpression)
+public sealed class TimeZoneInfoConverter() : ValueConverter<TimeZoneInfo?, string?>(ConvertToProviderExpression, ConvertFromProviderExpression)
 {
     private new static readonly Expression<Func<TimeZoneInfo?, string?>> ConvertToProviderExpression = 
         static x => x != null ? x.Id : null;

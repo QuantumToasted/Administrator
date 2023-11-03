@@ -24,6 +24,6 @@ public static class DateTimeExtensions
         IanaTimeZoneMap = dict;
     }
 
-    public static DateTimeOffset AddWeeks(this DateTimeOffset dto, int weeks)
+    public static DateTimeOffset AddWeeks(this DateTimeOffset dto, double weeks)
         => dto.AddDays(weeks * 7);
 }

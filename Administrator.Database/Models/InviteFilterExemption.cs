@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Disqord;
+﻿using Disqord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
@@ -13,18 +13,23 @@ public enum InviteFilterExemptionType
     InviteCode // invites with the code InviteCode
 }
 
-[Table("invite_filter_exemptions")]
-[PrimaryKey(nameof(Id))]
-[Index(nameof(GuildId))]
-public sealed record InviteFilterExemption(
-    [property: Column("guild")] Snowflake GuildId, 
-    [property: Column("type")] InviteFilterExemptionType ExemptionType, 
-    [property: Column("target")] Snowflake? TargetId, 
-    [property: Column("invite_code")] string? InviteCode)
+public sealed record InviteFilterExemption(Snowflake GuildId, InviteFilterExemptionType ExemptionType, Snowflake? TargetId, string? InviteCode) 
+    : IStaticEntityTypeConfiguration<InviteFilterExemption>
 {
-    [Column("id")] 
     public int Id { get; init; }
     
-    [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; init; }
+
+    static void IStaticEntityTypeConfiguration<InviteFilterExemption>.ConfigureBuilder(EntityTypeBuilder<InviteFilterExemption> exemption)
+    {
+        exemption.ToTable("invite_filter_exemptions");
+        exemption.HasKey(x => x.Id);
+        exemption.HasIndex(x => x.GuildId);
+
+        exemption.HasPropertyWithColumnName(x => x.Id, "id");
+        exemption.HasPropertyWithColumnName(x => x.GuildId, "guild");
+        exemption.HasPropertyWithColumnName(x => x.ExemptionType, "type");
+        exemption.HasPropertyWithColumnName(x => x.TargetId, "target");
+        exemption.HasPropertyWithColumnName(x => x.InviteCode, "invite_code");
+    }
 }

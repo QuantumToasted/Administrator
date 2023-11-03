@@ -2,7 +2,7 @@
 
 namespace Administrator.Api;
 
-public class AuthorizationEndpointFilter : IEndpointFilter
+public sealed class AuthorizationEndpointFilter : IEndpointFilter
 {
     public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {

@@ -39,14 +39,7 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options) : D
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Punishment>()
-            .HasDiscriminator(x => x.Type)
-            .HasValue<Ban>(PunishmentType.Ban)
-            .HasValue<Block>(PunishmentType.Block)
-            .HasValue<Kick>(PunishmentType.Kick)
-            .HasValue<TimedRole>(PunishmentType.TimedRole)
-            .HasValue<Timeout>(PunishmentType.Timeout)
-            .HasValue<Warning>(PunishmentType.Warning);
+        modelBuilder.ApplyStaticConfigurationsFromAssembly(GetType().Assembly);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

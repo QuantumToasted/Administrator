@@ -10,7 +10,7 @@ using Qmmands.Default;
 
 namespace Administrator.Bot;
 
-public class AdministratorBot(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IServiceProvider services, DiscordClient client)
+public sealed class AdministratorBot(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IServiceProvider services, DiscordClient client)
     : DiscordBot(options, logger, services, client)
 {
     protected override async ValueTask InitializeModules(CancellationToken cancellationToken)
