@@ -4,12 +4,15 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Laylua;
+using Microsoft.Extensions.DependencyInjection;
 using Qommon;
 
 namespace Administrator.Bot;
 
 public sealed class LuaCommandContext(IDiscordApplicationGuildCommandContext context, Lua lua, DiscordLuaLibraryBase library) : ILuaModel<LuaCommandContext>
 {
+    public string[] Path { get; } = SlashCommandMentionService.GetPath(context.Command!)!.Split(' ');
+    
     public LuaMember Author { get; } = new(context.Author, library);
 
     public LuaGuildChannel? Channel { get; } = context.Bot.GetChannel(context.GuildId, context.ChannelId) switch

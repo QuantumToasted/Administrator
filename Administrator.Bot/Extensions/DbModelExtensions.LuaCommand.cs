@@ -50,7 +50,14 @@ public static partial class DbModelExtensions
         var options = slashCommand.GetOptions().ToList();
         if (options.Any(x => x.Type is SlashCommandOptionType.SubcommandGroup or SlashCommandOptionType.Subcommand))
         {
-            PopulateOptions(parentModule, options);
+            var subModule = new ApplicationModuleBuilder(parentModule)
+            {
+                Alias = slashCommand.Name
+            };
+            
+            parentModule.Submodules.Add(subModule);
+            
+            PopulateOptions(subModule, options);
             
             void PopulateOptions(ApplicationModuleBuilder currentModule, ICollection<LuaSlashCommandOption> opts)
             {
@@ -61,17 +68,17 @@ public static partial class DbModelExtensions
                     
                     if (option.Type is SlashCommandOptionType.SubcommandGroup)
                     {
-                        var subModule = new ApplicationModuleBuilder(currentModule)
+                        var subCommandModule = new ApplicationModuleBuilder(currentModule)
                         {
                             Alias = option.Name
                         };
                         
-                        currentModule.Submodules.Add(subModule);
+                        currentModule.Submodules.Add(subCommandModule);
 
                         var subOpts = option.GetOptions().ToList();
                         Guard.IsNotEmpty(subOpts);
                         
-                        PopulateOptions(subModule, subOpts);
+                        PopulateOptions(subCommandModule, subOpts);
                         continue;
                     }
 
