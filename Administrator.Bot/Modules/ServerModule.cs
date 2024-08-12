@@ -1,39 +1,43 @@
-﻿using Administrator.Database;
+﻿using System.Text;
+using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Commands.Application;
-using Disqord.Extensions.Interactivity.Menus.Prompt;
-using Humanizer;
-using Microsoft.EntityFrameworkCore;
+using Disqord.Gateway;
 using Qmmands;
 
 namespace Administrator.Bot;
 
 [SlashGroup("server")]
-[RequireInitialAuthorPermissions(Permissions.ManageGuild)]
 public sealed class ServerModule(AdminDbContext db) : DiscordApplicationGuildModuleBase
 {
-    [SlashCommand("reset-xp")]
-    [Description("Resets everyone's XP to 0 in this server.")]
-    public async Task<IResult> ResetXpAsync()
+    [SlashCommand("info")]
+    [Description("Displays detailed information about this server.")]
+    public IResult ShowInfo()
     {
-        var guildUsers = await db.GuildUsers.Where(x => x.GuildId == Context.GuildId && x.TotalXp > 0).ToListAsync();
+        var guild = Bot.GetGuild(Context.GuildId)!;
+        var embed = new LocalEmbed()
+            .WithUnusualColor()
+            .WithTitle($"Server information for {guild.Name}")
+            .AddField("ID", guild.Id)
+            .AddField("Created", Markdown.Timestamp(guild.CreatedAt(), Markdown.TimestampFormat.RelativeTime));
 
-        var prompt = new PromptView(x =>
-            x.WithContent($"This action will reset the XP of {"member".ToQuantity(guildUsers.Count)} to 0.\n" +
-                          $"It will not assign or remove any existing level rewards."));
+        if (guild.GetIconUrl(CdnAssetFormat.Automatic) is { } iconUrl)
+            embed.WithThumbnailUrl(iconUrl);
 
-        await View(prompt);
+        var statsField = new LocalEmbedField()
+            .WithName("Stats");
 
-        if (!prompt.Result)
-            return Response("Action canceled or timed out.");
+        var channels = guild.GetChannels().Values.ToList();
+        var valueBuilder = new StringBuilder()
+            .AppendNewline($"Approximate member count: {guild.Members.Count}")
+            .AppendNewline($"Bots: {guild.Members.Values.Count(x => x.IsBot)}")
+            .AppendNewline($"Text channels: {channels.Count(x => x.Type is ChannelType.Text)}")
+            .AppendNewline($"Threads: {channels.Count(x => x.Type is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread)}")
+            .AppendNewline($"Voice channels: {channels.Count(x => x.Type is ChannelType.Voice)}")
+            .AppendNewline($"Categories: {channels.Count(x => x.Type is ChannelType.Category)}");
 
-        guildUsers.ForEach(x =>
-        {
-            x.TotalXp = 0;
-            x.LastXpGain = DateTimeOffset.UtcNow;
-        });
+        embed.AddField(statsField.WithValue(valueBuilder.ToString()));
         
-        await db.SaveChangesAsync();
-        return Response("XP stats have been reset for this server.");
+        return Response(embed);
     }
 }

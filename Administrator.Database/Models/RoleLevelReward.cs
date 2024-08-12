@@ -4,23 +4,19 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record RoleLevelReward(Snowflake GuildId, int Tier, int Level) : IStaticEntityTypeConfiguration<RoleLevelReward>
+public sealed record RoleLevelReward(Snowflake GuildId, int Tier, int Level)
 {
-    public HashSet<Snowflake> GrantedRoleIds { get; set; } = new();
+    public List<Snowflake> GrantedRoleIds { get; set; } = new();
 
-    public HashSet<Snowflake> RevokedRoleIds { get; set; } = new();
+    public List<Snowflake> RevokedRoleIds { get; set; } = new();
     
     public Guild? Guild { get; init; }
 
-    static void IStaticEntityTypeConfiguration<RoleLevelReward>.ConfigureBuilder(EntityTypeBuilder<RoleLevelReward> reward)
+    private sealed class RoleLevelRewardConfiguration : IEntityTypeConfiguration<RoleLevelReward>
     {
-        reward.ToTable("level_rewards");
-        reward.HasKey(x => new { x.GuildId, x.Tier, x.Level });
-
-        reward.HasPropertyWithColumnName(x => x.GuildId, "guild");
-        reward.HasPropertyWithColumnName(x => x.Tier, "tier");
-        reward.HasPropertyWithColumnName(x => x.Level, "level");
-        reward.HasPropertyWithColumnName(x => x.GrantedRoleIds, "granted_roles");
-        reward.HasPropertyWithColumnName(x => x.RevokedRoleIds, "revoked_roles");
+        public void Configure(EntityTypeBuilder<RoleLevelReward> reward)
+        {
+            reward.HasKey(x => new { x.GuildId, x.Tier, x.Level });
+        }
     }
 }

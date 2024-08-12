@@ -1,13 +1,19 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Imaging;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
+using Disqord.Models;
+using Disqord.Rest;
+using Disqord.Rest.Api;
+using Disqord.Serialization.Json;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Svg;
 
 namespace Administrator.Bot;
@@ -25,6 +31,8 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
     public IReadOnlyDictionary<string, MappedEmoji> Surrogates { get; private set; } = new Dictionary<string, MappedEmoji>();
 
     public IReadOnlyDictionary<string, MappedEmoji> Names { get; private set; } = new Dictionary<string, MappedEmoji>();
+
+    public IReadOnlyDictionary<Snowflake, LocalCustomEmoji> ApplicationEmojis { get; private set; } = new Dictionary<Snowflake, LocalCustomEmoji>();
 
     public async ValueTask<MemoryStream> GetOrCreateDefaultEmojiAsync(MappedEmoji emoji)
     {
@@ -83,8 +91,18 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
             : throw new FormatException($"The supplied string \"{emojiString}\" was unable to be parsed as a valid emoji.");
     }
 
+    public LocalCustomEmoji GetLevelEmoji(int tier, int level)
+    {
+        if (ApplicationEmojis.Values.FirstOrDefault(x => x.Name == $"tier_{tier}_level_{level}") is { } emoji)
+            return emoji;
+
+        return ApplicationEmojis.Values.First(x => x.Name == "LEVELNOTFOUND");
+    }
+
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
+        await base.StartAsync(cancellationToken);
+        
         var data = await FetchLocalDataAsync(cancellationToken, true);
         if (data is not null)
         {
@@ -116,8 +134,8 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
             return;
         }
 
-        Logger.LogError("Local and remote emoji mapping data were unable to be loaded.");
-        //await host.StopAsync(cancellationToken);
+        Logger.LogCritical("Local and remote emoji mapping data were unable to be loaded. Multiple services depend upon this data.");
+        await Bot.Services.GetRequiredService<IHost>().StopAsync(cancellationToken);
 
         void PopulateMaps(EmojiMappingData mappingData)
         {
@@ -143,8 +161,22 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
             Logger.LogInformation("Loaded {EmojiCount} unique emojis with {EmojiNameCount} unique names.",
                 Surrogates.Count, Names.Count);
         }
+    }
 
-        await base.StartAsync(cancellationToken);
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await Bot.WaitUntilReadyAsync(stoppingToken);
+        var application = await Bot.FetchCurrentApplicationAsync(cancellationToken: stoppingToken);
+        
+        // TODO: waiting for PR to be merged
+        var apiClient = Bot.ApiClient as IRestApiClient;
+        var route = Route.Get("applications/{0:application_id}/emojis");
+        var formattedRoute = route.Format([application.Id]);
+
+        var emojis = await apiClient.ExecuteAsync<EmojisJsonModel>(formattedRoute, cancellationToken: stoppingToken);
+        var customEmojis = emojis.Items.Select(x => new LocalCustomEmoji(x.Id!.Value, x.Name!, x.Animated.Value));
+        ApplicationEmojis = customEmojis.ToDictionary(x => x.Id.Value);
+        Logger.LogInformation("Loaded {Count} application emojis.", ApplicationEmojis.Count);
     }
 
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
@@ -178,7 +210,7 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
             if (trackedEmojiIds.Contains(emojiId) || !guildEmojis.ContainsKey(emojiId))
                 continue;
 
-            var emojiStatistics = await db.GetOrCreateEmojiStatisticsAsync(e.GuildId.Value, emojiId);
+            var emojiStatistics = await db.EmojiStats.GetOrCreateAsync(e.GuildId.Value, emojiId);
             emojiStatistics.Uses++;
 
             trackedEmojiIds.Add(emojiId);
@@ -196,6 +228,9 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
             return;
         }
 
+        if (Bot.GetUser(e.UserId) is { IsBot: true })
+            return;
+
         var guildEmojis = Bot.GetGuild(guildId)?.Emojis
                           ?? new Dictionary<Snowflake, IGuildEmoji>();
 
@@ -204,7 +239,7 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var emojiStatistics = await db.GetOrCreateEmojiStatisticsAsync(e.GuildId.Value, emoji.Id);
+        var emojiStatistics = await db.EmojiStats.GetOrCreateAsync(e.GuildId.Value, emoji.Id);
         emojiStatistics.Uses++;
 
         await db.SaveChangesAsync();
@@ -234,7 +269,7 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
 
         try
         {
-            return JsonConvert.DeserializeObject<EmojiMappingData>(json);
+            return JsonSerializer.Deserialize<EmojiMappingData>(json);
         }
         catch (Exception ex)
         {
@@ -265,7 +300,7 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
 
         try
         {
-            return JsonConvert.DeserializeObject<EmojiMappingData>(json);
+            return JsonSerializer.Deserialize<EmojiMappingData>(json);
         }
         catch (Exception ex)
         {
@@ -279,7 +314,7 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
     {
         try
         {
-            var json = JsonConvert.SerializeObject(data, Formatting.None);
+            var json = JsonSerializer.Serialize(data);
             await File.WriteAllTextAsync(LOCAL_DATA_LOCATION, json, cancellationToken);
             Logger.LogDebug("Emoji mapping data successfully written to {Path}.", LOCAL_DATA_LOCATION);
         }
@@ -290,4 +325,11 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
     }
 
     private readonly record struct ReactionInstance(Snowflake MessageId, Snowflake UserId);
+
+    // TODO: Remove this once the PR is merged
+    private class EmojisJsonModel : JsonModel
+    {
+        [JsonProperty("items")] 
+        public EmojiJsonModel[] Items;
+    }
 }

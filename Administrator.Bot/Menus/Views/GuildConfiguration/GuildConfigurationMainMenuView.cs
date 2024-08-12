@@ -13,7 +13,7 @@ public sealed class GuildConfigurationMainMenuView(IDiscordApplicationGuildComma
     [SelectionOption(LoggingChannelConfigurationView.SELECTION_TEXT)]
     [SelectionOption(SettingConfigurationView.SELECTION_TEXT)]
     [SelectionOption(InviteFilterExemptionConfigurationView.SELECTION_TEXT)]
-    [SelectionOption(WarningPunishmentConfigurationView.SELECTION_TEXT)]
+    [SelectionOption(AutomaticPunishmentConfigurationView.SELECTION_TEXT)]
     [SelectionOption(XpExemptChannelsConfigurationView.SELECTION_TEXT)]
     [SelectionOption(TagLimitConfigurationView.SELECTION_TEXT)]
     [SelectionOption(AutoQuoteExemptChannelsConfigurationView.SELECTION_TEXT)]
@@ -35,7 +35,7 @@ public sealed class GuildConfigurationMainMenuView(IDiscordApplicationGuildComma
             }
             case SettingConfigurationView.SELECTION_TEXT:
             {
-                var guildConfig = await db.GetOrCreateGuildConfigAsync(context.GuildId);
+                var guildConfig = await db.Guilds.GetOrCreateAsync(context.GuildId);
                 await Menu.SetViewAsync(new SettingConfigurationView(context, guildConfig));
                 return;
             }
@@ -46,29 +46,29 @@ public sealed class GuildConfigurationMainMenuView(IDiscordApplicationGuildComma
                 await Menu.SetViewAsync(new InviteFilterExemptionConfigurationView(context, exemptions));
                 return;
             }
-            case WarningPunishmentConfigurationView.SELECTION_TEXT:
+            case AutomaticPunishmentConfigurationView.SELECTION_TEXT:
             {
-                var warningPunishments = await db.WarningPunishments.Where(x => x.GuildId == context.GuildId)
-                    .OrderBy(x => x.WarningCount)
+                var warningPunishments = await db.AutomaticPunishments.Where(x => x.GuildId == context.GuildId)
+                    .OrderBy(x => x.DemeritPoints)
                     .ToListAsync();
-                await Menu.SetViewAsync(new WarningPunishmentConfigurationView(context, warningPunishments));
+                await Menu.SetViewAsync(new AutomaticPunishmentConfigurationView(context, warningPunishments));
                 return;
             }
             case XpExemptChannelsConfigurationView.SELECTION_TEXT:
             {
-                var guildConfig = await db.GetOrCreateGuildConfigAsync(context.GuildId);
+                var guildConfig = await db.Guilds.GetOrCreateAsync(context.GuildId);
                 await Menu.SetViewAsync(new XpExemptChannelsConfigurationView(context, guildConfig.XpExemptChannelIds));
                 return;
             }
             case TagLimitConfigurationView.SELECTION_TEXT:
             {
-                var guildConfig = await db.GetOrCreateGuildConfigAsync(context.GuildId);
+                var guildConfig = await db.Guilds.GetOrCreateAsync(context.GuildId);
                 await Menu.SetViewAsync(new TagLimitConfigurationView(context, guildConfig.MaximumTagsPerUser));
                 return;
             }
             case AutoQuoteExemptChannelsConfigurationView.SELECTION_TEXT:
             {
-                var guildConfig = await db.GetOrCreateGuildConfigAsync(context.GuildId);
+                var guildConfig = await db.Guilds.GetOrCreateAsync(context.GuildId);
                 await Menu.SetViewAsync(new AutoQuoteExemptChannelsConfigurationView(context, guildConfig.AutoQuoteExemptChannelIds));
                 return;
             }

@@ -8,4 +8,13 @@ public static class EnumerableExtensions
         hashSet.SymmetricExceptWith(second);
         return hashSet;
     }
+
+    public static bool TryAddUnique<T>(this ICollection<T> collection, T item)
+    {
+        if (collection.Contains(item))
+            return false;
+        
+        collection.Add(item);
+        return true;
+    }
 }

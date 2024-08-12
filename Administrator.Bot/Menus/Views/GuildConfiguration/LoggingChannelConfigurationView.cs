@@ -3,7 +3,6 @@ using Disqord;
 using Disqord.Bot.Commands.Application;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Gateway;
-using Disqord.Rest;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,7 +75,7 @@ public sealed class LoggingChannelConfigurationView : GuildConfigurationViewBase
             _typesToLog.Clear();
             _existingChannels.Clear();
 
-            await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+            await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
                 .WithContent("All logging channels have been cleared."));
             
             _typeSelect.Options = GenerateTypeOptions();
@@ -97,7 +96,7 @@ public sealed class LoggingChannelConfigurationView : GuildConfigurationViewBase
         
         foreach (var eventType in _typesToLog)
         {
-            if (await db.LoggingChannels.FindAsync(_context.GuildId.RawValue, eventType) is { } loggingChannel)
+            if (await db.LoggingChannels.FindAsync(_context.GuildId, eventType) is { } loggingChannel)
             {
                 loggingChannel.ChannelId = channelId;
             }
@@ -109,7 +108,7 @@ public sealed class LoggingChannelConfigurationView : GuildConfigurationViewBase
         }
         
         await db.SaveChangesAsync();
-        await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+        await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
             .WithContent(
                 $"Success! The {string.Join(", ", _typesToLog.Select(x => Markdown.Bold(x.Humanize(LetterCasing.Sentence))))} " +
                 $"{"event".ToQuantity(_typesToLog.Count, ShowQuantityAs.None)} will now be logged to {Mention.Channel(channelId)}."));

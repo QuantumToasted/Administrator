@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using System.Text.Json.Serialization;
+using Disqord;
 using Qmmands;
 using Qommon;
 
@@ -10,6 +11,7 @@ public sealed class JsonEmbedField
 
     public string Value { get; init; } = null!;
 
+    [JsonPropertyName("Inline")]
     public bool? IsInline { get; init; }
 
     public async ValueTask<LocalEmbedField> ToLocalFieldAsync(IPlaceholderFormatter formatter, ICommandContext? context = null)

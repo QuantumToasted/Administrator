@@ -26,10 +26,10 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
             IChannel? channel = null,
         [Description("Start from this message's ID.")]
             Snowflake? startFromMessageId = null,
-        [Description("The direction to grab messages for deletion. Affected by start-from-message-id.")]
+        [Description("The direction to grab messages for deletion. Affected by start-from-message-id. Default: Before")]
         [Choice("Before start-from-message-id", FetchDirection.Before)]
         [Choice("After start-from-message-id", FetchDirection.After)]
-            FetchDirection direction = FetchDirection.Before)
+            FetchDirection? direction = null)
     {
         return PruneAsync(limit, channel?.Id, startFromMessageId, direction, null);
     }
@@ -52,7 +52,7 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         [Description("The direction to grab messages for deletion. Affected by start-from-message-id.")]
         [Choice("Before start-from-message-id", FetchDirection.Before)]
         [Choice("After start-from-message-id", FetchDirection.After)]
-            FetchDirection direction = FetchDirection.Before)
+            FetchDirection? direction = null)
     {
         return PruneAsync(limit, channel?.Id, startFromMessageId, direction, m => m.Author.Id == user.Id);
     }
@@ -73,7 +73,7 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         [Description("The direction to grab messages for deletion. Affected by start-from-message-id.")]
         [Choice("Before start-from-message-id", FetchDirection.Before)]
         [Choice("After start-from-message-id", FetchDirection.After)]
-            FetchDirection direction = FetchDirection.Before)
+            FetchDirection? direction = null)
     {
         return PruneAsync(limit, channel?.Id, startFromMessageId, direction, x => x.Author.IsBot);
     }
@@ -96,7 +96,7 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         [Description("The direction to grab messages for deletion. Affected by start-from-message-id.")]
         [Choice("Before start-from-message-id", FetchDirection.Before)]
         [Choice("After start-from-message-id", FetchDirection.After)]
-            FetchDirection direction = FetchDirection.Before)
+            FetchDirection? direction = null)
     {
         return PruneAsync(limit, channel?.Id, startFromMessageId, direction, m => m.Content.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
@@ -117,7 +117,7 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         [Description("The direction to grab messages for deletion. Affected by start-from-message-id.")]
         [Choice("Before start-from-message-id", FetchDirection.Before)]
         [Choice("After start-from-message-id", FetchDirection.After)]
-            FetchDirection direction = FetchDirection.Before)
+            FetchDirection? direction = null)
     {
         return PruneAsync(limit, channel?.Id, startFromMessageId, direction, m => (m as IUserMessage)?.Stickers.Count > 0);
     }
@@ -138,9 +138,10 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         [Description("The direction to grab messages for deletion. Affected by start-from-message-id.")]
         [Choice("Before start-from-message-id", FetchDirection.Before)]
         [Choice("After start-from-message-id", FetchDirection.After)]
-            FetchDirection direction = FetchDirection.Before)
+            FetchDirection? direction = null)
     {
-        return PruneAsync(limit, channel?.Id, startFromMessageId, direction, m => (m as IUserMessage)?.Attachments.Count > 0);
+        return PruneAsync(limit, channel?.Id, startFromMessageId, direction, 
+            m => (m as IUserMessage)?.Attachments.Count > 0 || (m as IUserMessage)?.Embeds.Count(x => x.Type is "image") > 0);
     }
 
     [SlashCommand("emoji")]
@@ -159,7 +160,7 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         [Description("The direction to grab messages for deletion. Affected by start-from-message-id.")]
         [Choice("Before start-from-message-id", FetchDirection.Before)]
         [Choice("After start-from-message-id", FetchDirection.After)]
-            FetchDirection direction = FetchDirection.Before)
+            FetchDirection? direction = null)
     {
         return PruneAsync(limit, channel?.Id, startFromMessageId, direction, m =>
         {
@@ -171,8 +172,13 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         });
     }
 
-    private async Task<IResult> PruneAsync(int limit, Snowflake? channelId, Snowflake? startFromMessageId, FetchDirection direction, Func<IMessage, bool>? filterFunc)
+    private async Task<IResult> PruneAsync(int limit, Snowflake? channelId, Snowflake? startFromMessageId, FetchDirection? direction, Func<IMessage, bool>? filterFunc)
     {
+        if (direction.HasValue && !startFromMessageId.HasValue)
+            return Response($"Specifying {Markdown.Code("direction")} explicitly requires specifying {Markdown.Code("start-from-message-id")}.").AsEphemeral();
+
+        direction ??= FetchDirection.Before;
+        
         await Deferral();
 
         var deferralMessage = await Context.Interaction.Followup().FetchResponseAsync();
@@ -182,11 +188,15 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
         var messagesToDelete = new List<IMessage>();
         var emptyCount = 0;
 
-        await foreach (var chunk in Bot.EnumerateMessages(channelId.Value, int.MaxValue, direction, startFromMessageId))
+        await foreach (var chunk in Bot.EnumerateMessages(channelId.Value, int.MaxValue, direction.Value, startFromMessageId))
         {
             var currentCount = messagesToDelete.Count;
 
-            foreach (var message in chunk)
+            var orderedChunk = direction == FetchDirection.Before
+                ? chunk.OrderByDescending(x => x.Id)
+                : chunk.OrderBy(x => x.Id);
+
+            foreach (var message in orderedChunk)
             {
                 if (message.Id == deferralMessage.Id)
                     continue; // ignore the deferral message
@@ -203,6 +213,17 @@ public sealed class PruneModule(EmojiService emojis) : DiscordApplicationGuildMo
 
             if (messagesToDelete.Count == limit || emptyCount == 5)
                 break;
+        }
+        
+        if (!direction.HasValue && startFromMessageId.HasValue && messagesToDelete.All(x => x.Id != startFromMessageId.Value))
+        {
+            try
+            {
+                if (await Bot.FetchMessageAsync(channelId.Value, startFromMessageId.Value) is { } startMessage)
+                    messagesToDelete.Add(startMessage);
+            }
+            catch (RestApiException)
+            { }
         }
 
         messagesToDelete = messagesToDelete

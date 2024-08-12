@@ -3,42 +3,39 @@ using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot;
-using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
-using Disqord.Bot.Commands.Interaction;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Disqord.Rest.Api;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Qommon;
+using IBan = Administrator.Core.IBan;
 using Timeout = Administrator.Database.Timeout;
 
 namespace Administrator.Bot;
 
 [ScopedService]
-public sealed class PunishmentService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db, ICommandContextAccessor contextAccessor,
-    AutoCompleteService autoComplete, ILogger<PunishmentService> logger)
+public sealed class PunishmentService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db,
+    AutoCompleteService autoComplete, PunishmentExpiryService expiryService, ILogger<PunishmentService> logger) : IPunishmentService
 {
-    private readonly IDiscordInteractionGuildCommandContext _context = (IDiscordInteractionGuildCommandContext)contextAccessor.Context;
+    // TODO: Make these configurable?
+    public const double MINIMUM_APPEAL_WAIT_PERCENTAGE = 0.05;
+    public static readonly TimeSpan MinimumAppealPermanentWaitDuration = TimeSpan.FromDays(7);
     
-    public async Task AutoCompletePunishmentsAsync<TPunishment>(AutoComplete<int> punishmentId, Expression<Func<TPunishment, bool>>? predicate = null)
+    public async Task AutoCompletePunishmentsAsync<TPunishment>(Snowflake? guildId, AutoComplete<int> punishmentId, Expression<Func<TPunishment, bool>>? predicate = null)
         where TPunishment : Punishment
     {
-        if (predicate is null)
-        {
-            predicate = x => x.GuildId == _context.GuildId;
-        }
-        else
-        {
-            Expression<Func<Punishment, bool>> guildFilter = x => x.GuildId == _context.GuildId;
-            var expression = Expression.AndAlso(guildFilter, predicate);
-            predicate = Expression.Lambda<Func<TPunishment, bool>>(expression, guildFilter.Parameters[0]);
-        }
+        var query = db.Punishments.OfType<TPunishment>();
 
-        var punishments = await db.Punishments.OfType<TPunishment>()
-            .Where(predicate)
-            .OrderByDescending(x => x.Id)
+        if (guildId.HasValue) // will only be false in case of `/appeal`...right?
+            query = query.Where(x => x.GuildId == guildId.Value);
+
+        if (predicate is not null)
+            query = query.Where(predicate);
+
+        var punishments = await query.OrderByDescending(x => x.Id)
             .ToListAsync();
         
         autoComplete.AutoComplete(punishmentId, punishments);
@@ -48,9 +45,10 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         DateTimeOffset? expiresAt, IAttachment? attachment)
     {
         if (await bot.FetchBanAsync(guildId, target.Id) is not null)
-            return $"{target} has already been banned from this server!";
-        
-        var ban = new Ban(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, messagePruneDays, expiresAt);
+            return $"{Markdown.Bold(target)} has already been banned from this server!";
+
+        var guild = await db.Guilds.GetOrCreateAsync(guildId);
+        var ban = new Ban(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, messagePruneDays ?? guild.DefaultBanPruneDays, expiresAt);
         return await ProcessPunishmentAsync(ban, attachment);
     }
 
@@ -61,7 +59,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         var existingOverwrite = textChannel?.Overwrites.FirstOrDefault(x => x.TargetId == target.Id);
         
         if (existingOverwrite?.Permissions.Denied.HasFlag(Permissions.SendMessages) == true)
-            return $"{target} may already be blocked from this channel! Check the permission overwrites in {Mention.Channel(channel.Id)} first.";
+            return $"{Markdown.Bold(target)} may already be blocked from this channel! Check the permission overwrites in {Mention.Channel(channel.Id)} first.";
         
         var previousChannelAllowPermissions = existingOverwrite?.Permissions.Allowed;
         var previousChannelDenyPermissions = existingOverwrite?.Permissions.Denied;
@@ -75,7 +73,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
     public async Task<Result<Kick>> KickAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IAttachment? attachment)
     {
         if (await bot.GetOrFetchMemberAsync(guildId, target.Id) is null)
-            return $"{target} is not in this server, or has already been kicked!";
+            return $"{Markdown.Bold(target)} is not in this server, or has already been kicked!";
         
         var kick = new Kick(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason);
         return await ProcessPunishmentAsync(kick, attachment);
@@ -85,7 +83,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         DateTimeOffset? expiresAt, IAttachment? attachment)
     {
         if (bot.GetMember(guildId, target.Id) is { } member && member.RoleIds.Contains(role.Id))
-            return $"{target} already has the role {role.Mention}!";
+            return $"{Markdown.Bold(target)} already has the role {role.Mention}!";
         
         var timedRole = new TimedRole(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, role.Id, 
             TimedRoleApplyMode.Grant, expiresAt);
@@ -97,7 +95,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         DateTimeOffset? expiresAt, IAttachment? attachment)
     {
         if (bot.GetMember(guildId, target.Id) is { } member && !member.RoleIds.Contains(role.Id))
-            return $"{target} doesn't have the role {role.Mention}!";
+            return $"{Markdown.Bold(target)} doesn't have the role {role.Mention}!";
         
         var timedRole = new TimedRole(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, role.Id, 
             TimedRoleApplyMode.Revoke, expiresAt);
@@ -112,102 +110,33 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         return await ProcessPunishmentAsync(timeout, attachment);
     }
 
-    public Task<Result<Warning>> WarnAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IAttachment? attachment)
+    public async Task<Result<Warning>> WarnAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? demeritPoints,/* bool decayDemeritPoints,*/ IAttachment? attachment)
     {
-        var warning = new Warning(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason);
-        return ProcessPunishmentAsync(warning, attachment);
-    }
-    
-    public async Task<Result<TPunishment>> ProcessPunishmentAsync<TPunishment>(TPunishment punishment, IAttachment? attachment, bool alreadyApplied = false)
-        where TPunishment : Punishment
-    {
-        if (attachment is not null && await attachments.GetAttachmentAsync(attachment) is var (stream, fileName))
-            punishment.Attachment = new Attachment(stream.ToArray(), fileName);
+        var guild = await db.Guilds.GetOrCreateAsync(guildId);
+        var member = await db.Members.GetOrCreateAsync(guildId, target.Id);
+        demeritPoints ??= guild.DefaultWarningDemeritPoints;
         
-        var guild = await db.GetOrCreateGuildConfigAsync(punishment.GuildId);
-        await db.Entry(guild)
-            .Collection(static x => x.LoggingChannels)
-            .LoadAsync();
-
-        db.Punishments.Add(punishment);
-        await db.SaveChangesAsync();
-        
-        // Even though the punishment may fail to apply, might as well DM the user before they are punished, just in case.
-        // TODO: store SendMessageAsync result and maybe delete after? bad UX
-        var dmMessage = punishment.FormatDmMessage<LocalMessage>(bot);
-        if (await bot.TrySendDirectMessageAsync(punishment.Target.Id, dmMessage) is { } sentMessage)
-        {
-            punishment.DmChannelId = sentMessage.ChannelId;
-            punishment.DmMessageId = sentMessage.Id;
-        }
-        
-        if (!alreadyApplied)
-        {
-            try
-            {
-                await punishment.ApplyAsync(bot);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Unable to apply {Type} to user {UserId} in guild {GuildId}.",
-                    punishment.GetType().Name, punishment.Target.Id.RawValue, punishment.GuildId.RawValue);
-
-                return $"This {punishment.GetType().Name.ToLower()} was unable to be applied. " +
-                       "The following text may be able to help?\n" + Markdown.CodeBlock(ex.Message);
-            }
-        }
-
-        if (punishment is Warning warning)
-        {
-            var warningCount = await db.Punishments.OfType<Warning>()
-                .CountAsync(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && !x.RevokedAt.HasValue);
-
-            if (await db.WarningPunishments.FindAsync(warning.GuildId, warningCount) is { } warningPunishment)
-            {
-                var expiresAt = warning.CreatedAt + warningPunishment.PunishmentDuration;
-                Punishment punishmentToApply = warningPunishment.PunishmentType switch
-                {
-                    PunishmentType.Timeout => new Timeout(warning.GuildId, warning.Target, warning.Moderator,
-                        $"Automatic timeout: See case {warning.FormatKey()}.", expiresAt!.Value),
-                    PunishmentType.Kick => new Kick(warning.GuildId, warning.Target, warning.Moderator,
-                        $"Automatic timeout: See case {warning.FormatKey()}."),
-                    PunishmentType.Ban => new Ban(warning.GuildId, warning.Target, warning.Moderator,
-                        $"Automatic timeout: See case {warning.FormatKey()}.", warning.Guild!.DefaultBanPruneDays, expiresAt),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-
-                await ProcessPunishmentAsync(punishmentToApply, attachment);
-                warning.AdditionalPunishmentId = punishmentToApply.Id;
-            }
-        }
-        
-        if (guild.GetLoggingChannel(punishment.GetLogEventType()) is { } logChannel &&
-            await bot.TrySendMessageAsync(logChannel.ChannelId, punishment.FormatLogMessage<LocalMessage>(bot)) is { } message)
-        {
-            punishment.LogChannelId = message.ChannelId;
-            punishment.LogMessageId = message.Id;
-        }
-
-        await db.SaveChangesAsync();
-        return punishment;
+        var warning = new Warning(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, 
+            demeritPoints.Value, member.DemeritPoints + demeritPoints.Value/*, decayDemeritPoints*/);
+        return await ProcessPunishmentAsync(warning, attachment);
     }
 
-    public async Task<Result<Punishment>> UpdateReasonAsync(int punishmentId, string newReason)
+    public async Task<Result<Punishment>> UpdateReasonAsync(Snowflake guildId, int punishmentId, string newReason)
     {
         if (await db.Punishments.Include(x => x.Guild).ThenInclude(x => x!.LoggingChannels)
-                .FirstOrDefaultAsync(x => x.Id == punishmentId) is not { } punishment || punishment.GuildId != _context.GuildId)
+                .FirstOrDefaultAsync(x => x.Id == punishmentId) is not { } punishment || punishment.GuildId != guildId)
         {
             return $"No punishment could be found with the ID {punishmentId}";
         }
         
         punishment.Reason = newReason;
 
-        var logMessage = punishment.FormatLogMessage<LocalMessage>(bot);
+        var logMessage = await punishment.FormatLogMessageAsync<LocalMessage>(bot);
         if (punishment.LogMessageId.HasValue)
         {
             await bot.TryModifyMessageToAsync(punishment.LogChannelId!.Value, punishment.LogMessageId.Value, logMessage);
         }
-        else if (punishment.Guild!.GetLoggingChannel(punishment.GetLogEventType()) is { } logChannel &&
+        else if (await db.LoggingChannels.TryGetLoggingChannelAsync(punishment.GuildId, punishment.GetLogEventType()) is { } logChannel &&
                  await bot.TrySendMessageAsync(logChannel.ChannelId, logMessage) is { } message)
         {
             punishment.LogChannelId = message.ChannelId;
@@ -218,7 +147,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         return punishment;
     }
 
-    public async Task<Result<RevocablePunishment>> AppealPunishmentAsync(int punishmentId, string appeal)
+    public async Task<Result<RevocablePunishment>> AppealPunishmentAsync(Snowflake authorId, int punishmentId, string appeal)
     {
         if (await db.Punishments.Include(x => x.Guild).ThenInclude(x => x!.LoggingChannels)
                 .FirstOrDefaultAsync(x => x.Id == punishmentId) is not RevocablePunishment punishment)
@@ -226,13 +155,13 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             return $"No revocable punishment could be found with the ID {punishmentId}.";
         }
 
-        if (punishment.Target.Id != _context.AuthorId)
+        if (punishment.Target.Id != authorId)
             return $"The punishment {punishment} does not belong to you!";
 
         if (punishment.RevokedAt.HasValue)
         {
             return $"The punishment {punishment} was already revoked " +
-                   Markdown.Timestamp(punishment.RevokedAt.Value, Markdown.TimestampFormat.RelativeTime);
+                   $"{Markdown.Timestamp(punishment.RevokedAt.Value, Markdown.TimestampFormat.RelativeTime)}.";
         }
         
         if (punishment.AppealStatus == AppealStatus.Rejected)
@@ -244,6 +173,12 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         {
             return $"The punishment {punishment}'s appeal has already been sent, " +
                    "and cannot be modified further unless moderators request more information.";
+        }
+
+        if (!punishment.CanBeAppealed(out var appealAfter))
+        {
+            return $"You are trying to appeal too quickly!\n" +
+                   $"The punishment {punishment} can be appealed {Markdown.Timestamp(appealAfter.Value, Markdown.TimestampFormat.RelativeTime)}.";
         }
         
         punishment.AppealedAt = DateTimeOffset.UtcNow;
@@ -270,12 +205,12 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         return punishment;
     }
 
-    public async Task<Result<RevocablePunishment>> RevokePunishmentAsync(int punishmentId, IUser revoker, string? reason, bool manuallyRevoked)
+    public async Task<Result<RevocablePunishment>> RevokePunishmentAsync(Snowflake guildId, int punishmentId, IUser revoker, string? reason, bool manuallyRevoked)
     {
         if (await db.Punishments.Include(x => x.Guild).ThenInclude(x => x!.LoggingChannels)
-                .FirstOrDefaultAsync(x => x.Id == punishmentId) is not RevocablePunishment punishment || punishment.GuildId != _context.GuildId)
+                .FirstOrDefaultAsync(x => x.Id == punishmentId) is not RevocablePunishment punishment || punishment.GuildId != guildId)
         {
-            return $"No revocable punishment could be found with the ID {punishmentId}";
+            return $"No revocable punishment could be found with the ID {punishmentId}.";
         }
         
         if (punishment.RevokedAt.HasValue)
@@ -287,12 +222,6 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         if (punishment is Timeout timeout)
             timeout.WasManuallyRevoked = manuallyRevoked;
 
-        if (punishment is Warning { AdditionalPunishmentId: { } additionalPunishmentId })
-        {
-            await RevokePunishmentAsync(
-                additionalPunishmentId, revoker, $"Automatically revoked due to linked warning {punishment.FormatKey()}.", true);
-        }
-
         try
         {
             await punishment.RevokeAsync(bot);
@@ -302,9 +231,9 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         catch (Exception ex)
         {
             logger.LogError(ex, "Unable to revoke {Type} (#{Id}) from user {UserId} in guild {GuildId}.",
-                punishment.GetType().Name, punishment.Id, punishment.Target.Id.RawValue, punishment.GuildId.RawValue);
+                punishment.GetType().Name, punishment.Id, punishment.Target.Id, punishment.GuildId.RawValue);
 
-            return $"This {punishment.GetType().Name.ToLower()} was unable to be revoked." +
+            return $"This {punishment.GetType().Name.Humanize(LetterCasing.LowerCase)} was unable to be revoked." +
                    "The following text may be able to help?\n" + Markdown.CodeBlock(ex.Message);
         }
 
@@ -326,12 +255,16 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
                             .WithFooter($"Punishment manually revoked by {revoker}", avatarUrl)
                             .WithTimestamp(DateTimeOffset.UtcNow)
                     };
+
+                    x.Components = new List<LocalRowComponent>();
                 });
             }
             catch { /* we just want to try to modify it */ }
+
+            punishment.AppealStatus = null;
         }
 
-        if (punishment.Guild!.GetLoggingChannel(LogEventType.Revoke) is { } logChannel)
+        if (await db.LoggingChannels.TryGetLoggingChannelAsync(punishment.GuildId, LogEventType.Revoke) is { } logChannel)
         {
             var logMessage = punishment.FormatRevocationLogMessage<LocalMessage>(bot);
             await bot.TrySendMessageAsync(logChannel.ChannelId, logMessage);
@@ -348,6 +281,20 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             await bot.TrySendMessageAsync(punishment.DmChannelId.Value, dmRevokeMessage);
         }
 
+        if (manuallyRevoked)
+        {
+            var targetPunishments = await db.Punishments
+                .Where(x => x.Target.Id == punishment.Target.Id && x.Id != punishmentId && x.GuildId == guildId)
+                .ToListAsync();
+
+            // only reset their demerit point decay if they don't have any other active punishments
+            if (targetPunishments.OfType<RevocablePunishment>().All(x => x.RevokedAt.HasValue))
+            {
+                var member = await db.Members.GetOrCreateAsync(guildId, punishment.Target.Id);
+                member.LastDemeritPointDecay = DateTimeOffset.UtcNow;
+            }
+        }
+
         await db.SaveChangesAsync();
         return punishment;
 
@@ -357,5 +304,168 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
                 RestApiErrorCode.UnknownMember or RestApiErrorCode.UnknownOverwrite or RestApiErrorCode.UnknownChannel or 
                 RestApiErrorCode.UnknownGuild;
         }
+    }
+    
+    public async Task<Result<TPunishment>> ProcessPunishmentAsync<TPunishment>(TPunishment punishment, IAttachment? attachment, bool alreadyApplied = false)
+        where TPunishment : Punishment
+    {
+        if (attachment is not null && await attachments.GetAttachmentAsync(attachment) is var (stream, fileName))
+        {
+            var punishmentAttachment = new Attachment(fileName);
+            if (await punishmentAttachment.UploadAsync(bot, stream.ToArray()))
+            {
+                punishment.Attachment = punishmentAttachment;
+            }
+        }
+        
+        var guild = await db.Guilds.GetOrCreateAsync(punishment.GuildId);
+        await db.Entry(guild)
+            .Collection(static x => x.LoggingChannels)
+            .LoadAsync();
+
+        db.Punishments.Add(punishment);
+        await db.SaveChangesAsync();
+        
+        // Even though the punishment may fail to apply, might as well DM the user before they are punished, just in case.
+        // TODO: store SendMessageAsync result and maybe delete after? bad UX
+        var dmMessage = await punishment.FormatDmMessageAsync<LocalMessage>(bot);
+        if (await bot.TrySendDirectMessageAsync(punishment.Target.Id, dmMessage) is { } sentMessage)
+        {
+            punishment.DmChannelId = sentMessage.ChannelId;
+            punishment.DmMessageId = sentMessage.Id;
+        }
+        
+        var member = await db.Members.GetOrCreateAsync(punishment.GuildId, punishment.Target.Id);
+        var oldDemeritPoints = member.DemeritPoints;
+
+        try
+        {
+            if (!alreadyApplied)
+                await punishment.ApplyAsync(bot, member);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unable to apply {Type} to user {UserId} in guild {GuildId}.",
+                punishment.GetType().Name, punishment.Target.Id, punishment.GuildId.RawValue);
+
+            return $"This {punishment.GetType().Name.ToLower()} was unable to be applied. " +
+                   "The following text may be able to help?\n" + Markdown.CodeBlock(ex.Message);
+        }
+
+        var logMessage = await punishment.FormatLogMessageAsync<LocalMessage>(bot);
+        if (await db.LoggingChannels.TryGetLoggingChannelAsync(punishment.GuildId, punishment.GetLogEventType()) is { } logChannel &&
+            await bot.TrySendMessageAsync(logChannel.ChannelId, logMessage) is { } message)
+        {
+            punishment.LogChannelId = message.ChannelId;
+            punishment.LogMessageId = message.Id;
+        }
+
+        if (punishment is Warning warning)
+        {
+            var newDemeritPoints = member.DemeritPoints;
+
+            var automaticPunishments = await db.AutomaticPunishments.Where(x => x.GuildId == punishment.GuildId)
+                //.Where(x => x.DemeritPoints >= newDemeritPoints && x.DemeritPoints >= oldDemeritPoints)
+                .OrderBy(x => x.DemeritPoints)
+                .ToListAsync();
+            
+            /*
+            var demeritPoints = await db.Punishments.OfType<Warning>()
+                .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id)
+                .SumAsync(x => x.DemeritPointsRemaining);
+            */
+            
+            if (newDemeritPoints > 0 && newDemeritPoints > oldDemeritPoints && 
+                automaticPunishments.FirstOrDefault(x => x.DemeritPoints >= newDemeritPoints && x.DemeritPoints >= oldDemeritPoints) is { } demeritPointPunishment)
+            {
+                var expiresAt = warning.CreatedAt + demeritPointPunishment.PunishmentDuration;
+                Punishment punishmentToApply = demeritPointPunishment.PunishmentType switch
+                {
+                    PunishmentType.Timeout => new Timeout(warning.GuildId, warning.Target, warning.Moderator,
+                        $"Automatic timeout for reaching {Markdown.Bold("demerit point".ToQuantity(demeritPointPunishment.DemeritPoints))}: See case {warning}.", expiresAt!.Value),
+                    PunishmentType.Kick => new Kick(warning.GuildId, warning.Target, warning.Moderator,
+                        $"Automatic kick for reaching {Markdown.Bold("demerit point".ToQuantity(demeritPointPunishment.DemeritPoints))}: See case {warning}."),
+                    PunishmentType.Ban => new Ban(warning.GuildId, warning.Target, warning.Moderator,
+                        $"Automatic ban for reaching {Markdown.Bold("demerit point".ToQuantity(demeritPointPunishment.DemeritPoints))}: See case {warning}.", warning.Guild!.DefaultBanPruneDays, expiresAt),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                await ProcessPunishmentAsync(punishmentToApply, attachment);
+                warning.AdditionalPunishmentId = punishmentToApply.Id;
+            }
+        }
+        
+        if (punishment is Ban { ExpiresAt: var newDemeritPointDecayStart } && newDemeritPointDecayStart > member.LastDemeritPointDecay)
+        {
+            member.LastDemeritPointDecay = newDemeritPointDecayStart;
+        }
+        
+        await db.SaveChangesAsync();
+        expiryService.CancelCts();
+        return punishment;
+    }
+
+    async Task<Result<IBan>> IPunishmentService.BanAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? messagePruneDays, DateTimeOffset? expiresAt, IAttachment? attachment)
+    {
+        var baseResult = await BanAsync(guildId, target, moderator, reason, messagePruneDays, expiresAt, attachment);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
+    }
+    
+    async Task<Result<IBlock>> IPunishmentService.BlockAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IChannel channel, DateTimeOffset? expiresAt, IAttachment? attachment)
+    {
+        var baseResult = await BlockAsync(guildId, target, moderator, reason, channel, expiresAt, attachment);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
+    }
+    
+    async Task<Result<IKick>> IPunishmentService.KickAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IAttachment? attachment)
+    {
+        var baseResult = await KickAsync(guildId, target, moderator, reason, attachment);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
+    }
+
+    async Task<Result<ITimedRole>> IPunishmentService.GrantTimedRoleAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IRole role, DateTimeOffset? expiresAt, IAttachment? attachment)
+    {
+        var baseResult = await GrantTimedRoleAsync(guildId, target, moderator, reason, role, expiresAt, attachment);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
+    }
+
+    async Task<Result<ITimedRole>> IPunishmentService.RevokeTimedRoleAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IRole role, DateTimeOffset? expiresAt, IAttachment? attachment)
+    {
+        var baseResult = await RevokeTimedRoleAsync(guildId, target, moderator, reason, role, expiresAt, attachment);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
+    }
+
+    async Task<Result<ITimeout>> IPunishmentService.TimeoutAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, DateTimeOffset expiresAt, IAttachment? attachment)
+    {
+        var baseResult = await TimeoutAsync(guildId, target, moderator, reason, expiresAt, attachment);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
+    }
+
+    async Task<Result<IWarning>> IPunishmentService.WarnAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? demeritPoints, IAttachment? attachment)
+    {
+        var baseResult = await WarnAsync(guildId, target, moderator, reason, demeritPoints, attachment);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
+    }
+
+    async Task<Result<IRevocablePunishment>> IPunishmentService.RevokePunishmentAsync(Snowflake guildId, int punishmentId, IUser revoker, string? reason)
+    {
+        var baseResult = await RevokePunishmentAsync(guildId, punishmentId, revoker, reason, true);
+        return baseResult.IsSuccessful
+            ? baseResult.Value
+            : baseResult.ErrorMessage;
     }
 }

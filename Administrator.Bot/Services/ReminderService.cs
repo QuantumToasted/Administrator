@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Bot;
 
+// TODO: maybe remove this or extrapolate into a util method. I don't like the idea of coupling modules to services.
 [ScopedService]
 public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor contextAccessor, SlashCommandMentionService mentions, 
     ReminderExpiryService expiryService, AutoCompleteService autoComplete)
@@ -31,32 +32,40 @@ public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor c
         
         db.Reminders.Add(reminder);
         await db.SaveChangesAsync();
-        expiryService.ResetCts();
+        expiryService.CancelCts();
 
         return reminder;
     }
     
-    public async Task<Result<Reminder>> CreateReminderAsync(string text, ReminderRepeatMode repeatMode, double repeatInterval)
+    public async Task<Result<Reminder>> CreateReminderAsync(string text, ReminderRepeatMode repeatMode, double repeatInterval, DateTimeOffset? initialReminder)
     {
-        var now = _context.Interaction.CreatedAt();
-
-        var expiresAt = now;
-        while (expiresAt <= now)
+        DateTimeOffset expiresAt;
+        if (!initialReminder.HasValue)
         {
-            expiresAt = repeatMode switch
+            var now = _context.Interaction.CreatedAt();
+
+            expiresAt = now;
+            while (expiresAt <= now)
             {
-                ReminderRepeatMode.Hourly => expiresAt.AddHours(repeatInterval),
-                ReminderRepeatMode.Daily => expiresAt.AddDays(repeatInterval),
-                ReminderRepeatMode.Weekly => expiresAt.AddWeeks(repeatInterval),
-                _ => throw new ArgumentOutOfRangeException()
-            };
+                expiresAt = repeatMode switch
+                {
+                    ReminderRepeatMode.Hourly => expiresAt.AddHours(repeatInterval),
+                    ReminderRepeatMode.Daily => expiresAt.AddDays(repeatInterval),
+                    ReminderRepeatMode.Weekly => expiresAt.AddWeeks(repeatInterval),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
+        }
+        else
+        {
+            expiresAt = initialReminder.Value;
         }
 
         var reminder = new Reminder(text, _context.AuthorId, _context.ChannelId, expiresAt, repeatMode, repeatInterval);
         
         db.Reminders.Add(reminder);
         await db.SaveChangesAsync();
-        expiryService.ResetCts();
+        expiryService.CancelCts();
 
         return reminder;
     }
@@ -71,7 +80,7 @@ public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor c
 
         db.Reminders.Remove(reminder);
         await db.SaveChangesAsync();
-        expiryService.ResetCts();
+        expiryService.CancelCts();
 
         return reminder;
     }

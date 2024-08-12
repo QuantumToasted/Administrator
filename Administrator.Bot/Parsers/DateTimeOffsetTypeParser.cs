@@ -10,7 +10,7 @@ public sealed class DateTimeOffsetTypeParser : DiscordTypeParser<DateTimeOffset>
     public override async ValueTask<ITypeParserResult<DateTimeOffset>> ParseAsync(IDiscordCommandContext context, IParameter parameter, ReadOnlyMemory<char> value)
     {
         await using var scope = context.Services.CreateAsyncScopeWithDatabase(out var db);
-        var globalUser = await db.GetOrCreateGlobalUserAsync(context.AuthorId);
+        var globalUser = await db.Users.GetOrCreateAsync(context.AuthorId);
 
         var input = value.ToString();
         var now = DateTimeOffset.UtcNow;
@@ -19,12 +19,14 @@ public sealed class DateTimeOffsetTypeParser : DiscordTypeParser<DateTimeOffset>
         {
             return Success(now + duration.Value);
         }
-        
-        var parser = new Parser(new Options{Clock = () => TimeZoneInfo.ConvertTime(now, globalUser.GetTimeZone()).LocalDateTime});
+
+        var timeZone = globalUser.GetTimeZone();
+        var parser = new Parser(new Options { Clock = () => TimeZoneInfo.ConvertTime(now, timeZone).DateTime });
 
         if (parser.Parse(input) is { } span)
         {
-            return Success(new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(span.ToTime(), globalUser.GetTimeZone())));
+            var dateTime = DateTime.SpecifyKind(span.ToTime(), DateTimeKind.Unspecified);
+            return Success(new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZone)));
         }
 
         return Failure("Failed to convert your input into a valid instance in time.\n" +

@@ -3,7 +3,6 @@ using Administrator.Core;
 using Disqord;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
-using Disqord.Extensions.Interactivity.Menus.Prompt;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
@@ -33,6 +32,42 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
         return Response(FormatRoleInfo(role));
     }
 
+    [SlashCommand("mention")]
+    [Description("Mentions a role, temporarily making it mentionable if needed.")]
+    public async Task<IResult> MentionAsync(
+        [Description("The role to mention.")]
+        [RequireAuthorRoleHierarchy]
+        [RequireBotRoleHierarchy]
+            IRole role)
+    {
+        await Deferral();
+        var needsModification = !role.IsMentionable &&
+                                Bot.GetCurrentMember(Context.GuildId)?.CalculateGuildPermissions().HasFlag(Permissions.MentionEveryone) != true;
+
+        try
+        {
+            if (needsModification)
+            {
+                await role.ModifyAsync(x => x.IsMentionable = true);
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+            }
+
+            return Response(new LocalInteractionMessageResponse()
+                .WithContent(role.Mention)
+                .WithAllowedMentions(new LocalAllowedMentions().WithRoleIds(role.Id)));
+
+        }
+        catch (Exception ex)
+        {
+            return Response($"Failed to make the role {role.Mention} mentionable. The below error may help?\n{Markdown.CodeBlock(ex.Message)}");
+        }
+        finally
+        {
+            if (needsModification)
+                _ = role.ModifyAsync(x => x.IsMentionable = false);
+        }
+    }
+    
     [SlashCommand("grant")]
     [Description("Grants (gives) a role to a member.")]
     public async Task<IResult> GrantAsync(
@@ -43,8 +78,8 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
         [RequireBotRoleHierarchy]
             IRole role)
     {
-        if (member.RoleIds.Contains(role.Id))
-            return Response($"{member.Mention} already has the role {role.Mention}!").AsEphemeral();
+        if (!role.CanBeGrantedOrRevoked())
+            return Response($"The role {role.Mention} is managed by the server or an integration/bot and cannot be granted or revoked.").AsEphemeral();
 
         await member.GrantRoleAsync(role.Id);
 
@@ -61,6 +96,9 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
         [Description("Only give role-to-give to members with this role. Defaults to no role (everyone).")]
             IRole? membersWithRole = null)
     {
+        if (!roleToGive.CanBeGrantedOrRevoked())
+            return Response($"The role {roleToGive.Mention} is managed by the server or an integration/bot and cannot be granted or revoked.").AsEphemeral();
+        
         var membersToProcess = Bot.GetMembers(Context.GuildId).Values
             .Where(x => !x.RoleIds.Contains(roleToGive.Id))
             .ToList();
@@ -77,7 +115,7 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
             .AppendNewline($"will be given the role {roleToGive.Mention}.")
             .AppendNewline("This operation may take a long time for large numbers of members.");
 
-        var view = new PromptView(x => x.WithContent(promptContentBuilder.ToString()));
+        var view = new AdminPromptView(promptContentBuilder.ToString()).OnConfirm("Modifying member roles now...");
         await View(view);
 
         if (view.Result)
@@ -98,6 +136,87 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
                     {
                         failedCount++;
                     }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1), Bot.StoppingToken);
+                }
+
+                await Response($"Done! Applied: {appliedCount}/{membersToProcess.Count}, Failed: {failedCount}/{membersToProcess.Count}.");
+            });
+        }
+
+        return default!;
+    }
+    
+    [SlashCommand("revoke")]
+    [Description("Revokes (removes) a role from a member.")]
+    public async Task<IResult> RevokeAsync(
+        [Description("The member to revoke the role from.")]
+            IMember member,
+        [Description("The role to revoke from the member.")]
+        [RequireAuthorRoleHierarchy]
+        [RequireBotRoleHierarchy]
+            IRole role)
+    {
+        if (!role.CanBeGrantedOrRevoked())
+            return Response($"The role {role.Mention} is managed by the server or an integration/bot and cannot be granted or revoked.").AsEphemeral();
+
+        await member.RevokeRoleAsync(role.Id);
+
+        return Response($"{member.Mention} has had the role {role.Mention} removed.");
+    }
+
+    [SlashCommand("revoke-all")]
+    [Description("Revokes (removes) a role from all members.")]
+    public async Task<IResult> RevokeAllAsync(
+        [Description("The role to revoke from the members.")]
+        [RequireAuthorRoleHierarchy]
+        [RequireBotRoleHierarchy]
+            IRole roleToRevoke,
+        [Description("Only revoke role-to-revoke from members with this role. Defaults to no role (everyone).")]
+            IRole? membersWithRole = null)
+    {
+        if (!roleToRevoke.CanBeGrantedOrRevoked())
+            return Response($"The role {roleToRevoke.Mention} is managed by the server or an integration/bot and cannot be granted or revoked.").AsEphemeral();
+        
+        var membersToProcess = Bot.GetMembers(Context.GuildId).Values
+            .Where(x => x.RoleIds.Contains(roleToRevoke.Id))
+            .ToList();
+
+        if (membersWithRole is not null)
+            membersToProcess = membersToProcess.Where(x => x.RoleIds.Contains(membersWithRole.Id)).ToList();
+
+        if (membersToProcess.Count == 0)
+            return Response($"No members need to have the role {roleToRevoke.Mention} revoked.").AsEphemeral();
+
+        var promptContentBuilder = new StringBuilder()
+            .Append($"{"member".ToQuantity(membersToProcess.Count)} ")
+            .Append(membersWithRole is not null ? $"with the role {membersWithRole.Mention} " : string.Empty)
+            .AppendNewline($"will have the role {roleToRevoke.Mention} revoked.")
+            .AppendNewline("This operation may take a long time for large numbers of members.");
+
+        var view = new AdminPromptView(promptContentBuilder.ToString()).OnConfirm("Modifying member roles now...");
+        await View(view);
+
+        if (view.Result)
+        {
+            _ = Task.Run(async () =>
+            {
+                var appliedCount = 0;
+                var failedCount = 0;
+
+                foreach (var member in membersToProcess)
+                {
+                    try
+                    {
+                        await member.RevokeRoleAsync(roleToRevoke.Id);
+                        appliedCount++;
+                    }
+                    catch
+                    {
+                        failedCount++;
+                    }
+                    
+                    await Task.Delay(TimeSpan.FromSeconds(1), Bot.StoppingToken);
                 }
 
                 await Response($"Done! Applied: {appliedCount}/{membersToProcess.Count}, Failed: {failedCount}/{membersToProcess.Count}.");
@@ -133,17 +252,25 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
             ? await attachmentService.GetAttachmentAsync(icon)
             : null;
 
-        var newRole = await Bot.CreateRoleAsync(Context.GuildId, x =>
+        IRole newRole;
+        try
         {
-            x.Name = name;
-            x.Color = color;
-            x.IsHoisted = hoisted;
-            x.IsMentionable = mentionable;
+            newRole = await Bot.CreateRoleAsync(Context.GuildId, x =>
+            {
+                x.Name = name;
+                x.Color = color;
+                x.IsHoisted = hoisted;
+                x.IsMentionable = mentionable;
 
-            if (attachment is not null)
-                x.Icon = attachment.Stream;
-        });
-
+                if (attachment is not null)
+                    x.Icon = attachment.Stream;
+            });
+        }
+        catch (RestApiException ex) when (ex.Message.Contains("boosts")) // This server needs more boosts to perform this action
+        {
+            return Response("This server requires a higher boost level to be able to create roles with icons.");
+        }
+        
         if (aboveRole is not null)
             await newRole.ModifyAsync(x => x.Position = aboveRole.Position + 1);
 
@@ -180,8 +307,14 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
             if (role.UnicodeEmoji is not null)
                 x.UnicodeEmoji = LocalEmoji.FromEmoji(role.UnicodeEmoji)!;
         });
+        
+        await Bot.ReorderRolesAsync(Context.GuildId, new Dictionary<Snowflake, int>
+        {
+            [role.Id] = role.Position,
+            [newRole.Id] = role.Position
+        });
 
-        await newRole.ModifyAsync(x => x.Position = Math.Max(role.Position - 1, 1));
+        //await newRole.ModifyAsync(x => x.Position = Math.Max(role.Position - 1, 1));
 
         return Response($"{role.Mention} was successfully cloned into the new role {newRole.Mention}.");
     }
@@ -238,10 +371,14 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
         [RequireBotRoleHierarchy]
             IRole targetRole)
     {
+        if (roleToMove.Id == Context.GuildId)
+            return Response("The @\u200beveryone role cannot be moved above or below another role.").AsEphemeral();
+        
+        if (targetRole.Id == Context.GuildId && direction == MoveDirection.Below)
+            return Response("Roles cannot be moved below the @\u200beveryone role.").AsEphemeral();
+        
         await Deferral();
-
-        // direction is defined as Below = -1, Above = 1
-        await roleToMove.ModifyAsync(x => x.Position = targetRole.Position + (int) direction);
+        await roleToMove.ModifyAsync(x => x.Position = targetRole.Position + (direction == MoveDirection.Above ? 1 : -1));
         return Response($"{roleToMove.Mention} has been moved {direction.Humanize(LetterCasing.LowerCase)} {targetRole.Mention}.");
     }
 
@@ -265,22 +402,25 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
 
     [SlashCommand("delete")]
     [Description("Deletes an existing role permanently.")]
-    public async Task<IResult> DeleteAsync(
+    public async Task DeleteAsync(
         [Description("The role to delete.")] 
         [RequireAuthorRoleHierarchy] 
         [RequireBotRoleHierarchy]
             IRole role)
     {
-        var view = new PromptView(x =>
-            x.WithContent($"Are you sure you want to delete the role {role.Mention}?\n" +
-                          $"This action is {Markdown.Bold("IRREVERSIBLE")}.").AddEmbed(FormatRoleInfo(role)));
+        if (!role.CanBeGrantedOrRevoked())
+        {
+            await Response("This role is managed by the server or a bot/integration, and cannot be deleted.").AsEphemeral();
+            return;
+        }
+            
+        var view = new AdminPromptView($"Are you sure you want to delete the role {role.Mention}?\n" +
+                                        $"This action is {Markdown.Bold("IRREVERSIBLE")}.", FormatRoleInfo(role))
+            .OnConfirm($"Role {role.Name} ({Markdown.Code(role.Id)}) deleted.");
 
         await View(view);
-        if (!view.Result)
-            return default!;
-
-        await role.DeleteAsync();
-        return Response($"Role {role.Name} ({role.Id}) deleted.");
+        if (view.Result)
+            await role.DeleteAsync();
     }
 
     private LocalEmbed FormatRoleInfo(IRole role)

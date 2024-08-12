@@ -6,49 +6,15 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;
 
-public sealed class XpService(IConfiguration configuration) : DiscordBotService
+public sealed class XpService(EmojiService emojis) : DiscordBotService
 {
-    private static readonly Regex LevelEmojiNameRegex = new(@"tier_(?<tier>[\d]+)_level_(?<level>[\d]+)", RegexOptions.Compiled);
-
-    private readonly Dictionary<(int Tier, int Level), Snowflake> _levelEmojis = new();
-
-    private readonly IList<ulong> _levelEmojiGuilds = configuration.GetSection("LevelEmojiGuilds").Get<List<ulong>>() ?? new List<ulong>();
-
-    public LocalCustomEmoji GetLevelEmoji(int tier, int level)
-        => LocalEmoji.Custom(_levelEmojis.TryGetValue((tier, level), out var id) ? id : 729577737156558918); // <:LEVELNOTFOUND:729577737156558918>
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        await Bot.WaitUntilReadyAsync(stoppingToken);
-
-        foreach (var guildId in _levelEmojiGuilds)
-        {
-            if (Bot.GetGuild(guildId) is not { } guild)
-            {
-                Logger.LogWarning("Emoji guild {GuildId} was not found! Emojis not loaded.", guildId);
-                continue;
-            }
-
-            foreach (var emoji in guild.Emojis.Values)
-            {
-                if (!LevelEmojiNameRegex.IsMatch(emoji.Name, out var match))
-                    continue;
-
-                var tier = int.Parse(match.Groups["tier"].Value);
-                var level = int.Parse(match.Groups["level"].Value);
-
-                _levelEmojis[(tier, level)] = emoji.Id;
-            }
-        }
-
-        Logger.LogInformation("Loaded {Emojis}.", "level-up emoji".ToQuantity(_levelEmojis.Count));
-    }
-
+#if !MIGRATING
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
         if (e.GuildId is not { } guildId || 
@@ -60,34 +26,35 @@ public sealed class XpService(IConfiguration configuration) : DiscordBotService
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var guildConfig = await db.GetOrCreateGuildConfigAsync(guildId);
+        var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
 
-        var globalUser = await db.GetOrCreateGlobalUserAsync(message.Author.Id);
-        globalUser = globalUser.IncrementXp(User.XP_INCREMENT_RATE, User.XpGainInterval, out var globalLeveledUp);
+        var dbUser = await db.Users.GetOrCreateAsync(message.Author.Id);
+        dbUser.IncrementXp(UserBase.XP_INCREMENT_RATE, UserBase.XpGainInterval, out var globalLeveledUp);
         
         if (globalLeveledUp)
         {
             _ = Task.Run(async () =>
             {
                 await message.AddReactionAsync(LocalEmoji.Unicode("🌐"));
-                await message.AddReactionAsync(GetLevelEmoji(globalUser.Tier, globalUser.Level));
+                await message.AddReactionAsync(emojis.GetLevelEmoji(dbUser.Tier, dbUser.Level));
             });
         }
 
         if (guildConfig.HasSetting(GuildSettings.TrackServerXp) && !guildConfig.XpExemptChannelIds.Contains(e.ChannelId))
         {
-            var guildUser = await db.GetOrCreateGuildUserAsync(guildId, message.Author.Id);
-            guildUser = guildUser.IncrementXp(guildConfig.CustomXpRate ?? User.XP_INCREMENT_RATE, guildConfig.CustomXpInterval ?? User.XpGainInterval, out var guildLeveledUp);
+            var dbMember = await db.Members.GetOrCreateAsync(guildId, message.Author.Id);
+            dbMember.IncrementXp(guildConfig.CustomXpRate ?? UserBase.XP_INCREMENT_RATE, 
+                guildConfig.CustomXpInterval ?? UserBase.XpGainInterval, out var guildLeveledUp);
             
             if (guildLeveledUp)
             {
                 _ = Task.Run(async () =>
                 {
                     await message.AddReactionAsync(LocalEmoji.FromString(guildConfig.LevelUpEmoji));
-                    await message.AddReactionAsync(GetLevelEmoji(globalUser.Tier, globalUser.Level));
+                    await message.AddReactionAsync(emojis.GetLevelEmoji(dbMember.Tier, dbMember.Level));
                 });
 
-                if (await db.LevelRewards.FindAsync(guildId, guildUser.Tier, guildUser.Level) is { } levelReward)
+                if (await db.LevelRewards.FindAsync(guildId, dbMember.Tier, dbMember.Level) is { } levelReward)
                 {
                     var member = e.Member ?? message.Author as IMember ??
                         await Bot.GetOrFetchMemberAsync(guildId, message.Author.Id);
@@ -100,13 +67,14 @@ public sealed class XpService(IConfiguration configuration) : DiscordBotService
                     else
                     {
                         var contentBuilder = new StringBuilder()
-                        .AppendNewline(
-                            $"Congrats on leveling up to {Markdown.Bold($"Tier {guildUser.Tier}, Level {guildUser.Level}")}!");
+                            .AppendNewline($"Congrats on leveling up to {Markdown.Bold($"Tier {dbMember.Tier}, Level {dbMember.Level}")}!");
 
+                        var baseLength = contentBuilder.Length;
+                        
                         if (levelReward.GrantedRoleIds.Count > 0)
                         {
-                            contentBuilder.Append($"You've been given the following {"role".ToQuantity(levelReward.GrantedRoleIds.Count)}: ");
                             var grantedRoles = new List<IRole>();
+                            var missingRoles = new List<Snowflake>();
                             foreach (var roleId in levelReward.GrantedRoleIds)
                             {
                                 if (Bot.GetRole(guildId, roleId) is { } role)
@@ -115,17 +83,23 @@ public sealed class XpService(IConfiguration configuration) : DiscordBotService
                                     continue;
                                 }
 
-                                levelReward.GrantedRoleIds.Remove(roleId);
+                                missingRoles.Add(roleId);
                             }
+                            
+                            missingRoles.ForEach(x => levelReward.GrantedRoleIds.Remove(x));
 
-                            contentBuilder.AppendJoin(", ", grantedRoles.Select(x => Markdown.Bold(x.Name)))
-                                .AppendNewline();
+                            if (grantedRoles.Count > 0)
+                            {
+                                contentBuilder.Append($"You've been given the following {"role".ToQuantity(levelReward.GrantedRoleIds.Count)}: ")
+                                    .AppendJoin(", ", grantedRoles.Select(x => Markdown.Bold(x.Name)))
+                                    .AppendNewline();
+                            }
                         }
 
                         if (levelReward.RevokedRoleIds.Count > 0)
                         {
-                            contentBuilder.Append($"You've had the following {"role".ToQuantity(levelReward.GrantedRoleIds.Count)} removed: ");
                             var revokedRoles = new List<IRole>();
+                            var missingRoles = new List<Snowflake>();
                             foreach (var roleId in levelReward.RevokedRoleIds)
                             {
                                 if (Bot.GetRole(guildId, roleId) is { } role)
@@ -134,10 +108,16 @@ public sealed class XpService(IConfiguration configuration) : DiscordBotService
                                     continue;
                                 }
 
-                                levelReward.RevokedRoleIds.Remove(roleId);
+                                missingRoles.Add(roleId);
                             }
+                            
+                            missingRoles.ForEach(x => levelReward.RevokedRoleIds.Remove(x));
 
-                            contentBuilder.AppendJoin(", ", revokedRoles.Select(x => Markdown.Bold(x.Name)));
+                            if (revokedRoles.Count > 0)
+                            {
+                                contentBuilder.Append($"You've had the following {"role".ToQuantity(levelReward.GrantedRoleIds.Count)} removed: ")
+                                    .AppendJoin(", ", revokedRoles.Select(x => Markdown.Bold(x.Name)));
+                            }
                         }
 
                         try
@@ -153,12 +133,43 @@ public sealed class XpService(IConfiguration configuration) : DiscordBotService
                                 .AppendNewline("One or more of these roles failed to be added or removed. Contact the server admins to resolve this issue.");
                         }
 
-                        _ = message.Author.SendMessageAsync(new LocalMessage().WithContent(contentBuilder.ToString()));
+                        if (contentBuilder.Length > baseLength)
+                            _ = message.Author.SendMessageAsync(new LocalMessage().WithContent(contentBuilder.ToString()));
                     }
                 }
             }
         }
 
         await db.SaveChangesAsync();
+    }
+#endif
+
+    protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e)
+    {
+        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        if (await db.Members.FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.UserId == e.MemberId) is not { TotalXp: > 0 } member)
+            return;
+        
+        var levelRewards = await db.LevelRewards.Where(x => x.GuildId == e.GuildId)
+            .Where(x => x.Tier < member.Tier || (x.Tier == member.Tier && x.Level <= member.Level))
+            .OrderBy(x => x.Tier)
+            .ThenBy(x => x.Level)
+            .ToListAsync();
+
+        var roleIds = e.Member.RoleIds.ToHashSet();
+        foreach (var levelReward in levelRewards)
+        {
+            foreach (var roleId in levelReward.RevokedRoleIds)
+            {
+                roleIds.Remove(roleId);
+            }
+
+            foreach (var roleId in levelReward.GrantedRoleIds)
+            {
+                roleIds.Add(roleId);
+            }
+        }
+
+        await Bot.ModifyMemberAsync(e.GuildId, e.MemberId, x => x.RoleIds = roleIds);
     }
 }

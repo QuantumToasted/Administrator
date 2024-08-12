@@ -8,7 +8,8 @@ public static partial class DbModelExtensions
 {
     public static bool IsMatch(this Highlight highlight, IMessage message)
     {
-        return new Regex($@"(^|\b){Regex.Escape(highlight.Text)}($|\b)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
+        var escaped = Regex.Escape(highlight.Text);
+        return new Regex($@"(^|\W+)({escaped})($|\W+)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)
             .IsMatch(message.Content);
     }
 }

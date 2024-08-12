@@ -21,6 +21,8 @@ public sealed class TimeSpanTypeParser : DiscordTypeParser<TimeSpan>
 
     public static bool TryParse(string value, [NotNullWhen(true)] out TimeSpan? ts)
     {
+        value = value.Replace(" ", ""); // TODO: is removing spaces a good idea here? 15 seconds -> 15seconds
+        
         ts = null;
 
         var start = DateTimeOffset.UtcNow;
@@ -31,8 +33,8 @@ public sealed class TimeSpanTypeParser : DiscordTypeParser<TimeSpan>
             if (!int.TryParse(match.Groups[1].Value, out var amount) || amount <= 0)
                 continue;
 
-            var character = match.Groups[4].Value[0];
-            var isMonth = match.Groups[4].Value.Length > 1 && match.Groups[4].Value[1] == 'o';
+            var character = match.Groups[2].Value[0];
+            var isMonth = match.Groups[2].Value.Length > 1 && match.Groups[2].Value[1] == 'o';
 
             try
             {

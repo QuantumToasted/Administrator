@@ -2,7 +2,6 @@
 using Administrator.Database;
 using Disqord;
 using Disqord.Extensions.Interactivity.Menus;
-using Disqord.Rest;
 
 namespace Administrator.Bot;
 
@@ -50,7 +49,7 @@ public sealed class ReminderSnoozeView : AdminViewBase
             
         //MessageTemplate = x => x.WithContent(responseBuilder.ToString());
 
-        await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+        await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
             .WithContent(contentBuilder.ToString())
             .WithIsEphemeral());
         

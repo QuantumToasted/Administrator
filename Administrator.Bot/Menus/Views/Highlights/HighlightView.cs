@@ -3,7 +3,6 @@ using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Gateway;
-using Disqord.Rest;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
@@ -60,7 +59,7 @@ public sealed class HighlightView : ViewBase
     {
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var globalUser = await db.GetOrCreateGlobalUserAsync(e.AuthorId);
+        var globalUser = await db.Users.GetOrCreateAsync(e.AuthorId);
         globalUser.BlacklistedHighlightUserIds.Add(_message.Author.Id);
         await db.SaveChangesAsync();
         
@@ -74,7 +73,7 @@ public sealed class HighlightView : ViewBase
     {
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var globalUser = await db.GetOrCreateGlobalUserAsync(e.AuthorId);
+        var globalUser = await db.Users.GetOrCreateAsync(e.AuthorId);
         globalUser.BlacklistedHighlightChannelIds.Add(_message.ChannelId);
         await db.SaveChangesAsync();
         
@@ -113,16 +112,16 @@ public sealed class HighlightView : ViewBase
         var mentions = Bot.Services.GetRequiredService<SlashCommandMentionService>();
         var minutes = int.Parse(e.SelectedOptions[0].Value.Value);
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var globalUser = await db.GetOrCreateGlobalUserAsync(e.AuthorId);
+        var globalUser = await db.Users.GetOrCreateAsync(e.AuthorId);
         var snoozedUntil = DateTimeOffset.UtcNow.AddMinutes(minutes);
         globalUser.HighlightsSnoozedUntil = snoozedUntil;
         await db.SaveChangesAsync();
         Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
         
-        await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+        await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
             .WithContent($"You've snoozed {Markdown.Underline("all")} highlights until " +
                          $"{Markdown.Timestamp(snoozedUntil, Markdown.TimestampFormat.LongDateTime)}.\n" +
-                         $"(You can undo this with the command {mentions.GetMention("highlight snooze disable")}.)")
+                         $"(You can undo this with the command {mentions.GetMention("highlight snooze cancel")}.)")
             .WithIsEphemeral());
         
         RemoveComponent(e.Selection);

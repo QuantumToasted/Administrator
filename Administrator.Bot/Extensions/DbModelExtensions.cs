@@ -1,133 +1,126 @@
-﻿using System.Numerics;
-using System.Security.Cryptography;
-using System.Text;
-using Administrator.Database;
+﻿using Administrator.Database;
+using Amazon.S3;
+using Amazon.S3.Model;
 using Disqord;
 using Disqord.Bot;
-using Disqord.Bot.Commands;
-using Disqord.Gateway;
 using Disqord.Rest;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Qommon;
 
 namespace Administrator.Bot;
 
 public static partial class DbModelExtensions
 {
-    public static string FormatKey<T>(this INumberKeyedDbEntity<T> entity)
-        where T : INumber<T>
-    {
-        return $"`[#{entity.Id}]`";
-    }
-
     public static bool IsImageAttachment(this Attachment attachment)
         => Path.GetExtension(attachment.FileName) is { } extension && new[] { "png", "jpeg", "jpg", "webp" }.Contains(extension[1..], StringComparer.InvariantCultureIgnoreCase); 
     
-    public static TUser IncrementXp<TUser>(this TUser user, int xp, TimeSpan xpGainInterval, out bool leveledUp)
-        where TUser : User
+    public static void IncrementXp<TUser>(this TUser user, int xp, TimeSpan xpGainInterval, out bool leveledUp)
+        where TUser : UserBase
     {
         leveledUp = false;
+        var now = DateTimeOffset.UtcNow;
         
-        if (DateTimeOffset.UtcNow < user.LastXpGain + xpGainInterval)
-            return user;
+        if (now < user.LastXpGain + xpGainInterval)
+            return;
 
         var currentLevel = user.Level;
-        user = user with { TotalXp = user.TotalXp + xp, LastXpGain = DateTimeOffset.UtcNow };
+        user.TotalXp += xp;
+        user.LastXpGain = now;
 
         if (currentLevel != user.Level)
         {
             leveledUp = true;
-            user = user with { LastLevelUp = DateTimeOffset.UtcNow };
+            user.LastLevelUp = DateTimeOffset.UtcNow;
         }
-
-        return user;
     }
 
-    public static bool HasSetting(this Guild guild, GuildSettings setting)
-        => guild.Settings.HasFlag(setting);
-
     public static Task ApplyAsync(this RoleLevelReward reward, IMember member)
-        => member.ModifyAsync(x => x.RoleIds = Optional.Create(member.RoleIds.Except(reward.RevokedRoleIds.Select(static y => new Snowflake(y)))
-            .Concat(reward.GrantedRoleIds.Select(static y => new Snowflake(y)))));
+    {
+        var roleIds = member.RoleIds.ToHashSet();
+        foreach (var roleId in reward.GrantedRoleIds)
+        {
+            roleIds.Add(roleId);
+        }
+
+        foreach (var roleId in reward.RevokedRoleIds)
+        {
+            roleIds.Remove(roleId);
+        }
+
+        return member.ModifyAsync(x => x.RoleIds = roleIds);
+    }
 
     public static Task RevokeAsync(this RoleLevelReward reward, IMember member)
-        => member.ModifyAsync(x => x.RoleIds = Optional.Create(member.RoleIds.Except(reward.GrantedRoleIds.Select(static y => new Snowflake(y)))
-            .Concat(reward.RevokedRoleIds.Select(static y => new Snowflake(y)))));
+    {
+        var roleIds = member.RoleIds.ToHashSet();
+        foreach (var roleId in reward.GrantedRoleIds)
+        {
+            roleIds.Remove(roleId);
+        }
 
+        foreach (var roleId in reward.RevokedRoleIds)
+        {
+            roleIds.Add(roleId);
+        }
+
+        return member.ModifyAsync(x => x.RoleIds = roleIds);
+    }
+
+    public static async Task<bool> UploadAsync(this Attachment attachment, DiscordBotBase bot, byte[] data)
+    {
+        var s3 = bot.Services.GetRequiredService<AmazonS3Client>();
+        var bucket = bot.CurrentUser.Id.ToString();
+        var key = attachment.Key.ToString();
+
+        try
+        {
+            await s3.PutObjectAsync(new PutObjectRequest
+            {
+                BucketName = bucket,
+                Key = key,
+                InputStream = new MemoryStream(data),
+                ContentType = MimeTypes.GetMimeType(attachment.FileName)
+            }, bot.StoppingToken);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            bot.Logger.LogError(ex, "Failed to PUT object to B2.");
+            return false;
+        }
+    }
+
+    public static async Task<LocalAttachment?> DownloadAsync(this Attachment attachment, DiscordBotBase bot)
+    {
+        var s3 = bot.Services.GetRequiredService<AmazonS3Client>();
+        var bucket = bot.CurrentUser.Id.ToString();
+        var key = attachment.Key.ToString();
+        var output = new MemoryStream();
+
+        try
+        {
+            using var obj = await s3.GetObjectAsync(bucket, key, bot.StoppingToken);
+            await obj.ResponseStream.CopyToAsync(output);
+            output.Seek(0, SeekOrigin.Begin);
+            return new LocalAttachment(output, attachment.FileName);
+        }
+        catch (Exception ex)
+        {
+            bot.Logger.LogError(ex, "Failed to GET object from B2.");
+            return null;
+        }
+    }
+
+    /*
     public static LocalAttachment ToLocalAttachment(this Attachment attachment)
     {
         var output = new MemoryStream(attachment.Data);
         output.Seek(0, SeekOrigin.Begin);
         return new LocalAttachment(output, attachment.FileName);
     }
+    */
     
-    public static async ValueTask<TMessage> ToLocalMessageAsync<TMessage>(this Tag tag, IDiscordGuildCommandContext? context = null)
-        where TMessage : LocalMessageBase, new()
-    {
-        var message = tag.Message is null
-            ? new TMessage()
-            : await tag.Message.ToLocalMessageAsync<TMessage>(new DiscordPlaceholderFormatter(), context);
-
-        if (tag.Attachment is not null)
-        {
-            message.AddAttachment(tag.Attachment.ToLocalAttachment());
-        }
-
-        return message;
-    }
-    
-    public static LocalEmbed FormatInfoEmbed(this Tag tag, DiscordBotBase bot)
-    {
-        var embed = new LocalEmbed()
-            .WithUnusualColor()
-            .WithDescription(tag.Name)
-            .AddField("Total uses", tag.Uses)
-            .AddField("Last used", tag.LastUsedAt is { } lastUsedAt
-                ? Markdown.Timestamp(lastUsedAt, Markdown.TimestampFormat.RelativeTime) 
-                : "(never)")
-            .AddField("Created", Markdown.Timestamp(tag.CreatedAt, Markdown.TimestampFormat.RelativeTime));
-
-        if (bot.GetUser(tag.OwnerId) is { } owner)
-        {
-            embed.WithAuthor($"Owner: {owner.Tag}", owner.GetAvatarUrl(CdnAssetFormat.Automatic));
-        }
-        else
-        {
-            embed.WithAuthor($"Owner: {tag.OwnerId}", Discord.Cdn.GetDefaultAvatarUrl(DefaultAvatarColor.Blurple));
-        }
-
-        return embed;
-    }
-    
-    public static string RegenerateApiKey(this Guild guild)
-    {
-        var idBytes = Encoding.Unicode.GetBytes(guild.GuildId.ToString());
-        var cryptoBytes = new byte[32];
-        var saltBytes = new byte[16];
-        
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(cryptoBytes);
-            rng.GetBytes(saltBytes);
-        }
-
-        var pbkdf2 = new Rfc2898DeriveBytes(cryptoBytes, saltBytes, 10000, HashAlgorithmName.SHA256);
-
-        var hash = pbkdf2.GetBytes(32);
-        var hashBytes = new byte[48];
-        
-        Array.Copy(saltBytes, 0, hashBytes, 0, 16);
-        Array.Copy(hash, 0, hashBytes, 16, 32);
-
-        guild.ApiKeySalt = saltBytes;
-        guild.ApiKeyHash = hashBytes;
-
-        return new StringBuilder()
-            .Append(Convert.ToBase64String(idBytes))
-            .Append('.')
-            .Append(Convert.ToBase64String(cryptoBytes))
-            .ToString();
-    }
-
-    public static TimeZoneInfo GetTimeZone(this GlobalUser user)
+    public static TimeZoneInfo GetTimeZone(this User user)
         => user.TimeZone ?? TimeZoneInfo.Utc;
 }

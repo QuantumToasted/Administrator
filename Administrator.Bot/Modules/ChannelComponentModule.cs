@@ -121,7 +121,18 @@ public sealed class ChannelComponentModule : DiscordComponentGuildModuleBase
     private async Task<IResult> ModifyChannelAsync<TChannel>(Task<TChannel> modifyTask)
         where TChannel : IGuildChannel
     {
-        var modifiedChannel = await modifyTask;
+        TChannel modifiedChannel;
+        
+        try
+        {
+            modifiedChannel = await modifyTask;
+        }
+        catch (MaximumRateLimitDelayExceededException ex)
+        {
+            return Response($"Modifying this channel has been rate-limited. Try again " +
+                            $"{Markdown.Timestamp(DateTimeOffset.UtcNow + ex.Delay, Markdown.TimestampFormat.RelativeTime)}.");
+        }
+        
         return Response($"Channel {modifiedChannel.Mention} modified.");
     }
 

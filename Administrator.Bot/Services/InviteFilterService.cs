@@ -4,6 +4,7 @@ using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
+using Disqord.Http;
 using Disqord.Rest;
 using Microsoft.Extensions.Logging;
 
@@ -16,6 +17,7 @@ public sealed class InviteFilterService : DiscordBotService
         RegexOptions.Compiled);
 
     private readonly ConcurrentDictionary<Snowflake, HashSet<string>> _guildInviteCodes = new();
+    private readonly ConcurrentDictionary<string, InviteData> _checkedInvites = new();
 
     public override int Priority => 1;
 
@@ -30,7 +32,7 @@ public sealed class InviteFilterService : DiscordBotService
         {
             if (!Bot.HasPermissionsInGuild(guildId, Permissions.ManageGuild))
             {
-                var guildConfig = await db.GetOrCreateGuildConfigAsync(guildId);
+                var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
                 if (guildConfig.HasSetting(GuildSettings.FilterDiscordInvites))
                 {
                     Logger.LogWarning("Guild {GuildId} has FilterDiscordInvites enabled but the bot cannot fetch invites.",
@@ -104,37 +106,57 @@ public sealed class InviteFilterService : DiscordBotService
             return;
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var guild = await db.GetOrCreateGuildConfigAsync(guildId);
+        var guild = await db.Guilds.GetOrCreateAsync(guildId);
         if (!guild.HasSetting(GuildSettings.FilterDiscordInvites))
             return;
 
+        var now = DateTimeOffset.UtcNow;
+        foreach (var (key, value) in _checkedInvites)
+        {
+            if (now - value.LastChecked > TimeSpan.FromHours(1))
+                _checkedInvites.Remove(key, out _);
+        }
+
         await db.Guilds.Entry(guild)
-            .Collection(x => x.InviteFilterExemptions!)
+            .Collection(x => x.InviteFilterExemptions)
             .LoadAsync();
 
         if (!InviteRegex.IsMatch(e.Message.Content, out var match))
             return;
 
-        var inviteCode = match.Groups[0].Value;
+        var inviteCode = match.Groups[1].Value;
         if (_guildInviteCodes.TryGetValue(guildId, out var inviteCodes) && inviteCodes.Contains(inviteCode))
             return;
 
-        foreach (var exemption in guild.InviteFilterExemptions!)
+        foreach (var exemption in guild.InviteFilterExemptions)
         {
             switch (exemption.ExemptionType)
             {
                 case InviteFilterExemptionType.Guild:
                 {
-                    try
+                    IInvite? invite;
+                    if (_checkedInvites.TryGetValue(inviteCode, out var data))
                     {
-                        var invite = await Bot.FetchInviteAsync(inviteCode);
-                        if (invite is IGuildInvite guildInvite && guildInvite.GuildId == exemption.GuildId)
-                            return;
+                        invite = data.Invite;
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Logger.LogWarning(ex, "Failed to fetch invite with code {Code}.", inviteCode);
+                        try
+                        {
+                            var foundInvite = await Bot.FetchInviteAsync(inviteCode);
+                            _checkedInvites[inviteCode] = new InviteData(DateTimeOffset.UtcNow, foundInvite);
+                            invite = foundInvite;
+                        }
+                        catch (Exception ex) when (ex is not RestApiException { StatusCode: HttpResponseStatusCode.NotFound })
+                        {
+                            Logger.LogWarning(ex, "Failed to fetch invite with code {Code}.", inviteCode);
+                            invite = null;
+                        }
                     }
+                    
+                    if (invite is IGuildInvite guildInvite && guildInvite.GuildId == exemption.GuildId)
+                        return;
+                    
                     break;
                 }
                 case InviteFilterExemptionType.Role:
@@ -167,4 +189,6 @@ public sealed class InviteFilterService : DiscordBotService
                 e.MessageId.RawValue, inviteCode, e.GuildId.Value.RawValue);
         }
     }
+
+    private record InviteData(DateTimeOffset LastChecked, IInvite? Invite);
 }

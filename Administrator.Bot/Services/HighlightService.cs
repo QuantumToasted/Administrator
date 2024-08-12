@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Bot;
 
+// TODO: maybe remove this or extrapolate into a util method. I don't like the idea of coupling modules to services.
 [ScopedService]
 public sealed class HighlightService(AdminDbContext db, ICommandContextAccessor contextAccessor, AutoCompleteService autoComplete, 
     HighlightHandlingService highlights)

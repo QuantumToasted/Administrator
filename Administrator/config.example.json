@@ -1,0 +1,29 @@
+{
+    "Appeal": {
+		"GuildId": 0,
+        "GuildInviteCode": ""
+    },
+    "Backblaze": {
+        "BaseUrl": "",
+        "KeyId": "",
+        "Key": ""
+    },
+    "Backpack": {
+        "ApiKey": ""
+    },
+    "Bot": {
+        "Token": "",
+        "OwnerModuleGuildId": 0
+    },
+    "Database": {
+        "ConnectionString": ""
+    },
+    "Help": {
+        "WikiUrl": "",
+        "SupportGuildId": 0,
+        "SupportGuildInviteCode": ""
+    },
+    "Steam": {
+        "ApiKey": ""
+    }
+}

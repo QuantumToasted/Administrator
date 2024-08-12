@@ -1,76 +1,110 @@
-﻿using System.Globalization;
+﻿using System.Text;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
 using Humanizer;
-using Laylua;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Qmmands;
-using IResult = Qmmands.IResult;
 
 namespace Administrator.Bot;
 
+#if DEBUG
 [SlashGroup("owner")]
-[RequireBotOwner]
-public sealed class OwnerModule(AdminDbContext db, AttachmentService attachments) : DiscordApplicationGuildModuleBase
+[RequireBotOwner(Group = "1")]
+[RequireInitialAuthorPermissions(Permissions.Administrator, Group = "1")]
+public sealed class OwnerModule(SlashCommandMentionService mentions, AdminDbContext db) : DiscordApplicationGuildModuleBase
 {
     [MutateModule]
     public static void MutateModule(DiscordBotBase bot, IModuleBuilder module)
     {
-        var guildId = bot.Services.GetRequiredService<IConfiguration>().GetValue<ulong>("OwnerModuleGuildId");
+        var config = bot.Services.GetRequiredService<IOptions<AdministratorBotConfiguration>>().Value;
+        var guildId = config.OwnerModuleGuildId;
         module.Checks.Add(new RequireGuildAttribute(guildId));
     }
 
-    [SlashCommand("lua")]
-    public async Task LuaAsync(string? code = null, [RequireAttachmentExtensions("lua")] IAttachment? luaFile = null)
+    [SlashCommand("generate-commandlist")]
+    public async Task<IResult> GenerateCommandListAsync()
     {
         await Deferral();
-        using var lua = new Lua(CultureInfo.CurrentCulture);
 
-        lua.OpenDiscordLibraries(Context);
-
-        if (luaFile is not null)
+        var builder = new StringBuilder()
+            .AppendNewline("|Command|Description|")
+            .AppendNewline("|---|---|");
+        
+        foreach (var command in Bot.Commands.EnumerateApplicationModules().SelectMany(x => x.Commands).Where(x => x.Type is ApplicationCommandType.Slash))
         {
-            var (stream, _) = await attachments.GetAttachmentAsync(luaFile);
+            builder.Append($"|{Markdown.Code($"/{SlashCommandMentionService.GetPath(command)}")}|{command.Description}");
 
-            using var reader = new StreamReader(stream);
+            if (command.Checks.Concat(command.Module.Checks).OfType<RequireInitialAuthorPermissionsAttribute>().FirstOrDefault() is { Permissions: var requiredPermission })
+            {
+                builder.Append("<br>").Append($"{Markdown.Bold("Required Permissions:")} {requiredPermission.Humanize(LetterCasing.Title)}");
+            }
 
-            code = await reader.ReadToEndAsync();
+            builder.AppendNewline("|");
         }
 
-        if (string.IsNullOrWhiteSpace(code))
-        {
-            await Response("No code????");
-            return;
-        }
-
-        try
-        {
-            var msg = lua.Evaluate<LuaTable>(code);
-            if (msg is not null)
-                await Response(DiscordLuaLibraryBase.ConvertMessage<LocalInteractionMessageResponse>(msg));
-            else
-                await Response("Done");
-        }
-        catch (LuaException ex)
-        {
-            await Response($"failed: {ex.Message}");
-        }
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(builder.ToString()));
+        return Response(new LocalInteractionMessageResponse().AddAttachment(new LocalAttachment(stream, "commands.md")));
     }
 
-    /*
-    [SlashCommand("clear-cache")]
-    [Description("Clear's the bot's internal cache.")]
-    public IResult ClearCache()
+#if MIGRATING
+    [SlashCommand("migrate-database")]
+    public async Task MigrateAsync()
     {
-        _cache.Compact(1.0);
-        Logger.LogWarning("!!!CACHE RESET!!!");
-        return Response("Cache cleared!");
+        await Deferral();
+        var services = new ServiceCollection()
+            .AddDbContext<OldAdminDbContext>()
+            .BuildServiceProvider();
+
+        await using var scope = services.CreateAsyncScope();
+        var oldDb = scope.ServiceProvider.GetRequiredService<OldAdminDbContext>();
+
+        var bot = (AdministratorBot)Bot;
+        await foreach (var response in oldDb.MigrateAsync(db, bot, "415401238356819968"))
+        {
+            await Response(response);
+        }
     }
-    */
+#endif  
+
+    [SlashGroup("xp")]
+    public sealed class OwnerXpModule(AdminDbContext db) : DiscordApplicationGuildModuleBase
+    {
+        [SlashCommand("set")]
+        public async Task<IResult> SetAsync(IMember member, int totalXp, bool resetGainTime = false)
+        {
+            var mb = await db.Members.GetOrCreateAsync(member.GuildId, member.Id);
+            
+            mb.TotalXp = totalXp;
+            if (resetGainTime)
+                mb.LastXpGain = DateTimeOffset.MinValue;
+            
+            await db.SaveChangesAsync();
+            return Response("Done!");
+        }
+    }
+
+    [SlashCommand("dump-commands")]
+    public async Task<IResult> DumpCommandsAsync()
+    {
+        var builder = new StringBuilder();
+
+        foreach (var command in mentions.CommandMap.Keys.Order())
+        {
+            builder.AppendNewline($"/{command}");
+        }
+        
+        var output = new MemoryStream();
+        await using var writer = new StreamWriter(output, leaveOpen: true) { AutoFlush = true };
+        await writer.WriteAsync(builder);
+
+        output.Seek(0, SeekOrigin.Begin);
+        return Response(new LocalInteractionMessageResponse().AddAttachment(new LocalAttachment(output, "cmds.txt")));
+    }
 
     [SlashCommand("list-permissions")]
     [Description("Lists all required bot permissions from all commands.")]
@@ -78,34 +112,5 @@ public sealed class OwnerModule(AdminDbContext db, AttachmentService attachments
     {
         return Response(Bot.Commands.GetRequiredBotPermissions().Humanize(LetterCasing.Title));
     }
-
-    /*
-    [SlashCommand("announce-all")]
-    [Description("Sends an announcement to all servers.")]
-    public async Task<IResult> AnnounceAllAsync(
-        [Description("A markdown (md) or text (txt) file to send.")]
-        [RequireAttachmentExtensions("md", "txt")]
-            IAttachment announcement)
-    {
-        using var file = await _attachments.GetAttachmentAsync(announcement);
-        using var reader = new StreamReader(file.Stream.Value);
-
-        var content = await reader.ReadToEndAsync();
-        
-        var prompt = new PromptView(x => x.WithContent(content));
-        await View(prompt);
-
-        if (!prompt.Result)
-            return Response("Operation canceled.");
-
-        var output = new MemoryStream();
-        await using var writer = new StreamWriter(output, leaveOpen: true);
-
-        var sentOwnerIds = new HashSet<Snowflake>();
-        foreach (var guild in Bot.GetGuilds().Values)
-        {
-            var loggingChannel = await _db.GetLoggingChannelAsync(guild.Id, LogEventType.BotAnnouncements);
-        }
-    }
-    */
 }
+#endif

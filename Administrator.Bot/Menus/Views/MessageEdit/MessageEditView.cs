@@ -188,7 +188,7 @@ public abstract partial class MessageEditView : ViewBase
         }
         else if (index >= 20)
         {
-            await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+            await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
                 .WithIsEphemeral()
                 .WithContent("Embeds cannot exceed 20 fields."));
 

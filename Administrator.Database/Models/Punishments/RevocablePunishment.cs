@@ -15,7 +15,7 @@ public enum AppealStatus
 }
 
 public abstract record RevocablePunishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason)
-    : Punishment(GuildId, Target, Moderator, Reason), IStaticEntityTypeConfiguration<RevocablePunishment>
+    : Punishment(GuildId, Target, Moderator, Reason), IRevocablePunishment
 {
     public DateTimeOffset? RevokedAt { get; set; }
     
@@ -33,17 +33,13 @@ public abstract record RevocablePunishment(Snowflake GuildId, UserSnapshot Targe
     
     public Snowflake? AppealMessageId { get; set; }
 
-    static void IStaticEntityTypeConfiguration<RevocablePunishment>.ConfigureBuilder(EntityTypeBuilder<RevocablePunishment> punishment)
+    private sealed class RevocablePunishmentConfiguration : IEntityTypeConfiguration<RevocablePunishment>
     {
-        punishment.HasBaseType<Punishment>();
+        public void Configure(EntityTypeBuilder<RevocablePunishment> punishment)
+        {
+            punishment.HasBaseType<Punishment>();
         
-        punishment.HasPropertyWithColumnName(x => x.RevokedAt, "revoked");
-        punishment.HasPropertyWithColumnName(x => x.Revoker, "revoker").HasColumnType("jsonb");
-        punishment.HasPropertyWithColumnName(x => x.RevocationReason, "revocation_reason");
-        punishment.HasPropertyWithColumnName(x => x.AppealedAt, "appealed");
-        punishment.HasPropertyWithColumnName(x => x.AppealText, "appeal");
-        punishment.HasPropertyWithColumnName(x => x.AppealStatus, "appeal_status");
-        punishment.HasPropertyWithColumnName(x => x.AppealChannelId, "appeal_channel");
-        punishment.HasPropertyWithColumnName(x => x.AppealMessageId, "appeal_message");
+            punishment.Property(x => x.Revoker).HasColumnType("jsonb");
+        }
     }
 }

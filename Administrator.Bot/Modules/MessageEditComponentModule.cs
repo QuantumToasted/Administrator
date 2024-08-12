@@ -53,7 +53,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} color updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} color updated.").AsEphemeral();
     }
 
     [ModalCommand("Embed:Modify:Author:*:*")]
@@ -62,6 +62,9 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
     {
         if (!_viewService.Views.TryGetValue(messageId, out var view))
             return Response("Invalid message ID. You may have to re-run this command again.").AsEphemeral();
+
+        if (string.IsNullOrWhiteSpace(name))
+            return Response("The author name is required.").AsEphemeral();
 
         if (!IsNullOrWhiteSpaceOrValidUrl(iconUrl, true))
             return Response("Invalid author icon URL.").AsEphemeral();
@@ -81,7 +84,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} author updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} author updated.").AsEphemeral();
     }
 
     [ModalCommand("Embed:Modify:Title:*:*")]
@@ -102,7 +105,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} title updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} title updated.").AsEphemeral();
     }
 
     [ModalCommand("Embed:Modify:Description:*:*")]
@@ -123,7 +126,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} description updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} description updated.").AsEphemeral();
     }
 
     [ModalCommand("Embed:Modify:ImageUrl:*:*")]
@@ -147,7 +150,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} image URL updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} image URL updated.").AsEphemeral();
     }
 
     [ModalCommand("Embed:Modify:ThumbnailUrl:*:*")]
@@ -171,7 +174,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} thumbnail image URL updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} thumbnail image URL updated.").AsEphemeral();
     }
 
     [ModalCommand("Embed:Modify:Footer:*:*")]
@@ -196,7 +199,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} footer updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} footer updated.").AsEphemeral();
     }
 
     [ModalCommand("Embed:Modify:Field:*:*:*")]
@@ -231,7 +234,7 @@ public sealed class MessageEditComponentModule : DiscordComponentGuildModuleBase
 
         view.RegenerateComponents();
         await view.Menu.ApplyChangesAsync(view.Menu.LastEventArgs);
-        return Response($"Embed {embedIndex} field {fieldIndex} updated.").AsEphemeral();
+        return Response($"Embed {embedIndex + 1} field {fieldIndex + 1} updated.").AsEphemeral();
     }
     
     private static bool IsNullOrWhiteSpaceOrValidUrl(string? str, bool isAttachment)

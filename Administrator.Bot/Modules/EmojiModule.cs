@@ -52,7 +52,7 @@ public sealed class EmojiModule(AttachmentService attachmentService, EmojiServic
                     .AddField("Created", Markdown.Timestamp(guildEmoji.CreatedAt(), Markdown.TimestampFormat.RelativeTime))
                     .WithFooter("This emoji is from this server.");
 
-                var emojiStats = await db.GetOrCreateEmojiStatisticsAsync(Context.GuildId, guildEmoji.Id);
+                var emojiStats = await db.EmojiStats.GetOrCreateAsync(Context.GuildId, guildEmoji.Id);
                 if (emojiStats.Uses > 0)
                     embed.AddField("Times used", emojiStats.Uses.ToString("N"));
                 break;
@@ -84,6 +84,7 @@ public sealed class EmojiModule(AttachmentService attachmentService, EmojiServic
         [Description("The name of the new emoji.")]
             string name)
     {
+        name = name.Replace(":", "");
         var attachment = await attachmentService.GetAttachmentAsync(image.Url);
 
         try
@@ -111,16 +112,17 @@ public sealed class EmojiModule(AttachmentService attachmentService, EmojiServic
             string? newName = null)
     {
         newName ??= emoji.Name!;
+        newName = newName.Replace(":", "");
         var attachment = await attachmentService.GetAttachmentAsync(emoji.GetUrl());
 
         try
         {
             var newEmoji = await Bot.CreateGuildEmojiAsync(Context.GuildId, newName, attachment.Stream);
-            return Response($"Emoji {emoji.Tag} cloned! New emoji: {newEmoji.Tag}");
+            return Response($"Emoji {Markdown.Code(emoji.Tag)} cloned! New emoji: {newEmoji.Tag}");
         }
         catch (RestApiException ex)
         {
-            Logger.LogError(ex, "Unable to clone emoji {Emoji} in guild {GuildId}.", emoji.Tag, Context.GuildId.RawValue);
+            Logger.LogWarning(ex, "Unable to clone emoji {Emoji} in guild {GuildId}.", emoji.Tag, Context.GuildId.RawValue);
             return Response("An error occurred while attempting to clone this emoji.\n" +
                             "One of several things may be the cause - invalid image types, no free emoji slots, too-large images, etc.\n" +
                             "The following text may be of assistance:\n" +
@@ -137,8 +139,10 @@ public sealed class EmojiModule(AttachmentService attachmentService, EmojiServic
         [Description("The new name for the emoji.")]
             string newName)
     {
+        var oldName = emoji.Name;
+        newName = newName.Replace(":", "");
         await emoji.ModifyAsync(x => x.Name = newName);
-        return Response($"Emoji {Markdown.Code($":{emoji.Name}:")} deleted.");
+        return Response($"Emoji {Markdown.Code($":{oldName}:")} renamed to {Markdown.Code($":{newName}:")}.");
     }
 
     [SlashCommand("delete")]

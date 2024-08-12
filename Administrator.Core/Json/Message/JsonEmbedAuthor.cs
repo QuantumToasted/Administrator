@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using System.Text.Json.Serialization;
+using Disqord;
 using Qmmands;
 using Qommon;
 
@@ -8,6 +9,7 @@ public sealed class JsonEmbedAuthor
 {
     public string Name { get; init; } = null!;
 
+    [JsonPropertyName("icon")]
     public string? IconUrl { get; init; }
 
     public string? Url { get; init; }

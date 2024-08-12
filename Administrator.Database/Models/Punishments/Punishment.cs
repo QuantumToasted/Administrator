@@ -5,26 +5,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public enum PunishmentType
-{
-    Ban,
-    Block,
-    Kick,
-    TimedRole,
-    Timeout,
-    Warning
-}
-
-public abstract record Punishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason) : INumberKeyedDbEntity<int>, IStaticEntityTypeConfiguration<Punishment>
+public abstract record Punishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason) : INumberKeyedDbEntity<int>, IPunishment
 {
     public int Id { get; init; }
     
-    //public abstract PunishmentType Type { get; init; }
+    public abstract PunishmentType Type { get; }
     
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
     
     public string? Reason { get; set; } = Reason;
-    
+
     public Snowflake? LogChannelId { get; set; }
     
     public Snowflake? LogMessageId { get; set; }
@@ -38,33 +28,31 @@ public abstract record Punishment(Snowflake GuildId, UserSnapshot Target, UserSn
     public Attachment? Attachment { get; set; }
     
     public Guild? Guild { get; init; }
-    
-    static void IStaticEntityTypeConfiguration<Punishment>.ConfigureBuilder(EntityTypeBuilder<Punishment> punishment)
+
+    public sealed override string ToString()
+        => this.FormatKey();
+
+    private sealed class PunishmentConfiguration : IEntityTypeConfiguration<Punishment>
     {
-        punishment.ToTable("punishments");
-        punishment.HasKey(x => x.Id);
-        punishment.HasIndex(x => x.GuildId);
-        // punishment.HasIndex(x => x.Target.Id); can't do jsonb indexes :/
+        public void Configure(EntityTypeBuilder<Punishment> punishment)
+        {
+            punishment.HasKey(x => x.Id);
+            punishment.HasIndex(x => x.GuildId);
 
-        punishment.HasPropertyWithColumnName(x => x.Id, "id");
-        punishment.HasPropertyWithColumnName(x => x.GuildId, "guild");
-        punishment.HasPropertyWithColumnName(x => x.Target, "target").HasColumnType("jsonb");
-        punishment.HasPropertyWithColumnName(x => x.Moderator, "moderator").HasColumnType("jsonb");
-        punishment.HasPropertyWithColumnName(x => x.Reason, "reason");
-        punishment.HasPropertyWithColumnName(x => x.LogChannelId, "log_channel");
-        punishment.HasPropertyWithColumnName(x => x.LogMessageId, "log_message");
-        punishment.HasPropertyWithColumnName(x => x.DmChannelId, "dm_channel");
-        punishment.HasPropertyWithColumnName(x => x.DmMessageId, "dm_message");
-        punishment.HasPropertyWithColumnName(x => x.AttachmentId, "attachment");
+            punishment.Ignore(x => x.Type);
+            
+            punishment.Property(x => x.Target).HasColumnType("jsonb");
+            punishment.Property(x => x.Moderator).HasColumnType("jsonb");
 
-        punishment.HasOne(x => x.Attachment);
-        punishment.HasDiscriminator<PunishmentType>("type")
-            .HasValue<Ban>(PunishmentType.Ban)
-            .HasValue<Block>(PunishmentType.Block)
-            .HasValue<Kick>(PunishmentType.Kick)
-            .HasValue<TimedRole>(PunishmentType.TimedRole)
-            .HasValue<Timeout>(PunishmentType.Timeout)
-            .HasValue<Warning>(PunishmentType.Warning)
-            .IsComplete();
+            punishment.HasOne(x => x.Attachment);
+            punishment.HasDiscriminator<PunishmentType>("type")
+                .HasValue<Ban>(PunishmentType.Ban)
+                .HasValue<Block>(PunishmentType.Block)
+                .HasValue<Kick>(PunishmentType.Kick)
+                .HasValue<TimedRole>(PunishmentType.TimedRole)
+                .HasValue<Timeout>(PunishmentType.Timeout)
+                .HasValue<Warning>(PunishmentType.Warning)
+                .IsComplete();
+        }
     }
 }

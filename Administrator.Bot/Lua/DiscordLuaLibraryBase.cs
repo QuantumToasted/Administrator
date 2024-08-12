@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Disqord;
 using Humanizer;
 using Laylua;
@@ -6,36 +8,44 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public abstract class DiscordLuaLibraryBase : LuaLibrary
+public abstract class DiscordLuaLibraryBase(CancellationToken cancellationToken) : LuaLibrary
 {
-    private readonly List<string> _globals = new();
-
-    private readonly HashSet<string> _invokedFunctions = new();
-
-    private protected Lua _lua = null!;
+    private const int MAX_COMBINED_FUNCTION_CALLS = 25;
+    private const int MAX_FUNCTION_CALLS = 5;
+    
+    private readonly List<string> _globals = [];
+    private readonly ConcurrentDictionary<string, int> _calledFunctions = new();
+    
+    public CancellationToken CancellationToken { get; } = cancellationToken;
 
     public override IReadOnlyList<string> Globals => _globals.AsReadOnly();
 
     protected abstract IEnumerable<string> RegisterGlobals(Lua lua);
 
-    protected void RunWait(Func<Task> task, [CallerMemberName] string? memberName = null)
+    public void RunWait(Func<CancellationToken, Task> task, bool ignoreCallLimit = false, [CallerMemberName] string? memberName = null)
     {
         Guard.IsNotNullOrWhiteSpace(memberName);
 
-        if (!_invokedFunctions.Add(memberName))
-            throw new Exception($"{memberName.Camelize()} rate-limit exceeded for this action");
+        if (!ignoreCallLimit)
+        {
+            if (!TryRateLimit(memberName, out var error))
+                throw new Exception(error);
+        }
         
-        task.Invoke().GetAwaiter().GetResult();
+        task.Invoke(CancellationToken).GetAwaiter().GetResult();
     }
 
-    protected T RunWait<T>(Func<Task<T>> task, [CallerMemberName] string? memberName = null)
+    public T RunWait<T>(Func<CancellationToken, Task<T>> task, bool ignoreCallLimit = false, [CallerMemberName] string? memberName = null)
     {
         Guard.IsNotNullOrWhiteSpace(memberName);
 
-        if (!_invokedFunctions.Add(memberName))
-            throw new Exception($"{memberName.Camelize()} rate-limit exceeded for this action");
+        if (!ignoreCallLimit)
+        {
+            if (!TryRateLimit(memberName, out var error))
+                throw new Exception(error);
+        }
         
-        return task.Invoke().GetAwaiter().GetResult();
+        return task.Invoke(CancellationToken).GetAwaiter().GetResult();
     }
     
     public static TMessage ConvertMessage<TMessage>(LuaTable msg)
@@ -150,17 +160,47 @@ public abstract class DiscordLuaLibraryBase : LuaLibrary
 
             localMessage.AddEmbed(localEmbed);
         }
+
+        if (localMessage is LocalInteractionMessageResponse response && msg.TryGetValue<string, bool>("ephemeral", out var isEphemeral))
+        {
+            response.WithIsEphemeral(isEphemeral);
+        }
         
-        // TODO: attachments
+        // TODO: support attachments somehow?
         return localMessage;
     }
 
     protected sealed override void Open(Lua lua, bool leaveOnStack)
     {
-        _lua = lua;
         _globals.AddRange(RegisterGlobals(lua));
     }
 
     protected sealed override void Close(Lua lua)
     { }
+
+    private bool TryRateLimit(string memberName, [NotNullWhen(false)] out string? error)
+    {
+        var calls = _calledFunctions.GetOrAdd(memberName, 0);
+
+        var maxFunctionCalls = MAX_FUNCTION_CALLS;
+
+        if (memberName is "Get") // http calls
+            maxFunctionCalls = 1;
+
+        if (calls > maxFunctionCalls)
+        {
+            error = $"Maximum call count of {maxFunctionCalls} exceeded for function '{memberName.Camelize()}'";
+            return false;
+        }
+
+        if (_calledFunctions.Values.Sum() > MAX_COMBINED_FUNCTION_CALLS)
+        {
+            error = $"Maximum total function call count {MAX_COMBINED_FUNCTION_CALLS} exceeded.";
+            return false;
+        }
+        
+        _calledFunctions[memberName] = calls + 1;
+        error = null;
+        return true;
+    }
 }

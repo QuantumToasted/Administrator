@@ -20,8 +20,10 @@ public sealed class JsonEmbed
 
     public List<JsonEmbedField>? Fields { get; init; }
 
+    [JsonPropertyName("Image")]
     public string? ImageUrl { get; init; }
 
+    [JsonPropertyName("Thumbnail")]
     public string? ThumbnailUrl { get; init; }
 
     public JsonEmbedFooter? Footer { get; init; }

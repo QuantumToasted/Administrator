@@ -1,9 +1,7 @@
 ﻿using Disqord;
 using Disqord.Bot;
 using Disqord.Gateway;
-using Disqord.Rest;
 using Microsoft.Extensions.DependencyInjection;
-using Qommon;
 
 namespace Administrator.Bot;
 
@@ -13,7 +11,18 @@ public sealed class MessageEditMenu(MessageEditView view, IUserInteraction inter
     public DiscordBotBase Bot { get; } = (DiscordBotBase) interaction.Client;
     
     public InteractionReceivedEventArgs? LastEventArgs { get; private set; }
-    
+
+    public override LocalMessageBase CreateLocalMessage()
+    {
+        var baseMessage = base.CreateLocalMessage();
+        if (view.Message is LocalInteractionMessageResponse { IsEphemeral: true })
+        {
+            (baseMessage as LocalInteractionMessageResponse)?.WithIsEphemeral();
+        }
+
+        return baseMessage;
+    }
+
     protected override async ValueTask<Snowflake> InitializeAsync(CancellationToken cancellationToken)
     {
         var id = await base.InitializeAsync(cancellationToken);
@@ -29,6 +38,7 @@ public sealed class MessageEditMenu(MessageEditView view, IUserInteraction inter
         return base.HandleInteractionAsync(e);
     }
 
+    /* TODO: WTF was the point of this? it breaks the view for some reason. All that was changed from the source was commenting out view.HasChanges = false
     public override async ValueTask ApplyChangesAsync(InteractionReceivedEventArgs? e = null)
     {
         var view = View;
@@ -98,4 +108,5 @@ public sealed class MessageEditMenu(MessageEditView view, IUserInteraction inter
             await responseHelper.DeferAsync().ConfigureAwait(false);
         }
     }
+    */
 }

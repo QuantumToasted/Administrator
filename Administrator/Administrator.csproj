@@ -10,12 +10,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-      <PackageReference Include="Serilog" Version="3.0.1" />
-      <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
-      <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+      <PackageReference Include="AWSSDK.S3" Version="3.7.400.2" />
+      <PackageReference Include="linq2db.EntityFrameworkCore" Version="8.1.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+      <PackageReference Include="Serilog" Version="3.1.1" />
+      <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+      <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
       <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     </ItemGroup>
 
@@ -23,9 +26,19 @@
       <None Update="lua54.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Update="Data\defaultXp.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\TF2secondary.ttf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\tf2build.ttf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Administrator.Api\Administrator.Api.csproj" />
       <ProjectReference Include="..\Administrator.Bot\Administrator.Bot.csproj" />
     </ItemGroup>
 
@@ -33,6 +46,41 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="application-commands\cache\cache.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\bg.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\cs.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\da.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\de.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\el.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\en-GB.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\en-US.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\es-ES.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\fi.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\fr.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\hi.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\hr.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\hu.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\id.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\it.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\ja.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\ko.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\lt.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\nl.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\no.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\pl.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\pt-BR.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\ro.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\ru.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\sv-SE.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\th.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\tr.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\uk.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\vi.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\zh-CN.json" />
+      <_ContentIncludedByDefault Remove="application-commands\localizations\zh-TW.json" />
     </ItemGroup>
 
 </Project>

@@ -15,20 +15,19 @@ public sealed class AutoQuoteService : DiscordBotService
 
         var match = Discord.MessageJumpLinkRegex.Match(e.Message.Content);
 
-        // TODO: multiple matches?
+        // TODO: support multiple matches?
         if (!match.Success)
             return;
         
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var guildConfig = await db.GetOrCreateGuildConfigAsync(guildId);
+        var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
         if (!guildConfig.HasSetting(GuildSettings.AutoQuote) || guildConfig.AutoQuoteExemptChannelIds.Contains(e.ChannelId))
             return;
 
         var messageGuildId = Snowflake.TryParse(match.Groups["guild_id"].Value, out var id) ? id : (Snowflake?) null;
         var messageChannelId = Snowflake.Parse(match.Groups["channel_id"].Value);
         var messageId = Snowflake.Parse(match.Groups["message_id"].Value);
-
 
         string? error = null;
         IUserMessage? message = null;
@@ -58,13 +57,14 @@ public sealed class AutoQuoteService : DiscordBotService
         LocalMessage localMessage;
         if (!string.IsNullOrWhiteSpace(error))
         {
-            localMessage = new LocalMessage().AddEmbed(new LocalEmbed().WithCollectorsColor()
+            localMessage = new LocalMessage().AddEmbed(new LocalEmbed()
+                .WithCollectorsColor()
                 .WithTitle("Auto-quote failed")
                 .WithDescription(error));
         }
         else
         {
-            localMessage = message!.ToQuoteMessage(guildId, e.Message.Author, e.Channel);
+            localMessage = message!.ToQuoteMessage(guildId, e.Message.Author, Bot.GetChannel(guildId, message!.ChannelId) as IMessageGuildChannel);
         }
 
         if (await Bot.TrySendMessageAsync(e.ChannelId, localMessage) is null)

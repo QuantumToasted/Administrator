@@ -2,12 +2,13 @@
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;
+using Qmmands;
 
 namespace Administrator.Bot.AutoComplete;
 
 public sealed class PunishmentAutoCompleteFormatter : IAutoCompleteFormatter<Punishment, int>
 {
-    public string[] FormatAutoCompleteNames(IClient client, Punishment model)
+    public string FormatAutoCompleteName(Punishment model)
     {
         var builder = new StringBuilder($"#{model.Id} - ")
             .Append($"{model.FormatPunishmentName()} | ")
@@ -16,11 +17,11 @@ public sealed class PunishmentAutoCompleteFormatter : IAutoCompleteFormatter<Pun
         if (!string.IsNullOrWhiteSpace(model.Reason))
             builder.Append($" | {model.Reason}");
 
-        return new[] { builder.ToString() };
+        return builder.ToString();
     }
 
-    public int FormatAutoCompleteValue(IClient client, Punishment model)
+    public int FormatAutoCompleteValue(Punishment model)
         => model.Id;
 
-    public Func<Punishment, string[]> ComparisonSelector => punishment => new[] { punishment.Id.ToString() };
+    public Func<Punishment, string[]> ComparisonSelector => static model => [model.Id.ToString()];
 }

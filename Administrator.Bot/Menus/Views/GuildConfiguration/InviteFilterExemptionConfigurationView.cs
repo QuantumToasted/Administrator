@@ -40,15 +40,15 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         {
             if (exemptions.Any(x => x.TargetId == user.Id))
             {
-                await e.Interaction.Response()
-                    .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have already exempted this user!.").WithIsEphemeral());
+                await e.Interaction.RespondOrFollowupAsync(
+                    new LocalInteractionMessageResponse().WithContent("You have already exempted this user!.").WithIsEphemeral());
                 return;
             }
             
             if (exemptions.Count(x => x.ExemptionType == InviteFilterExemptionType.User) >= MAX_EXEMPTIONS)
             {
-                await e.Interaction.Response()
-                    .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} user exemptions.").WithIsEphemeral());
+                await e.Interaction.RespondOrFollowupAsync(
+                    new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} user exemptions.").WithIsEphemeral());
                 return;
             }
 
@@ -57,8 +57,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
             await db.SaveChangesAsync();
             
             await UpdateExemptionsAsync();
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted by the user {user.Mention} from being filtered."));
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted by the user {user.Mention} from being filtered."));
 
             return;
         }
@@ -66,15 +66,15 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         var role = (IRole) value;
         if (exemptions.Any(x => x.TargetId == role.Id))
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have already exempted this role!.").WithIsEphemeral());
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You have already exempted this role!.").WithIsEphemeral());
             return;
         }
         
         if (exemptions.Count(x => x.ExemptionType == InviteFilterExemptionType.Role) >= MAX_EXEMPTIONS)
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} role exemptions!").WithIsEphemeral());
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} role exemptions!").WithIsEphemeral());
             return;
         }
         
@@ -83,8 +83,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await db.SaveChangesAsync();
             
         await UpdateExemptionsAsync();
-        await e.Interaction.Response()
-            .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted by users with the role {role.Mention} from being filtered."));
+        await e.Interaction.RespondOrFollowupAsync(
+            new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted by users with the role {role.Mention} from being filtered."));
     }
 
     [Selection(Placeholder = "Add channel", Type = SelectionComponentType.Channel, ChannelTypes = new[] { ChannelType.Text, ChannelType.PublicThread })]
@@ -98,15 +98,15 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
 
         if (exemptions.Any(x => x.TargetId == channel.Id))
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have already exempted this channel!.").WithIsEphemeral());
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You have already exempted this channel!.").WithIsEphemeral());
             return;
         }
         
         if (exemptions.Count >= MAX_EXEMPTIONS)
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} channel exemptions!").WithIsEphemeral());
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} channel exemptions!").WithIsEphemeral());
             return;
         }
 
@@ -117,13 +117,13 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await UpdateExemptionsAsync();
         if (channel.Type == ChannelType.Text)
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted in the channel {Mention.Channel(channel.Id)} (or any of its threads) from being filtered."));
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted in the channel {Mention.Channel(channel.Id)} (or any of its threads) from being filtered."));
         }
         else
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted in the channel {Mention.Channel(channel.Id)} from being filtered."));
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You have exempted any invites posted in the channel {Mention.Channel(channel.Id)} from being filtered."));
         }
     }
 
@@ -140,8 +140,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         {
             if (exemptions.FirstOrDefault(x => x.TargetId == user.Id) is not { } userExemption)
             {
-                await e.Interaction.Response()
-                    .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have not exempted this user!.").WithIsEphemeral());
+                await e.Interaction.RespondOrFollowupAsync(
+                    new LocalInteractionMessageResponse().WithContent("You have not exempted this user!.").WithIsEphemeral());
                 return;
             }
 
@@ -149,8 +149,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
             await db.SaveChangesAsync();
             
             await UpdateExemptionsAsync();
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You have removed the user {user.Mention} from the invite filter exemption list."));
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You have removed the user {user.Mention} from the invite filter exemption list."));
 
             return;
         }
@@ -158,8 +158,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         var role = (IRole) value;
         if (exemptions.FirstOrDefault(x => x.TargetId == role.Id) is not { } roleExemption)
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have not exempted this role!.").WithIsEphemeral());
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You have not exempted this role!.").WithIsEphemeral());
             return;
         }
 
@@ -167,8 +167,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await db.SaveChangesAsync();
             
         await UpdateExemptionsAsync();
-        await e.Interaction.Response()
-            .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You have removed the role {role.Mention} from the invite filter exemption list."));
+        await e.Interaction.RespondOrFollowupAsync(
+            new LocalInteractionMessageResponse().WithContent($"You have removed the role {role.Mention} from the invite filter exemption list."));
     }
 
     [Selection(Placeholder = "Remove channel", Type = SelectionComponentType.Channel, ChannelTypes = new[] { ChannelType.Text, ChannelType.PublicThread })]
@@ -182,8 +182,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
 
         if (exemptions.FirstOrDefault(x => x.TargetId == channel.Id) is not { } exemption)
         {
-            await e.Interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have not exempted this channel!.").WithIsEphemeral());
+            await e.Interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You have not exempted this channel!.").WithIsEphemeral());
             return;
         }
 
@@ -191,8 +191,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await db.SaveChangesAsync();
         
         await UpdateExemptionsAsync();
-        await e.Interaction.Response()
-            .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You have removed the channel {Mention.Channel(channel.Id)} from the invite filter exemption list."));
+        await e.Interaction.RespondOrFollowupAsync(
+            new LocalInteractionMessageResponse().WithContent($"You have removed the channel {Mention.Channel(channel.Id)} from the invite filter exemption list."));
     }
 
     [Button(Label = "Add server ID", Style = LocalButtonComponentStyle.Success)]
@@ -216,8 +216,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         var value = ((ITextInputComponent)((IRowComponent)interaction.Components[0]).Components[0]).Value;
         if (string.IsNullOrWhiteSpace(value) || !Snowflake.TryParse(value, out var guildId))
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You must supply a valid server ID!").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You must supply a valid server ID!").WithIsEphemeral());
             return;
         }
 
@@ -228,15 +228,15 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         
         if (exemptions.Any(x => x.TargetId == guildId))
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have already exempted this server ID!.").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You have already exempted this server ID!.").WithIsEphemeral());
             return;
         }
         
         if (exemptions.Count >= MAX_EXEMPTIONS)
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} server ID exemptions!").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} server ID exemptions!").WithIsEphemeral());
             return;
         }
 
@@ -245,8 +245,7 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await db.SaveChangesAsync();
 
         await UpdateExemptionsAsync();
-        await interaction.Response()
-            .SendMessageAsync(new LocalInteractionMessageResponse().WithContent(
+        await interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse().WithContent(
                 $"You have exempted any invites from the server with the ID {Markdown.Code(value)} from being filtered."));
     }
 
@@ -271,8 +270,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         var value = ((ITextInputComponent)((IRowComponent)interaction.Components[0]).Components[0]).Value;
         if (string.IsNullOrWhiteSpace(value) || !InviteCodeRegex.IsMatch(value))
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You must supply a valid invite code!").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You must supply a valid invite code!").WithIsEphemeral());
             return;
         }
 
@@ -283,15 +282,15 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         
         if (exemptions.Any(x => x.ExemptionType == InviteFilterExemptionType.InviteCode && x.InviteCode == value))
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have already exempted this invite code!.").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You have already exempted this invite code!.").WithIsEphemeral());
             return;
         }
 
         if (exemptions.Count >= MAX_EXEMPTIONS)
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} invite code exemptions!").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent($"You cannot add more than {Markdown.Bold(MAX_EXEMPTIONS)} invite code exemptions!").WithIsEphemeral());
             return;
         }
 
@@ -300,8 +299,7 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await db.SaveChangesAsync();
 
         await UpdateExemptionsAsync();
-        await interaction.Response()
-            .SendMessageAsync(new LocalInteractionMessageResponse().WithContent(
+        await interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse().WithContent(
                 $"You have exempted the invite code {Markdown.Code(value)} from being filtered."));
     }
 
@@ -326,8 +324,7 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         var value = ((ITextInputComponent)((IRowComponent)interaction.Components[0]).Components[0]).Value;
         if (string.IsNullOrWhiteSpace(value) || !Snowflake.TryParse(value, out var guildId))
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You must supply a valid server ID!").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse().WithContent("You must supply a valid server ID!").WithIsEphemeral());
             return;
         }
 
@@ -338,8 +335,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         
         if (exemptions.FirstOrDefault(x => x.TargetId == guildId) is not { } exemption)
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You haven't exempted this server ID!.").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You haven't exempted this server ID!.").WithIsEphemeral());
             return;
         }
 
@@ -347,8 +344,7 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await db.SaveChangesAsync();
 
         await UpdateExemptionsAsync();
-        await interaction.Response()
-            .SendMessageAsync(new LocalInteractionMessageResponse().WithContent(
+        await interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse().WithContent(
                 $"You have removed the server with the ID {Markdown.Code(value)} from the invite filter exemption list."));
     }
 
@@ -373,8 +369,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         var value = ((ITextInputComponent)((IRowComponent)interaction.Components[0]).Components[0]).Value;
         if (string.IsNullOrWhiteSpace(value) || !InviteCodeRegex.IsMatch(value))
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You must supply a valid invite code!").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You must supply a valid invite code!").WithIsEphemeral());
             return;
         }
 
@@ -385,8 +381,8 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         
         if (exemptions.FirstOrDefault(x => x.ExemptionType == InviteFilterExemptionType.InviteCode && x.InviteCode == value) is not { } exemption)
         {
-            await interaction.Response()
-                .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You have not exempted this invite code!.").WithIsEphemeral());
+            await interaction.RespondOrFollowupAsync(
+                new LocalInteractionMessageResponse().WithContent("You have not exempted this invite code!.").WithIsEphemeral());
             return;
         }
 
@@ -394,8 +390,7 @@ public sealed class InviteFilterExemptionConfigurationView : GuildConfigurationV
         await db.SaveChangesAsync();
 
         await UpdateExemptionsAsync();
-        await interaction.Response()
-            .SendMessageAsync(new LocalInteractionMessageResponse().WithContent(
+        await interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse().WithContent(
                 $"You have removed the invite code {Markdown.Code(value)} from the invite filter exemption list."));
     }
 

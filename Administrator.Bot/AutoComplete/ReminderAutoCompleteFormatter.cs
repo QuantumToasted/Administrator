@@ -9,7 +9,7 @@ namespace Administrator.Bot.AutoComplete;
 
 public sealed class ReminderAutoCompleteFormatter : IAutoCompleteFormatter<Reminder, int>
 {
-    public string[] FormatAutoCompleteNames(IClient client, Reminder model)
+    public string FormatAutoCompleteName(Reminder model)
     {
         var builder = new StringBuilder($"#{model.Id} - ");
         if (!model.RepeatMode.HasValue)
@@ -32,11 +32,11 @@ public sealed class ReminderAutoCompleteFormatter : IAutoCompleteFormatter<Remin
 
         builder.Append(model.Text);
 
-        return new[] { builder.ToString() };
+        return builder.ToString();
     }
 
-    public int FormatAutoCompleteValue(IClient client, Reminder model)
+    public int FormatAutoCompleteValue(Reminder model)
         => model.Id;
 
-    public Func<Reminder, string[]> ComparisonSelector => static reminder => new[] { reminder.Id.ToString() };
+    public Func<Reminder, string[]> ComparisonSelector => static model => [model.Text];
 }

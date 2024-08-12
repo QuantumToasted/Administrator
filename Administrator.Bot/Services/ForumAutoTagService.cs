@@ -15,7 +15,7 @@ public sealed class ForumAutoTagService : DiscordBotService
         if (!e.IsThreadCreation || e.Thread.GetChannel() is not IForumChannel { Tags: { } forumTags })
             return;
 
-        var openingMessage = await e.Thread.GetOrFetchMessageAsync(e.Thread.LastMessageId!.Value);
+        var openingMessage = await e.Thread.GetOrFetchMessageAsync(e.Thread.Id); // the opening message IS the same as the thread's ID
         if (string.IsNullOrWhiteSpace(openingMessage?.Content))
             return;
         
@@ -60,7 +60,7 @@ public sealed class ForumAutoTagService : DiscordBotService
                 tagsToAdd.Select(x => x.Id.RawValue).ToList());
 
             contentBuilder.AppendNewline()
-                .AppendNewline("However, due to missing permissions or another error, tags were not able to be added.");
+                .AppendNewline("However, due to missing permissions or another error, some tags were not able to be added.");
         }
 
         await e.Thread.SendMessageAsync(new LocalMessage()

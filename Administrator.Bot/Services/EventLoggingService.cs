@@ -7,14 +7,15 @@ using Disqord.AuditLogs;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class EventLoggingService(IMemoryCache cache, AttachmentService attachmentService, InviteFilterService inviteFilter,
-        AuditLogService auditLogs)
+public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService inviteFilter, AuditLogService auditLogs)
     : DiscordBotService
 {
     private readonly ConcurrentDictionary<Snowflake, ConcurrentQueue<IMember>> _memberJoinQueues = new();
@@ -32,6 +33,7 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
         if (e.Message is not IUserMessage {Attachments.Count: > 0} message)
             return;
 
+        var attachmentService = scope.ServiceProvider.GetRequiredService<AttachmentService>();
         foreach (var attachment in message.Attachments.Take(5)) // arbitrarily stop at 5 attachments
         {
             try
@@ -58,89 +60,107 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
         if (await db.LoggingChannels.FindAsync(guildId, LogEventType.MessageDelete) is not { } logChannel)
             return;
 
-        var message = new LocalMessage()
-            .AddComponent(LocalComponent.Row(LocalComponent.LinkButton(
-                Discord.MessageJumpLink(guildId, e.ChannelId, e.MessageId), "Jump to message location")));
-
-        var embed = new LocalEmbed()
-            .WithCollectorsColor()
-            .WithTitle("Message deleted")
-            .AddField("Channel", $"{Mention.Channel(e.ChannelId)} ({Markdown.Bold(e.ChannelId)})")
-            .AddField("Message ID", Markdown.Bold(e.MessageId))
-            .WithTimestamp(DateTimeOffset.UtcNow);
-
-        if (e.Message is not null)
+        _ = Task.Run(async () =>
         {
-            if (e.Message.Author.IsBot)
+            var message = new LocalMessage()
+                .AddComponent(LocalComponent.Row(LocalComponent.LinkButton(
+                    Discord.MessageJumpLink(guildId, e.ChannelId, e.MessageId), "Jump to message location")));
+
+            var embed = new LocalEmbed()
+                .WithCollectorsColor()
+                .WithTitle("Message deleted")
+                .AddField("Channel", $"{Mention.Channel(e.ChannelId)}\n({Markdown.Code(e.ChannelId)})")
+                .AddField("Message ID", Markdown.Bold(e.MessageId))
+                .WithTimestamp(DateTimeOffset.UtcNow);
+
+            if (e.Message is not null)
             {
-                var guildConfig = await db.GetOrCreateGuildConfigAsync(guildId);
-                if (guildConfig.HasSetting(GuildSettings.IgnoreBotMessages))
-                    return;
-            }
-
-            embed.WithAuthor($"{e.Message.Author} ({e.Message.Author.Id})",
-                (e.Message.Author as IMember)?.GetGuildAvatarUrl() ?? e.Message.Author.GetAvatarUrl());
-
-            if (!string.IsNullOrWhiteSpace(e.Message.Content))
-                embed.WithDescription(e.Message.Content);
-
-            if (e.Message.Attachments.Count > 0)
-            {
-                embed.AddField("Attachments",
-                    new StringBuilder().AppendJoinTruncated("\n", e.Message.Attachments.Select(x => x.Url),
-                        Discord.Limits.Message.Embed.Field.MaxValueLength));
-
-                foreach (var attachment in e.Message.Attachments)
+                if (e.Message.Author.IsBot)
                 {
-                    if (cache.TryGetValue<LocalAttachment>(attachment.Url, out var localAttachment))
+                    var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
+                    if (guildConfig.HasSetting(GuildSettings.IgnoreBotMessages))
+                        return;
+                }
+
+                embed.WithAuthor($"{e.Message.Author} ({e.Message.Author.Id})",
+                    (e.Message.Author as IMember)?.GetGuildAvatarUrl() ?? e.Message.Author.GetAvatarUrl());
+
+                if (!string.IsNullOrWhiteSpace(e.Message.Content))
+                    embed.WithDescription(e.Message.Content);
+
+                if (e.Message.Attachments.Count > 0)
+                {
+                    embed.AddField("Attachments",
+                        new StringBuilder().AppendJoinTruncated("\n", e.Message.Attachments.Select(x => x.Url),
+                            Discord.Limits.Message.Embed.Field.MaxValueLength));
+
+                    foreach (var attachment in e.Message.Attachments)
                     {
-                        message.AddAttachment(localAttachment!);
+                        if (cache.TryGetValue<LocalAttachment>(attachment.Url, out var localAttachment))
+                        {
+                            message.AddAttachment(localAttachment!);
+                        }
                     }
                 }
-            }
 
-            if (e.Message.Stickers.Count > 0)
+                if (e.Message.Stickers.Count > 0)
+                {
+                    embed.AddField("Stickers",
+                        new StringBuilder().AppendJoinTruncated("\n",
+                            e.Message.Stickers.Select(x => $"\"{x.Name}\" - {x.GetUrl()}"),
+                            Discord.Limits.Message.Embed.Field.MaxValueLength));
+                }
+            }
+            else
             {
-                embed.AddField("Stickers",
-                    new StringBuilder().AppendJoinTruncated("\n",
-                        e.Message.Stickers.Select(x => $"\"{x.Name}\" - {x.GetUrl()}"),
-                        Discord.Limits.Message.Embed.Field.MaxValueLength));
+                embed.WithFooter("This message was not cached, so no content can be displayed.");
             }
-        }
-        else
-        {
-            embed.WithFooter("This message was not cached, so no content can be displayed.");
-        }
 
-        if (auditLogs.GetAuditLog<IMessagesDeletedAuditLog>(guildId, 
-                x => x.Id > e.MessageId && x.ChannelId == e.ChannelId) is {ActorId: { } actorId} log &&
-            (log.Actor ?? Bot.GetUser(actorId)) is { } actor)
-        {
-            embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actorId)})");
-        }
+            /*
+            var log = auditLogs.GetAuditLog<IMessagesDeletedAuditLog>(guildId,
+                x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x is { Count: 1, ActorId: not null });
+            */
 
-        if (inviteFilter.DeletedMessageIds.Remove(e.MessageId))
-        {
-            embed.WithFooter("Automatically deleted by the invite filter.");
-        }
+            var log = await auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(guildId,
+                x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x is { Count: 1, ActorId: not null }, TimeSpan.FromSeconds(1));
 
-        if (embed.Length >= Discord.Limits.Message.MaxEmbeddedContentLength)
-        {
-            embed.WithDescription(embed.Description.Value.Truncate(Discord.Limits.Message.MaxEmbeddedContentLength -
-                                                                   (embed.Length - embed.Description.Value.Length)));
-        }
+            if (log is not null && (log.Actor ?? Bot.GetUser(log.ActorId!.Value)) is { } actor)
+            {
+                embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actor.Id)})");
+            }
 
-        message.AddEmbed(embed);
+            /*
+            if (auditLogs.GetAuditLog<IMessagesDeletedAuditLog>(guildId,
+                    x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x.Count == 1) is { ActorId: { } actorId } log &&
+                (log.Actor ?? Bot.GetUser(actorId)) is { } actor)
+            {
+                embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actorId)})");
+            }
+            */
 
-        try
-        {
-            await Bot.SendMessageAsync(logChannel.ChannelId, message);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "Failed to log message {MessageId}'s deletion to channel {ChannelId} in guild {GuildId}.",
-                e.MessageId.RawValue, e.ChannelId.RawValue, guildId.RawValue);
-        }
+            if (inviteFilter.DeletedMessageIds.Remove(e.MessageId))
+            {
+                embed.WithFooter("Automatically deleted by the invite filter.");
+            }
+
+            if (embed.Length >= Discord.Limits.Message.MaxEmbeddedContentLength)
+            {
+                embed.WithDescription(embed.Description.Value.Truncate(Discord.Limits.Message.MaxEmbeddedContentLength -
+                                                                       (embed.Length - embed.Description.Value.Length)));
+            }
+
+            message.AddEmbed(embed);
+
+            try
+            {
+                await Bot.SendMessageAsync(logChannel.ChannelId, message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Failed to log message {MessageId}'s deletion to channel {ChannelId} in guild {GuildId}.",
+                    e.MessageId.RawValue, e.ChannelId.RawValue, guildId.RawValue);
+            }
+        });
     }
 
     protected override async ValueTask OnMessageUpdated(MessageUpdatedEventArgs e)
@@ -164,7 +184,7 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
 
         if (author?.IsBot == true)
         {
-            var guildConfig = await db.GetOrCreateGuildConfigAsync(guildId);
+            var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
             if (guildConfig.HasSetting(GuildSettings.IgnoreBotMessages))
                 return;
         }
@@ -176,7 +196,7 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
         var embed = new LocalEmbed()
             .WithUniqueColor()
             .WithTitle("Message content updated")
-            .AddField("Channel", $"{Mention.Channel(e.ChannelId)} ({Markdown.Code(e.ChannelId)})")
+            .AddField("Channel", $"{Mention.Channel(e.ChannelId)}\n({Markdown.Code(e.ChannelId)})")
             .AddField("Message ID", Markdown.Code(e.MessageId))
             .WithTimestamp(DateTimeOffset.UtcNow);
 
@@ -190,7 +210,7 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
         if (e.OldMessage is not null)
         {
             embed.AddField(oldContentField.WithValue(!string.IsNullOrWhiteSpace(oldContent)
-                ? oldContent.Truncate(Discord.Limits.Message.Embed.MaxDescriptionLength / 2)
+                ? oldContent.Truncate(Discord.Limits.Message.Embed.Field.MaxValueLength)
                 : Markdown.Italics("No content.")));
         }
         else
@@ -202,7 +222,7 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
         if (e.NewMessage is not null)
         {
             embed.AddField(newContentField.WithValue(!string.IsNullOrWhiteSpace(newContent)
-                ? newContent.Truncate(Discord.Limits.Message.Embed.MaxDescriptionLength / 2)
+                ? newContent.Truncate(Discord.Limits.Message.Embed.Field.MaxValueLength)
                 : Markdown.Italics("No content.")));
         }
         else if (e.Model.Content.HasValue)
@@ -242,12 +262,58 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
     protected override ValueTask OnMemberJoined(MemberJoinedEventArgs e)
     {
         _memberJoinQueues.GetOrAdd(e.GuildId, _ => new ConcurrentQueue<IMember>()).Enqueue(e.Member);
+        _ = Task.Run(async () =>
+        {
+            // TODO: due to how greeting messages are formatted, there is no way to bunch them up into single messages for large quantities of joins.
+            // This may cause ratelimiting issues when raids occur in guilds....
+
+            await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+            var guild = await db.Guilds.GetOrCreateAsync(e.GuildId);
+
+            if (guild.GreetingMessage is null)
+                return;
+
+            Snowflake channelId;
+            if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.EventType == LogEventType.Greeting) is { } loggingChannel)
+            {
+                channelId = loggingChannel.ChannelId;
+            }
+            else
+            {
+                var dm = await Bot.CreateDirectChannelAsync(e.MemberId);
+                channelId = dm.Id;
+            }
+
+            var message = await guild.GreetingMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
+                new MockDiscordGuildCommandContext(Bot, e.GuildId, channelId, e.Member));
+
+            await Bot.TrySendMessageAsync(channelId, message);
+        });
+        
         return ValueTask.CompletedTask;
     }
 
     protected override ValueTask OnMemberLeft(MemberLeftEventArgs e)
     {
         _memberLeaveQueues.GetOrAdd(e.GuildId, _ => new ConcurrentQueue<IUser>()).Enqueue(e.User);
+        _ = Task.Run(async () =>
+        {
+            // TODO: see OnMemberJoined w/r/t large amount of leave events
+
+            await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+            if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.EventType == LogEventType.Goodbye) is not { } loggingChannel)
+                return;
+            
+            var guild = await db.Guilds.GetOrCreateAsync(e.GuildId);
+            if (guild.GoodbyeMessage is null)
+                return;
+
+            var message = await guild.GoodbyeMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
+                new MockDiscordGuildCommandContext(Bot, e.GuildId, loggingChannel.ChannelId, e.User));
+
+            await Bot.TrySendMessageAsync(loggingChannel.ChannelId, message);
+        });
+        
         return ValueTask.CompletedTask;
     }
 
@@ -260,6 +326,7 @@ public sealed class EventLoggingService(IMemoryCache cache, AttachmentService at
 
         if (await db.LoggingChannels.FindAsync(e.GuildId, LogEventType.AvatarUpdate) is { } avatarLogChannel)
         {
+            var attachmentService = scope.ServiceProvider.GetRequiredService<AttachmentService>();
             var message = new LocalMessage();
             // user avatar update
             if (e.OldMember.AvatarHash != e.NewMember.AvatarHash)

@@ -9,12 +9,15 @@ public sealed class ReminderExpiryService : DiscordBotService
 {
     private Cts _cts = new();
     
-    public void ResetCts()
+    public void CancelCts()
     {
         if (!_cts.IsCancellationRequested)
             _cts.Cancel();
+
+        //_cts = new();
     }
     
+#if !MIGRATING
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
@@ -23,29 +26,43 @@ public sealed class ReminderExpiryService : DiscordBotService
         {
             await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-            var expiredReminder = await db.Reminders
-                .Where(x => x.ExpiresAt < DateTimeOffset.UtcNow)
-                .OrderByDescending(x => x.ExpiresAt)
-                .SingleOrDefaultAsync(stoppingToken);
+            var expiringReminder = await db.Reminders
+                //.Where(x => x.ExpiresAt < DateTimeOffset.UtcNow)
+                .OrderBy(x => x.ExpiresAt)
+                .FirstOrDefaultAsync(stoppingToken);
 
-            var delay = expiredReminder?.ExpiresAt - DateTimeOffset.UtcNow
-                        ?? TimeSpan.FromSeconds(30);
+            var delay = expiringReminder?.ExpiresAt - DateTimeOffset.UtcNow;
 
-            if (delay > TimeSpan.Zero)
+            if (delay is null) // no reminders awaiting expiry
+            {
+                try
+                {
+                    Logger.LogDebug("No reminders in queue - waiting infinitely for CancelCts().");
+                    await Task.Delay(-1, _cts.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    Logger.LogDebug("Task.Delay canceled due to CancelCts() being called.");
+                    _cts.Dispose();
+                    _cts = new();
+                    continue;
+                }
+            }
+            else if (delay > TimeSpan.Zero)
             {
                 var cts = Cts.Linked(_cts.Token);
 
                 try
                 {
-                    cts.CancelAfter(delay);
+                    Logger.LogDebug("Waiting for {Delay} for reminder expiry.", delay);
+                    cts.CancelAfter(delay.Value);
                     await Task.Delay(-1, cts.Token);
                 }
                 catch (TaskCanceledException) when (_cts.IsCancellationRequested)
                 {
-                    Logger.LogDebug("Task.Delay canceled due to ResetCts() being called.");
-                    
+                    Logger.LogDebug("Task.Delay canceled due to CancelCts() being called.");
                     _cts.Dispose();
-                    _cts = new Cts();
+                    _cts = new();
                     continue;
                 }
                 catch (TaskCanceledException)
@@ -66,17 +83,18 @@ public sealed class ReminderExpiryService : DiscordBotService
                 Logger.LogDebug("Timer delay was less than 0 (actual: {Delay}).", delay);
             }
 
-            if (expiredReminder is null)
+            if (expiringReminder is null)
                 continue;
 
             try
             {
-                await expiredReminder.RemindAsync(Bot);
+                await expiringReminder.RemindAsync(Bot);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Failed to execute reminder expiry task for reminder {Id}.", expiredReminder.Id);
+                Logger.LogError(ex, "Failed to execute reminder expiry task for reminder {Id}.", expiringReminder.Id);
             }
         }
     }
+#endif
 }

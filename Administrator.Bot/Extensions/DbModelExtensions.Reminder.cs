@@ -39,7 +39,6 @@ public static partial class DbModelExtensions
         return value.Humanize();
         //return value.Humanize(int.MaxValue, maxUnit: TimeUnit.Week, minUnit: TimeUnit.Minute);
     }
-
     
     public static async Task RemindAsync(this Reminder reminder, DiscordBotBase bot)
     {
@@ -49,7 +48,8 @@ public static partial class DbModelExtensions
         {
             try
             {
-                await bot.StartMenuAsync(reminder.ChannelId, new AdminTextMenu(new ReminderSnoozeView(reminder)), TimeSpan.FromHours(2));
+                await bot.StartMenuAsync(reminder.ChannelId, new AdminTextMenu(new ReminderSnoozeView(reminder)) { AuthorId = reminder.AuthorId },
+                    TimeSpan.FromMinutes(10));
             }
             catch { /*ignored */ }
 

@@ -1,17 +1,113 @@
 ﻿using System.Text;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
+using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
+using Humanizer;
+using Microsoft.EntityFrameworkCore;
 using Qmmands;
-using IResult = Qmmands.IResult;
 
 namespace Administrator.Bot;
 
-[SlashGroup("highlight")]
-public sealed class HighlightModule(HighlightService highlights) : DiscordApplicationModuleBase
+public enum ViewMode
 {
+    User,
+    Channel
+}
+
+[SlashGroup("highlight")]
+public sealed class HighlightModule(HighlightService highlights, AdminDbContext db, HighlightHandlingService highlightHandling) : DiscordApplicationModuleBase
+{
+    [SlashCommand("clear")]
+    [Description("Clears all your highlights for this server. If in DMs, clears all global highlights.")]
+    public async Task ClearAsync()
+    {
+        var userHighlights = db.Highlights.Where(x => x.AuthorId == Context.AuthorId);
+        var contextHighlights = await (Context.GuildId.HasValue
+            ? userHighlights.Where(x => x.GuildId == Context.GuildId.Value)
+            : userHighlights.Where(x => x.GuildId == null)).OrderByDescending(x => x.Id).ToListAsync();
+
+        if (contextHighlights.Count == 0)
+        {
+            await Response(Context.GuildId.HasValue
+                ? $"You don't have any highlights in {Markdown.Bold(Bot.GetGuild(Context.GuildId.Value)!.Name)}!"
+                : "You don't have any global highlights!").AsEphemeral(Context.GuildId.HasValue);
+
+            return;
+        }
+
+        var view = new AdminPromptView(
+                $"{$"{(!Context.GuildId.HasValue ? "global" : "server")} highlight".ToQuantity(contextHighlights.Count)} will be cleared.\n\n" +
+                Markdown.Bold("This action CANNOT be undone."))
+            .OnConfirm("Highlights cleared.");
+
+        await View(view);
+
+        if (view.Result)
+        {
+            db.Highlights.RemoveRange(contextHighlights);
+            await db.SaveChangesAsync();
+            highlightHandling.InvalidateCache();
+        }
+    }
+    
+    [SlashCommand("list")]
+    [Description("Lists all your highlights for this server. If in DMs, lists all your global highlights.")]
+    public async Task<IResult> ListAsync()
+    {
+        var userHighlights = db.Highlights.Where(x => x.AuthorId == Context.AuthorId);
+        var contextHighlights = await (Context.GuildId.HasValue
+            ? userHighlights.Where(x => x.GuildId == Context.GuildId.Value)
+            : userHighlights.Where(x => x.GuildId == null)).OrderByDescending(x => x.Id).ToListAsync();
+
+        if (contextHighlights.Count == 0)
+        {
+            return Response(Context.GuildId.HasValue
+                ? $"You don't have any highlights in {Markdown.Bold(Bot.GetGuild(Context.GuildId.Value)!.Name)}!"
+                : "You don't have any global highlights!").AsEphemeral(Context.GuildId.HasValue);
+        }
+
+        var pages = new List<Page>();
+        var descriptionBuilder = new StringBuilder();
+        foreach (var highlight in contextHighlights)
+        {
+            var format = $"{highlight} - {highlight.Text}\n";
+            if (descriptionBuilder.Length + format.Length >= Discord.Limits.Message.Embed.MaxDescriptionLength)
+            {
+                pages.Add(GeneratePage(descriptionBuilder, Context.GuildId.HasValue ? Bot.GetGuild(Context.GuildId.Value) : null));
+                descriptionBuilder.Clear();
+            }
+
+            descriptionBuilder.AppendNewline(format);
+        }
+
+        if (descriptionBuilder.Length > 0)
+        {
+            pages.Add(GeneratePage(descriptionBuilder, Context.GuildId.HasValue ? Bot.GetGuild(Context.GuildId.Value) : null));
+        }
+
+        if (pages.Count == 1)
+        {
+            var firstPage = pages[0];
+            return Response(new LocalInteractionMessageResponse { Content = firstPage.Content, Embeds = firstPage.Embeds }).AsEphemeral(Context.GuildId.HasValue);
+        }
+
+        return Menu(new AdminInteractionMenu(new AdminPagedView(pages, Context.GuildId.HasValue), Context.Interaction));
+
+        static Page GeneratePage(StringBuilder sb, IGuild? guild)
+        {
+            return new Page().WithContent(guild is not null
+                    ? $"Your highlights in {Markdown.Bold(guild.Name)}:"
+                    : "Your global highlights:")
+                .AddEmbed(new LocalEmbed()
+                    .WithUnusualColor()
+                    .WithDescription(sb.ToString()));
+        }
+    }
+    
     [SlashCommand("create")]
     [Description("Creates a new highlight for a server. If in DMs, adds a new global highlight instead.")]
     public async Task<IResult> AddAsync(
@@ -31,9 +127,9 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
             : null;
 
         return Response(guild is not null
-            ? $"{highlight.FormatKey()} New highlight created. You'll be highlighted from messages in {Markdown.Bold(guild.Name)} containing the text \"{text}\"."
-            : $"{highlight.FormatKey()} New global highlight created. You'll be highlighted from messages in any mutual servers containing the text \"{text}\".")
-            .AsEphemeral();
+            ? $"{highlight} New highlight created. You'll be highlighted from messages in {Markdown.Bold(guild.Name)} containing the text \"{text}\"."
+            : $"{highlight} New global highlight created. You'll be highlighted from messages in any mutual servers containing the text \"{text}\".")
+            .AsEphemeral(Context.GuildId.HasValue);
     }
 
     [SlashCommand("remove")]
@@ -62,7 +158,7 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
                 : string.Empty)
             .Append(" has been removed.");
         
-        return Response(responseBuilder.ToString()).AsEphemeral();
+        return Response(responseBuilder.ToString()).AsEphemeral(Context.GuildId.HasValue);
     }
 
     [AutoComplete("remove")]
@@ -72,11 +168,54 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
     [SlashGroup("blacklist")]
     public sealed class HighlightBlacklistModule(AdminDbContext db, HighlightHandlingService highlights) : DiscordApplicationModuleBase
     {
-        private GlobalUser _globalUser = null!;
+        private User _user = null!;
 
         public override async ValueTask OnBeforeExecuted()
         {
-            _globalUser = await db.GetOrCreateGlobalUserAsync(Context.AuthorId);
+            _user = await db.Users.GetOrCreateAsync(Context.AuthorId);
+        }
+
+        [SlashCommand("view")]
+        [Description("Lists your current highlight blacklist (channels or users).")]
+        public async Task<IResult> ViewAsync(ViewMode mode)
+        {
+            var blacklist = mode == ViewMode.Channel
+                ? _user.BlacklistedHighlightChannelIds
+                : _user.BlacklistedHighlightUserIds;
+
+            var formatted = new List<string>();
+            foreach (var id in blacklist)
+            {
+                if (mode == ViewMode.User)
+                {
+                    formatted.Add(await Bot.GetOrFetchUserAsync(id) is { } user 
+                        ? $"{user.Format()}"
+                        : Markdown.Code(id));
+                }
+                else
+                {
+                    formatted.Add(Bot.TryGetAnyGuildChannel(id, out var channel) && Bot.GetGuild(channel.GuildId) is { } guild
+                        ? $"{Markdown.Bold($"#{channel.Name}")} ({Markdown.Code(id)}) in {Markdown.Bold(guild.Name)}"
+                        : Markdown.Code(id));
+                }
+            }
+
+            var pages = formatted.Chunk(25)
+                .Select(x => new Page()
+                    .AddEmbed(new LocalEmbed()
+                        .WithUnusualColor()
+                        .WithTitle(mode == ViewMode.User
+                            ? "Blacklisted users"
+                            : "Blacklisted channels")
+                        .WithDescription(string.Join('\n', x))))
+                .ToList();
+            
+            return pages.Count switch
+            {
+                0 => Response($"Your {mode.ToString().ToLower()} highlight blacklist is empty.").AsEphemeral(),
+                1 => Response(pages[0].Embeds.Value[0]).AsEphemeral(),
+                _ => Menu(new AdminInteractionMenu(new AdminPagedView(pages, true), Context.Interaction))
+            };
         }
 
         [SlashCommand("add")]
@@ -97,14 +236,14 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
 
             if (user is not null)
             {
-                responseBuilder.AppendNewline(_globalUser.BlacklistedHighlightUserIds.Add(user.Id)
+                responseBuilder.AppendNewline(_user.BlacklistedHighlightUserIds.TryAddUnique(user.Id)
                     ? $"You've added {user.Mention} to your highlight blacklist."
                     : $"You already have {user.Mention} on your blacklist!");
             }
             
             if (channel is not null)
             {
-                responseBuilder.AppendNewline(_globalUser.BlacklistedHighlightChannelIds.Add(channel.Id)
+                responseBuilder.AppendNewline(_user.BlacklistedHighlightChannelIds.TryAddUnique(channel.Id)
                     ? $"You've added {Markdown.Bold(channel)} to your highlight blacklist."
                     : $"You already have {Markdown.Bold(channel)} on your blacklist!");
             }
@@ -112,7 +251,7 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
             await db.SaveChangesAsync();
             highlights.InvalidateCache();
 
-            return Response(responseBuilder.ToString()).AsEphemeral();
+            return Response(responseBuilder.ToString()).AsEphemeral(Context.GuildId.HasValue);
         }
         
         [SlashCommand("remove")]
@@ -132,14 +271,14 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
 
             if (user is not null)
             {
-                responseBuilder.AppendNewline(_globalUser.BlacklistedHighlightUserIds.Remove(user.Id)
+                responseBuilder.AppendNewline(_user.BlacklistedHighlightUserIds.Remove(user.Id)
                     ? $"You've removed {user.Mention} from your highlight blacklist."
                     : $"You already do not have {user.Mention} on your blacklist!");
             }
             
             if (channel is not null)
             {
-                responseBuilder.AppendNewline(_globalUser.BlacklistedHighlightChannelIds.Remove(channel.Id)
+                responseBuilder.AppendNewline(_user.BlacklistedHighlightChannelIds.Remove(channel.Id)
                     ? $"You've removed {Markdown.Bold(channel)} from your highlight blacklist."
                     : $"You already do not have {Markdown.Bold(channel)} on your blacklist!");
             }
@@ -147,7 +286,7 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
             await db.SaveChangesAsync();
             highlights.InvalidateCache();
 
-            return Response(responseBuilder.ToString()).AsEphemeral();
+            return Response(responseBuilder.ToString()).AsEphemeral(Context.GuildId.HasValue);
         }
     }
 
@@ -169,24 +308,25 @@ public sealed class HighlightModule(HighlightService highlights) : DiscordApplic
                                 $"{mention.GetMention("self timezone")}.)").AsEphemeral();
             }
 
-            var user = await db.GetOrCreateGlobalUserAsync(Context.AuthorId);
+            var user = await db.Users.GetOrCreateAsync(Context.AuthorId);
             user.HighlightsSnoozedUntil = time;
             await db.SaveChangesAsync();
             highlights.InvalidateCache();
 
-            return Response($"All highlights have been snoozed until {Markdown.Timestamp(time, Markdown.TimestampFormat.LongDateTime)}").AsEphemeral();
+            return Response($"All highlights have been snoozed until {Markdown.Timestamp(time, Markdown.TimestampFormat.LongDateTime)}.")
+                .AsEphemeral(Context.GuildId.HasValue);
         }
 
         [SlashCommand("cancel")]
         [Description("Cancels any current highlight snoozing.")]
         public async Task<IResult> CancelSnoozeAsync()
         {
-            var user = await db.GetOrCreateGlobalUserAsync(Context.AuthorId);
+            var user = await db.Users.GetOrCreateAsync(Context.AuthorId);
             user.HighlightsSnoozedUntil = null;
             await db.SaveChangesAsync();
             highlights.InvalidateCache();
 
-            return Response("You will now be highlighted again (snoozing canceled).").AsEphemeral();
+            return Response("You will now be highlighted again (snoozing canceled).").AsEphemeral(Context.GuildId.HasValue);
         }
     }
 }

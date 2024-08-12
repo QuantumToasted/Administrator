@@ -1,7 +1,12 @@
-﻿using Disqord;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using Administrator.Database;
+using Disqord;
+using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Http;
 using Disqord.Rest;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 using Qommon;
 
@@ -9,6 +14,46 @@ namespace Administrator.Bot;
 
 public static partial class DiscordExtensions
 {
+    public static async Task TrySendErrorAsync(this DiscordBotBase bot, Snowflake guildId, string error, [CallerFilePath] string? path = null)
+    {
+        Guard.IsNotNullOrWhiteSpace(path);
+
+        await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        if (await db.LoggingChannels.TryGetLoggingChannelAsync(guildId, LogEventType.Errors) is not { ChannelId: var channelId })
+            return;
+        
+        var embed = new LocalEmbed()
+            .WithCollectorsColor()
+            .WithTitle($"Error occured in {PrettifyPath(path)}")
+            .WithDescription(error)
+            .WithTimestamp(DateTimeOffset.UtcNow);
+
+        await bot.TrySendMessageAsync(channelId, new LocalMessage().AddEmbed(embed));
+
+        static string PrettifyPath(string path)
+        {
+            return Path.GetFileNameWithoutExtension(path).Humanize(LetterCasing.LowerCase);
+        }
+    }
+    
+    public static bool TryGetAnyGuildChannel(this DiscordClientBase client, Snowflake channelId, [NotNullWhen(true)] out IGuildChannel? channel)
+    {
+        foreach (var guildId in client.GetGuilds().Keys)
+        {
+            foreach (var c in client.GetChannels(guildId).Values)
+            {
+                if (c.Id != channelId) 
+                    continue;
+                
+                channel = c;
+                return true;
+            }
+        }
+        
+        channel = null;
+        return false;
+    }
+    
     public static async ValueTask<IUser?> GetOrFetchUserAsync(this DiscordClientBase client, Snowflake userId)
     {
         if (client.GetUser(userId) is { } cachedUser)

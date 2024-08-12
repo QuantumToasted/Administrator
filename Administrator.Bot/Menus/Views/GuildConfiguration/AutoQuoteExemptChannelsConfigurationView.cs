@@ -4,12 +4,10 @@ using Disqord;
 using Disqord.Bot.Commands.Application;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Gateway;
-using Disqord.Rest;
 
 namespace Administrator.Bot;
 
-public sealed class AutoQuoteExemptChannelsConfigurationView(IDiscordApplicationGuildCommandContext context,
-        HashSet<Snowflake> exemptChannelIds)
+public sealed class AutoQuoteExemptChannelsConfigurationView(IDiscordApplicationGuildCommandContext context, ICollection<Snowflake> exemptChannelIds)
     : GuildConfigurationViewBase(context)
 {
     public const string SELECTION_TEXT = "Auto-Quote Exempt Channels";
@@ -45,7 +43,7 @@ public sealed class AutoQuoteExemptChannelsConfigurationView(IDiscordApplication
         {
             if (exemptChannelIds.Count >= maximumChannels)
             {
-                await e.Interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+                await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
                     .WithContent($"You cannot add more than {Markdown.Bold(maximumChannels)} exempt channels!")
                     .WithIsEphemeral());
             }
@@ -69,8 +67,8 @@ public sealed class AutoQuoteExemptChannelsConfigurationView(IDiscordApplication
     private async Task UpdateExemptChannelsAsync()
     {
         await using var scope = _context.Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var guildConfig = await db.GetOrCreateGuildConfigAsync(_context.GuildId);
-        guildConfig.AutoQuoteExemptChannelIds = exemptChannelIds;
+        var guildConfig = await db.Guilds.GetOrCreateAsync(_context.GuildId);
+        guildConfig.AutoQuoteExemptChannelIds = exemptChannelIds.Distinct().ToList();
         await db.SaveChangesAsync();
         ReportChanges();
     }

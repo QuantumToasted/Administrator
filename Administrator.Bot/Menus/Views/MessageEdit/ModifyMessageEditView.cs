@@ -29,12 +29,12 @@ public sealed class ModifyMessageEditView : MessageEditView
             x.Embeds = message.Embeds.GetValueOrDefault()?.ToList() ?? Optional<IEnumerable<LocalEmbed>>.Empty;
         });
 
+        await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
+            .WithContent("Message updated!"));
+
         ClearComponents();
         await Menu.ApplyChangesAsync(e);
         Menu.Stop();
-
-        await e.Interaction.Followup().SendAsync(new LocalInteractionMessageResponse()
-            .WithContent("Message updated!"));
     }
 
     private static LocalMessageBase FormatMessage(IUserMessage message)

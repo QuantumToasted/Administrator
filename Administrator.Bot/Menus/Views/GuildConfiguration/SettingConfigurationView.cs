@@ -61,7 +61,7 @@ public sealed class SettingConfigurationView : GuildConfigurationViewBase
         ReportChanges();
 
         await using var scope = _context.Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var guildConfig = await db.GetOrCreateGuildConfigAsync(_context.GuildId);
+        var guildConfig = await db.Guilds.GetOrCreateAsync(_context.GuildId);
         guildConfig.Settings = _settings;
         await db.SaveChangesAsync();
     }

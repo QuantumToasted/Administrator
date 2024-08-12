@@ -8,7 +8,7 @@ public static class UriExtensions
     {
         var filename = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
         var extension = Path.GetExtension(uri.AbsolutePath);
-        return (filename, extension);
+        return (filename, extension.Length > 1 ? extension[1..] : extension);
     }
 
     public static bool HasImageExtension(this Uri uri)

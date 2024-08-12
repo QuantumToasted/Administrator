@@ -52,6 +52,23 @@ public sealed class JsonMessage
             Embeds = message.Embeds.GetValueOrDefault()?.Select(JsonEmbed.FromEmbed).ToList()
         };
     }
+    
+    public static bool TryParse(string str, JsonSerializerOptions options, [NotNullWhen(true)] out JsonMessage? message, [NotNullWhen(false)] out string? error)
+    {
+        message = null;
+        error = null;
+
+        try
+        {
+            message = Parse(str, options);
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
 
     public static bool TryParse(string str, [NotNullWhen(true)] out JsonMessage? message, [NotNullWhen(false)] out string? error)
     {
@@ -70,6 +87,6 @@ public sealed class JsonMessage
         }
     }
 
-    public static JsonMessage Parse(string str)
-        => JsonSerializer.Deserialize<JsonMessage>(str)!;
+    public static JsonMessage Parse(string str, JsonSerializerOptions? options = null)
+        => JsonSerializer.Deserialize<JsonMessage>(str, options ?? JsonSerializerOptions.Default)!;
 }

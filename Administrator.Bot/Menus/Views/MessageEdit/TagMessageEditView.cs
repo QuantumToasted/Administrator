@@ -1,7 +1,6 @@
 ﻿using Administrator.Core;
 using Disqord;
 using Disqord.Extensions.Interactivity.Menus;
-using Disqord.Rest;
 
 namespace Administrator.Bot;
 
@@ -16,7 +15,7 @@ public sealed class TagMessageEditView(string tagName, LocalMessageBase message)
         dbTag!.Message = JsonMessage.FromMessage(Message);
         await db.SaveChangesAsync();
 
-        await e.Interaction.Followup().SendAsync(new LocalInteractionMessageResponse()
+        await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
             .WithContent("Changes saved.")
             .WithIsEphemeral());
         

@@ -23,8 +23,8 @@ public sealed class HighlightHandlingService(IMemoryCache cache) : DiscordBotSer
 
     protected override ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
-        if (e.Message is not IGatewayUserMessage message || string.IsNullOrWhiteSpace(message.Content) || e.GuildId is not { } guildId ||
-            (e.Channel ?? Bot.GetChannel(guildId, e.ChannelId)) is not IMessageGuildChannel channel)
+        if (e.Message is not IGatewayUserMessage { Author.IsBot: false } message || string.IsNullOrWhiteSpace(message.Content) ||
+            e.GuildId is not { } guildId || (e.Channel ?? Bot.GetChannel(guildId, e.ChannelId)) is not IMessageGuildChannel channel)
         {
             return ValueTask.CompletedTask;
         }
@@ -34,8 +34,8 @@ public sealed class HighlightHandlingService(IMemoryCache cache) : DiscordBotSer
 
     protected override ValueTask OnMessageUpdated(MessageUpdatedEventArgs e)
     {
-        if (e.NewMessage is not IGatewayUserMessage message || string.IsNullOrWhiteSpace(message.Content) || e.GuildId is not { } guildId ||
-            Bot.GetChannel(guildId, e.ChannelId) is not IMessageGuildChannel channel)
+        if (e.NewMessage is not IGatewayUserMessage { Author.IsBot: false } message || string.IsNullOrWhiteSpace(message.Content) ||
+            e.GuildId is not { } guildId || Bot.GetChannel(guildId, e.ChannelId) is not IMessageGuildChannel channel)
         {
             return ValueTask.CompletedTask;
         }
@@ -64,7 +64,7 @@ public sealed class HighlightHandlingService(IMemoryCache cache) : DiscordBotSer
 
     private async ValueTask HighlightAsync(IGatewayUserMessage message, IMessageGuildChannel channel)
     {
-        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        //await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
         var allHighlights = await GetHighlightsAsync();
         var highlights = allHighlights.Where(x => !x.GuildId.HasValue || x.GuildId == channel.GuildId).ToList();
@@ -138,7 +138,7 @@ public sealed class HighlightHandlingService(IMemoryCache cache) : DiscordBotSer
             var previouslyHighlightedUsers = _previouslyHighlightedUsers.GetOrAdd(message.Id, static _ => new HashSet<Snowflake>());
             if (!previouslyHighlightedUsers.Add(highlight.AuthorId))
                 continue; // already highlighted by this message
-            
+
             try
             {
                 var dmChannel = await Bot.CreateDirectChannelAsync(highlight.AuthorId);
@@ -159,9 +159,10 @@ public sealed class HighlightHandlingService(IMemoryCache cache) : DiscordBotSer
                     }
                 });
 
-                await Bot.StartMenuAsync(dmChannel.Id, new AdminTextMenu(view), TimeSpan.FromHours(12));
+                await Bot.StartMenuAsync(dmChannel.Id, new AdminTextMenu(view) { ClearComponents = false, AuthorId = highlight.AuthorId },
+                    TimeSpan.FromHours(12));
             }
-            catch (RestApiException ex) when (ex.StatusCode == HttpResponseStatusCode.Forbidden)
+            catch (InvalidOperationException ex) when (ex.InnerException is RestApiException { StatusCode: HttpResponseStatusCode.Forbidden })
             { }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 ﻿using Disqord;
 using Disqord.Bot.Commands.Interaction;
+using Disqord.Rest;
 
 namespace Administrator.Bot;
 
@@ -12,12 +13,17 @@ public static partial class DiscordExtensions
         return result;
     }
 
+    public static Task RespondOrFollowupAsync(this IInteraction interaction, LocalInteractionMessageResponse response, CancellationToken cancellationToken = default)
+        => !interaction.Response().HasResponded 
+            ? interaction.Response().SendMessageAsync(response, cancellationToken: cancellationToken) 
+            : interaction.Followup().SendAsync(response, cancellationToken: cancellationToken);
+
     /*
     public static void AddFormatted<TOptionType, TFormatter>(this AutoComplete<TOptionType>.ChoiceCollection collection, DiscordBotBase bot, TFormatter formatter)
         where TOptionType : notnull
         where TFormatter : IAutoCompleteFormatter<TOptionType>
     {
-        collection.Add(formatter.FormatAutoCompleteName(bot).Truncate(Discord.Limits.ApplicationCommand.Option.Choice.MaxNameLength), 
+        collection.Add(formatter.FormatAutoCompleteName(bot).Truncate(Discord.Limits.ApplicationCommand.Option.Choice.MaxNameLength),
             formatter.FormatAutoCompleteValue(bot));
     }
 
@@ -41,15 +47,15 @@ public static partial class DiscordExtensions
             static (x, b) => x.FormatAutoCompleteName(b),
             static (x, b) => x.FormatAutoCompleteValue(b));
     }
-    
-    public static void GenerateChoices<TModel, TValue>(this AutoComplete<TValue> autoComplete, ICollection<TModel> collection, 
+
+    public static void GenerateChoices<TModel, TValue>(this AutoComplete<TValue> autoComplete, ICollection<TModel> collection,
         Func<TModel, string> comparisonSelector, Func<TModel, string> nameFactory, Func<TModel, TValue> valueFactory)
         where TModel : notnull
         where TValue : notnull
     {
         if (!autoComplete.IsFocused || collection.Count == 0)
             return;
-        
+
         if (string.IsNullOrWhiteSpace(autoComplete.RawArgument))
         {
             autoComplete.Choices.AddRange(collection.Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
@@ -71,16 +77,16 @@ public static partial class DiscordExtensions
                 .ToDictionary(nameFactory, valueFactory));
         }
     }
-    
+
     public static void GenerateChoices<TModel, TValue>(this AutoComplete<TValue> autoComplete, DiscordBotBase bot,
-        ICollection<TModel> collection, Func<TModel, string> comparisonSelector, 
+        ICollection<TModel> collection, Func<TModel, string> comparisonSelector,
         Func<TModel, DiscordBotBase, string> nameFactory, Func<TModel, DiscordBotBase, TValue> valueFactory)
         where TModel : notnull
         where TValue : notnull
     {
         if (!autoComplete.IsFocused || collection.Count == 0)
             return;
-        
+
         if (string.IsNullOrWhiteSpace(autoComplete.RawArgument))
         {
             autoComplete.Choices.AddRange(collection.Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)

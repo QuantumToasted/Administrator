@@ -53,8 +53,8 @@ public sealed class TagLimitConfigurationView : GuildConfigurationViewBase
             if (!int.TryParse(((ITextInputComponent)((IRowComponent) modalInteraction.Components[0]).Components[0]).Value, out var newValue) ||
                 newValue <= 0)
             {
-                await interaction.Response()
-                    .SendMessageAsync(new LocalInteractionMessageResponse().WithContent("You must supply a valid custom tag limit!").WithIsEphemeral());
+                await interaction.RespondOrFollowupAsync(
+                    new LocalInteractionMessageResponse().WithContent("You must supply a valid custom tag limit!").WithIsEphemeral());
                 return;
             }
             
@@ -62,12 +62,12 @@ public sealed class TagLimitConfigurationView : GuildConfigurationViewBase
         }
             
         await using var scope = _context.Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var guildConfig = await db.GetOrCreateGuildConfigAsync(_context.GuildId);
+        var guildConfig = await db.Guilds.GetOrCreateAsync(_context.GuildId);
 
         guildConfig.MaximumTagsPerUser = value;
         await db.SaveChangesAsync();
 
-        await interaction.Response().SendMessageAsync(new LocalInteractionMessageResponse()
+        await interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
             .WithContent("Tag limit updated."));
         
         _limit = value;

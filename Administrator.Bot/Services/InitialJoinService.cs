@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;
@@ -6,10 +7,11 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Administrator.Bot;
 
-public sealed class InitialJoinService(SlashCommandMentionService mention, IConfiguration config) : DiscordBotService
+public sealed class InitialJoinService(SlashCommandMentionService mention, IOptions<AdministratorHelpConfiguration> options) : DiscordBotService
 {
     private static readonly IReadOnlyDictionary<Permissions, string> ExtraRequiredPermissions = new Dictionary<Permissions, string>
     {
@@ -17,10 +19,14 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IConf
         [Permissions.ViewAuditLog] = "Required for the automatic punishment detection feature to function."
     };
 
+    private readonly AdministratorHelpConfiguration _config = options.Value;
+
+#if !MIGRATING
     protected override async ValueTask OnJoinedGuild(JoinedGuildEventArgs e)
     {
         await TrySendInitialJoinMessageAsync(e.Guild);
     }
+    
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -32,6 +38,7 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IConf
                 await Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(1, 10)), stoppingToken);
         }
     }
+#endif
 
     private async ValueTask<bool> TrySendInitialJoinMessageAsync(IGuild guild)
     {
@@ -39,7 +46,7 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IConf
         
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var guildConfig = await db.GetOrCreateGuildConfigAsync(guild.Id);
+        var guildConfig = await db.Guilds.GetOrCreateAsync(guild.Id);
         if (guildConfig.WasVisited)
             return false;
 
@@ -47,7 +54,7 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IConf
         var guildOwnerDmChannel = await Bot.CreateDirectChannelAsync(guild.OwnerId);
         var botMember = guild.GetMember(Bot.CurrentUser.Id)!;
 
-        var globalUser = await db.GetOrCreateGlobalUserAsync(guild.OwnerId);
+        var globalUser = await db.Users.GetOrCreateAsync(guild.OwnerId);
 
         if (globalUser.WasSentInitialJoinMessage || await Bot.TrySendMessageAsync(guildOwnerDmChannel.Id, message) is null)
         {
@@ -78,7 +85,7 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IConf
             .AppendNewline($"To get your server set up with me quickly, utilize the {mention.GetMention("config")} command.")
             .AppendNewline("There are a lot of things to configure and set up, and a lot of features to take advantage of.")
             .Append("If you have any questions, feel free to join my support server: ")
-            .AppendNewline($"https://discord.gg/{config["SupportGuild:Code"]}");
+            .AppendNewline($"https://discord.gg/{_config.SupportGuildInviteCode}");
         
         var actualBotPermissions = guild.GetMember(Bot.CurrentUser.Id)!.CalculateGuildPermissions();
 

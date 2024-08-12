@@ -7,7 +7,7 @@ public class AdminInteractionMenu(ViewBase view, IUserInteraction interaction) :
 {
     public override ValueTask DisposeAsync()
     {
-        if (View is not null)
+        if (View is not null and not AdminPromptView)
         {
             View.ClearComponents();
             return ApplyChangesAsync();

@@ -8,8 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Disqord.Core" Version="1.0.0-alpha5.56" />
-      <PackageReference Include="NodaTime" Version="3.1.9" />
+      <PackageReference Include="Disqord.Core" Version="1.0.0-alpha5.75" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
+      <PackageReference Include="NodaTime" Version="3.1.11" />
       <PackageReference Include="Qmmands" Version="6.0.0-alpha8" />
     </ItemGroup>
 

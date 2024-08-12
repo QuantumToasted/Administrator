@@ -5,39 +5,26 @@ using Disqord;
 
 namespace Administrator.Core;
 
-public sealed class ColorJsonConverter : JsonConverter<Color>
+public sealed class ColorJsonConverter : JsonConverter<Color?>
 {
-    /*
-    public override void WriteJson(JsonWriter writer, Color value, JsonSerializer serializer)
+    public static readonly ColorJsonConverter Instance = new();
+    
+    public override bool HandleNull => true;
+
+    public override Color? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        writer.WriteValue(value.ToString());
-    }
-
-    public override Color ReadJson(JsonReader reader, Type objectType, Color existingValue, bool hasExistingValue, JsonSerializer serializer)
-    {
-        var value = reader.Value?.ToString();
-
-        if (string.IsNullOrWhiteSpace(value))
-            throw new FormatException("Missing or empty color string provided.");
-
-        if (value[0] == '#')
-            value = value[1..];
-
-        if (value.Length > 6 || !int.TryParse(value, NumberStyles.HexNumber, null, out var rawValue))
-            throw new FormatException("Invalid color string provided. Must be a 6-character hex color code.");
-
-        return rawValue;
-    }
-    */
-
-    public override bool HandleNull => false;
-
-    public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+        if (reader.TokenType == JsonTokenType.Null)
+            return null;
+        
+        // try parsing as a raw int
+        if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out var rawIntValue))
+            return rawIntValue;
+        
+        // try parsing as a hex code
         var value = reader.GetString();
         if (string.IsNullOrWhiteSpace(value))
-            throw new FormatException("Missing or empty color string provided.");
-
+            return null;
+        
         if (value[0] == '#')
             value = value[1..];
 
@@ -47,6 +34,6 @@ public sealed class ColorJsonConverter : JsonConverter<Color>
         return rawValue;
     }
 
-    public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, Color? value, JsonSerializerOptions options)
         => writer.WriteStringValue(value.ToString());
 }

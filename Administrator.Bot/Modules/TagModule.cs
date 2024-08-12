@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using Administrator.Database;
+using Disqord;
 using Disqord.Bot.Commands.Application;
 using Qmmands;
 using Disqord.Bot.Commands;
@@ -6,146 +7,73 @@ using Disqord.Bot.Commands;
 namespace Administrator.Bot;
 
 [SlashGroup("tag")]
-public sealed class TagModule(TagService tags) 
-    : DiscordApplicationGuildModuleBase
+public sealed partial class TagModule
 {
+    [SlashCommand("list")]
+    [Description("Lists all tags in this server.")]
+    public partial Task<IResult> List();
+
     [SlashCommand("create")]
     [Description("Creates a new tag.")]
-    public async Task<IResult> CreateAsync(
-        [Maximum(50)]
+    public partial Task<IResult> Create(
         [Description("The name of the tag. Must not exist on this server.")]
-            string name,
-        [NonNitroAttachment]
+        [Maximum(Discord.Limits.Component.Button.MaxLabelLength)] 
+        [Lowercase]
+        string name,
         [Description("The attachment this tag should respond with.")]
-            IAttachment? attachment = null)
-    {
-        name = name.ToLowerInvariant();
-
-        var result = await tags.CreateTagAsync(name, attachment);
-        if (!result.IsSuccessful)
-            return Response(result.ErrorMessage).AsEphemeral();
-
-        var tag = result.Value;
-        var message = await tag.ToLocalMessageAsync<LocalInteractionMessageResponse>(Context);
-        message.WithIsEphemeral();
-        
-        var view = new TagMessageEditView(tag.Name, message);
-        return Menu(new MessageEditMenu(view, Context.Interaction));
-    }
+        [NonNitroAttachment] 
+        IAttachment? attachment = null);
 
     [SlashCommand("show")]
     [Description("Recalls a specific tag and sends it.")]
-    public async Task<IResult> ShowAsync(
+    public partial Task Show(
         [Description("The name of the tag to send.")]
-            string name)
-    {
-        name = name.ToLowerInvariant();
-
-        var result = await tags.FindTagAsync(name);
-        if (!result.IsSuccessful)
-            return Response(result.ErrorMessage).AsEphemeral();
-
-        var tag = result.Value;
-        
-        await Deferral();
-        var message = await tag.ToLocalMessageAsync<LocalInteractionMessageResponse>(Context);
-        return Response(message);
-    }
+        Tag tag,
+        [Description("If True, this tag will only be shown to you.")]
+        bool ephemeral = false);
 
     [SlashCommand("info")]
     [Description("Displays information for a specific tag.")]
-    public async Task<IResult> DisplayInfoAsync(
+    public partial Task<IResult> Info(
         [Description("The name of the tag to display info for.")]
-            string name)
-    {
-        name = name.ToLowerInvariant();
-
-        var result = await tags.FindTagAsync(name);
-        if (!result.IsSuccessful)
-            return Response(result.ErrorMessage).AsEphemeral();
-
-        var tag = result.Value;
-
-        return Response(tag.FormatInfoEmbed(Bot));
-    }
+        Tag tag);
 
     [SlashCommand("modify")]
     [Description("Modifies one of your tags.")]
-    public async Task<IResult> ModifyAsync(
-        [Description("The name of the tag to modify.")] 
-            string name)
-    {
-        name = name.ToLowerInvariant();
-        
-        var result = await tags.FindTagAsync(name, true);
-        if (!result.IsSuccessful)
-            return Response(result.ErrorMessage).AsEphemeral();
-
-        var tag = result.Value;
-        
-        var message = await tag.ToLocalMessageAsync<LocalInteractionMessageResponse>();
-        message.WithIsEphemeral();
-        var view = new TagMessageEditView(tag.Name, message);
-        return Menu(new MessageEditMenu(view, Context.Interaction));
-    }
+    public partial Task<IResult> Modify(
+        [Description("The name of the tag to modify.")]
+        [RequireTagOwner]
+        Tag tag);
 
     [SlashCommand("delete")]
     [Description("Deletes one of your tags.")]
-    public async Task<IResult> DeleteAsync(
-        [Description("The name of the tag to delete.")]
-            string name)
-    {
-        name = name.ToLowerInvariant();
-        
-        var result = await tags.DeleteTagAsync(name);
-        if (!result.IsSuccessful)
-            return Response(result.ErrorMessage).AsEphemeral();
-
-        return Response($"You've deleted your tag \"{name}\".");
-    }
+    public partial Task Delete(
+        [Description("The name of the tag to delete.")] 
+        [RequireTagOwner]
+        Tag tag);
 
     [SlashCommand("transfer")]
     [Description("Transfers a tag to another member, making them the owner.")]
-    public async Task<IResult> TransferAsync(
+    public partial Task Transfer(
         [Description("The name of the tag to transfer.")]
-            string name,
-        [Description("The new owner of the tag.")]
-        [RequireNotBot]
+        [RequireTagOwner]
+        Tag tag,
+        [Description("The new owner of the tag.")] 
+        [RequireNotBot] 
         [RequireNotAuthor]
-            IMember newOwner)
-    {
-        name = name.ToLowerInvariant();
+        IMember newOwner);
 
-        var result = await tags.TransferTagAsync(name, newOwner);
-        if (!result.IsSuccessful)
-            return Response(result.ErrorMessage).AsEphemeral();
-
-        return Response($"Tag \"{name}\" successfully transferred to {newOwner.Mention}.");
-    }
-    
     [SlashCommand("claim")]
     [Description("Claims a dormant tag of a member who has left the server.")]
-    public async Task<IResult> ClaimAsync(
+    public partial Task<IResult> Claim(
         [Description("The name of the tag to claim.")]
-            string name)
-    {
-        name = name.ToLowerInvariant();
+        Tag tag);
 
-        var result = await tags.ClaimTagAsync(name);
-        if (!result.IsSuccessful)
-            return Response(result.ErrorMessage).AsEphemeral();
-        
-        return Response($"You've successfully claimed the dormant tag \"{name}\".");
-    }
-
-    [AutoComplete("delete")]
+    [AutoComplete("delete")] // user
     [AutoComplete("transfer")]
     [AutoComplete("modify")]
-    public Task AutoCompleteUserTagsAsync(AutoComplete<string> name)
-        => name.IsFocused ? tags.AutoCompleteTagsAsync(name, Context.Author) : Task.CompletedTask;
-
-    [AutoComplete("claim")]
+    [AutoComplete("claim")] // all
     [AutoComplete("show")]
-    public Task AutoCompleteAllTagsAsync(AutoComplete<string> name)
-        => name.IsFocused ? tags.AutoCompleteTagsAsync(name) : Task.CompletedTask;
+    [AutoComplete("info")]
+    public partial Task AutoCompleteTags(AutoComplete<string> tag);
 }

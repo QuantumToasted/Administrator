@@ -9,27 +9,56 @@ namespace Administrator.Bot;
 
 public sealed class SlashCommandMentionService : DiscordBotService
 {
-    private readonly Dictionary<string, ISlashCommand> _commandMap = new();
+    public Dictionary<string, ISlashCommand> CommandMap { get; } = new();
 
-    public string GetMention(ICommand command)
+    public string? GetMention(ICommand command)
     {
-        var module = command.Module;
+        var joined = GetPath(command);
+        if (joined is null)
+            return null;
+        /*
+        var module = command.Module as ApplicationModule;
+        if (module is null)
+            return null;
+        
         var path = new[] { command.Name }.ToList();
 
-        while (module?.CustomAttributes.OfType<SlashGroupAttribute>().SingleOrDefault() is { Alias: { } group })
+        while (module?.Alias is { } alias)
         {
-            path.Add(group);
+            path.Add(alias);
             module = module.Parent;
         }
 
         path.Reverse();
-        return GetMention(string.Join(' ', path));
+        var joined = string.Join(' ', path);
+        */
+        return GetMention(joined) ?? Markdown.Code($"/{joined}");
     }
 
-    public string GetMention(string commandPath)
+    public string? GetMention(string commandPath)
     {
-        var command = _commandMap[commandPath];
+        if (string.IsNullOrWhiteSpace(commandPath) || !CommandMap.TryGetValue(commandPath, out var command))
+            return null;
+        
         return $"</{commandPath}:{command.Id}>";
+    }
+
+    public static string? GetPath(ICommand command)
+    {
+        var module = command.Module as ApplicationModule;
+        if (module is null)
+            return null;
+        
+        var path = new[] { command.Name }.ToList();
+
+        while (module?.Alias is { } alias)
+        {
+            path.Add(alias);
+            module = module.Parent;
+        }
+
+        path.Reverse();
+        return string.Join(' ', path);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,11 +71,11 @@ public sealed class SlashCommandMentionService : DiscordBotService
         {
             foreach (var path in EnumeratePaths(command))
             {
-                _commandMap[path] = command;
+                CommandMap[path] = command;
             }
         }
         
-        Logger.LogInformation("Currently storing {Count} slash command mention mappings.", _commandMap.Count);
+        Logger.LogInformation("Currently storing {Count} slash command mention mappings.", CommandMap.Count);
 
         static IEnumerable<string> EnumeratePaths(ISlashCommand command)
         {

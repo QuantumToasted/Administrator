@@ -35,7 +35,7 @@ public sealed record MappedEmoji(
     public static implicit operator LocalEmoji(MappedEmoji emoji)
         => LocalEmoji.Unicode(emoji.Surrogates);
 
-    string? IPossiblyNamableEntity.Name => Surrogates;
+    string IPossiblyNamableEntity.Name => Surrogates;
     bool IEquatable<IEmoji>.Equals(IEmoji? other) => other switch
     {
         LocalEmoji localEmoji => localEmoji.Name.Equals(Surrogates),

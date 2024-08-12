@@ -2,13 +2,12 @@
 using Disqord;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
-using Disqord.Extensions.Interactivity.Menus.Prompt;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Disqord.Rest.Api;
 using Humanizer;
 using Humanizer.Localisation;
 using Qmmands;
-using IResult = Qmmands.IResult;
 
 namespace Administrator.Bot;
 
@@ -81,6 +80,10 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
         [Description("The name of the new channel. Defaults to the original channel's name.")]
             string? name = null)
     {
+        var guild = Context.Bot.GetGuild(Context.GuildId)!;
+        if (channel.Type == ChannelType.Forum && !guild.GetFeatures().HasCommunity)
+            return Response("Forum channels cannot be created on this server!").AsEphemeral();
+        
         IGuildChannel? actualChannel = channel.Type switch
         {
             ChannelType.Forum => Bot.GetChannel(Context.GuildId, channel.Id) as IForumChannel,
@@ -89,7 +92,7 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
             ChannelType.Category => Bot.GetChannel(Context.GuildId, channel.Id) as ICategoryChannel,
             _ => throw new ArgumentOutOfRangeException()
         };
-
+        
         if (actualChannel is null)
             return Response("Unable to fetch information for that channel for cloning. Sorry about that!").AsEphemeral();
 
@@ -109,7 +112,7 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
 
                 if (forumChannel.Slowmode > TimeSpan.Zero)
                     x.Slowmode = forumChannel.Slowmode;
-
+                
                 if (!string.IsNullOrWhiteSpace(forumChannel.Topic))
                     x.Topic = forumChannel.Topic;
 
@@ -121,7 +124,7 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
                 if (forumChannel.CategoryId.HasValue)
                     x.CategoryId = forumChannel.CategoryId.Value;
 
-                x.Flags = forumChannel.Flags;
+                //x.Flags = forumChannel.Flags;
 
                 x.Overwrites = forumChannel.Overwrites.Select(LocalOverwrite.CreateFrom).ToList();
             }),
@@ -142,7 +145,7 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
                 if (textChannel.CategoryId.HasValue)
                     x.CategoryId = textChannel.CategoryId.Value;
 
-                x.Flags = textChannel.Flags;
+                //x.Flags = textChannel.Flags;
 
                 x.Overwrites = textChannel.Overwrites.Select(LocalOverwrite.CreateFrom).ToList();
             }),
@@ -167,13 +170,13 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
                 if (voiceChannel.CategoryId.HasValue)
                     x.CategoryId = voiceChannel.CategoryId.Value;
 
-                x.Flags = voiceChannel.Flags;
+                //x.Flags = voiceChannel.Flags;
 
                 x.Overwrites = voiceChannel.Overwrites.Select(LocalOverwrite.CreateFrom).ToList();
             }),
             ICategoryChannel categoryChannel => await Bot.CreateCategoryChannelAsync(Context.GuildId, name, x =>
             {
-                x.Flags = categoryChannel.Flags;
+                //x.Flags = categoryChannel.Flags;
                 x.Overwrites = categoryChannel.Overwrites.Select(LocalOverwrite.CreateFrom).ToList();
             }),
             _ => throw new ArgumentOutOfRangeException()
@@ -280,36 +283,72 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
 
         if (actualTargetChannel.Position == 0 && direction == MoveDirection.Above)
         {
-            await Bot.ReorderChannelsAsync(Context.GuildId, new Dictionary<Snowflake, int> {[channelToMove.Id] = 0, [targetChannel.Id] = 1});
+            await Bot.ReorderChannelsAsync(Context.GuildId, new Dictionary<Snowflake, int>
+            {
+                [channelToMove.Id] = 1, [targetChannel.Id] = 0
+            });
         }
         else
         {
-            await Bot.ReorderChannelsAsync(Context.GuildId, new Dictionary<Snowflake, int> {[channelToMove.Id] = actualTargetChannel.Position + (int) direction});
+            await Bot.ReorderChannelsAsync(Context.GuildId, new Dictionary<Snowflake, int>
+            {
+                [channelToMove.Id] = actualTargetChannel.Position + (direction == MoveDirection.Above ? -1 : 1) // channels are ordered opposite of roles: 0 = top
+            });
         }
-
 
         return Response($"{Mention.Channel(channelToMove.Id)} has been moved {direction.Humanize(LetterCasing.LowerCase)} {Mention.Channel(targetChannel.Id)}.");
     }
 
     [SlashCommand("delete")]
     [Description("Deletes an existing channel permanently.")]
-    public async Task<IResult> DeleteAsync(
+    public async Task DeleteAsync(
         [Description("The channel to delete.")]
         [ChannelTypes(ChannelType.Forum, ChannelType.Text, ChannelType.Voice, ChannelType.Category)]
         [AuthorCanViewChannel]
         [BotCanViewChannel]
             IChannel channel)
     {
-        var view = new PromptView(x =>
-            x.WithContent($"Are you sure you want to delete the channel {Mention.Channel(channel.Id)}?\n" +
-                          $"This action is {Markdown.Bold("IRREVERSIBLE")}.").AddEmbed(FormatChannelInfo(channel)));
+        var view = new AdminPromptView(
+                $"Are you sure you want to delete the channel {Mention.Channel(channel.Id)}?\n" +
+                $"This action is {Markdown.Bold("IRREVERSIBLE")}.", FormatChannelInfo(channel))
+            .OnConfirm($"Channel {channel.Name} ({channel.Id}) deleted.");
 
         await View(view);
-        if (!view.Result)
-            return default!;
+        if (view.Result)
+            await channel.DeleteAsync();
+    }
 
-        await channel.DeleteAsync();
-        return Response($"Channel {channel.Name} ({channel.Id}) deleted.");
+    [SlashCommand("slowmode")]
+    [Description("Modifies a channel's slowmode (how often users can send messages).")]
+    public async Task<IResult> ModifySlowmodeAsync(
+        [Description("The channel having its slowmode modified. Defaults to the current channel.")]
+        [ChannelTypes(ChannelType.Text, ChannelType.Voice, ChannelType.PrivateThread, ChannelType.PublicThread)]
+        [AuthorCanViewChannel]
+        [BotCanViewChannel]
+            IChannel? channel = null,
+        [Description("The duration between messages. Supply nothing to disable slowmode.")]
+            TimeSpan? duration = null)
+    {
+        channel ??= Bot.GetChannel(Context.GuildId, Context.ChannelId)!;
+
+        try
+        {
+            await Bot.ApiClient.ModifyChannelAsync(channel.Id, new ModifyChannelJsonRestRequestContent
+            {
+                RateLimitPerUser = duration.HasValue
+                    ? (int)duration.Value.TotalSeconds
+                    : 0
+            });
+
+            return Response(duration.HasValue
+                ? $"{Mention.Channel(channel.Id)}'s slowmode has been updated. Users will be able to send a message every " +
+                  $"{duration.Value.Humanize(int.MaxValue, minUnit: TimeUnit.Second)}."
+                : $"{Mention.Channel(channel.Id)}'s slowmode has been removed.");
+        }
+        catch (Exception ex)
+        {
+            return Response($"Failed to set the channel's slowmode. The below error may help?\n{Markdown.CodeBlock(ex.Message)}").AsEphemeral();
+        }
     }
 
     private LocalEmbed FormatChannelInfo(IChannel basicChannel)
@@ -330,8 +369,8 @@ public sealed class ChannelModule(EmojiService emojiService) : DiscordApplicatio
         if (channel is IMentionableEntity mentionable)
             embed.AddField("Mention", mentionable.Mention, true);
 
-        if (channel is ITopicChannel topicChannel)
-            embed.WithDescription(Markdown.Italics(topicChannel.Topic.Truncate(Discord.Limits.Message.Embed.MaxDescriptionLength - 5)));
+        if (channel is ITopicChannel { Topic: { } topic })
+            embed.WithDescription(Markdown.Italics(topic.Truncate(Discord.Limits.Message.Embed.MaxDescriptionLength - 5)));
 
         if (channel is ISlowmodeChannel slowmodeChannel)
             embed.AddField("Slowmode", slowmodeChannel.Slowmode == TimeSpan.Zero ? "(no slowmode)" : $"1 message every {slowmodeChannel.Slowmode.Humanize(int.MaxValue, maxUnit: TimeUnit.Hour)}", true);

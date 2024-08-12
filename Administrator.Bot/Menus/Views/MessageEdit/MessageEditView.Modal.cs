@@ -64,7 +64,7 @@ public abstract partial class MessageEditView
                 iconUrlInput.WithPrefilledValue(author.IconUrl.Value);
 
             if (author.Url.HasValue)
-                iconUrlInput.WithPrefilledValue(author.Url.Value);
+                urlInput.WithPrefilledValue(author.Url.Value);
         }
 
         return new Modal()
@@ -195,7 +195,7 @@ public abstract partial class MessageEditView
         inlineInput.WithPrefilledValue(field.IsInline.GetValueOrDefault().ToString());
 
         return new Modal()
-            .WithTitle($"Modify Field {_fieldIndex}")
+            .WithTitle($"Modify Field {_fieldIndex + 1}")
             .WithCustomId($"Embed:Modify:Field:{_embedIndex}:{_fieldIndex}:{Menu.MessageId}")
             .WithComponents(LocalComponent.Row(nameInput), LocalComponent.Row(valueInput), LocalComponent.Row(inlineInput));
     }

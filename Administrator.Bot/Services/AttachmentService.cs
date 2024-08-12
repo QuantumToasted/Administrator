@@ -85,5 +85,8 @@ public sealed class AttachmentService(HttpClient http) : IDisposable
         
         public static implicit operator LocalAttachment(Attachment attachment) 
             => LocalAttachment.Bytes(attachment.Stream.ToArray(), attachment.FileName);
+
+        public static implicit operator MemoryStream(Attachment attachment)
+            => attachment.Stream;
     }
 }

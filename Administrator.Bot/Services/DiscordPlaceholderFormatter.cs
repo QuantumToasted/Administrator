@@ -10,6 +10,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
+[ScopedService]
 public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
 {
     private static readonly Regex UserPlaceholderRegex =
@@ -21,13 +22,14 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
     private static readonly Regex RandomNumberRegex =
         new(@"{random(\d{1,10})-(\d{1,10})}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public async ValueTask<string> ReplacePlaceholdersAsync(string str, IDiscordGuildCommandContext? context)
+    public async ValueTask<string> ReplacePlaceholdersAsync(string str, IDiscordCommandContext? context)
     {
         if (context is null)
             return str;
 
-        await using var scope = context.Services.CreateAsyncScopeWithDatabase(out var db);
-        var xpService = context.Services.GetRequiredService<XpService>();
+        await using var scope = context.Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        var xpService = context.Bot.Services.GetRequiredService<XpService>();
+        var emojis = context.Bot.Services.GetRequiredService<EmojiService>();
 
         // Target - deprecated as custom text commands are no longer a thing
         /*
@@ -39,12 +41,12 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
         str = RandomNumberRegex.Replace(str, ReplaceRandomNumber);
 
         // User
-        str = str.Replace("{user.nick}", context.Author.GetDisplayName())
-            .Replace("{user.joined}", Markdown.Timestamp(context.Author.JoinedAt.GetValueOrNullable() ?? DateTimeOffset.UtcNow, Markdown.TimestampFormat.RelativeTime))
+        str = str.Replace("{user.nick}", (context.Author as IMember)?.GetDisplayName() ?? context.Author.Tag)
+            .Replace("{user.joined}", Markdown.Timestamp((context.Author as IMember)?.JoinedAt.GetValueOrNullable() ?? DateTimeOffset.UtcNow, Markdown.TimestampFormat.RelativeTime))
             .Replace("{user}", context.Author.Tag)
             .Replace("{user.tag}", context.Author.Tag)
             .Replace("{user.id}", context.Author.Id.ToString())
-            .Replace("{user.guildavatar}", context.Author.GetGuildAvatarUrl())
+            .Replace("{user.guildavatar}", (context.Author as IMember)?.GetGuildAvatarUrl())
             .Replace("{user.avatar}", context.Author.GetAvatarUrl())
             .Replace("{user.name}", context.Author.Name)
             .Replace("{user.mention}", context.Author.Mention)
@@ -53,25 +55,25 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
 
         if (UserPlaceholderRegex.IsMatch(str))
         {
-            var userXp = await db.GetOrCreateGlobalUserAsync(context.AuthorId);
+            var userXp = await db.Users.GetOrCreateAsync(context.AuthorId);
             str = str.Replace("{user.xp}", userXp.CurrentLevelXp.ToString())
                 .Replace("{user.level}", userXp.Level.ToString())
                 .Replace("{user.nextxp}", userXp.NextLevelXp.ToString())
                 .Replace("{user.tier}", userXp.Tier.ToString())
-                .Replace("{user.img}", xpService.GetLevelEmoji(userXp.Tier, userXp.Level).GetUrl());
+                .Replace("{user.img}", emojis.GetLevelEmoji(userXp.Tier, userXp.Level).GetUrl());
         }
 
-        if (GuildUserPlaceholderRegex.IsMatch(str))
+        if (GuildUserPlaceholderRegex.IsMatch(str) && context.GuildId.HasValue)
         {
-            var guildUserXp = await db.GetOrCreateGlobalUserAsync(context.AuthorId);
+            var guildUserXp = await db.Members.GetOrCreateAsync(context.GuildId.Value, context.AuthorId);
             str = str.Replace("{user.guildxp}", guildUserXp.CurrentLevelXp.ToString())
                 .Replace("{user.guildlevel}", guildUserXp.Level.ToString())
                 .Replace("{user.guildnextxp}", guildUserXp.NextLevelXp.ToString())
                 .Replace("{user.guildtier}", guildUserXp.Tier.ToString())
-                .Replace("{user.guildimg}", xpService.GetLevelEmoji(guildUserXp.Tier, guildUserXp.Level).GetUrl());
+                .Replace("{user.guildimg}", emojis.GetLevelEmoji(guildUserXp.Tier, guildUserXp.Level).GetUrl());
         }
 
-        if (context.Bot.GetChannel(context.GuildId, context.ChannelId) is { } channel)
+        if (context.Bot.TryGetAnyGuildChannel(context.ChannelId, out var channel))
         {
             str = str.Replace("{channel}", (channel as ITaggableEntity)?.Tag ?? string.Empty)
                 .Replace("{channel.tag}", (channel as ITaggableEntity)?.Tag ?? string.Empty)
@@ -82,7 +84,7 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
                 .Replace("{channel.mention}", channel.Mention, StringComparison.OrdinalIgnoreCase);
         }
 
-        if (context.Bot.GetGuild(context.GuildId) is { } guild)
+        if (context.GuildId.HasValue && context.Bot.GetGuild(context.GuildId.Value) is { } guild)
         {
             str = str.Replace("{guild}", guild.Name)
                 .Replace("{guild.id}", guild.Id.ToString())
@@ -109,5 +111,5 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
     }
     
     ValueTask<string> IPlaceholderFormatter.ReplacePlaceholdersAsync(string str, ICommandContext? context)
-        => ReplacePlaceholdersAsync(str, context as IDiscordGuildCommandContext);
+        => ReplacePlaceholdersAsync(str, context as IDiscordCommandContext);
 }

@@ -1,10 +1,31 @@
 ﻿using Administrator.Core;
+using Backpack.Net;
 using Disqord;
 
 namespace Administrator.Bot;
 
 public static partial class DiscordExtensions
 {
+    public static LocalEmbed WithQualityColor(this LocalEmbed embed, Quality quality)
+    {
+        return embed.WithColor(quality switch
+        {
+            Quality.Normal => Colors.Normal,
+            Quality.Genuine => Colors.Genuine,
+            Quality.Vintage => Colors.Vintage,
+            Quality.Unusual => Colors.Unusual,
+            Quality.Unique => Colors.Unique,
+            Quality.Community => Colors.Community,
+            Quality.Valve => Colors.Valve,
+            Quality.SelfMade => Colors.SelfMade,
+            Quality.Strange => Colors.Strange,
+            Quality.Haunted => Colors.Haunted,
+            Quality.Collectors => Colors.Collectors,
+            Quality.Decorated => Colors.Decorated,
+            _ => throw new ArgumentOutOfRangeException(nameof(quality), quality, null)
+        });
+    }
+    
     public static LocalEmbed WithNormalColor(this LocalEmbed embed)
         => embed.WithColor(Colors.Normal);
 

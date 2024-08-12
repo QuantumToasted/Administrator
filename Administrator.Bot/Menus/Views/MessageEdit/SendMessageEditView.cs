@@ -18,11 +18,13 @@ public sealed class SendMessageEditView : MessageEditView
     {
         var message = new LocalMessage {Content = Message.Content, Embeds = Message.Embeds};
         await Menu.Client.SendMessageAsync(_channelId, message);
+
+        await e.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse()
+            .WithContent("Message sent!")
+            .WithIsEphemeral((Message as LocalInteractionMessageResponse)?.IsEphemeral ?? false));
+        
         ClearComponents();
         await Menu.ApplyChangesAsync(e);
         Menu.Stop();
-
-        await e.Interaction.Followup().SendAsync(new LocalInteractionMessageResponse()
-            .WithContent("Message sent!"));
     }
 }

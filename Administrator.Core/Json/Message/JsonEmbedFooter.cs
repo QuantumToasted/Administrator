@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using System.Text.Json.Serialization;
+using Disqord;
 using Qmmands;
 using Qommon;
 
@@ -8,6 +9,7 @@ public sealed class JsonEmbedFooter
 {
     public string Text { get; init; } = null!;
 
+    [JsonPropertyName("icon")]
     public string? IconUrl { get; init; }
 
     public async ValueTask<LocalEmbedFooter> ToLocalFooterAsync(IPlaceholderFormatter formatter, ICommandContext? context = null)

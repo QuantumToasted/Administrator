@@ -1,16 +1,20 @@
 ﻿using Administrator.Core;
 using Disqord;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
 public sealed record Kick(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason)
-    : Punishment(GuildId, Target, Moderator, Reason), IStaticEntityTypeConfiguration<Kick>
+    : Punishment(GuildId, Target, Moderator, Reason), IKick
 {
-    //public override PunishmentType Type { get; init; } = PunishmentType.Kick;
-    
-    public static void ConfigureBuilder(EntityTypeBuilder<Kick> kick)
+    public override PunishmentType Type => PunishmentType.Kick;
+
+    private sealed class KickConfiguration : IEntityTypeConfiguration<Kick>
     {
-        kick.HasBaseType<Punishment>();
+        public void Configure(EntityTypeBuilder<Kick> kick)
+        {
+            kick.HasBaseType<Punishment>();
+        }
     }
 }
