@@ -39,3 +39,5 @@ config.json
 
 Administrator.Database.Migration/
 **/application-commands
+Administrator/Data
+Administrator/Logs
