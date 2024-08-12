@@ -38,3 +38,4 @@ config.json
 *.dll
 
 Administrator.Database.Migration/
+**/application-commands
