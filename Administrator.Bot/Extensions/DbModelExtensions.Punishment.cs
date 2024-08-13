@@ -623,7 +623,7 @@ public static partial class DbModelExtensions
             
             var builder = new StringBuilder("been given a warning ");
             if (warning.DemeritPoints > 0)
-                builder.Append($" worth {Markdown.Bold("demerit point".ToQuantity(warning.DemeritPoints))}");
+                builder.Append($" worth {Markdown.Bold("demerit point".ToQuantity(warning.DemeritPoints))} ");
 
             builder.Append($"in {bot.GetGuild(warning.GuildId)!.Name}");
 
