@@ -28,11 +28,13 @@ public sealed class LuaCommandContext(IDiscordApplicationGuildCommandContext con
 
     public LuaTable? Parameters { get; } = GenerateParameters(context, lua, library);
 
+    /*
     public void Reply(string text)
     {
         Guard.IsNotNullOrWhiteSpace(text);
         library.RunWait(ct => context.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse().WithContent(text), ct));
     }
+    */
 
     public void Reply(LuaTable msg)
     {
@@ -41,7 +43,22 @@ public sealed class LuaCommandContext(IDiscordApplicationGuildCommandContext con
         library.RunWait(ct => context.Interaction.RespondOrFollowupAsync(message, ct));
     }
 
-    private static LuaTable? GenerateParameters(IDiscordApplicationCommandContext context, Lua lua, DiscordLuaLibraryBase library)
+    /*
+    public void ReplyEphemeral(string text)
+    {
+        Guard.IsNotNullOrWhiteSpace(text);
+        library.RunWait(ct => context.Interaction.RespondOrFollowupAsync(new LocalInteractionMessageResponse().WithContent(text).WithIsEphemeral(), ct));
+    }
+    */
+
+    public void ReplyEphemeral(LuaTable msg)
+    {
+        Guard.IsNotNull(msg);
+        var message = DiscordLuaLibraryBase.ConvertMessage<LocalInteractionMessageResponse>(msg);
+        library.RunWait(ct => context.Interaction.RespondOrFollowupAsync(message.WithIsEphemeral(), ct));
+    }
+
+    private static LuaTable GenerateParameters(IDiscordApplicationCommandContext context, Lua lua, DiscordLuaLibraryBase library)
     {
         if (context.Interaction is ISlashCommandInteraction { Options: { Count: > 0 } rawOptions } interaction)
         {
@@ -85,7 +102,7 @@ public sealed class LuaCommandContext(IDiscordApplicationGuildCommandContext con
             }
         }
 
-        return null;
+        return lua.CreateTable();
         
         static IList<ISlashCommandInteractionOption> GetOptionsWithValues(IReadOnlyDictionary<string, ISlashCommandInteractionOption> options)
         {
