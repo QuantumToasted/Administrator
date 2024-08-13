@@ -19,6 +19,9 @@ public static partial class DiscordExtensions
         if (!string.IsNullOrWhiteSpace(member.Nick))
             return member.Nick;
 
+        if (!string.IsNullOrWhiteSpace(member.GlobalName))
+            return member.GlobalName;
+
         return member.Name;
     }
 }
