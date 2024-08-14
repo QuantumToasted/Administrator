@@ -1,4 +1,5 @@
-﻿using Administrator.Database;
+﻿using System.Text.RegularExpressions;
+using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
@@ -6,14 +7,17 @@ using Disqord.Rest;
 
 namespace Administrator.Bot;
 
-public sealed class AutoQuoteService : DiscordBotService
+public sealed partial class AutoQuoteService : DiscordBotService
 {
+    private static readonly Regex JumpLinkRegex = GenerateJumpLinkRegex();
+    
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
         if (e.GuildId is not { } guildId || string.IsNullOrWhiteSpace(e.Message.Content))
             return;
 
-        var match = Discord.MessageJumpLinkRegex.Match(e.Message.Content);
+        //var match = Discord.MessageJumpLinkRegex.Match(e.Message.Content);
+        var match = JumpLinkRegex.Match(e.Message.Content);
 
         // TODO: support multiple matches?
         if (!match.Success)
@@ -72,4 +76,7 @@ public sealed class AutoQuoteService : DiscordBotService
             _ = Bot.AddReactionsAsync(e.ChannelId, e.MessageId, "💬", "❌");
         }
     }
+
+    [GeneratedRegex(@"https?://(?:(ptb|canary)\.)?discord(?:app)?\.com/channels/(?<guild_id>([0-9]{15,21})|(@me))/(?<channel_id>[0-9]{15,21})/(?<message_id>[0-9]{15,21})/?", RegexOptions.Compiled)]
+    private static partial Regex GenerateJumpLinkRegex();
 }
