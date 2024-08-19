@@ -41,3 +41,4 @@ Administrator.Database.Migration/
 **/application-commands
 Administrator/Data
 Administrator/Logs
+OwnerModule.cs
