@@ -6,6 +6,7 @@ using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
 using Humanizer;
+using LinqToDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Qmmands;
@@ -24,6 +25,31 @@ public sealed class OwnerModule(SlashCommandMentionService mentions, AdminDbCont
         var config = bot.Services.GetRequiredService<IOptions<AdministratorBotConfiguration>>().Value;
         var guildId = config.OwnerModuleGuildId;
         module.Checks.Add(new RequireGuildAttribute(guildId));
+    }
+
+    [SlashCommand("fix-decay")]
+    public async Task<IResult> FixDemeritPointsAsync()
+    {
+        await Deferral();
+
+        var entries = await db.Members.Where(x => x.NextDemeritPointDecay != null)
+            .Select(member => new
+            {
+                Member = member,
+                Guild = db.Guilds.FirstOrDefault(x => x.GuildId == member.GuildId)
+            })
+            .ToListAsync();
+
+        foreach (var entry in entries)
+        {
+            if (entry.Guild?.DemeritPointsDecayInterval is not { } decayInterval)
+                continue;
+
+            entry.Member.NextDemeritPointDecay += decayInterval;
+        }
+
+        var count = await db.SaveChangesAsync();
+        return Response($"{count} warnings updated.");
     }
 
     [SlashCommand("generate-commandlist")]
@@ -110,7 +136,10 @@ public sealed class OwnerModule(SlashCommandMentionService mentions, AdminDbCont
     [Description("Lists all required bot permissions from all commands.")]
     public IResult ListPermissions()
     {
-        return Response(Bot.Commands.GetRequiredBotPermissions().Humanize(LetterCasing.Title));
+        var permissions = Bot.Commands.GetRequiredBotPermissions();
+        var extraRequiredPermissions = InitialJoinService.ExtraRequiredPermissions.Keys.Aggregate(Permissions.None, (curr, p) => curr | p);
+        permissions |= extraRequiredPermissions;
+        return Response(permissions.Humanize(LetterCasing.Title));
     }
 }
 #endif

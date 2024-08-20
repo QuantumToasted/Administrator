@@ -15,7 +15,7 @@ public sealed class LuaCommandService : DiscordBotService
     
     public Dictionary<Snowflake, IModule> LuaCommandModules { get; } = new();
 
-    public async Task ReloadLuaCommandsAsync(Snowflake guildId)
+    public async Task ReloadLuaCommandsAsync(Snowflake guildId, bool forceSync = true)
     {
         if (LuaCommandModules.Remove(guildId, out var module))
             Bot.Commands.RemoveModule(module);
@@ -30,7 +30,7 @@ public sealed class LuaCommandService : DiscordBotService
         LuaCommandModules[guildId] = module;
         Bot.Commands.AddModule(module);
 
-        _forceSync = true;
+        _forceSync = forceSync;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

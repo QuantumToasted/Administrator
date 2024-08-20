@@ -74,15 +74,15 @@ public static partial class DbModelExtensions
                 ? bot.GrantRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId, options)
                 : bot.RevokeRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId, options),
             Timeout timeout => bot.ModifyMemberAsync(punishment.GuildId, punishment.Target.Id, x => x.TimedOutUntil = timeout.ExpiresAt, options),
-            Warning warning => ApplyWarningAsync(warning, bot, member),
+            Warning => ApplyWarningAsync(bot, member),
             _ => throw new ArgumentOutOfRangeException(nameof(punishment))
         };
 
-        static Task ApplyWarningAsync(Warning warning, DiscordBotBase bot, Member member)
+        static Task ApplyWarningAsync(DiscordBotBase bot, Member member)
         {
             var decayService = bot.Services.GetRequiredService<DemeritPointDecayService>();
-            member.DemeritPoints += warning.DemeritPoints;
-            member.LastDemeritPointDecay = DateTimeOffset.UtcNow;
+            //member.DemeritPoints += warning.DemeritPoints;
+            member.NextDemeritPointDecay = DateTimeOffset.UtcNow;
             decayService.CancelCts();
             return Task.CompletedTask;
         }
@@ -105,8 +105,25 @@ public static partial class DbModelExtensions
             Timeout timeout => timeout.WasManuallyRevoked 
                 ? bot.ModifyMemberAsync(timeout.GuildId, timeout.Target.Id, x => x.TimedOutUntil = null)
                 : Task.CompletedTask,
+            Warning warning => RevokeWarningAsync(warning, bot),
             _ => throw new ArgumentOutOfRangeException(nameof(punishment))
         };
+
+        static Task RevokeWarningAsync(Warning warning, DiscordBotBase bot)
+        {
+            warning.DemeritPointsRemaining = 0;
+
+            if (warning.AdditionalPunishmentId.HasValue)
+            {
+                using var scope = bot.Services.CreateScope();
+                var punishments = scope.ServiceProvider.GetRequiredService<PunishmentService>();
+
+                return punishments.RevokePunishmentAsync(warning.GuildId, warning.AdditionalPunishmentId.Value, warning.Revoker!,
+                    $"Linked warning {warning} was revoked.", true);
+            }
+
+            return Task.CompletedTask;
+        }
     }
     
     public static async ValueTask<string> FormatCommandResponseStringAsync(this Punishment punishment, DiscordBotBase bot)
@@ -127,8 +144,10 @@ public static partial class DbModelExtensions
         if (punishment is Warning { AdditionalPunishmentId: { } additionalPunishmentId } warning)
         {
             await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
+            var currentDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(warning.GuildId, warning.Target.Id);
+            
             var automaticPunishment = await db.AutomaticPunishments
-                .Where(x => x.GuildId == punishment.GuildId && x.DemeritPoints >= warning.DemeritPointSnapshot)
+                .Where(x => x.GuildId == punishment.GuildId && x.DemeritPoints >= currentDemeritPoints)
                 .OrderBy(x => x.DemeritPoints)
                 .FirstAsync();
 
@@ -190,7 +209,7 @@ public static partial class DbModelExtensions
         var embed = new LocalEmbed()
             .WithColor(punishment.GetInitialEmbedColor())
             .WithTitle(punishment.FormatEmbedTitle())
-            .WithDescription(punishment.FormatLogEmbedDescription(bot))
+            .WithDescription(await punishment.FormatLogEmbedDescriptionAsync(bot))
             .AddField(punishment.FormatReasonField(bot, true))
             .WithTimestamp(punishment.CreatedAt);
 
@@ -224,7 +243,7 @@ public static partial class DbModelExtensions
         var embed = new LocalEmbed()
             .WithColor(GetInitialEmbedColor(punishment))
             .WithTitle(punishment.FormatEmbedTitle())
-            .WithDescription(punishment.FormatDmEmbedDescription(bot))
+            .WithDescription(await punishment.FormatDmEmbedDescriptionAsync(bot))
             .AddField(punishment.FormatReasonField(bot, false))
             .WithTimestamp(punishment.CreatedAt);
 
@@ -555,7 +574,7 @@ public static partial class DbModelExtensions
         };
     }
 
-    private static string FormatLogEmbedDescription(this Punishment punishment, DiscordBotBase bot)
+    private static async Task<string> FormatLogEmbedDescriptionAsync(this Punishment punishment, DiscordBotBase bot)
     {
         var builder = new StringBuilder($"{Markdown.Bold(punishment.Target.Name)} ({Markdown.Code(punishment.Target.Id)}) has ")
             .Append(punishment switch
@@ -565,22 +584,26 @@ public static partial class DbModelExtensions
                 Ban => "been banned",
                 TimedRole timedRole => FormatTimedRoleAction(timedRole, bot),
                 Timeout => "been given a timeout",
-                Warning warning => FormatWarningAction(warning),
+                Warning warning => await FormatWarningActionAsync(warning, bot),
                 _ => throw new ArgumentOutOfRangeException(nameof(punishment))
             })
             .Append('.');
 
         return builder.ToString();
 
-        static string FormatWarningAction(Warning warning)
+        static async Task<string> FormatWarningActionAsync(Warning warning, DiscordBotBase bot)
         {
             var builder = new StringBuilder("been given a warning");
 
             if (warning.DemeritPoints > 0)
                 builder.Append($" worth {Markdown.Bold("demerit point".ToQuantity(warning.DemeritPoints))}");
 
-            if (warning.DemeritPointSnapshot > 0)
-                builder.AppendNewline(".").Append($"They are now at {Markdown.Bold("demerit point".ToQuantity(warning.DemeritPointSnapshot))}");
+            await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
+
+            var currentDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(warning.GuildId, warning.Target.Id);
+
+            if (currentDemeritPoints > 0)
+                builder.AppendNewline(".").Append($"They are now at {Markdown.Bold("demerit point".ToQuantity(currentDemeritPoints))}");
 
             return builder.ToString();
         }
@@ -597,17 +620,17 @@ public static partial class DbModelExtensions
         }
     }
 
-    private static string FormatDmEmbedDescription(this Punishment punishment, DiscordBotBase bot)
+    private static async Task<string> FormatDmEmbedDescriptionAsync(this Punishment punishment, DiscordBotBase bot)
     {
         var builder = new StringBuilder("You have ")
             .Append(punishment switch
             {
                 Kick => "been kicked out of ",
-                Block block => $"been blocked from {Markdown.Code(bot.GetChannel(block.GuildId, block.ChannelId)!.Name)} in ",
+                Block block => $"been blocked from {Markdown.Code(bot.GetChannel(block.GuildId, block.ChannelId)?.Name ?? block.ChannelId.ToString())} in ",
                 Ban => "been banned from ",
                 TimedRole timedRole => FormatTimedRoleAction(timedRole, bot),
                 Timeout => "been given a timeout in ",
-                Warning warning => FormatWarningAction(warning, bot),
+                Warning warning => await FormatWarningActionAsync(warning, bot),
                 _ => throw new ArgumentOutOfRangeException(nameof(punishment))
             })
             .Append(punishment is not Warning ? Markdown.Bold(bot.GetGuild(punishment.GuildId)!.Name) : string.Empty)
@@ -615,7 +638,7 @@ public static partial class DbModelExtensions
 
         return builder.ToString();
         
-        static string FormatWarningAction(Warning warning, DiscordBotBase bot)
+        static async Task<string> FormatWarningActionAsync(Warning warning, DiscordBotBase bot)
         {
             //var builder = new StringBuilder($"been given a warning in {bot.GetGuild(warning.GuildId)!.Name}");
             // if (warning.DemeritPoints > 0)
@@ -626,9 +649,11 @@ public static partial class DbModelExtensions
                 builder.Append($" worth {Markdown.Bold("demerit point".ToQuantity(warning.DemeritPoints))} ");
 
             builder.Append($"in {bot.GetGuild(warning.GuildId)!.Name}");
+            await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-            if (warning.DemeritPointSnapshot > 0)
-                builder.AppendNewline(".").Append($"You are now at {Markdown.Bold("demerit point".ToQuantity(warning.DemeritPointSnapshot))}");
+            var currentDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(warning.GuildId, warning.Target.Id);
+            if (currentDemeritPoints > 0)
+                builder.AppendNewline(".").Append($"You are now at {Markdown.Bold("demerit point".ToQuantity(currentDemeritPoints))}");
 
             return builder.ToString();
         }
@@ -677,7 +702,7 @@ public static partial class DbModelExtensions
         var builder = new StringBuilder("You have ")
             .Append(punishment switch
             {
-                Block block => $"been unblocked from {Markdown.Code(bot.GetChannel(block.GuildId, block.ChannelId)!.Name)} in ",
+                Block block => $"been unblocked from {Markdown.Code(bot.GetChannel(block.GuildId, block.ChannelId)?.Name ?? block.ChannelId.ToString())} in ",
                 Ban => "been unbanned from ",
                 TimedRole timedRole => FormatTimedRoleAction(timedRole, bot),
                 Timeout => "had a timeout removed in ",

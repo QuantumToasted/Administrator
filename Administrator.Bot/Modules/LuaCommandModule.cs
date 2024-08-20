@@ -3,9 +3,12 @@ using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Commands.Application;
+using Disqord.Models;
 using Disqord.Utilities.Threading;
+using Humanizer;
 using Laylua;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Qmmands;
 using Qommon;
 
@@ -76,6 +79,7 @@ public sealed class LuaCommandModule(AdminDbContext db, AttachmentService attach
             var rawCommand = lua.Evaluate<LuaTable>(rawMetadata);
             Guard.IsNotNull(rawCommand);
             slashCommand = new LuaSlashCommand(rawCommand);
+            slashCommand.Validate();
             commandName = slashCommand.Name;
         }
         catch (Exception ex)
@@ -86,11 +90,25 @@ public sealed class LuaCommandModule(AdminDbContext db, AttachmentService attach
         }
 
         AdminPromptView view;
-        
+
+        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        var metadataChanged = true;
         if (await db.LuaCommands.FindAsync(Context.GuildId, commandName) is { } luaCommand)
         {
+            var metadataTable = luaCommand.ToMetadataTable(lua, Bot);
+            var currentSlashCommand = new LuaSlashCommand(metadataTable);
+
+            if (slashCommand.Equals(currentSlashCommand))
+            {
+                metadataChanged = false;
+            }
+            
             view = new AdminPromptView($"An existing command already exists with the name {Markdown.Code($"/{commandName}")}, and will be overwritten by this command.",
                     slashCommand.ToDisplayEmbed());
+        }
+        else if (await db.LuaCommands.CountAsync(x => x.GuildId == Context.GuildId) > guild.MaxLuaCommands)
+        {
+            return Response($"This server is only allowed to create up to {"lua command".ToQuantity(guild.MaxLuaCommands)}.");
         }
         else
         {
@@ -124,7 +142,14 @@ public sealed class LuaCommandModule(AdminDbContext db, AttachmentService attach
 
             db.LuaCommands.Add(command);
             await db.SaveChangesAsync();
-            await luaCommands.ReloadLuaCommandsAsync(Context.GuildId);
+
+            await luaCommands.ReloadLuaCommandsAsync(Context.GuildId, metadataChanged);
+            
+            if (!metadataChanged)
+            {
+                Logger.LogDebug("Lua slash command {Command} in guild {GuildId} detected no metadata changes, skipping reload.", slashCommand.Name,
+                    Context.GuildId.RawValue);
+            }
         }
 
         return default!;

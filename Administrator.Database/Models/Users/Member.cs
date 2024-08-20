@@ -21,9 +21,9 @@ public sealed record Member(Snowflake GuildId, Snowflake UserId) : UserBase(User
     
     public string Blurb { get; set; } = CreateInitialBlurb();
     
-    public DateTimeOffset? LastDemeritPointDecay { get; set; }
+    public DateTimeOffset? NextDemeritPointDecay { get; set; }
     
-    public int DemeritPoints { get; set; }
+    //public int DemeritPoints { get; set; }
     
 #pragma warning disable CS8618
     public List<Tag> Tags { get; init; }

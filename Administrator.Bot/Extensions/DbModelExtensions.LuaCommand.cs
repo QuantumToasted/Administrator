@@ -30,16 +30,21 @@ public static partial class DbModelExtensions
         [SlashCommandOptionType.Attachment] = typeof(IAttachment)
     };
 
+    public static LuaTable ToMetadataTable(this LuaCommand command, Lua lua, DiscordBotBase bot)
+    {
+        lua.OpenLibrary(new DiscordEnumLibrary(bot));
+        var raw = Encoding.Default.GetString(command.Metadata.GZipDecompress());
+        // metadata should always end with `return metadata`
+        var metadata = lua.Evaluate<LuaTable>(raw);
+        Guard.IsNotNull(metadata);
+        return metadata;
+    }
+
     public static void MutateApplicationModule(this LuaCommand luaCommand, DiscordBotBase bot, ApplicationModuleBuilder parentModule)
     {
         using var lua = new Lua();
-        lua.OpenLibrary(new DiscordEnumLibrary(bot));
-
-        var raw = Encoding.Default.GetString(luaCommand.Metadata.GZipDecompress());
-        // metadata should always end with `return metadata`
-        var table = lua.Evaluate<LuaTable>(raw);
-        Guard.IsNotNull(table);
-        var slashCommand = new LuaSlashCommand(table);
+        var metadataTable = luaCommand.ToMetadataTable(lua, bot);
+        var slashCommand = new LuaSlashCommand(metadataTable);
         
         Guard.IsNotNullOrWhiteSpace(luaCommand.Name);
         Guard.HasSizeLessThanOrEqualTo(luaCommand.Name, Discord.Limits.ApplicationCommand.MaxNameLength);

@@ -7,9 +7,17 @@ using Qommon.Threading;
 
 namespace Administrator.Database;
 
-public static class DbContextExtensions
+public static class DbSetExtensions
 {
     private static readonly ConcurrentDictionary<Type, SemaphoreSlim> Semaphores = new();
+
+    public static Task<int> GetCurrentDemeritPointsAsync(this DbSet<Punishment> set, Snowflake guildId, Snowflake targetId)
+    {
+        return set.AsNoTracking()
+            .OfType<Warning>()
+            .Where(x => x.GuildId == guildId && x.Target.Id == (ulong) targetId && x.RevokedAt != null)
+            .SumAsync(x => x.DemeritPointsRemaining);
+    }
 
     public static Task<LoggingChannel?> TryGetLoggingChannelAsync(this DbSet<LoggingChannel> set, Snowflake guildId, LogEventType type)
         => set.FirstOrDefaultAsync(x => x.GuildId == guildId && x.EventType == type);

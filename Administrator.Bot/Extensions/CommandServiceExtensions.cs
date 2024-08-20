@@ -20,7 +20,7 @@ public static class CommandServiceExtensions
             .SelectMany(x => x.Checks)
             .OfType<RequireBotPermissionsAttribute>()
             .Aggregate(Permissions.None, (p, attr) => p | attr.Permissions);
-
+        
         return modulePermissions | requiredBotPermissions;
     }
 }

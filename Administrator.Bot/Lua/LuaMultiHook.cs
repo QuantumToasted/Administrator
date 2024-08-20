@@ -10,7 +10,7 @@ namespace Administrator.Bot;
 // combines MaxInstructionCountLuaHook and CancellationTokenLuaHook
 public sealed unsafe class LuaMultiHook(CancellationToken cancellationToken) : LuaHook
 {
-    private const int MAX_INSTRUCTIONS = 5000000;
+    private const int MAX_INSTRUCTIONS = 10000;
 
     protected override LuaEventMask EventMask => LuaEventMask.Call | LuaEventMask.Return | LuaEventMask.Line | LuaEventMask.Count;
 

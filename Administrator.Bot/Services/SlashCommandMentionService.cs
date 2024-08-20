@@ -4,6 +4,7 @@ using Disqord;
 using Disqord.Bot.Commands.Application;
 using Disqord.Rest;
 using Microsoft.Extensions.Logging;
+using Qommon;
 
 namespace Administrator.Bot;
 
@@ -32,14 +33,16 @@ public sealed class SlashCommandMentionService : DiscordBotService
         path.Reverse();
         var joined = string.Join(' ', path);
         */
-        return GetMention(joined) ?? Markdown.Code($"/{joined}");
+        return GetMention(joined);
     }
 
-    public string? GetMention(string commandPath)
+    public string GetMention(string commandPath)
     {
-        if (string.IsNullOrWhiteSpace(commandPath) || !CommandMap.TryGetValue(commandPath, out var command))
-            return null;
-        
+        Guard.IsNotNullOrWhiteSpace(commandPath);
+
+        if (!CommandMap.TryGetValue(commandPath, out var command))
+            return Markdown.Code($"/{commandPath}");
+                
         return $"</{commandPath}:{command.Id}>";
     }
 

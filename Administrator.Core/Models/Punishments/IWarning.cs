@@ -1,8 +1,10 @@
 ﻿namespace Administrator.Core;
 
-public interface IWarning : IPunishment
+public interface IWarning : IRevocablePunishment
 {
     int DemeritPoints { get; }
+    
+    int DemeritPointsRemaining { get; }
     
     int? AdditionalPunishmentId { get; }
     

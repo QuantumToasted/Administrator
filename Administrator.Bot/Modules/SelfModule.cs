@@ -49,17 +49,20 @@ public sealed class SelfModule(AdminDbContext db, AutoCompleteService autoComple
             return Response("If not specifying a server ID, this command must be used in a server.").AsEphemeral(Context.GuildId.HasValue);
 
         var member = await db.Members.FirstOrDefaultAsync(x => x.GuildId == guildId.Value && x.UserId == Context.AuthorId);
-        if (member is null)
+        var currentDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(guildId.Value, Context.AuthorId);
+        
+        if (member is null || currentDemeritPoints == 0)
             return Response("You do not have any demerit points in that server, or a server with that ID doesn't exist.").AsEphemeral(Context.GuildId.HasValue);
         
         var responseBuilder = new StringBuilder()
-            .AppendNewline($"You are currently at {Markdown.Bold("demerit point".ToQuantity(member.DemeritPoints))} " +
+            .AppendNewline($"You are currently at {Markdown.Bold("demerit point".ToQuantity(currentDemeritPoints))} " +
                            $"in {Markdown.Bold(Bot.GetGuild(guildId.Value)!.Name)}.");
+        
         var guild = await db.Guilds.GetOrCreateAsync(guildId.Value);
         
-        if (member.LastDemeritPointDecay.HasValue && guild.DemeritPointsDecayInterval.HasValue)
+        if (member.NextDemeritPointDecay.HasValue && guild.DemeritPointsDecayInterval.HasValue)
         {
-            var nextDecay = member.LastDemeritPointDecay.Value + guild.DemeritPointsDecayInterval.Value;
+            var nextDecay = member.NextDemeritPointDecay.Value + guild.DemeritPointsDecayInterval.Value;
             responseBuilder.AppendNewline($"Your next decay will occur {Markdown.Timestamp(nextDecay, Markdown.TimestampFormat.RelativeTime)}.");
         }
         
@@ -80,7 +83,7 @@ public sealed class SelfModule(AdminDbContext db, AutoCompleteService autoComple
         var guild = Bot.GetGuild(guildId.Value)!;
         
         var pages = await PunishmentsModule.GeneratePagesAsync(db, Context, $"Your punishments in {guild.Name}", 
-            x => x.Target.Id == Context.AuthorId.RawValue, guildId);
+            x => x.Target.Id == (ulong) Context.AuthorId, guildId);
             
         return pages.Count switch
         {

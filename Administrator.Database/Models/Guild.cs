@@ -76,6 +76,8 @@ public sealed record Guild(Snowflake GuildId)
     public TimeSpan? DemeritPointsDecayInterval { get; set; } = TimeSpan.FromDays(21); // 3 weeks
     
     public Snowflake? JoinRoleId { get; set; }
+
+    public int MaxLuaCommands { get; set; } = 5;
     
 #pragma warning disable CS8618
     

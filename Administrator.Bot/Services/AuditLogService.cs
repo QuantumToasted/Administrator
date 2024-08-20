@@ -98,7 +98,7 @@ public sealed class AuditLogService : DiscordBotService
         {
             if (state.CancellationToken.IsCancellationRequested)
             {
-                waiter.SetCanceled(state.CancellationToken);
+                waiter.TrySetCanceled(state.CancellationToken);
                 continue;
             }
 
@@ -109,6 +109,24 @@ public sealed class AuditLogService : DiscordBotService
         }
         
         return ValueTask.CompletedTask;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await Bot.WaitUntilReadyAsync(stoppingToken);
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            foreach (var (waiter, state) in _waiters)
+            {
+                if (state.CancellationToken.IsCancellationRequested)
+                {
+                    waiter.TrySetCanceled(state.CancellationToken);
+                }
+            }
+            
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+        }
     }
 
     private record WaiterState(Snowflake GuildId, Func<IAuditLog, bool> Func, CancellationToken CancellationToken);

@@ -9,6 +9,8 @@ namespace Administrator.Bot;
 
 public sealed class DiscordPersistenceLibrary(IDiscordInteractionCommandContext context, CancellationToken cancellationToken) : DiscordLuaLibraryBase(cancellationToken)
 {
+    private const int MAX_PERSISTENCE_LENGTH = 1_000_000;
+    
     public override string Name => "persistence";
     private Lazy<string?>? _persistence;
     
@@ -41,6 +43,9 @@ public sealed class DiscordPersistenceLibrary(IDiscordInteractionCommandContext 
 
     public bool SetPersistence(string value)
     {
+        if (value.Length > MAX_PERSISTENCE_LENGTH)
+            throw new InvalidOperationException($"Persistent data string cannot exceed {MAX_PERSISTENCE_LENGTH} characters.");
+        
         return RunWait(async ct =>
         {
             try

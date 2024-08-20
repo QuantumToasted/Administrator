@@ -23,7 +23,7 @@ public sealed class PunishmentsModule(AdminDbContext db, PunishmentService punis
                 IUser user)
         {
             var pages = await GeneratePagesAsync(db, Context, $"Punishments for {user.Tag}", 
-                x => x.Target.Id == user.Id.RawValue);
+                x => x.Target.Id == (ulong) user.Id);
             
             return pages.Count switch
             {

@@ -13,7 +13,7 @@ namespace Administrator.Bot;
 
 public sealed class InitialJoinService(SlashCommandMentionService mention, IOptions<AdministratorHelpConfiguration> options) : DiscordBotService
 {
-    private static readonly IReadOnlyDictionary<Permissions, string> ExtraRequiredPermissions = new Dictionary<Permissions, string>
+    public static readonly IReadOnlyDictionary<Permissions, string> ExtraRequiredPermissions = new Dictionary<Permissions, string>
     {
         [Permissions.ManageGuild] = "Required for the bot to exempt server invites from the invite whitelist.",
         [Permissions.ViewAuditLog] = "Required for the automatic punishment detection feature to function."

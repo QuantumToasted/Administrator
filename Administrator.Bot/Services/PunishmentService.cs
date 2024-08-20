@@ -113,11 +113,9 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
     public async Task<Result<Warning>> WarnAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? demeritPoints,/* bool decayDemeritPoints,*/ IAttachment? attachment)
     {
         var guild = await db.Guilds.GetOrCreateAsync(guildId);
-        var member = await db.Members.GetOrCreateAsync(guildId, target.Id);
         demeritPoints ??= guild.DefaultWarningDemeritPoints;
         
-        var warning = new Warning(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, 
-            demeritPoints.Value, member.DemeritPoints + demeritPoints.Value/*, decayDemeritPoints*/);
+        var warning = new Warning(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, demeritPoints.Value);
         return await ProcessPunishmentAsync(warning, attachment);
     }
 
@@ -221,6 +219,10 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
 
         if (punishment is Timeout timeout)
             timeout.WasManuallyRevoked = manuallyRevoked;
+        
+        punishment.RevokedAt = DateTimeOffset.UtcNow;
+        punishment.RevocationReason = reason;
+        punishment.Revoker = UserSnapshot.FromUser(revoker);
 
         try
         {
@@ -236,10 +238,6 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             return $"This {punishment.GetType().Name.Humanize(LetterCasing.LowerCase)} was unable to be revoked." +
                    "The following text may be able to help?\n" + Markdown.CodeBlock(ex.Message);
         }
-
-        punishment.RevokedAt = DateTimeOffset.UtcNow;
-        punishment.RevocationReason = reason;
-        punishment.Revoker = UserSnapshot.FromUser(revoker);
 
         if (punishment.AppealChannelId.HasValue)
         {
@@ -291,7 +289,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             if (targetPunishments.OfType<RevocablePunishment>().All(x => x.RevokedAt.HasValue))
             {
                 var member = await db.Members.GetOrCreateAsync(guildId, punishment.Target.Id);
-                member.LastDemeritPointDecay = DateTimeOffset.UtcNow;
+                member.NextDemeritPointDecay = DateTimeOffset.UtcNow;
             }
         }
 
@@ -336,7 +334,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         }
         
         var member = await db.Members.GetOrCreateAsync(punishment.GuildId, punishment.Target.Id);
-        var oldDemeritPoints = member.DemeritPoints;
+        var oldDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(punishment.GuildId, punishment.Target.Id);
 
         try
         {
@@ -362,8 +360,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
 
         if (punishment is Warning warning)
         {
-            var newDemeritPoints = member.DemeritPoints;
-
+            var newDemeritPoints = oldDemeritPoints + warning.DemeritPoints;
             var automaticPunishments = await db.AutomaticPunishments.Where(x => x.GuildId == punishment.GuildId)
                 //.Where(x => x.DemeritPoints >= newDemeritPoints && x.DemeritPoints >= oldDemeritPoints)
                 .OrderBy(x => x.DemeritPoints)
@@ -395,9 +392,9 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             }
         }
         
-        if (punishment is Ban { ExpiresAt: var newDemeritPointDecayStart } && newDemeritPointDecayStart > member.LastDemeritPointDecay)
+        if (punishment is Ban { ExpiresAt: var newDemeritPointDecayStart } && newDemeritPointDecayStart > member.NextDemeritPointDecay)
         {
-            member.LastDemeritPointDecay = newDemeritPointDecayStart;
+            member.NextDemeritPointDecay = newDemeritPointDecayStart;
         }
         
         await db.SaveChangesAsync();

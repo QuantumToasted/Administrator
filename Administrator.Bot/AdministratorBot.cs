@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;
@@ -38,7 +39,7 @@ public sealed class AdministratorBot(IOptions<DiscordBotConfiguration> options, 
         return baseResult;
     }
 #endif
-    
+
     protected override IEnumerable<Assembly> GetModuleAssemblies()
         => [GetType().Assembly];
 

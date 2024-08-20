@@ -9,7 +9,7 @@ using Qmmands;
 using Timeout = Administrator.Database.Timeout;
 
 namespace Administrator.Bot;
-
+/*
 [SlashGroup("demerit-points")]
 [RequireInitialAuthorPermissions(Permissions.ModerateMembers)]
 public sealed class DemeritPointsModule(AdminDbContext db, PunishmentService punishments, DemeritPointDecayService decayService) : DiscordApplicationGuildModuleBase
@@ -125,3 +125,4 @@ public sealed class DemeritPointsModule(AdminDbContext db, PunishmentService pun
         }
     }
 }
+*/

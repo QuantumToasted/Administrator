@@ -259,6 +259,95 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
         }
     }
 
+    protected override async ValueTask OnMessagesDeleted(MessagesDeletedEventArgs e)
+    {
+        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        if (await db.LoggingChannels.FindAsync(e.GuildId, LogEventType.MessageDelete) is not { } logChannel)
+            return;
+
+        _ = Task.Run(async () =>
+        {
+
+            var contentBuilder = new StringBuilder();
+
+            IAuditLog? log = null;
+            var banLogSearchComplete = false;
+            
+            foreach (var messageId in e.MessageIds.Order())
+            {
+                contentBuilder.Append($"Message {messageId}: ");
+
+                if (!e.Messages.TryGetValue(messageId, out var cachedMessage))
+                {
+                    contentBuilder.AppendNewline("NO DATA").AppendNewline();
+                }
+                else
+                {
+                    if (!banLogSearchComplete)
+                    {
+                        log = await auditLogs.WaitForAuditLogAsync<IMemberBannedAuditLog>(e.GuildId, x => x.TargetId == cachedMessage.Author.Id,
+                            TimeSpan.FromSeconds(2));
+                        banLogSearchComplete = true;
+                    }
+                    
+                    contentBuilder.AppendNewline()
+                        .Append($"{cachedMessage.Author.Tag} ({cachedMessage.Author.Id}): ");
+
+                    contentBuilder.AppendNewline(!string.IsNullOrWhiteSpace(cachedMessage.Content)
+                            ? cachedMessage.Content
+                            : "NO CONTENT");
+
+                    foreach (var attachment in cachedMessage.Attachments)
+                    {
+                        contentBuilder.AppendNewline(attachment.Url);
+                    }
+                }
+
+                contentBuilder.AppendNewline();
+            }
+            
+            var message = new LocalMessage()
+                .AddAttachment(LocalAttachment.Bytes(Encoding.Default.GetBytes(contentBuilder.ToString()), $"BulkDelete_{Guid.NewGuid()}.txt"));
+
+            var embed = new LocalEmbed()
+                .WithCollectorsColor()
+                .WithTitle("Messages bulk deleted")
+                .AddField("Channel", $"{Mention.Channel(e.ChannelId)}\n({Markdown.Code(e.ChannelId)})")
+                .AddField("Message count", e.MessageIds.Count)
+                .WithTimestamp(DateTimeOffset.UtcNow);
+
+            log ??= await auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(e.GuildId,
+                x => x.Id >= e.MessageIds[0] && x.ChannelId == e.ChannelId && x.Actor is not null && x.Count == e.MessageIds.Count,
+                TimeSpan.FromSeconds(2));
+
+            if (log is not null && (log.Actor ?? Bot.GetUser(log.ActorId!.Value)) is { } actor)
+            {
+                embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actor.Id)})");
+            }
+
+            /*
+            if (auditLogs.GetAuditLog<IMessagesDeletedAuditLog>(guildId,
+                    x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x.Count == 1) is { ActorId: { } actorId } log &&
+                (log.Actor ?? Bot.GetUser(actorId)) is { } actor)
+            {
+                embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actorId)})");
+            }
+            */
+
+            message.AddEmbed(embed);
+
+            try
+            {
+                await Bot.SendMessageAsync(logChannel.ChannelId, message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Failed to log a bulk message deletion to channel {ChannelId} in guild {GuildId}.",
+                    e.ChannelId.RawValue, e.GuildId.RawValue);
+            }
+        });
+    }
+
     protected override ValueTask OnMemberJoined(MemberJoinedEventArgs e)
     {
         _memberJoinQueues.GetOrAdd(e.GuildId, _ => new ConcurrentQueue<IMember>()).Enqueue(e.Member);

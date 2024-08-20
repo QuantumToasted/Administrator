@@ -4,6 +4,7 @@ using Administrator.Core;
 using Administrator.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Administrator.Database.Migrations
 {
     [DbContext(typeof(AdminDbContext))]
-    partial class AdminDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240816161947_Guild_MaxLuaCommands")]
+    partial class Guild_MaxLuaCommands
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -410,6 +413,14 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("blurb");
 
+                    b.Property<int>("DemeritPoints")
+                        .HasColumnType("integer")
+                        .HasColumnName("demerit_points");
+
+                    b.Property<DateTimeOffset?>("LastDemeritPointDecay")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_demerit_point_decay");
+
                     b.Property<DateTimeOffset>("LastLevelUp")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_level_up");
@@ -417,10 +428,6 @@ namespace Administrator.Database.Migrations
                     b.Property<DateTimeOffset>("LastXpGain")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_xp_gain");
-
-                    b.Property<DateTimeOffset?>("NextDemeritPointDecay")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("next_demerit_point_decay");
 
                     b.Property<int>("TotalXp")
                         .HasColumnType("integer")
@@ -781,6 +788,30 @@ namespace Administrator.Database.Migrations
                     b.ToTable("punishments", (string)null);
                 });
 
+            modelBuilder.Entity("Administrator.Database.Warning", b =>
+                {
+                    b.HasBaseType("Administrator.Database.Punishment");
+
+                    b.Property<int?>("AdditionalPunishmentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("additional_punishment_id");
+
+                    b.Property<int>("DemeritPointSnapshot")
+                        .HasColumnType("integer")
+                        .HasColumnName("demerit_point_snapshot");
+
+                    b.Property<int>("DemeritPoints")
+                        .HasColumnType("integer")
+                        .HasColumnName("demerit_points");
+
+                    b.HasIndex("AdditionalPunishmentId")
+                        .HasDatabaseName("ix_punishments_additional_punishment_id");
+
+                    b.ToTable("punishments", (string)null);
+
+                    b.HasDiscriminator().HasValue(6);
+                });
+
             modelBuilder.Entity("Administrator.Database.Ban", b =>
                 {
                     b.HasBaseType("Administrator.Database.RevocablePunishment");
@@ -871,30 +902,6 @@ namespace Administrator.Database.Migrations
                         });
 
                     b.HasDiscriminator().HasValue(5);
-                });
-
-            modelBuilder.Entity("Administrator.Database.Warning", b =>
-                {
-                    b.HasBaseType("Administrator.Database.RevocablePunishment");
-
-                    b.Property<int?>("AdditionalPunishmentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("additional_punishment_id");
-
-                    b.Property<int>("DemeritPoints")
-                        .HasColumnType("integer")
-                        .HasColumnName("demerit_points");
-
-                    b.Property<int>("DemeritPointsRemaining")
-                        .HasColumnType("integer")
-                        .HasColumnName("demerit_points_remaining");
-
-                    b.HasIndex("AdditionalPunishmentId")
-                        .HasDatabaseName("ix_punishments_additional_punishment_id");
-
-                    b.ToTable("punishments", (string)null);
-
-                    b.HasDiscriminator().HasValue(6);
                 });
 
             modelBuilder.Entity("Administrator.Database.AutomaticPunishment", b =>
