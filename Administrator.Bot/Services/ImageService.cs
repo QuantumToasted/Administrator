@@ -277,7 +277,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                 {
                     const int leftX = 77 * SCALE;
                     const int topY = 279 * SCALE;
-                    var rightX = (356d * ((double) user.CurrentLevelXp / user.NextLevelXp) + 77) * SCALE;
+                    var rightX = (356d * ((double) member.CurrentLevelXp / member.NextLevelXp) + 77) * SCALE;
                     const int bottomY = 288 * SCALE;
                     
                     background.Draw(new Drawables()
