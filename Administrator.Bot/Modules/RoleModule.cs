@@ -466,7 +466,7 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
             .WithName($"Members ({membersWithRole.Count})");
 
         var memberListBuilder = new StringBuilder()
-            .AppendJoinTruncated(", ", membersWithRole.Select(x => x.Tag),
+            .AppendJoinTruncated(", ", membersWithRole.Select(x => Markdown.Escape(x.Tag)),
                 Discord.Limits.Message.Embed.Field.MaxValueLength);
         /*
         foreach (var member in membersWithRole)
@@ -482,7 +482,7 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
         }
         */
 
-        memberListField.WithValue(memberListBuilder.ToString().TrimEnd(' ', ','));
+        memberListField.WithValue(memberListBuilder.ToString()/*.TrimEnd(' ', ',')*/);
         embed.AddField(memberListField);
 
         return embed;
