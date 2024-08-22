@@ -20,7 +20,7 @@ public static class StringBuilderExtensions
             // if length is too long we need to ignore the current value of i
             var remainderLine = remainderFormatter(list.Count - i - 1);
 
-            if (formatted!.Length + separator.Length + remainderLine.Length >= length)
+            if (sb.Length + formatted!.Length + separator.Length + remainderLine.Length >= length)
             {
                 return sb.Append(separator).Append(remainderLine);
             }
