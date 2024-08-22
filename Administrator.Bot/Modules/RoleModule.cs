@@ -468,21 +468,8 @@ public sealed class RoleModule(AttachmentService attachmentService) : DiscordApp
         var memberListBuilder = new StringBuilder()
             .AppendJoinTruncated(", ", membersWithRole.Select(x => Markdown.Escape(x.Tag)),
                 Discord.Limits.Message.Embed.Field.MaxValueLength);
-        /*
-        foreach (var member in membersWithRole)
-        {
-            var memberStr = member.Tag;
-            if (memberListBuilder.Length + memberStr.Length >= Discord.Limits.Message.Embed.Field.MaxValueLength - 3)
-            {
-                memberListBuilder.Append('…');
-                break;
-            }
 
-            memberListBuilder.Append($"{memberStr}, ");
-        }
-        */
-
-        memberListField.WithValue(memberListBuilder.ToString()/*.TrimEnd(' ', ',')*/);
+        memberListField.WithValue(memberListBuilder.ToString());
         embed.AddField(memberListField);
 
         return embed;
