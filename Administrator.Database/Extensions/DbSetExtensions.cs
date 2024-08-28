@@ -15,7 +15,7 @@ public static class DbSetExtensions
     {
         return set.AsNoTracking()
             .OfType<Warning>()
-            .Where(x => x.GuildId == guildId && x.Target.Id == (ulong) targetId && x.RevokedAt != null)
+            .Where(x => x.GuildId == guildId && x.Target.Id == (ulong) targetId && x.DemeritPoints > 0)
             .SumAsync(x => x.DemeritPointsRemaining);
     }
 

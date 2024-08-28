@@ -1,8 +1,6 @@
 ﻿using Administrator.Core;
 using Backpack.Net;
-using Disqord;
 using Humanizer;
-using Qmmands;
 
 namespace Administrator.Bot.AutoComplete;
 

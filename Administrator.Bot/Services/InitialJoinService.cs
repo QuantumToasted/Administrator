@@ -6,7 +6,6 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Administrator.Bot;

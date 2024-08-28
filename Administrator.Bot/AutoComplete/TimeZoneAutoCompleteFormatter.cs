@@ -1,5 +1,4 @@
 ﻿using Administrator.Core;
-using Disqord;
 
 namespace Administrator.Bot.AutoComplete;
 

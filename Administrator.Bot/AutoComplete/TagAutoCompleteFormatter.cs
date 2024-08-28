@@ -1,6 +1,5 @@
 ﻿using Administrator.Core;
 using Administrator.Database;
-using Disqord;
 
 namespace Administrator.Bot.AutoComplete;
 

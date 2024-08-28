@@ -1,7 +1,5 @@
 ﻿using Administrator.Core;
 using Disqord;
-using Disqord.Bot;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
 

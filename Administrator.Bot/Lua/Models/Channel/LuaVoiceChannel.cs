@@ -1,6 +1,5 @@
 ﻿using Disqord;
 using Disqord.Rest;
-using Humanizer;
 using Laylua;
 
 namespace Administrator.Bot;

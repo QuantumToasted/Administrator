@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;
@@ -7,7 +6,6 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;

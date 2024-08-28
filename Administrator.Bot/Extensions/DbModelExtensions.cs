@@ -6,7 +6,6 @@ using Disqord.Bot;
 using Disqord.Rest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Qommon;
 
 namespace Administrator.Bot;
 

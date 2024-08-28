@@ -1,7 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Administrator.Database;
-using Disqord;
 using Qommon;
 
 namespace Administrator.Bot;

@@ -4,7 +4,6 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Laylua;
-using Microsoft.Extensions.DependencyInjection;
 using Qommon;
 
 namespace Administrator.Bot;

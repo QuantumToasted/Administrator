@@ -85,7 +85,7 @@ var host = new HostBuilder()
         var dataSource = new NpgsqlDataSourceBuilder(dbConfiguration.ConnectionString).EnableDynamicJson().Build();
         services.AddDbContext<AdminDbContext>(builder =>
         {
-            builder.UseNpgsql(dataSource).UseSnakeCaseNamingConvention().UseLinqToDB();
+            builder.UseNpgsql(dataSource, x => x.CommandTimeout(240)).UseSnakeCaseNamingConvention().UseLinqToDB();
         });
         
         services.AddControllers();

@@ -1,5 +1,4 @@
 ﻿using Disqord;
-using Humanizer;
 
 namespace Administrator.Bot;
 

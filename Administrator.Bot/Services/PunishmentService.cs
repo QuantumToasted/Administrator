@@ -235,7 +235,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             logger.LogError(ex, "Unable to revoke {Type} (#{Id}) from user {UserId} in guild {GuildId}.",
                 punishment.GetType().Name, punishment.Id, punishment.Target.Id, punishment.GuildId.RawValue);
 
-            return $"This {punishment.GetType().Name.Humanize(LetterCasing.LowerCase)} was unable to be revoked." +
+            return $"This {punishment.GetType().Name.Humanize(LetterCasing.LowerCase)} was unable to be revoked. " +
                    "The following text may be able to help?\n" + Markdown.CodeBlock(ex.Message);
         }
 
@@ -285,11 +285,13 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
                 .Where(x => x.Target.Id == punishment.Target.Id && x.Id != punishmentId && x.GuildId == guildId)
                 .ToListAsync();
 
+            var guild = await db.Guilds.GetOrCreateAsync(punishment.GuildId);
+
             // only reset their demerit point decay if they don't have any other active punishments
             if (targetPunishments.OfType<RevocablePunishment>().All(x => x.RevokedAt.HasValue))
             {
                 var member = await db.Members.GetOrCreateAsync(guildId, punishment.Target.Id);
-                member.NextDemeritPointDecay = DateTimeOffset.UtcNow;
+                member.NextDemeritPointDecay = punishment.RevokedAt!.Value + guild.DemeritPointsDecayInterval;
             }
         }
 
@@ -321,6 +323,8 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             .Collection(static x => x.LoggingChannels)
             .LoadAsync();
 
+        var oldDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(punishment.GuildId, punishment.Target.Id);
+
         db.Punishments.Add(punishment);
         await db.SaveChangesAsync();
         
@@ -334,7 +338,6 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         }
         
         var member = await db.Members.GetOrCreateAsync(punishment.GuildId, punishment.Target.Id);
-        var oldDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(punishment.GuildId, punishment.Target.Id);
 
         try
         {
@@ -394,7 +397,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         
         if (punishment is Ban { ExpiresAt: var newDemeritPointDecayStart } && newDemeritPointDecayStart > member.NextDemeritPointDecay)
         {
-            member.NextDemeritPointDecay = newDemeritPointDecayStart;
+            member.NextDemeritPointDecay = newDemeritPointDecayStart + guild.DemeritPointsDecayInterval;
         }
         
         await db.SaveChangesAsync();

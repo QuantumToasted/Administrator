@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Administrator.Core;
 using Disqord;
-using Microsoft.AspNetCore.Http;
 
 namespace Administrator.Api;
 

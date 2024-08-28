@@ -1,10 +1,8 @@
 ﻿using System.Text;
 using Administrator.Core;
 using Administrator.Database;
-using Disqord;
 using Humanizer;
 using Humanizer.Localisation;
-using Qmmands;
 
 namespace Administrator.Bot.AutoComplete;
 

@@ -1,11 +1,8 @@
 ﻿using System.Text;
 using Administrator.Core;
 using Administrator.Database;
-using Disqord;
-using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Gateway;
-using Qmmands;
 
 namespace Administrator.Bot.AutoComplete;
 

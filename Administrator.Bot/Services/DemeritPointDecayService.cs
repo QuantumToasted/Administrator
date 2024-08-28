@@ -1,4 +1,6 @@
-﻿using Administrator.Database;
+﻿using System.Collections.Concurrent;
+using Administrator.Database;
+using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Utilities.Threading;
 using Microsoft.EntityFrameworkCore;
@@ -24,47 +26,100 @@ public sealed class DemeritPointDecayService : DiscordBotService
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-            await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-            
-            var now = DateTimeOffset.UtcNow;
 
-            var entries = await db.Members.Where(x => x.NextDemeritPointDecay > now)
-                .Select(member => new
-                {
-                    Member = member,
-                    EligibleWarnings = db.Punishments
-                        .Include(x => x.Guild)
-                        .OfType<Warning>()
-                        .Where(x => x.GuildId == member.GuildId && x.Target.Id == (ulong) member.UserId)
-                        .Where(x => x.DemeritPointsRemaining > 0 && x.RevokedAt != null)
-                        .OrderByDescending(x => x.Id)
-                        .ToList()
-                })
-                .ToListAsync(stoppingToken);
-
-            foreach (var entry in entries)
+            try
             {
-                if (entry.EligibleWarnings.FirstOrDefault() is not { Guild: var guild } warning)
-                {
-                    entry.Member.NextDemeritPointDecay = null;
-                }
-                else
-                {
-                    warning.DemeritPointsRemaining -= 1;
-                    
-                    if (entry.EligibleWarnings.Sum(x => x.DemeritPointsRemaining) == 1) // 1 -> 0, set to null
+                await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+
+                var now = DateTimeOffset.UtcNow;
+                var rawEntries = await db.Members.Where(x => x.NextDemeritPointDecay < now)
+                    .Select(member => new
                     {
+                        Member = member,
+                        Punishments = db.Punishments
+                            .Where(x => x.GuildId == member.GuildId && x.Target.Id == (ulong)member.UserId)
+                            .OrderByDescending(x => x.Id)
+                            .ToList()
+                    })
+                    //.Where(x => x.Punishments.Count > 0)
+                    .ToListAsync(stoppingToken);
+
+                /*
+                var punishments = await db.Punishments.ToListAsync(stoppingToken);
+                var members = await db.Members.Where(x => x.NextDemeritPointDecay < now)
+                    //.Where(x => db.Punishments.Count(y => y.GuildId == x.GuildId && y.Target.Id == (ulong) x.UserId) > 0)
+                    .ToListAsync(stoppingToken);
+
+                var rawEntries = members.Select(member => new
+                    {
+                        Member = member,
+                        Punishments = punishments
+                            .Where(x => x.GuildId == member.GuildId && x.Target.Id == member.UserId)
+                            .OrderByDescending(x => x.Id)
+                            .ToList()
+                    })
+                    .Where(x => x.Punishments.Count > 0)
+                    .ToList();
+                */
+
+                 var entries = rawEntries.Select(entry => new
+                    {
+                        entry.Member,
+                        EligibleWarnings = entry.Punishments.OfType<Warning>()
+                            .Where(x => x.DemeritPointsRemaining > 0)
+                            .OrderByDescending(x => x.Id),
+                        ActiveBan = entry.Punishments.OfType<Ban>()
+                            .OrderByDescending(x => x.Id)
+                            .FirstOrDefault(x => x.RevokedAt == null)
+                    })
+                    .Where(x => x.ActiveBan == null)
+                    .ToList();
+
+                var guildCache = new Dictionary<Snowflake, Guild>();
+                foreach (var entry in entries)
+                {
+                    if (!guildCache.TryGetValue(entry.Member.GuildId, out var guild))
+                    {
+                        guild = guildCache[entry.Member.GuildId] = await db.Guilds.GetOrCreateAsync(entry.Member.GuildId);
+                    }
+
+                    if (entry.EligibleWarnings.FirstOrDefault() is not { } warning)
+                    {
+                        Logger.LogDebug("Setting user {UserId} in guild {GuildId}'s DP decay to null because they don't have any eligible warnings.",
+                            entry.Member.UserId.RawValue, entry.Member.GuildId.RawValue);
                         entry.Member.NextDemeritPointDecay = null;
                     }
                     else
                     {
-                        entry.Member.NextDemeritPointDecay += guild!.DemeritPointsDecayInterval!.Value;
+                        warning.DemeritPointsRemaining -= 1;
+
+                        if (entry.EligibleWarnings.Sum(x => x.DemeritPointsRemaining) == 0) // 1 -> 0, set to null
+                        {
+                            Logger.LogDebug("Setting user {UserId} in guild {GuildId}'s DP decay to null because they are decaying from 1 -> 0 DPs.",
+                                entry.Member.UserId.RawValue, entry.Member.GuildId.RawValue);
+                            entry.Member.NextDemeritPointDecay = null;
+                        }
+                        else
+                        {
+                            var newValue = entry.Member.NextDemeritPointDecay + guild.DemeritPointsDecayInterval!.Value;
+                            Logger.LogDebug("Setting user {UserId} in guild {GuildId}'s DP decay to {Value}.", entry.Member.UserId.RawValue, entry.Member.GuildId.RawValue, newValue);
+                            //entry.Member.NextDemeritPointDecay += guild.DemeritPointsDecayInterval!.Value;
+                            entry.Member.NextDemeritPointDecay = newValue;
+                        }
                     }
                 }
-            }
 
-            var count = await db.SaveChangesAsync(stoppingToken);
-            Logger.LogDebug("Decayed {Count} active warning demerit points.", count);
+                var count = await db.SaveChangesAsync(stoppingToken);
+                if (count > 0)
+                {
+                    // count / 2 because 2 rows are updated
+                    Logger.LogDebug("Decayed {Count} active warning demerit points.", count / 2);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Failed to decay active warning demerit points.");
+            }
         }
     }
 #endif

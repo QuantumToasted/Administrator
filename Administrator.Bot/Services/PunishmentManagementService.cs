@@ -82,7 +82,7 @@ public sealed class PunishmentManagementService : DiscordBotService
             .ToListAsync();
             
         var punishmentsToApply = punishments.OfType<RevocablePunishment>()
-            .Where(x => !x.RevokedAt.HasValue && x is not Ban)
+            .Where(x => !x.RevokedAt.HasValue && x is not Ban or Warning)
             .ToList();
 
         if (punishmentsToApply.Count == 0)
