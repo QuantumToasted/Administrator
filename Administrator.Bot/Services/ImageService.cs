@@ -347,7 +347,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                         .FillColor(MagickColors.WhiteSmoke)
                         //.Gravity(Gravity.North)
                         .TextAlignment(TextAlignment.Center)
-                        .Text(originX, originY, $"Guild rank #{guildPosition}")); // 253
+                        .Text(originX, originY, $"Server rank #{guildPosition}")); // 253
                 }
                 
                 // Write blurb
