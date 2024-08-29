@@ -96,7 +96,7 @@ public sealed class PunishmentExpiryService : DiscordBotService
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, "Failed to revoke expiring {Name} {Id}.", expiringPunishment.GetType().Name, expiringPunishment.Punishment.Id);
+                Logger.LogWarning(ex, "Failed to revoke expiring {Name} {Id}.", expiringPunishment.Punishment.GetType().Name, expiringPunishment.Punishment.Id);
             }
         }
     }
