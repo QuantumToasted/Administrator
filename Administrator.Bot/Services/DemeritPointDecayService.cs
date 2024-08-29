@@ -38,7 +38,7 @@ public sealed class DemeritPointDecayService : DiscordBotService
                         Member = member,
                         Punishments = db.Punishments
                             .Where(x => x.GuildId == member.GuildId && x.Target.Id == (ulong)member.UserId)
-                            .OrderByDescending(x => x.Id)
+                            .OrderBy(x => x.Id) // decay oldest to newest
                             .ToList()
                     })
                     //.Where(x => x.Punishments.Count > 0)
@@ -55,7 +55,7 @@ public sealed class DemeritPointDecayService : DiscordBotService
                         Member = member,
                         Punishments = punishments
                             .Where(x => x.GuildId == member.GuildId && x.Target.Id == member.UserId)
-                            .OrderByDescending(x => x.Id)
+                            .OrderBy(x => x.Id) // decay oldest to newest
                             .ToList()
                     })
                     .Where(x => x.Punishments.Count > 0)
@@ -67,7 +67,7 @@ public sealed class DemeritPointDecayService : DiscordBotService
                         entry.Member,
                         EligibleWarnings = entry.Punishments.OfType<Warning>()
                             .Where(x => x.DemeritPointsRemaining > 0)
-                            .OrderByDescending(x => x.Id),
+                            .OrderBy(x => x.Id),
                         ActiveBan = entry.Punishments.OfType<Ban>()
                             .OrderByDescending(x => x.Id)
                             .FirstOrDefault(x => x.RevokedAt == null)
@@ -102,7 +102,18 @@ public sealed class DemeritPointDecayService : DiscordBotService
                         else
                         {
                             var newValue = entry.Member.NextDemeritPointDecay + guild.DemeritPointsDecayInterval!.Value;
-                            Logger.LogDebug("Setting user {UserId} in guild {GuildId}'s DP decay to {Value}.", entry.Member.UserId.RawValue, entry.Member.GuildId.RawValue, newValue);
+
+                            if (warning.DemeritPointsRemaining == 0 && entry.EligibleWarnings
+                                    .Where(x => x.DemeritPointsRemaining > 0 && // If the next warning has DPs remaining
+                                                x.DemeritPointsRemaining == x.DemeritPoints && // And hasn't decayed
+                                                x.Id != warning.Id) // And is not the warning we're decaying
+                                    .MinBy(x => x.Id) is { } nextWarning && nextWarning.CreatedAt > newValue)
+                            {
+                                newValue = nextWarning.CreatedAt + guild.DemeritPointsDecayInterval!.Value;
+                                Logger.LogDebug("Setting user {UserId} in guild {GuildId}'s DP decay to {Value} because they have a warning newer than the next decay.", entry.Member.UserId.RawValue, entry.Member.GuildId.RawValue, newValue);
+                            }
+                            
+                            //Logger.LogDebug("Setting user {UserId} in guild {GuildId}'s DP decay to {Value}.", entry.Member.UserId.RawValue, entry.Member.GuildId.RawValue, newValue);
                             //entry.Member.NextDemeritPointDecay += guild.DemeritPointsDecayInterval!.Value;
                             entry.Member.NextDemeritPointDecay = newValue;
                         }
