@@ -743,7 +743,9 @@ public static partial class DbModelExtensions
                 Warning => "had a warning removed in ",
                 _ => throw new ArgumentOutOfRangeException(nameof(punishment))
             })
-            .Append(Markdown.Bold(bot.GetGuild(punishment.GuildId)!.Name))
+            .Append(bot.GetGuild(punishment.GuildId) is { } guild
+                ? Markdown.Bold(guild.Name)
+                : $"The server with ID {Markdown.Code(punishment.GuildId)}")
             .Append('.');
 
         return builder.ToString();

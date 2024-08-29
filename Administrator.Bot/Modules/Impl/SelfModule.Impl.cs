@@ -41,18 +41,18 @@ public sealed partial class SelfModule(AdminDbContext db, AutoCompleteService au
         var member = await db.Members.FirstOrDefaultAsync(x => x.GuildId == guildId.Value && x.UserId == Context.AuthorId);
         var currentDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(guildId.Value, Context.AuthorId);
         
-        if (member is null || currentDemeritPoints == 0)
+        if (member is null || currentDemeritPoints == 0 || Bot.GetGuild(guildId.Value) is not { } guild)
             return Response("You do not have any demerit points in that server, or a server with that ID doesn't exist.").AsEphemeral(Context.GuildId.HasValue);
         
         var responseBuilder = new StringBuilder()
             .AppendNewline($"You are currently at {Markdown.Bold("demerit point".ToQuantity(currentDemeritPoints))} " +
-                           $"in {Markdown.Bold(Bot.GetGuild(guildId.Value)!.Name)}.");
+                           $"in {Markdown.Bold(guild.Name)}.");
         
-        var guild = await db.Guilds.GetOrCreateAsync(guildId.Value);
+        var dbGuild = await db.Guilds.GetOrCreateAsync(guildId.Value);
         
-        if (member.NextDemeritPointDecay.HasValue && guild.DemeritPointsDecayInterval.HasValue)
+        if (member.NextDemeritPointDecay.HasValue && dbGuild.DemeritPointsDecayInterval.HasValue)
         {
-            var nextDecay = member.NextDemeritPointDecay.Value + guild.DemeritPointsDecayInterval.Value;
+            var nextDecay = member.NextDemeritPointDecay.Value + dbGuild.DemeritPointsDecayInterval.Value;
             responseBuilder.AppendNewline($"Your next decay will occur {Markdown.Timestamp(nextDecay, Markdown.TimestampFormat.RelativeTime)}.");
         }
         
