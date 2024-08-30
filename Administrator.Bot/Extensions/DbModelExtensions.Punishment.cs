@@ -132,10 +132,19 @@ public static partial class DbModelExtensions
                         .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && x.DemeritPoints > 0 && x.Id != warning.Id),
                     x => x.DemeritPointsRemaining);
 
+                var guild = await db.Guilds.GetOrCreateAsync(warning.GuildId);
+
                 if (demeritPoints == 0)
                 {
                     await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
                         .Set(x => x.NextDemeritPointDecay, x => null)
+                        .UpdateAsync();
+                }
+                else
+                {
+                    var nextDecay = warning.CreatedAt + guild.DemeritPointsDecayInterval;
+                    await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
+                        .Set(x => x.NextDemeritPointDecay, x => nextDecay)
                         .UpdateAsync();
                 }
 
@@ -166,7 +175,7 @@ public static partial class DbModelExtensions
             var currentDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(warning.GuildId, warning.Target.Id);
             
             var automaticPunishment = await EntityFrameworkQueryableExtensions.FirstAsync(db.AutomaticPunishments
-                    .Where(x => x.GuildId == punishment.GuildId && x.DemeritPoints >= currentDemeritPoints)
+                    .Where(x => x.GuildId == punishment.GuildId && currentDemeritPoints >= x.DemeritPoints)
                     .OrderBy(x => x.DemeritPoints));
 
             builder.Append($"Automatic punishment {Markdown.Code($"[#{additionalPunishmentId}]")} (")
