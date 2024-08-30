@@ -379,7 +379,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             */
             
             if (newDemeritPoints > 0 && newDemeritPoints > oldDemeritPoints && 
-                automaticPunishments.FirstOrDefault(x => newDemeritPoints >= x.DemeritPoints && x.DemeritPoints >= oldDemeritPoints) is { } demeritPointPunishment)
+                automaticPunishments.FirstOrDefault(x => newDemeritPoints >= x.DemeritPoints && x.DemeritPoints > oldDemeritPoints) is { } demeritPointPunishment)
             {
                 var expiresAt = warning.CreatedAt + demeritPointPunishment.PunishmentDuration;
                 Punishment punishmentToApply = demeritPointPunishment.PunishmentType switch
