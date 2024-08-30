@@ -35,14 +35,21 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         if (predicate is not null)
             query = query.Where(predicate);
 
+        if (!string.IsNullOrWhiteSpace(punishmentId.RawArgument) && int.TryParse(punishmentId.RawArgument, out var id))
+        {
+            query = query.Where(x => EF.Functions.Like(x.Id.ToString(), $"%{id}%") || x.Id == id);
+        }
+
         var punishments = await query.OrderByDescending(x => x.Id)
+            .Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
             .ToListAsync();
         
-        autoComplete.AutoComplete(punishmentId, punishments);
+        punishmentId.Choices!.AddRange(punishments.ToDictionary(x => x.FormatAutoCompleteName(), x => x.Id));
+        
+        //autoComplete.AutoComplete(punishmentId, punishments);
     }
     
-    public async Task<Result<Ban>> BanAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? messagePruneDays,
-        DateTimeOffset? expiresAt, IAttachment? attachment)
+    public async Task<Result<Ban>> BanAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? messagePruneDays, DateTimeOffset? expiresAt, IAttachment? attachment)
     {
         if (await bot.FetchBanAsync(guildId, target.Id) is not null)
             return $"{Markdown.Bold(target)} has already been banned from this server!";
@@ -52,8 +59,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         return await ProcessPunishmentAsync(ban, attachment);
     }
 
-    public async Task<Result<Block>> BlockAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IChannel channel, 
-        DateTimeOffset? expiresAt, IAttachment? attachment)
+    public async Task<Result<Block>> BlockAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IChannel channel, DateTimeOffset? expiresAt, IAttachment? attachment)
     {
         var textChannel = bot.GetChannel(guildId, channel.Id) as ITextChannel ?? await bot.FetchChannelAsync(channel.Id) as ITextChannel;
         var existingOverwrite = textChannel?.Overwrites.FirstOrDefault(x => x.TargetId == target.Id);
@@ -79,8 +85,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         return await ProcessPunishmentAsync(kick, attachment);
     }
 
-    public async Task<Result<TimedRole>> GrantTimedRoleAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IRole role, 
-        DateTimeOffset? expiresAt, IAttachment? attachment)
+    public async Task<Result<TimedRole>> GrantTimedRoleAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IRole role, DateTimeOffset? expiresAt, IAttachment? attachment)
     {
         if (bot.GetMember(guildId, target.Id) is { } member && member.RoleIds.Contains(role.Id))
             return $"{Markdown.Bold(target)} already has the role {role.Mention}!";
@@ -91,8 +96,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         return await ProcessPunishmentAsync(timedRole, attachment);
     }
 
-    public async Task<Result<TimedRole>> RevokeTimedRoleAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IRole role, 
-        DateTimeOffset? expiresAt, IAttachment? attachment)
+    public async Task<Result<TimedRole>> RevokeTimedRoleAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, IRole role, DateTimeOffset? expiresAt, IAttachment? attachment)
     {
         if (bot.GetMember(guildId, target.Id) is { } member && !member.RoleIds.Contains(role.Id))
             return $"{Markdown.Bold(target)} doesn't have the role {role.Mention}!";
@@ -103,14 +107,13 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         return await ProcessPunishmentAsync(timedRole, attachment);
     }
 
-    public async Task<Result<Timeout>> TimeoutAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, DateTimeOffset expiresAt, 
-        IAttachment? attachment)
+    public async Task<Result<Timeout>> TimeoutAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, DateTimeOffset expiresAt, IAttachment? attachment)
     {
         var timeout = new Timeout(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, expiresAt);
         return await ProcessPunishmentAsync(timeout, attachment);
     }
 
-    public async Task<Result<Warning>> WarnAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? demeritPoints,/* bool decayDemeritPoints,*/ IAttachment? attachment)
+    public async Task<Result<Warning>> WarnAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? demeritPoints, IAttachment? attachment)
     {
         var guild = await db.Guilds.GetOrCreateAsync(guildId);
         demeritPoints ??= guild.DefaultWarningDemeritPoints;

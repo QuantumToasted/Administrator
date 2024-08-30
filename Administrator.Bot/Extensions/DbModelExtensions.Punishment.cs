@@ -153,6 +153,18 @@ public static partial class DbModelExtensions
             }
         }
     }
+
+    public static string FormatAutoCompleteName(this Punishment punishment)
+    {
+        var builder = new StringBuilder($"#{punishment.Id} - ")
+            .Append($"{punishment.FormatPunishmentName()} | ")
+            .Append($"Target: {punishment.Target.Name}");
+
+        if (!string.IsNullOrWhiteSpace(punishment.Reason))
+            builder.Append($" | {punishment.Reason}");
+
+        return builder.ToString().Truncate(Discord.Limits.ApplicationCommand.Option.Choice.MaxStringValueLength);
+    }
     
     public static async ValueTask<string> FormatCommandResponseStringAsync(this Punishment punishment, DiscordBotBase bot)
     {
