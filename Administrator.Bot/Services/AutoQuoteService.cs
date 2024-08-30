@@ -13,7 +13,7 @@ public sealed partial class AutoQuoteService : DiscordBotService
     
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
-        if (e.GuildId is not { } guildId || string.IsNullOrWhiteSpace(e.Message.Content))
+        if (e.GuildId is not { } guildId || string.IsNullOrWhiteSpace(e.Message.Content) || e.Message.Author.IsBot)
             return;
 
         //var match = Discord.MessageJumpLinkRegex.Match(e.Message.Content);
