@@ -49,8 +49,12 @@ public sealed partial class TagModule(AdminDbContext db, AttachmentService attac
         var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
         var tagCount = await db.Tags.CountAsync(x => x.GuildId == Context.GuildId && x.OwnerId == Context.AuthorId);
 
-        if (tagCount >= guild.MaximumTagsPerUser)
-            return Response($"You cannot create more than {"tag".ToQuantity(guild.MaximumTagsPerUser.Value)} in this server.").AsEphemeral();
+        const Permissions bypassPermission = Permissions.ManageMessages;
+        if (tagCount >= guild.MaximumTagsPerUser && Context.Author.CalculateGuildPermissions().HasFlag(bypassPermission))
+        {
+            return Response($"You cannot create more than {"tag".ToQuantity(guild.MaximumTagsPerUser.Value)} in this server.\n" +
+                            $"Users with {Markdown.Bold(bypassPermission.Humanize(LetterCasing.Title))} can bypass this.").AsEphemeral();
+        }
 
         var response = new LocalInteractionMessageResponse()
             .WithContent($"New tag \"{name}\" created. Use the buttons below to modify its response.\n" +
