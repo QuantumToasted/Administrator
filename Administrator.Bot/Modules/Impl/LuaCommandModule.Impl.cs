@@ -13,7 +13,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentService attachments, LuaCommandService luaCommands, AutoCompleteService autoComplete)
+public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentService attachments, LuaCommandService luaCommands, AutoCompleteService autoComplete, SlashCommandMentionService mentions)
     : DiscordApplicationGuildModuleBase
 {
     private const string METADATA_SEPARATOR = "-- END METADATA --";
@@ -76,6 +76,12 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
             return Response("Failed to evaluate your lua command's metadata for conversion to a slash command.\n" +
                             "Ensure that there are no syntax errors, or see the below message for additional information.\n" +
                             Markdown.CodeBlock(ex.Message));
+        }
+
+        if (mentions.CommandMap.ContainsKey(slashCommand.Name) ||
+            mentions.CommandMap.Keys.Any(x => x.Equals(slashCommand.Name) || x.Contains(slashCommand.Name)))
+        {
+            return Response("You cannot add a Lua command with the same name of an already existing bot command!");
         }
 
         AdminPromptView view;
