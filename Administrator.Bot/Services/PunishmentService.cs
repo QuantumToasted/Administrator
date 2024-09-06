@@ -368,8 +368,8 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         {
             var newDemeritPoints = oldDemeritPoints + warning.DemeritPoints;
             var automaticPunishments = await db.AutomaticPunishments.Where(x => x.GuildId == punishment.GuildId)
-                //.Where(x => x.DemeritPoints >= newDemeritPoints && x.DemeritPoints >= oldDemeritPoints)
-                .OrderBy(x => x.DemeritPoints)
+                .Where(x => newDemeritPoints >= x.DemeritPoints && x.DemeritPoints > oldDemeritPoints)
+                .OrderByDescending(x => x.DemeritPoints)
                 .ToListAsync();
             
             /*
@@ -378,8 +378,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
                 .SumAsync(x => x.DemeritPointsRemaining);
             */
             
-            if (newDemeritPoints > 0 && newDemeritPoints > oldDemeritPoints && 
-                automaticPunishments.FirstOrDefault(x => newDemeritPoints >= x.DemeritPoints && x.DemeritPoints > oldDemeritPoints) is { } demeritPointPunishment)
+            if (newDemeritPoints > 0 && newDemeritPoints > oldDemeritPoints && automaticPunishments.FirstOrDefault() is { } demeritPointPunishment)
             {
                 var expiresAt = warning.CreatedAt + demeritPointPunishment.PunishmentDuration;
                 Punishment punishmentToApply = demeritPointPunishment.PunishmentType switch

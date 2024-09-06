@@ -188,7 +188,7 @@ public static partial class DbModelExtensions
             
             var automaticPunishment = await EntityFrameworkQueryableExtensions.FirstAsync(db.AutomaticPunishments
                     .Where(x => x.GuildId == punishment.GuildId && currentDemeritPoints >= x.DemeritPoints)
-                    .OrderBy(x => x.DemeritPoints));
+                    .OrderByDescending(x => x.DemeritPoints));
 
             builder.Append($"Automatic punishment {Markdown.Code($"[#{additionalPunishmentId}]")} (")
                 .Append(FormatAutomaticPunishment(warning, automaticPunishment))
