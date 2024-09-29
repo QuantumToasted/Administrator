@@ -3,7 +3,7 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 
 namespace Administrator.Bot;
 
-public sealed class AdminPagedView(List<Page> pages, bool isEphemeral = false) : PagedView(new ListPageProvider(pages))
+public sealed class AdminPagedView(IList<Page> pages, bool isEphemeral = false) : PagedView(new ListPageProvider(pages))
 {
     public override void FormatLocalMessage(LocalMessageBase message)
     {
