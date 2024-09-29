@@ -34,6 +34,7 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
             _ = Task.Run(async () =>
             {
                 await message.AddReactionAsync(LocalEmoji.Unicode("🌐"));
+                await Task.Delay(TimeSpan.FromSeconds(1));
                 await message.AddReactionAsync(emojis.GetLevelEmoji(dbUser.Tier, dbUser.Level));
             });
         }
@@ -49,6 +50,7 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
                 _ = Task.Run(async () =>
                 {
                     await message.AddReactionAsync(LocalEmoji.FromString(guildConfig.LevelUpEmoji));
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                     await message.AddReactionAsync(emojis.GetLevelEmoji(dbMember.Tier, dbMember.Level));
                 });
 
