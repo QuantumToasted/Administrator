@@ -137,6 +137,7 @@ public sealed partial class UserModule(AttachmentService attachments) : DiscordA
             if (member.GetHighestRole(x => x.Color.HasValue) is { } role)
                 embed.WithColor(role.Color!.Value);
 
+            /*
             if (member.GetPresence() is { } presence)
             {
                 embed.AddField("Status", presence.Status);
@@ -157,6 +158,7 @@ public sealed partial class UserModule(AttachmentService attachments) : DiscordA
                         embed.WithFooter(footerText.Truncate(Discord.Limits.Message.Embed.Footer.MaxTextLength));
                 }
             }
+            */
         }
 
         embed.AddField("Account created",
@@ -270,7 +272,8 @@ public sealed partial class UserModule(AttachmentService attachments) : DiscordA
                 index++;
             }
 
-            return Menu(new AdminInteractionMenu(new AdminPagedView(pages) { CurrentPageIndex = startingPageIndex }, Context.Interaction));
+            return Menu(new AdminInteractionMenu(new AdminPagedView(pages) { CurrentPageIndex = startingPageIndex }, Context.Interaction)
+                { AuthorId = Context.AuthorId });
         }
 
         public partial async Task<IResult> Blurb(string text)
