@@ -110,6 +110,7 @@ var host = new HostBuilder()
         bot.Token = config.Token;
         bot.ServiceAssemblies = [typeof(AdministratorBot).Assembly];
         bot.Activities = [new LocalActivity("/help for help", ActivityType.Watching)];
+        bot.Intents = GatewayIntents.LibraryRecommended;
     })
     .Build();
 
