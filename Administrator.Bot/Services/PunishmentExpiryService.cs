@@ -46,12 +46,13 @@ public sealed class PunishmentExpiryService : DiscordBotService
                     Logger.LogDebug("Task.Delay canceled due to CancelCts() being called.");
                     _cts.Dispose();
                     _cts = new();
+                    
                     continue;
                 }
             }
             else if (delay > TimeSpan.Zero)
             {
-                var cts = Cts.Linked(_cts.Token);
+                using var cts = Cts.Linked(_cts.Token);
 
                 try
                 {
@@ -73,10 +74,6 @@ public sealed class PunishmentExpiryService : DiscordBotService
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Failed to run and cancel the delay task.");
-                }
-                finally
-                {
-                    cts.Dispose();
                 }
             }
             else
@@ -101,5 +98,4 @@ public sealed class PunishmentExpiryService : DiscordBotService
         }
     }
 #endif
-
 }
