@@ -66,6 +66,9 @@ public sealed class HighlightHandlingService(IMemoryCache cache) : DiscordBotSer
     {
         //await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
+        if (message.Flags.HasFlag(MessageFlags.SuppressedNotifications))
+            return;
+
         var allHighlights = await GetHighlightsAsync();
         var highlights = allHighlights.Where(x => !x.GuildId.HasValue || x.GuildId == channel.GuildId).ToList();
         
