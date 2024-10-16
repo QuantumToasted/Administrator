@@ -50,7 +50,7 @@ public sealed class ReminderExpiryService : DiscordBotService
             }
             else if (delay > TimeSpan.Zero)
             {
-                var cts = Cts.Linked(_cts.Token);
+                using var cts = Cts.Linked(_cts.Token);
 
                 try
                 {
@@ -72,10 +72,6 @@ public sealed class ReminderExpiryService : DiscordBotService
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Failed to run and cancel the delay task.");
-                }
-                finally
-                {
-                    cts.Dispose();
                 }
             }
             else
