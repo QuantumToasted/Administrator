@@ -14,7 +14,7 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
 {
     private readonly EconItems _econItems = factory.CreateSteamWebInterface<EconItems>(AppId.TeamFortress2, http);
     private readonly ConcurrentDictionary<ParticleEffect, byte[]> _particleEffectImages = new();
-    private DateTimeOffset? _lastCheck;
+    //private DateTimeOffset? _lastCheck;
     
     public Currency? CraftHatCurrency { get; private set; }
 
@@ -77,7 +77,7 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
             await UpdateCurrenciesAsync();
             await UpdateItemPricesAsync();
             
-            await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
         }
     }
 
@@ -108,7 +108,7 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
         
         try
         {
-            var itemPriceResponse = await backpack.GetItemPricesAsync(CurrencyValue.Raw, _lastCheck);
+            var itemPriceResponse = await backpack.GetItemPricesAsync(CurrencyValue.Raw/*, _lastCheck*/);
             if (!itemPriceResponse.IsSuccess)
                 throw new Exception(itemPriceResponse.ErrorMessage);
 
@@ -122,7 +122,7 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
             if (count > 0)
                 Logger.LogDebug("Item price information for {Count} items updated!", count);
             
-            _lastCheck = DateTimeOffset.UtcNow;
+            //_lastCheck = DateTimeOffset.UtcNow;
         }
         catch (Exception ex)
         {
