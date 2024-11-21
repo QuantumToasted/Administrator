@@ -67,7 +67,7 @@ public sealed partial class PruneModule(EmojiService emojis) : DiscordApplicatio
                 if (message.Id == deferralMessage.Id)
                     continue; // ignore the deferral message
 
-                if (messagesToDelete.Count == limit)
+                if (messagesToDelete.Count >= limit)
                     break;
 
                 if (filterFunc is null || filterFunc.Invoke(message))
@@ -77,11 +77,11 @@ public sealed partial class PruneModule(EmojiService emojis) : DiscordApplicatio
             if (currentCount == messagesToDelete.Count)
                 emptyCount++;
 
-            if (messagesToDelete.Count == limit || emptyCount == 5)
+            if (messagesToDelete.Count >= limit || emptyCount == 5)
                 break;
         }
         
-        if (!direction.HasValue && startFromMessageId.HasValue && messagesToDelete.All(x => x.Id != startFromMessageId.Value))
+        if (startFromMessageId.HasValue && messagesToDelete.All(x => x.Id != startFromMessageId.Value))
         {
             try
             {
