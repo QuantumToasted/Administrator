@@ -66,6 +66,10 @@ public sealed class HighlightHandlingService(IMemoryCache cache) : DiscordBotSer
     {
         //await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
+        // TODO: detect whether a member is in a private thread via the GW
+        if (channel.Type == ChannelType.PrivateThread)
+            return;
+
         if (message.Flags.HasFlag(MessageFlags.SuppressedNotifications))
             return;
 
