@@ -64,6 +64,7 @@ public static partial class DiscordExtensions
         return await client.FetchUserAsync(userId);
     }
 
+    /*
     public static async Task LoadMembersAsync(this DiscordClientBase client, Snowflake guildId, ICollection<Snowflake> memberIds, TimeSpan? timeout = null)
     {
         const int membersPerRequest = Discord.Limits.Gateway.QueryMembersLimit;
@@ -96,6 +97,7 @@ public static partial class DiscordExtensions
             await client.Chunker.QueryAsync(guildId, chunk, cts.Token);
         }
     }
+    */
 
     public static async ValueTask<IMember?> GetOrFetchMemberAsync(this DiscordClientBase client, Snowflake guildId, Snowflake memberId)
     {
