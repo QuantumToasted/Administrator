@@ -42,3 +42,4 @@ Administrator.Database.Migration/
 Administrator/Data
 Administrator/Logs
 OwnerModule.cs
+.idea/
