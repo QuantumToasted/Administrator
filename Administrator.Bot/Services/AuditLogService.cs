@@ -16,6 +16,9 @@ public sealed class AuditLogService : DiscordBotService
     
     public ConcurrentDictionary<Snowflake, IAuditLog> GetAllAuditLogs(Snowflake guildId)
         => _auditLogs.GetOrAdd(guildId, _ => new ConcurrentDictionary<Snowflake, IAuditLog>());
+
+    public int GetWaiterCount()
+        => _waiters.Count;
     
     /*
 

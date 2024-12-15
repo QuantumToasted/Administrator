@@ -6,7 +6,9 @@ using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Http;
 using Disqord.Rest;
+using Disqord.Utilities.Threading;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Qommon;
 
@@ -62,11 +64,48 @@ public static partial class DiscordExtensions
         return await client.FetchUserAsync(userId);
     }
 
+    public static async Task LoadMembersAsync(this DiscordClientBase client, Snowflake guildId, ICollection<Snowflake> memberIds, TimeSpan? timeout = null)
+    {
+        const int membersPerRequest = Discord.Limits.Gateway.QueryMembersLimit;
+
+        using var cts = Cts.Linked(client.StoppingToken);
+        
+        if (timeout is { } delay)
+            cts.CancelAfter(delay);
+
+        var unloadedMemberIds = new List<Snowflake>();
+        foreach (var id in memberIds)
+        {
+            if (client.GetMember(guildId, id) is not null)
+                continue;
+            
+            unloadedMemberIds.Add(id);
+        }
+
+        foreach (var chunk in unloadedMemberIds.Chunk(membersPerRequest))
+        {
+            var rateLimiter = client.ApiClient.GetShard(guildId)!.RateLimiter;
+            if (rateLimiter.IsRateLimited())
+            {
+                client.Logger.LogWarning("Shard #{ShardId} is currently rate-limited. Waiting to load {Count} total members.", rateLimiter.Shard.Id,
+                    memberIds.Count);
+
+                await rateLimiter.WaitAsync(cancellationToken: cts.Token);
+            }
+
+            await client.Chunker.QueryAsync(guildId, chunk, cts.Token);
+        }
+    }
+
     public static async ValueTask<IMember?> GetOrFetchMemberAsync(this DiscordClientBase client, Snowflake guildId, Snowflake memberId)
     {
         if (client.GetMember(guildId, memberId) is { } cachedMember)
             return cachedMember;
 
+        /*
+        await client.LoadMembersAsync(guildId, [memberId], TimeSpan.FromSeconds(2));
+        return client.GetMember(guildId, memberId);
+        */
         // borrowed from DQ's MemberTypeParser
         if (client.ApiClient.GetShard(guildId)?.RateLimiter.GetRemainingRequests() < 3)
         {
