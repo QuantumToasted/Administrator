@@ -15,12 +15,12 @@ public sealed partial class ReminderModule
     [SlashCommand("create")]
     [Description("Creates a new non-repeating reminder.")]
     public partial Task<IResult> Create(
-        [Description("The text to be reminded about.")]
-        [Maximum(Discord.Limits.Message.Embed.Field.MaxValueLength)]
-            string text,
         [Name("time")]
         [Description("A duration (2h30m) or instant in time (tomorrow at noon).")]
-            DateTimeOffset expiresAt);
+            DateTimeOffset expiresAt,
+        [Description("The text to be reminded about.")]
+        [Maximum(Discord.Limits.Message.Embed.Field.MaxValueLength)]
+            string text);
 
     [SlashCommand("repeat")]
     [Description("Creates a new repeating reminder.")]

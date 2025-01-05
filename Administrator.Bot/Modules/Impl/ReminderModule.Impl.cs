@@ -57,7 +57,7 @@ public sealed partial class ReminderModule(ReminderService reminders, AdminDbCon
         return Menu(new AdminInteractionMenu(new AdminPagedView(pages, Context.GuildId.HasValue), Context.Interaction));
     }
     
-    public partial async Task<IResult> Create(string text, DateTimeOffset expiresAt)
+    public partial async Task<IResult> Create(DateTimeOffset expiresAt, string text)
     {
         var result = await reminders.CreateReminderAsync(text, expiresAt);
         if (!result.IsSuccessful)
