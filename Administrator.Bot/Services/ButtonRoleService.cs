@@ -45,10 +45,6 @@ public sealed class ButtonRoleService : DiscordBotService
         if (buttonRoles.Count == 0)
             return;
 
-        module = BuildModule(guildId, buttonRoles);
-        ButtonCommandModules[guildId] = module;
-        Bot.Commands.AddModule(module);
-
         if (channelId.HasValue) // channelId and messageId are both set
         {
             var messageButtons = await db.ButtonRoles.Where(x => x.MessageId == messageId).ToListAsync();
@@ -58,7 +54,7 @@ public sealed class ButtonRoleService : DiscordBotService
             }
             else
             {
-                await AddButtonsAsync(messageButtons);
+                await AddButtonsAsync(db, messageButtons);
             }
         }
         else
@@ -68,12 +64,18 @@ public sealed class ButtonRoleService : DiscordBotService
 
             foreach (var group in groups)
             {
-                await AddButtonsAsync(group);
+                await AddButtonsAsync(db, group);
             }
         }
+        
+        // re-load button modules - AddButtonsAsync() may have removed some on failure (unknown message)
+        buttonRoles = await db.ButtonRoles.AsNoTracking().Where(x => x.GuildId == guildId).ToListAsync();
+        module = BuildModule(guildId, buttonRoles);
+        ButtonCommandModules[guildId] = module;
+        Bot.Commands.AddModule(module);
     }
 
-    private async Task AddButtonsAsync(IEnumerable<ButtonRole> enumerable)
+    private async Task AddButtonsAsync(AdminDbContext db, IEnumerable<ButtonRole> enumerable)
     {
         var buttonRoles = enumerable.ToList();
         var first = buttonRoles.First();
@@ -95,13 +97,23 @@ public sealed class ButtonRoleService : DiscordBotService
             
             components.Add(row);
         }
-        
-        await Bot.ModifyMessageAsync(channelId, messageId, x => x.Components = components);
+
+        try
+        {
+            await Bot.ModifyMessageAsync(channelId, messageId, x => x.Components = components);
+        }
+        catch (RestApiException ex) when (ex.ErrorModel?.Code == RestApiErrorCode.UnknownMessage)
+        {
+            Logger.LogWarning("Message {MessageId} in channel {ChannelId} was deleted or could not be found - removing all button roles.",
+                messageId.RawValue, channelId.RawValue);
+            await db.ButtonRoles.Where(x => x.ChannelId == channelId && x.MessageId == messageId)
+                .ExecuteDeleteAsync();
+        }
 
         await Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(1, 5)));
     }
 
-    private ComponentModule BuildModule(Snowflake guildId, IEnumerable<ButtonRole> buttonRoles)
+    private static ComponentModule BuildModule(Snowflake guildId, IEnumerable<ButtonRole> buttonRoles)
     {
         var module = new ComponentModuleBuilder
         {
