@@ -43,3 +43,4 @@ Administrator/Data
 Administrator/Logs
 OwnerModule.cs
 .idea/
+*.ps1
