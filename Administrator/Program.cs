@@ -1,4 +1,5 @@
-﻿using Administrator.Api;
+﻿using System.Globalization;
+using Administrator.Api;
 using Administrator.Bot;
 using Administrator.Core;
 using Administrator.Database;
@@ -17,6 +18,8 @@ using Serilog;
 using Serilog.Events;
 using SteamWebAPI2.Utilities;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+
+CultureInfo.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
 
 var host = new HostBuilder()
     .UseSerilog((context, logger) =>

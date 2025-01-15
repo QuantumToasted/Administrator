@@ -254,8 +254,11 @@ public sealed partial class BackpackModule(BackpackService backpack, AutoComplet
                     return await PriceCheck(itemName, quality, particleEffect, ItemType.NonCraftable);
                 }
 
-                return Response("Price not found. Prince index debug: \n" +
-                                string.Join(", ", dict.Keys));
+                var dbg = string.Join(", ", dict.Keys);
+                if (string.IsNullOrWhiteSpace(dbg))
+                    dbg = "[NONE]";
+                
+                return Response($"Price not found. Price index debug: {dbg}");
             }
 
             price = normalPrice;
