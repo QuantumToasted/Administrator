@@ -10,7 +10,8 @@ namespace Administrator.Bot;
 public sealed partial class AutoQuoteService : DiscordBotService
 {
     private static readonly Regex JumpLinkRegex = GenerateJumpLinkRegex();
-    
+    private static readonly Regex WrappedJumpLinkRegex = GenerateWrappedJumpLinkRegex();
+
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
         if (e.GuildId is not { } guildId || string.IsNullOrWhiteSpace(e.Message.Content) || e.Message.Author.IsBot)
@@ -18,9 +19,13 @@ public sealed partial class AutoQuoteService : DiscordBotService
 
         //var match = Discord.MessageJumpLinkRegex.Match(e.Message.Content);
         var match = JumpLinkRegex.Match(e.Message.Content);
+        var wrappedMatch = WrappedJumpLinkRegex.Match(e.Message.Content);
 
         // TODO: support multiple matches?
         if (!match.Success)
+            return;
+
+        if (wrappedMatch.Success) // wrapped link
             return;
         
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
@@ -80,4 +85,7 @@ public sealed partial class AutoQuoteService : DiscordBotService
 
     [GeneratedRegex(@"https?://(?:(ptb|canary)\.)?discord(?:app)?\.com/channels/(?<guild_id>([0-9]{15,21})|(@me))/(?<channel_id>[0-9]{15,21})/(?<message_id>[0-9]{15,21})/?", RegexOptions.Compiled)]
     private static partial Regex GenerateJumpLinkRegex();
+    
+    [GeneratedRegex(@"<https?://(?:(ptb|canary)\.)?discord(?:app)?\.com/channels/(?<guild_id>([0-9]{15,21})|(@me))/(?<channel_id>[0-9]{15,21})/(?<message_id>[0-9]{15,21})/?>", RegexOptions.Compiled)]
+    private static partial Regex GenerateWrappedJumpLinkRegex();
 }
