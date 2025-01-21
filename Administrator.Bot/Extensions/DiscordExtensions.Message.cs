@@ -15,7 +15,7 @@ public static partial class DiscordExtensions
         var localMessage = new LocalMessage()
             .AddComponent(LocalComponent.Row(
                 LocalComponent.LinkButton(Discord.MessageJumpLink(guildId, message.ChannelId, message.Id), "Jump to message"),
-                LocalComponent.Button("AutoQuote:Delete", emojis.Names["x"].ToString()).WithStyle(LocalButtonComponentStyle.Danger)));
+                LocalComponent.Button("AutoQuote:Delete", "Remove").WithStyle(LocalButtonComponentStyle.Danger)));
         
         var embed = new LocalEmbed()
             .WithColor((quoter as IMember)?.GetHighestRole(x => x.Color.HasValue)?.Color ?? Colors.Unusual)

@@ -13,7 +13,7 @@ public sealed partial class AutoQuoteComponentModule : DiscordComponentGuildModu
     {
         var embed = LocalEmbed.CreateFrom(Interaction.Message.Embeds[0])
             .WithCollectorsColor()
-            .WithFooter($"Marked for deletion by {Context.Author.GetDisplayName()}", Context.Author.GetGuildAvatarUrl());
+            .WithFooter($"Marked for removal by {Context.Author.GetDisplayName()}", Context.Author.GetGuildAvatarUrl());
 
         await Interaction.Response().ModifyMessageAsync(new LocalInteractionMessageResponse()
             .WithEmbeds(embed)
