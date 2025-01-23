@@ -9,16 +9,13 @@ public static partial class DiscordExtensions
 {
     public static LocalMessage ToQuoteMessage(this IUserMessage message, Snowflake? guildId, IUser? quoter = null, IMessageGuildChannel? channel = null)
     {
-        var bot = (DiscordBotBase)message.Client;
-        var emojis = bot.Services.GetRequiredService<EmojiService>();
-        
         var localMessage = new LocalMessage()
             .AddComponent(LocalComponent.Row(
                 LocalComponent.LinkButton(Discord.MessageJumpLink(guildId, message.ChannelId, message.Id), "Jump to message"),
                 LocalComponent.Button("AutoQuote:Delete", "Remove").WithStyle(LocalButtonComponentStyle.Danger)));
         
         var embed = new LocalEmbed()
-            .WithColor((quoter as IMember)?.GetHighestRole(x => x.Color.HasValue)?.Color ?? Colors.Unusual)
+            .WithColor((message.Author as IMember)?.GetHighestRole(x => x.Color.HasValue)?.Color ?? Colors.Unusual)
             //.WithUnusualColor()
             .WithAuthor(message.Author.Name, message.Author.GetAvatarUrl())
             .WithTimestamp(message.CreatedAt());
