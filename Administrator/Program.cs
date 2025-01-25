@@ -15,6 +15,7 @@ using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using SteamWebAPI2.Utilities;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -24,18 +25,27 @@ CultureInfo.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
 var host = new HostBuilder()
     .UseSerilog((context, logger) =>
     {
+        var config = new AdministratorLoggingConfiguration();
+        context.Configuration.GetSection(IAdministratorConfiguration<AdministratorLoggingConfiguration>.SectionName)
+            .Bind(config);
+        
         logger
+            .MinimumLevel.Is(
 #if DEBUG
-            .MinimumLevel.Debug()
+                LogEventLevel.Debug)
+#else
+                config.DefaultLevel)
 #endif
-            //.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Error)
-            .MinimumLevel.Override("Disqord", LogEventLevel.Information)
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.File("Logs/log_.txt",
                 outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}",
                 rollingInterval: RollingInterval.Day);
+
+        foreach (var (name, level) in config.Overrides)
+        {
+            logger.MinimumLevel.Override(name, level);
+        }
     })
     .ConfigureAppConfiguration(config =>
     {
@@ -72,7 +82,8 @@ var host = new HostBuilder()
             .AddConfiguration<AdministratorBotConfiguration>()
             .AddConfiguration<AdministratorDatabaseConfiguration>(context.Configuration, out var dbConfiguration)
             .AddConfiguration<AdministratorHelpConfiguration>()
-            .AddConfiguration<AdministratorSteamConfiguration>(context.Configuration, out var steamConfiguration);
+            .AddConfiguration<AdministratorSteamConfiguration>(context.Configuration, out var steamConfiguration)
+            .AddConfiguration<AdministratorLoggingConfiguration>();
         
         services.AddSingleton<HttpClient>();
         services.AddScopedServices(typeof(AdministratorBot).Assembly);

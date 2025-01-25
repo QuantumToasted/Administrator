@@ -14,6 +14,7 @@
       <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
       <PackageReference Include="NodaTime" Version="3.1.11" />
       <PackageReference Include="Qmmands" Version="6.0.0-alpha8" />
+      <PackageReference Include="Serilog" Version="4.2.0" />
     </ItemGroup>
 
 </Project>

@@ -25,5 +25,12 @@
     },
     "Steam": {
         "ApiKey": ""
+    },
+    "Logging": {
+        "DefaultLevel": "Information",
+        "Overrides": {
+            "Microsoft.EntityFrameworkCore": "Error",
+            "Administrator": "Debug"
+        }
     }
 }
