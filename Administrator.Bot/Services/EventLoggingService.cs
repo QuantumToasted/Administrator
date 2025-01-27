@@ -7,17 +7,20 @@ using Disqord.AuditLogs;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Qommon;
+using StringExtensions = Administrator.Core.StringExtensions;
 
 namespace Administrator.Bot;
 
 public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService inviteFilter, AuditLogService auditLogs)
     : DiscordBotService
 {
+    private static readonly TimeSpan AttachmentStorageDuration = TimeSpan.FromMinutes(30);
     private readonly ConcurrentDictionary<Snowflake, ConcurrentQueue<IMember>> _memberJoinQueues = new();
     private readonly ConcurrentDictionary<Snowflake, ConcurrentQueue<IUser>> _memberLeaveQueues = new();
 
@@ -42,7 +45,8 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
                     continue;
 
                 var localAttachment = await attachmentService.GetAttachmentAsync(attachment.Url);
-                cache.Set(attachment.Url, localAttachment, TimeSpan.FromMinutes(30));
+                Logger.LogDebug("Caching attachment ID {Id} for {Duration}.", attachment.Id.RawValue, AttachmentStorageDuration.Humanize());
+                cache.Set(attachment.Id, localAttachment, AttachmentStorageDuration);
             }
             catch (Exception ex)
             {
@@ -96,9 +100,9 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
                     foreach (var attachment in e.Message.Attachments)
                     {
-                        if (cache.TryGetValue<LocalAttachment>(attachment.Url, out var localAttachment))
+                        if (cache.TryGetValue<AttachmentService.Attachment>(attachment.Id, out var cachedAttachment) && cachedAttachment is not null)
                         {
-                            message.AddAttachment(localAttachment!);
+                            message.AddAttachment(cachedAttachment);
                         }
                     }
                 }
@@ -145,8 +149,8 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
             if (embed.Length >= Discord.Limits.Message.MaxEmbeddedContentLength)
             {
-                embed.WithDescription(embed.Description.Value.Truncate(Discord.Limits.Message.MaxEmbeddedContentLength -
-                                                                       (embed.Length - embed.Description.Value.Length)));
+                embed.WithDescription(StringExtensions.Truncate(embed.Description.Value, Discord.Limits.Message.MaxEmbeddedContentLength -
+                                                                                         (embed.Length - embed.Description.Value.Length)));
             }
 
             message.AddEmbed(embed);
@@ -171,7 +175,15 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
         var oldContent = e.OldMessage?.Content;
         var newContent = e.NewMessage?.Content ?? e.Model.Content.GetValueOrDefault();
 
-        if (oldContent == newContent || (string.IsNullOrWhiteSpace(oldContent) && string.IsNullOrWhiteSpace(newContent)))
+        var oldAttachments = e.OldMessage?.Attachments.Select(x => x.Id).ToList() ?? [];
+        var newAttachments = e.NewMessage?.Attachments.Select(x => x.Id).ToList() 
+                                 ?? e.Model.Attachments.GetValueOrDefault()?.Select(x => x.Id.Value).ToList() ?? [];
+
+        // content is unchanged
+        // content is still null or whitespace
+        // attachment count is same or larger (attachments not removed)
+        if ((oldContent == newContent || (string.IsNullOrWhiteSpace(oldContent) && string.IsNullOrWhiteSpace(newContent))) 
+            && oldAttachments.Count <= newAttachments.Count)
             return;
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
@@ -210,7 +222,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
         if (e.OldMessage is not null)
         {
             embed.AddField(oldContentField.WithValue(!string.IsNullOrWhiteSpace(oldContent)
-                ? oldContent.Truncate(Discord.Limits.Message.Embed.Field.MaxValueLength)
+                ? StringExtensions.Truncate(oldContent, Discord.Limits.Message.Embed.Field.MaxValueLength)
                 : Markdown.Italics("No content.")));
         }
         else
@@ -222,13 +234,13 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
         if (e.NewMessage is not null)
         {
             embed.AddField(newContentField.WithValue(!string.IsNullOrWhiteSpace(newContent)
-                ? newContent.Truncate(Discord.Limits.Message.Embed.Field.MaxValueLength)
+                ? StringExtensions.Truncate(newContent, Discord.Limits.Message.Embed.Field.MaxValueLength)
                 : Markdown.Italics("No content.")));
         }
         else if (e.Model.Content.HasValue)
         {
             embed.AddField(newContentField.WithValue(!string.IsNullOrWhiteSpace(e.Model.Content.Value)
-                ? e.Model.Content.Value.Truncate(Discord.Limits.Message.Embed.MaxDescriptionLength / 2)
+                ? StringExtensions.Truncate(e.Model.Content.Value, Discord.Limits.Message.Embed.MaxDescriptionLength / 2)
                 : Markdown.Italics("No content.")));
         }
         else
@@ -236,14 +248,34 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
             embed.AddField(newContentField.WithValue(Markdown.Italics("Original message was not cached.")));
         }
 
+        if (oldAttachments.Count > newAttachments.Count)
+        {
+            var attachmentsRemovedBuilder = new StringBuilder();
+
+            foreach (var attachmentId in oldAttachments.Except(newAttachments))
+            {
+                if (cache.TryGetValue(attachmentId, out AttachmentService.Attachment? attachment) && attachment is not null)
+                {
+                    message.AddAttachment(attachment);
+                    attachmentsRemovedBuilder.AppendNewline(Markdown.Code(attachment.FileName));
+                }
+                else
+                {
+                    attachmentsRemovedBuilder.AppendNewline(Markdown.Code(attachmentId));
+                }
+            }
+
+            embed.AddField("Attachments removed", attachmentsRemovedBuilder.ToString());
+        }
+
         var i = 0;
         while (embed.Length >= Discord.Limits.Message.MaxEmbeddedContentLength && i++ <= 5)
         {
             if (newContentField.Value.Value.Length > 100)
-                newContentField.WithValue(newContentField.Value.Value.Truncate(newContentField.Value.Value.Length / 2));
+                newContentField.WithValue(StringExtensions.Truncate(newContentField.Value.Value, newContentField.Value.Value.Length / 2));
 
             if (oldContentField.Value.Value.Length > 100)
-                newContentField.WithValue(oldContentField.Value.Value.Truncate(oldContentField.Value.Value.Length / 2));
+                newContentField.WithValue(StringExtensions.Truncate(oldContentField.Value.Value, oldContentField.Value.Value.Length / 2));
         }
 
         message.AddEmbed(embed);
