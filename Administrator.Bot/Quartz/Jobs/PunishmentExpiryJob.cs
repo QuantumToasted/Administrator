@@ -1,4 +1,3 @@
-using Administrator.Core;
 using Administrator.Database;
 using Disqord.Bot;
 using Humanizer;
@@ -22,7 +21,7 @@ public sealed class PunishmentExpiryJob<TPunishment>(ILogger<PunishmentExpiryJob
 
     public async ValueTask Execute(IJobExecutionContext context, TPunishment punishment)
     {
-        var name = punishment.FormatPunishmentName(LetterCasing.Sentence);    
+        var name = punishment.FormatPunishmentName(LetterCasing.Sentence);
         
         try
         {
