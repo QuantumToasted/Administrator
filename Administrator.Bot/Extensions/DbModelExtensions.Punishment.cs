@@ -7,7 +7,6 @@ using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
-using LinqToDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -84,9 +83,8 @@ public static partial class DbModelExtensions
             var guild = await db.Guilds.GetOrCreateAsync(member.GuildId);
             if (guild.DemeritPointsDecayInterval is { } interval)
             {
-                await db.Members.Where(x => x.GuildId == member.GuildId && x.UserId == member.UserId)
-                    .Set(x => x.NextDemeritPointDecay, x => warning.CreatedAt + interval)
-                    .UpdateAsync();
+                member.NextDemeritPointDecay = warning.CreatedAt + interval;
+                await db.SaveChangesAsync();
 
                 var quartz = bot.Services.GetRequiredService<QuartzService>();
                 member.NextDemeritPointDecay = warning.CreatedAt + interval;
@@ -126,27 +124,35 @@ public static partial class DbModelExtensions
             await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
             var punishments = scope.ServiceProvider.GetRequiredService<PunishmentService>();
 
-            var demeritPoints = await EntityFrameworkQueryableExtensions.SumAsync(db.Punishments
-                    .AsNoTracking()
-                    .OfType<Warning>()
-                    .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && x.DemeritPoints > 0 && x.Id != warning.Id),
-                x => x.DemeritPointsRemaining);
+            var demeritPoints = await db.Punishments
+                .AsNoTracking()
+                .OfType<Warning>()
+                .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && x.DemeritPoints > 0 && x.Id != warning.Id)
+                .SumAsync(x => x.DemeritPointsRemaining);
 
             var guild = await db.Guilds.GetOrCreateAsync(warning.GuildId);
+            var member = await db.Members.GetOrCreateAsync(warning.GuildId, warning.Target.Id);
 
             if (demeritPoints == 0)
             {
-                await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
-                    .Set(x => x.NextDemeritPointDecay, x => null)
-                    .UpdateAsync();
+                member.NextDemeritPointDecay = null;
             }
             else
             {
                 var nextDecay = warning.CreatedAt + guild.DemeritPointsDecayInterval;
-                await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
-                    .Set(x => x.NextDemeritPointDecay, x => nextDecay)
-                    .UpdateAsync();
+                member.NextDemeritPointDecay = nextDecay;
+
+                if (await db.Punishments.OfType<Warning>()
+                        .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id)
+                        .Where(x => x.Id != warning.Id && x.RevokedAt == null && x.DemeritPointsRemaining > 0)
+                        .OrderByDescending(x => x.Id)
+                        .FirstOrDefaultAsync() is { } nextWarning)
+                {
+                    await quartz.RefreshDemeritPointJobAsync(nextWarning, member);
+                }
             }
+
+            await db.SaveChangesAsync();
 
             if (warning.AdditionalPunishmentId.HasValue)
             {
