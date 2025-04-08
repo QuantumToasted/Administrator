@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Administrator.Database;
 
 public sealed record TagLink(Snowflake GuildId, string From, string To, string? Label, LocalButtonComponentStyle Style, bool IsEphemeral)
-    : INumberKeyedDbEntity<int>
+    : INumberKeyedDbEntity
 {
     public int Id { get; init; }
     

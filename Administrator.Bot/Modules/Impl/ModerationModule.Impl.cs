@@ -22,7 +22,7 @@ public sealed partial class ModerationModule(PunishmentService punishments) : Di
         await Context.Interaction.Response().SendModalAsync(modal);
     }
     
-    public partial Task<IResult> Ban(IUser target, TimeSpan? duration = null, string? reason = null, int? messagePruneDays = null, IAttachment? image = null)
+    public partial Task<IResult> Ban(IUser target, TimeSpan? duration, string? reason, int? messagePruneDays, IAttachment? image)
     {
         return PunishAsync(Context, () => punishments.BanAsync(Context.GuildId!.Value, target, Context.Author, reason, messagePruneDays, 
             Context.Interaction.CreatedAt() + duration, image));
@@ -34,7 +34,7 @@ public sealed partial class ModerationModule(PunishmentService punishments) : Di
         await Context.Interaction.Response().SendModalAsync(modal);
     }
 
-    public partial Task<IResult> Timeout(IMember target, TimeSpan duration, string? reason = null, IAttachment? image = null)
+    public partial Task<IResult> Timeout(IMember target, TimeSpan duration, string? reason, IAttachment? image)
     {
         return PunishAsync(Context, () => punishments.TimeoutAsync(Context.GuildId!.Value, target, Context.Author, reason, 
             Context.Interaction.CreatedAt() + duration, image));
@@ -46,25 +46,25 @@ public sealed partial class ModerationModule(PunishmentService punishments) : Di
         await Context.Interaction.Response().SendModalAsync(modal);
     }
 
-    public partial Task<IResult> Kick(IMember target, string? reason = null, IAttachment? image = null)
+    public partial Task<IResult> Kick(IMember target, string? reason, IAttachment? image)
     {
         return PunishAsync(Context, () => punishments.KickAsync(Context.GuildId!.Value, target, Context.Author, reason, image));
     }
 
-    public partial Task<IResult> Block(IMember target, IChannel? channel = null, TimeSpan? duration = null, string? reason = null, IAttachment? image = null)
+    public partial Task<IResult> Block(IMember target, IChannel? channel, TimeSpan? duration, string? reason, IAttachment? image)
     {
         channel ??= Bot.GetChannel(Context.GuildId!.Value, Context.ChannelId)!;
         return PunishAsync(Context, () => punishments.BlockAsync(Context.GuildId!.Value, target, Context.Author, reason,
             channel, Context.Interaction.CreatedAt() + duration, image));
     }
 
-    public partial Task<IResult> TimedRoleGrant(IMember target, IRole role, TimeSpan? duration = null, string? reason = null, IAttachment? image = null)
+    public partial Task<IResult> TimedRoleGrant(IMember target, IRole role, TimeSpan? duration, string? reason, IAttachment? image)
     {
         return PunishAsync(Context, () => punishments.GrantTimedRoleAsync(Context.GuildId!.Value, target, Context.Author, reason, role,
             Context.Interaction.CreatedAt() + duration, image));
     }
     
-    public partial Task<IResult> TimedRoleRevoke(IMember target, IRole role, TimeSpan? duration = null, string? reason = null, IAttachment? image = null)
+    public partial Task<IResult> TimedRoleRevoke(IMember target, IRole role, TimeSpan? duration, string? reason, IAttachment? image)
     {
         return PunishAsync(Context, () => punishments.RevokeTimedRoleAsync(Context.GuildId!.Value, target, Context.Author, reason, role,
             Context.Interaction.CreatedAt() + duration, image));
@@ -76,12 +76,12 @@ public sealed partial class ModerationModule(PunishmentService punishments) : Di
         await Context.Interaction.Response().SendModalAsync(modal);
     }
 
-    public partial Task<IResult> Warn(IMember target, string? reason = null, int? demeritPoints = null, IAttachment? image = null)
+    public partial Task<IResult> Warn(IMember target, string? reason, int? demeritPoints, IAttachment? image)
     {
         return PunishAsync(Context, () => punishments.WarnAsync(Context.GuildId!.Value, target, Context.Author, reason, demeritPoints, image));
     }
 
-    public partial async Task<IResult> Revoke(int id, string? reason = null)
+    public partial async Task<IResult> Revoke(int id, string? reason)
     {
         await Deferral();
         

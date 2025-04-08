@@ -1,12 +1,17 @@
 ﻿using Disqord.Bot.Hosting;
 using Disqord.Utilities.Threading;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;
 
+#if NOJOBS
 public sealed class ReminderExpiryService : DiscordBotService
 {
+    private const int MAX_FAILURE_COUNT = 5;
+    private static readonly TimeSpan MaxDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+    
     private Cts _cts = new();
     
     public void CancelCts()
@@ -17,10 +22,12 @@ public sealed class ReminderExpiryService : DiscordBotService
         //_cts = new();
     }
     
-#if !MIGRATING
+//#if !MIGRATING
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
+        
+        var failureCount = 0;
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -32,6 +39,14 @@ public sealed class ReminderExpiryService : DiscordBotService
                 .FirstOrDefaultAsync(stoppingToken);
 
             var delay = expiringReminder?.ExpiresAt - DateTimeOffset.UtcNow;
+            var skip = false;
+            
+            if (delay > MaxDelay)
+            {
+                Logger.LogDebug("Delay exceeded the maximum value ({Value}). Waiting on a fallback delay and skipping.", MaxDelay.Humanize());
+                delay = MaxDelay;
+                skip = true;
+            }
 
             if (delay is null) // no reminders awaiting expiry
             {
@@ -54,7 +69,7 @@ public sealed class ReminderExpiryService : DiscordBotService
 
                 try
                 {
-                    Logger.LogDebug("Waiting for {Delay} for reminder expiry.", delay);
+                    Logger.LogDebug("Waiting for {Delay} for reminder expiry.", delay.Value.Humanize());
                     cts.CancelAfter(delay.Value);
                     await Task.Delay(-1, cts.Token);
                 }
@@ -72,12 +87,29 @@ public sealed class ReminderExpiryService : DiscordBotService
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Failed to run and cancel the delay task.");
+                    _cts.Dispose();
+                    _cts = new();
+
+                    failureCount++;
+                    if (failureCount < MAX_FAILURE_COUNT)
+                        continue;
                 }
             }
             else
             {
                 Logger.LogDebug("Timer delay was less than 0 (actual: {Delay}).", delay);
             }
+            
+            if (failureCount >= MAX_FAILURE_COUNT)
+            {
+                Logger.LogCritical("Failed {Count} times to run and cancel the delay task. CHECK LOGS!", failureCount);
+                Environment.Exit(-1);
+            }
+
+            failureCount = 0;
+
+            if (skip)
+                continue;
 
             if (expiringReminder is null)
                 continue;
@@ -92,5 +124,6 @@ public sealed class ReminderExpiryService : DiscordBotService
             }
         }
     }
-#endif
+//#endif
 }
+#endif

@@ -26,11 +26,5 @@ public sealed class AdminDesignTimeDbContextFactory : IDesignTimeDbContextFactor
         return new AdminDbContext(new DbContextOptionsBuilder<AdminDbContext>()
             .UseNpgsql(dataSourceBuilder.Build()).UseSnakeCaseNamingConvention()
             .Options);
-
-        /*
-        return new AdminDbContext(new DbContextOptionsBuilder<AdminDbContext>()
-            .UseNpgsql(configuration["DB_CONNECTION_STRING"])
-            .Options);
-        */
     }
 }

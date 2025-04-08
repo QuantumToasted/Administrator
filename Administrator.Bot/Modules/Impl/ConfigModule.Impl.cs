@@ -608,7 +608,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
             : $"{mentions.GetMention("ban")} will not prune any messages by default if no amount is specified.");
     }
 
-    public sealed partial class DemeritPointConfigModule(AdminDbContext db, SlashCommandMentionService mentions, DemeritPointDecayService decayService) : DiscordApplicationGuildModuleBase
+    public sealed partial class DemeritPointConfigModule(AdminDbContext db, SlashCommandMentionService mentions) : DiscordApplicationGuildModuleBase
     {
         public partial async Task<IResult> SetWarningDefault(int demeritPoints)
         {
@@ -628,7 +628,6 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
             var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
             guild.DemeritPointsDecayInterval = interval;
             await db.SaveChangesAsync();
-            decayService.CancelCts();
             return Response(interval.HasValue
                 ? $"Demerit points will now decay every {Markdown.Bold(interval.Value.Humanize(int.MaxValue, minUnit: TimeUnit.Day))}."
                 : "Demerit points will no longer decay.");

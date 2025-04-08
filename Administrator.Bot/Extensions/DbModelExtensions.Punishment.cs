@@ -84,14 +84,13 @@ public static partial class DbModelExtensions
             var guild = await db.Guilds.GetOrCreateAsync(member.GuildId);
             if (guild.DemeritPointsDecayInterval is { } interval)
             {
-                var decayService = bot.Services.GetRequiredService<DemeritPointDecayService>();
-                //member.DemeritPoints += warning.DemeritPoints;
-                //member.NextDemeritPointDecay = warning.CreatedAt + interval;
                 await db.Members.Where(x => x.GuildId == member.GuildId && x.UserId == member.UserId)
                     .Set(x => x.NextDemeritPointDecay, x => warning.CreatedAt + interval)
                     .UpdateAsync();
-                
-                decayService.CancelCts();
+
+                var quartz = bot.Services.GetRequiredService<QuartzService>();
+                member.NextDemeritPointDecay = warning.CreatedAt + interval;
+                await quartz.RefreshDemeritPointJobAsync(warning, member);
             }
         }
     }
@@ -121,33 +120,36 @@ public static partial class DbModelExtensions
         {
             warning.DemeritPointsRemaining = 0;
 
+            var quartz = bot.Services.GetRequiredService<QuartzService>();
+            await quartz.UnscheduleDemeritPointJobAsync(warning);
+            
+            await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
+            var punishments = scope.ServiceProvider.GetRequiredService<PunishmentService>();
+
+            var demeritPoints = await EntityFrameworkQueryableExtensions.SumAsync(db.Punishments
+                    .AsNoTracking()
+                    .OfType<Warning>()
+                    .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && x.DemeritPoints > 0 && x.Id != warning.Id),
+                x => x.DemeritPointsRemaining);
+
+            var guild = await db.Guilds.GetOrCreateAsync(warning.GuildId);
+
+            if (demeritPoints == 0)
+            {
+                await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
+                    .Set(x => x.NextDemeritPointDecay, x => null)
+                    .UpdateAsync();
+            }
+            else
+            {
+                var nextDecay = warning.CreatedAt + guild.DemeritPointsDecayInterval;
+                await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
+                    .Set(x => x.NextDemeritPointDecay, x => nextDecay)
+                    .UpdateAsync();
+            }
+
             if (warning.AdditionalPunishmentId.HasValue)
             {
-                await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
-                var punishments = scope.ServiceProvider.GetRequiredService<PunishmentService>();
-
-                var demeritPoints = await EntityFrameworkQueryableExtensions.SumAsync(db.Punishments
-                        .AsNoTracking()
-                        .OfType<Warning>()
-                        .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && x.DemeritPoints > 0 && x.Id != warning.Id),
-                    x => x.DemeritPointsRemaining);
-
-                var guild = await db.Guilds.GetOrCreateAsync(warning.GuildId);
-
-                if (demeritPoints == 0)
-                {
-                    await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
-                        .Set(x => x.NextDemeritPointDecay, x => null)
-                        .UpdateAsync();
-                }
-                else
-                {
-                    var nextDecay = warning.CreatedAt + guild.DemeritPointsDecayInterval;
-                    await db.Members.Where(x => x.GuildId == warning.GuildId && x.UserId == warning.Target.Id)
-                        .Set(x => x.NextDemeritPointDecay, x => nextDecay)
-                        .UpdateAsync();
-                }
-
                 await punishments.RevokePunishmentAsync(warning.GuildId, warning.AdditionalPunishmentId.Value, warning.Revoker!,
                     $"Linked warning {warning} was revoked.", true);
             }

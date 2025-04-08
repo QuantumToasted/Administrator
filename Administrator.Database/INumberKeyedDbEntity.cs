@@ -2,8 +2,19 @@
 
 namespace Administrator.Database;
 
-public interface INumberKeyedDbEntity<T>
+public interface INumberKeyedDbEntity
+{
+    int Id { get; }
+    //Type NumberType { get; }
+}
+
+/*
+public interface INumberKeyedDbEntity<out T> : INumberKeyedDbEntity
     where T : INumber<T>
 {
-    T Id { get; }
+    new T Id { get; }
+
+    object INumberKeyedDbEntity.Id => Id;
+    Type INumberKeyedDbEntity.NumberType => typeof(T);
 }
+*/

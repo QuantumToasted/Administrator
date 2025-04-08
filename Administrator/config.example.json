@@ -1,4 +1,7 @@
 {
+    "Cache": {
+        "MaxMessageLifetimeDays": 7
+    },
     "Appeal": {
 		"GuildId": 0,
         "GuildInviteCode": ""

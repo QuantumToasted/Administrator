@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;
 
+#if NOJOBS
 public sealed class DemeritPointDecayService : DiscordBotService
 {
     private Cts _cts = new();
@@ -18,7 +19,8 @@ public sealed class DemeritPointDecayService : DiscordBotService
             _cts.Cancel();
     }
     
-#if !MIGRATING
+//#if !MIGRATING
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
@@ -133,5 +135,6 @@ public sealed class DemeritPointDecayService : DiscordBotService
             }
         }
     }
-#endif
+//#endif
 }
+#endif

@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Administrator.Bot.Jobs;
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;
@@ -11,6 +12,7 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Qommon;
+using Quartz;
 using IBan = Administrator.Core.IBan;
 using Timeout = Administrator.Database.Timeout;
 
@@ -18,7 +20,7 @@ namespace Administrator.Bot;
 
 [ScopedService]
 public sealed class PunishmentService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db,
-    AutoCompleteService autoComplete, PunishmentExpiryService expiryService, ILogger<PunishmentService> logger) : IPunishmentService
+    ISchedulerFactory schedulerFactory, ILogger<PunishmentService> logger) : IPunishmentService
 {
     // TODO: Make these configurable?
     public const double MINIMUM_APPEAL_WAIT_PERCENTAGE = 0.05;
@@ -39,10 +41,14 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         {
             query = query.Where(x => EF.Functions.Like(x.Id.ToString(), $"%{id}%") || x.Id == id);
         }
-
+        
         var punishments = await query.OrderByDescending(x => x.Id)
-            .Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
             .ToListAsync();
+
+        // prevent auto-completing warnings with additional punishments
+        punishments = punishments.Where(x => (x as Warning)?.AdditionalPunishmentId.HasValue != true)
+            .Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
+            .ToList();
         
         punishmentId.Choices!.AddRange(punishments.ToDictionary(x => x.FormatAutoCompleteName(), x => x.Id));
         
@@ -163,6 +169,13 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         {
             return $"The punishment {punishment} was already revoked " +
                    $"{Markdown.Timestamp(punishment.RevokedAt.Value, Markdown.TimestampFormat.RelativeTime)}.";
+        }
+        
+        if (punishment is Warning { AdditionalPunishmentId: { } additionalPunishmentId } &&
+            await db.Punishments.FirstOrDefaultAsync(x => x.Id == additionalPunishmentId) is { } additionalPunishment)
+        {
+            return "This warning cannot be appealed. " +
+                   $"Appeal its linked {additionalPunishment.FormatPunishmentName(LetterCasing.LowerCase)} {additionalPunishment}.";
         }
         
         if (punishment.AppealStatus == AppealStatus.Rejected)
@@ -401,9 +414,14 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         {
             member.NextDemeritPointDecay = newDemeritPointDecayStart + guild.DemeritPointsDecayInterval;
         }
+
+        if (punishment is IExpiringDbEntity)
+        {
+            var scheduler = await schedulerFactory.GetScheduler();
+            await scheduler.SchedulePunishmentExpiryAsync(punishment, bot.StoppingToken);
+        }
         
         await db.SaveChangesAsync();
-        expiryService.CancelCts();
         return punishment;
     }
 

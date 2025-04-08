@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record Highlight(Snowflake AuthorId, Snowflake? GuildId, string Text) : INumberKeyedDbEntity<int>
+public sealed record Highlight(Snowflake AuthorId, Snowflake? GuildId, string Text) : INumberKeyedDbEntity//<int>
 {
     public int Id { get; init; }
     

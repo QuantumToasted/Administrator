@@ -17,7 +17,7 @@ using StringExtensions = Administrator.Core.StringExtensions;
 
 namespace Administrator.Bot;
 
-public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService inviteFilter, AuditLogService auditLogs)
+public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService inviteFilter, AuditLogService auditLogs, MessageCacheService messageCache)
     : DiscordBotService
 {
     private static readonly TimeSpan AttachmentStorageDuration = TimeSpan.FromMinutes(30);
@@ -299,7 +299,6 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
         _ = Task.Run(async () =>
         {
-
             var contentBuilder = new StringBuilder();
 
             IAuditLog? log = null;
@@ -307,38 +306,41 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
             
             foreach (var messageId in e.MessageIds.Order())
             {
+                var message = e.Messages.GetValueOrDefault(messageId);
+                var cacheMessage = messageCache.GetMessage(e.ChannelId, messageId);
+                
+                var author = message?.Author ?? cacheMessage?.Author;
+                var content = message?.Content ?? cacheMessage?.Content ?? "NO DATA";
+                
+                if (string.IsNullOrWhiteSpace(content))
+                    content = "NO CONTENT";
+                
                 contentBuilder.Append($"Message {messageId}: ");
 
-                if (!e.Messages.TryGetValue(messageId, out var cachedMessage))
+                if (author is not null)
                 {
-                    contentBuilder.AppendNewline("NO DATA").AppendNewline();
-                }
-                else
-                {
-                    if (!banLogSearchComplete)
-                    {
-                        log = await auditLogs.WaitForAuditLogAsync<IMemberBannedAuditLog>(e.GuildId, x => x.TargetId == cachedMessage.Author.Id,
-                            TimeSpan.FromSeconds(2));
-                        banLogSearchComplete = true;
-                    }
-                    
                     contentBuilder.AppendNewline()
-                        .Append($"{cachedMessage.Author.Tag} ({cachedMessage.Author.Id}): ");
+                        .Append($"{author.Tag} ({author.Id}): ");
+                }
 
-                    contentBuilder.AppendNewline(!string.IsNullOrWhiteSpace(cachedMessage.Content)
-                            ? cachedMessage.Content
-                            : "NO CONTENT");
-
-                    foreach (var attachment in cachedMessage.Attachments)
-                    {
-                        contentBuilder.AppendNewline(attachment.Url);
-                    }
+                contentBuilder.AppendNewline(content);
+                
+                foreach (var attachment in message?.Attachments ?? [])
+                {
+                    contentBuilder.AppendNewline(attachment.Url);
+                }
+                
+                if (!banLogSearchComplete && author is not null)
+                {
+                    log = await auditLogs.WaitForAuditLogAsync<IMemberBannedAuditLog>(e.GuildId, x => x.TargetId == author.Id,
+                        TimeSpan.FromSeconds(2));
+                    banLogSearchComplete = true;
                 }
 
                 contentBuilder.AppendNewline();
             }
             
-            var message = new LocalMessage()
+            var localMessage = new LocalMessage()
                 .AddAttachment(LocalAttachment.Bytes(Encoding.Default.GetBytes(contentBuilder.ToString()), $"BulkDelete_{Guid.NewGuid()}.txt"));
 
             var embed = new LocalEmbed()
@@ -366,11 +368,11 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
             }
             */
 
-            message.AddEmbed(embed);
+            localMessage.AddEmbed(embed);
 
             try
             {
-                await Bot.SendMessageAsync(logChannel.ChannelId, message);
+                await Bot.SendMessageAsync(logChannel.ChannelId, localMessage);
             }
             catch (Exception ex)
             {

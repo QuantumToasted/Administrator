@@ -7,10 +7,14 @@ namespace Administrator.Database;
 
 public static class DbModelExtensions
 {
+    internal static string FormatKey(this INumberKeyedDbEntity entity)
+        => $"`[#{entity.Id}]`";
+    /*
     internal static string FormatKey<T>(this INumberKeyedDbEntity<T> entity) where T : INumber<T>
     {
         return $"`[#{entity.Id}]`";
     }
+    */
     
     public static string RegenerateApiKey(this Guild guild)
     {

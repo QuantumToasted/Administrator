@@ -21,7 +21,7 @@ public static class StringBuilderExtensions
             // let's assume that the first, single element will not exceed 'length'...
             sb.Append(formatted);
 
-            if (i > 0 && i < list.Count - 1)
+            if (i != list.Count - 1)
                 sb.Append(separator);
 
             if (i == list.Count - 1)

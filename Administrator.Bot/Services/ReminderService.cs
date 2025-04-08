@@ -1,17 +1,19 @@
-﻿using Administrator.Core;
+﻿using Administrator.Bot.Jobs;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
 using Disqord.Bot.Commands.Interaction;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 
 namespace Administrator.Bot;
 
 // TODO: maybe remove this or extrapolate into a util method. I don't like the idea of coupling modules to services.
 [ScopedService]
 public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor contextAccessor, SlashCommandMentionService mentions, 
-    ReminderExpiryService expiryService, AutoCompleteService autoComplete)
+    ISchedulerFactory schedulerFactory, AutoCompleteService autoComplete)
 {
     private readonly IDiscordInteractionCommandContext _context = (IDiscordInteractionCommandContext)contextAccessor.Context;
 
@@ -32,7 +34,10 @@ public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor c
         
         db.Reminders.Add(reminder);
         await db.SaveChangesAsync();
-        expiryService.CancelCts();
+
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.ScheduleAdminJob<ReminderExpiryJob, Reminder>(reminder);
+        //expiryService.CancelCts();
 
         return reminder;
     }
@@ -65,7 +70,10 @@ public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor c
         
         db.Reminders.Add(reminder);
         await db.SaveChangesAsync();
-        expiryService.CancelCts();
+        
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.ScheduleAdminJob<ReminderExpiryJob, Reminder>(reminder);
+        //expiryService.CancelCts();
 
         return reminder;
     }
@@ -80,7 +88,9 @@ public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor c
 
         db.Reminders.Remove(reminder);
         await db.SaveChangesAsync();
-        expiryService.CancelCts();
+        
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.DeleteAdminJob<ReminderExpiryJob, Reminder>(reminder);
 
         return reminder;
     }
@@ -90,7 +100,7 @@ public sealed class ReminderService(AdminDbContext db, ICommandContextAccessor c
         if (!id.IsFocused)
             return;
 
-        var reminders = await db.Reminders.Where(x => x.AuthorId == _context.AuthorId)
+        var reminders = await db.Reminders.Where(x => x.AuthorId == _context.AuthorId && x.ExpiresAt != x.CreatedAt)
             .OrderBy(x => x.ExpiresAt)
             .ToListAsync();
         

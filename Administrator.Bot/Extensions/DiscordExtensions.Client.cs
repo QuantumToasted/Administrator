@@ -118,11 +118,11 @@ public static partial class DiscordExtensions
         return members.GetValueOrDefault(memberId);
     }
 
-    public static async Task<IUserMessage?> TrySendMessageAsync(this DiscordClientBase client, Snowflake channelId, LocalMessage message)
+    public static async Task<IUserMessage?> TrySendMessageAsync(this DiscordClientBase client, Snowflake channelId, LocalMessage message, CancellationToken cancellationToken = default)
     {
         try
         {
-            return await client.SendMessageAsync(channelId, message);
+            return await client.SendMessageAsync(channelId, message, cancellationToken: cancellationToken);
         }
         catch (RestApiException ex) when (ex.HttpResponse.StatusCode is HttpResponseStatusCode.Forbidden or HttpResponseStatusCode.NotFound || ex.ErrorModel?.Code == RestApiErrorCode.CannotSendMessagesToThisUser)
         {
@@ -135,20 +135,20 @@ public static partial class DiscordExtensions
         }
     }
 
-    public static async Task<IUserMessage?> TrySendDirectMessageAsync(this DiscordClientBase client, Snowflake userId, LocalMessage message)
+    public static async Task<IUserMessage?> TrySendDirectMessageAsync(this DiscordClientBase client, Snowflake userId, LocalMessage message, CancellationToken cancellationToken = default)
     {
         IDirectChannel dmChannel;
 
         try
         {
-            dmChannel = await client.CreateDirectChannelAsync(userId);
+            dmChannel = await client.CreateDirectChannelAsync(userId, cancellationToken: cancellationToken);
         }
         catch (RestApiException ex) when (ex.StatusCode == HttpResponseStatusCode.BadRequest) // should ONLY be thrown for bots
         {
             return null;
         }
 
-        return await client.TrySendMessageAsync(dmChannel.Id, message);
+        return await client.TrySendMessageAsync(dmChannel.Id, message, cancellationToken);
     }
 
     public static async Task<IUserMessage?> TryModifyMessageToAsync(this DiscordClientBase client, Snowflake channelId, Snowflake messageId, LocalMessageBase message)

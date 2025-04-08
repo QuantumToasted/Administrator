@@ -10,7 +10,8 @@ namespace Administrator.Bot;
 
 public static partial class DbModelExtensions
 {
-    public static LocalMessage FormatExpiryMessage(this Reminder reminder)
+    public static TMessage FormatExpiryMessage<TMessage>(this Reminder reminder, bool includeComponents = true)
+        where TMessage : LocalMessageBase, new()
     {
         var contentBuilder = new StringBuilder(Mention.User(reminder.AuthorId));
         contentBuilder.AppendNewline(reminder.RepeatMode.HasValue
@@ -18,9 +19,32 @@ public static partial class DbModelExtensions
             : $", your reminder {reminder} from {Markdown.Timestamp(reminder.CreatedAt, Markdown.TimestampFormat.RelativeTime)}:");
         
         contentBuilder.Append(reminder.Text);
-        return new LocalMessage()
+
+        var message = new TMessage()
             .WithContent(contentBuilder.ToString())
             .WithAllowedMentions(new LocalAllowedMentions().WithUserIds(reminder.AuthorId));
+        
+        // single reminder - allowed snoozing
+        if (!reminder.RepeatMode.HasValue && includeComponents)
+        {
+            var selection = LocalComponent.Selection($"Reminder:Snooze:{reminder.Id}",
+                new LocalSelectionComponentOption("5 minutes", "5"),
+                new LocalSelectionComponentOption("10 minutes", "10"),
+                new LocalSelectionComponentOption("30 minutes", "30"),
+                new LocalSelectionComponentOption("1 hour", "60"),
+                new LocalSelectionComponentOption("8 hours", "480"),
+                new LocalSelectionComponentOption("12 hours", "720"),
+                new LocalSelectionComponentOption("24 hours", "1440"),
+                new LocalSelectionComponentOption("Dismiss", "0"));
+
+            message.AddComponent(LocalComponent.Row(selection));
+        }
+        else
+        {
+            message.WithComponents();
+        }
+
+        return message;
     }
     
     public static string FormatRepeatDuration(this Reminder reminder)
@@ -38,43 +62,5 @@ public static partial class DbModelExtensions
 
         return value.Humanize();
         //return value.Humanize(int.MaxValue, maxUnit: TimeUnit.Week, minUnit: TimeUnit.Minute);
-    }
-    
-    public static async Task RemindAsync(this Reminder reminder, DiscordBotBase bot)
-    {
-        await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
-
-        if (!reminder.RepeatMode.HasValue)
-        {
-            try
-            {
-                await bot.StartMenuAsync(reminder.ChannelId, new AdminTextMenu(new ReminderSnoozeView(reminder)) { AuthorId = reminder.AuthorId },
-                    TimeSpan.FromMinutes(10));
-            }
-            catch { /*ignored */ }
-
-            db.Reminders.Remove(reminder);
-        }
-        else
-        {
-            await bot.TrySendMessageAsync(reminder.ChannelId, reminder.FormatExpiryMessage());
-
-            var existingReminder = await db.Reminders.FindAsync(reminder.Id);
-            var now = DateTimeOffset.UtcNow;
-            
-            do
-            {
-                existingReminder!.ExpiresAt = existingReminder.RepeatMode!.Value switch
-                {
-                    ReminderRepeatMode.Hourly => existingReminder.ExpiresAt.AddHours(reminder.RepeatInterval!.Value),
-                    ReminderRepeatMode.Daily => existingReminder.ExpiresAt.AddDays(reminder.RepeatInterval!.Value),
-                    ReminderRepeatMode.Weekly => existingReminder.ExpiresAt.AddWeeks(reminder.RepeatInterval!.Value),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-
-            } while (existingReminder.ExpiresAt < now);
-        }
-        
-        await db.SaveChangesAsync();
     }
 }

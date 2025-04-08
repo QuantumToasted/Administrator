@@ -12,7 +12,7 @@ public enum ReminderRepeatMode
 }
 
 public sealed record Reminder(string Text, Snowflake AuthorId, Snowflake ChannelId, DateTimeOffset ExpiresAt, ReminderRepeatMode? RepeatMode, double? RepeatInterval) 
-    : INumberKeyedDbEntity<int>, IExpiringDbEntity
+    : INumberKeyedDbEntity, IExpiringDbEntity
 {
     public int Id { get; init; }
     

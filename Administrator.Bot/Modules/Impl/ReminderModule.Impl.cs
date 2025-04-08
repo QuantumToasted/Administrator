@@ -15,7 +15,7 @@ public sealed partial class ReminderModule(ReminderService reminders, AdminDbCon
 {
     public partial async Task<IResult> List()
     {
-        var userReminders = await db.Reminders.Where(x => x.AuthorId == Context.AuthorId)
+        var userReminders = await db.Reminders.Where(x => x.AuthorId == Context.AuthorId && x.ExpiresAt != x.CreatedAt)
             .OrderByDescending(x => x.ExpiresAt)
             .ToListAsync();
 
@@ -43,8 +43,6 @@ public sealed partial class ReminderModule(ReminderService reminders, AdminDbCon
                             {
                                 nameBuilder.Append($" - repeats every {y.FormatRepeatDuration()}");
                             }
-
-
 
                             return new LocalEmbedField()
                                 .WithName(nameBuilder.ToString())

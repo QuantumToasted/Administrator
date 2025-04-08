@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public abstract record Punishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason) : INumberKeyedDbEntity<int>, IPunishment
+public abstract record Punishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason) : INumberKeyedDbEntity, IPunishment
 {
     public int Id { get; init; }
     

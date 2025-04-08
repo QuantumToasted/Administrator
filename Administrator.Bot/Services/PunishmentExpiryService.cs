@@ -5,11 +5,16 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Timeout = System.Threading.Timeout;
 
 namespace Administrator.Bot;
 
+#if NOJOBS
 public sealed class PunishmentExpiryService : DiscordBotService
 {
+    private const int MAX_FAILURE_COUNT = 5;
+    private static readonly TimeSpan MaxDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+    
     private Cts _cts = new();
 
     public void CancelCts()
@@ -18,11 +23,14 @@ public sealed class PunishmentExpiryService : DiscordBotService
             _cts.Cancel();
     }
 
-#if !MIGRATING
+//#if !MIGRATING
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
 
+        var failureCount = 0;
+        
         while (!stoppingToken.IsCancellationRequested)
         {
             await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
@@ -33,6 +41,14 @@ public sealed class PunishmentExpiryService : DiscordBotService
                 .Where(x => x.ExpiresAt.HasValue && !x.Punishment.RevokedAt.HasValue).MinBy(x => x.ExpiresAt!.Value);
 
             var delay = expiringPunishment?.ExpiresAt - DateTimeOffset.UtcNow;
+            var skip = false;
+
+            if (delay > MaxDelay)
+            {
+                Logger.LogDebug("Delay exceeded the maximum value ({Value}). Waiting on a fallback delay and skipping.", MaxDelay.Humanize());
+                delay = MaxDelay;
+                skip = true;
+            }
 
             if (delay is null)
             {
@@ -46,7 +62,6 @@ public sealed class PunishmentExpiryService : DiscordBotService
                     Logger.LogDebug("Task.Delay canceled due to CancelCts() being called.");
                     _cts.Dispose();
                     _cts = new();
-                    
                     continue;
                 }
             }
@@ -56,7 +71,7 @@ public sealed class PunishmentExpiryService : DiscordBotService
 
                 try
                 {
-                    Logger.LogDebug("Waiting for {Delay} for punishment expiry.", delay);
+                    Logger.LogDebug("Waiting for {Delay} for punishment expiry.", delay.Value.Humanize());
                     cts.CancelAfter(delay.Value);
                     await Task.Delay(-1, cts.Token);
                 }
@@ -74,12 +89,29 @@ public sealed class PunishmentExpiryService : DiscordBotService
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Failed to run and cancel the delay task.");
+                    _cts.Dispose();
+                    _cts = new();
+
+                    failureCount++;
+                    if (failureCount < MAX_FAILURE_COUNT)
+                        continue;
                 }
             }
             else
             {
                 Logger.LogDebug("Timer delay was less than 0 (actual: {Delay}).", delay);
             }
+            
+            if (failureCount >= MAX_FAILURE_COUNT)
+            {
+                Logger.LogCritical("Failed {Count} times to run and cancel the delay task. CHECK LOGS!", failureCount);
+                Environment.Exit(-1);
+            }
+
+            failureCount = 0;
+
+            if (skip)
+                continue;
 
             if (expiringPunishment is null)
                 continue;
@@ -97,5 +129,6 @@ public sealed class PunishmentExpiryService : DiscordBotService
             }
         }
     }
-#endif
+//#endif
 }
+#endif

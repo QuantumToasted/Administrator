@@ -16,7 +16,7 @@ public sealed class ReminderSnoozeView : AdminViewBase
         
         MessageTemplate = x =>
         {
-            var message = reminder.FormatExpiryMessage();
+            var message = reminder.FormatExpiryMessage<LocalMessage>();
             x.Content = message.Content;
             x.AllowedMentions = message.AllowedMentions;
         };

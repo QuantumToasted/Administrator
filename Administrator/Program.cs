@@ -14,6 +14,7 @@ using Disqord.Gateway.Default;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Quartz;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -83,7 +84,22 @@ var host = new HostBuilder()
             .AddConfiguration<AdministratorDatabaseConfiguration>(context.Configuration, out var dbConfiguration)
             .AddConfiguration<AdministratorHelpConfiguration>()
             .AddConfiguration<AdministratorSteamConfiguration>(context.Configuration, out var steamConfiguration)
-            .AddConfiguration<AdministratorLoggingConfiguration>();
+            .AddConfiguration<AdministratorLoggingConfiguration>()
+            .AddConfiguration<AdministratorCacheConfiguration>();
+
+        services.AddQuartz(x =>
+        {
+            x.InterruptJobsOnShutdown = true;
+            x.AddJobListener<AdminJobListener>();
+            x.AddSchedulerListener<AdminSchedulerListener>();
+        });
+        
+        /* TODO: start scheduler manually - this may not be necessary
+        services.AddQuartzHostedService(x =>
+        {
+            x.WaitForJobsToComplete = false;
+        });
+        */
         
         services.AddSingleton<HttpClient>();
         services.AddScopedServices(typeof(AdministratorBot).Assembly);

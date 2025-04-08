@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Administrator.Database;
 
 public sealed record ButtonRole(Snowflake GuildId, Snowflake ChannelId, Snowflake MessageId, int Row, int Position, string? Emoji, string? Text, LocalButtonComponentStyle Style, Snowflake RoleId)
-    : INumberKeyedDbEntity<int>
+    : INumberKeyedDbEntity//<int>
 {
     public int Id { get; init; }
     
