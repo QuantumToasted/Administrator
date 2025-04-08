@@ -45,10 +45,19 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         var punishments = await query.OrderByDescending(x => x.Id)
             .ToListAsync();
 
-        // prevent auto-completing warnings with additional punishments
-        punishments = punishments.Where(x => (x as Warning)?.AdditionalPunishmentId.HasValue != true)
-            .Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
-            .ToList();
+        if (!guildId.HasValue) // `/appeal`
+        {
+            // prevent auto-completing warnings with additional punishments
+            punishments = punishments.Where(x => (x as Warning)?.AdditionalPunishmentId.HasValue != true)
+                .Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
+                .ToList();
+        }
+        else
+        {
+            punishments = punishments
+                .Take(Discord.Limits.ApplicationCommand.Option.MaxChoiceAmount)
+                .ToList();
+        }
         
         punishmentId.Choices!.AddRange(punishments.ToDictionary(x => x.FormatAutoCompleteName(), x => x.Id));
         
