@@ -47,7 +47,11 @@ public static class QuartzExtensions
         where TEntity : class, INumberKeyedDbEntity
     {
         var triggerKey = await scheduler.GetTriggerKey<TJob, TEntity>(entity);
-        Guard.IsNotNull(triggerKey);
+        if (triggerKey is null)
+        {
+            await scheduler.ScheduleAdminJob<TJob, TEntity>(entity, startAt);
+            return;
+        }
 
         var (_, newTrigger) = entity.FormatJobAndTrigger<TJob, TEntity>(startAt);
         await scheduler.RescheduleJob(triggerKey, newTrigger);
@@ -60,7 +64,11 @@ public static class QuartzExtensions
         Guard.IsNotNull(entity.ExpiresAt);
 
         var triggerKey = await scheduler.GetTriggerKey<TJob, TEntity>(entity);
-        Guard.IsNotNull(triggerKey);
+        if (triggerKey is null)
+        {
+            await scheduler.ScheduleAdminJob<TJob, TEntity>(entity);
+            return;
+        }
 
         var (_, newTrigger) = entity.FormatJobAndTrigger<TJob, TEntity>();
         await scheduler.RescheduleJob(triggerKey, newTrigger);
