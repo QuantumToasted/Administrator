@@ -3,7 +3,7 @@ using Quartz;
 
 namespace Administrator.Bot.Jobs;
 
-public class BackpackUpdateJob(ILogger<BackpackUpdateJob> logger, BackpackService backpack) : IAdminJob<BackpackUpdateJob>
+public class BackpackUpdateJob(ILogger<BackpackUpdateJob> logger, BackpackService backpack) : IJob
 {
     public ILogger Logger { get; } = logger;
     

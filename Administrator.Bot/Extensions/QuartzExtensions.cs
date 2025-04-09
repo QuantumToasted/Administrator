@@ -88,15 +88,6 @@ public static class QuartzExtensions
         var triggers = await scheduler.GetTriggersOfJob(TJob.FormatJobKey(entity));
         return triggers.FirstOrDefault()?.Key;
     }
-
-    public static (IJobDetail JobDetail, ITrigger Trigger) FormatJobAndTrigger<TJob>(DateTimeOffset startAt)
-        where TJob : IAdminJob<TJob>
-    {
-        var jobDetail = JobBuilder.Create<TJob>().WithIdentity(TJob.FormatJobKey()).Build();
-        var trigger = TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(startAt)).StartAt(startAt).Build();
-
-        return (jobDetail, trigger);
-    }
     
     public static (IJobDetail JobDetail, ITrigger Trigger) FormatJobAndTrigger<TJob, TEntity>(this TEntity entity, DateTimeOffset startAt)
         where TJob : IAdminJob<TJob, TEntity> 

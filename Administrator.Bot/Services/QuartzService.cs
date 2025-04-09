@@ -94,9 +94,8 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
         
         Logger.LogDebug("Scheduled {Count} punishment expiry jobs.", expiringPunishments.Count);
 
-        var (backpackJob, _) = QuartzExtensions.FormatJobAndTrigger<BackpackUpdateJob>(DateTimeOffset.UtcNow);
         await scheduler.ScheduleJob(
-            backpackJob,
+            JobBuilder.Create<BackpackUpdateJob>().WithIdentity(Guid.NewGuid().ToString(), nameof(BackpackUpdateJob)).Build(),
             TriggerBuilder.Create().StartNow().WithSchedule(SimpleScheduleBuilder.Create().WithIntervalInMinutes(30)).Build(),
             Bot.StoppingToken);
         
