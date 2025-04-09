@@ -66,70 +66,34 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
         return _particleEffectImages[effect] = effectStream.ToArray();
     }
 
+    public Task<ItemPrices> GetItemPricesAsync() => backpack.GetItemPricesAsync(CurrencyValue.Raw);
+    
+    public Task<Currencies> GetCurrenciesAsync() => backpack.GetCurrenciesAsync(CurrencyValue.Raw);
+        
+    public void UpdateCurrencies(Currencies currencies)
+    {
+        CraftHatCurrency = currencies.CraftHat;
+        EarbudsCurrency = currencies.Earbuds;
+        CrateKeyCurrency = currencies.CrateKey;
+        RefinedMetalCurrency = currencies.RefinedMetal;
+    }
+
+    public void UpdateItemPrices(ItemPrices itemPricesResponse)
+    {
+        var itemPrices = ItemPrices.ToDictionary(x => x.Key, x => x.Value);
+
+        foreach (var (name, item) in itemPricesResponse.Items)
+        {
+            itemPrices[name] = item;
+        }
+        
+        ItemPrices = itemPrices;
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
-
         await InitializeSchemaImagesAsync();
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await UpdateCurrenciesAsync();
-            await UpdateItemPricesAsync();
-            
-            await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
-        }
-    }
-
-    private async Task UpdateCurrenciesAsync()
-    {
-        try
-        {
-            var currencies = await backpack.GetCurrenciesAsync(CurrencyValue.Raw);
-            if (!currencies.IsSuccess)
-                throw new Exception(currencies.ErrorMessage);
-            
-            CraftHatCurrency = currencies.CraftHat;
-            EarbudsCurrency = currencies.Earbuds;
-            CrateKeyCurrency = currencies.CrateKey;
-            RefinedMetalCurrency = currencies.RefinedMetal;
-            
-            Logger.LogDebug("Currency information updated!");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to update backpack.tf currency information.");
-        }
-    }
-
-    private async Task UpdateItemPricesAsync()
-    {
-        var itemPrices = ItemPrices.ToDictionary(x => x.Key, x => x.Value);
-        
-        try
-        {
-            var itemPriceResponse = await backpack.GetItemPricesAsync(CurrencyValue.Raw/*, _lastCheck*/);
-            if (!itemPriceResponse.IsSuccess)
-                throw new Exception(itemPriceResponse.ErrorMessage);
-
-            var count = 0;
-            foreach (var (name, item) in itemPriceResponse.Items)
-            {
-                itemPrices[name] = item;
-                count++;
-            }
-            
-            if (count > 0)
-                Logger.LogDebug("Item price information for {Count} items updated!", count);
-            
-            //_lastCheck = DateTimeOffset.UtcNow;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "Failed to update backpack.tf item price information.");
-        }
-
-        ItemPrices = itemPrices;
     }
 
     private async Task InitializeSchemaImagesAsync()

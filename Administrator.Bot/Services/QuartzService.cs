@@ -6,7 +6,7 @@ using LinqToDB;
 using Microsoft.Extensions.Logging;
 using Qommon;
 using Quartz;
-
+using Quartz.Impl.Triggers;
 using Timeout = Administrator.Database.Timeout;
 
 namespace Administrator.Bot;
@@ -94,6 +94,12 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
         
         Logger.LogDebug("Scheduled {Count} punishment expiry jobs.", expiringPunishments.Count);
 
+        var (backpackJob, _) = QuartzExtensions.FormatJobAndTrigger<BackpackUpdateJob>(DateTimeOffset.UtcNow);
+        await scheduler.ScheduleJob(
+            backpackJob,
+            TriggerBuilder.Create().StartNow().WithSchedule(SimpleScheduleBuilder.Create().WithIntervalInMinutes(30)).Build(),
+            Bot.StoppingToken);
+        
         // TODO: Schedule other jobs
 
         await scheduler.Start(stoppingToken);
