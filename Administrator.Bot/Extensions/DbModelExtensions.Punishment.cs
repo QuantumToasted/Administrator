@@ -87,8 +87,7 @@ public static partial class DbModelExtensions
                 await db.SaveChangesAsync();
 
                 var quartz = bot.Services.GetRequiredService<QuartzService>();
-                member.NextDemeritPointDecay = warning.CreatedAt + interval;
-                await quartz.RefreshDemeritPointJobAsync(warning, member);
+                await quartz.RescheduleDemeritPointDecayJobAsync(warning, member);
             }
         }
     }
@@ -119,7 +118,7 @@ public static partial class DbModelExtensions
             warning.DemeritPointsRemaining = 0;
 
             var quartz = bot.Services.GetRequiredService<QuartzService>();
-            await quartz.UnscheduleDemeritPointJobAsync(warning);
+            await quartz.UnscheduleDemeritPointDecayJobAsync(warning);
             
             await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
             var punishments = scope.ServiceProvider.GetRequiredService<PunishmentService>();
@@ -148,7 +147,7 @@ public static partial class DbModelExtensions
                         .OrderByDescending(x => x.Id)
                         .FirstOrDefaultAsync() is { } nextWarning)
                 {
-                    await quartz.RefreshDemeritPointJobAsync(nextWarning, member);
+                    await quartz.RescheduleDemeritPointDecayJobAsync(nextWarning, member);
                 }
             }
 

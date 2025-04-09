@@ -1,50 +1,70 @@
-using Administrator.Bot.Jobs;
 using Administrator.Database;
 using Qommon;
 using Quartz;
-using Quartz.Simpl;
-using Timeout = Administrator.Database.Timeout;
 
 namespace Administrator.Bot;
 
 public static class QuartzExtensions
 {
-    /*
-    private static JobKey GenerateJobKey<TJob>()
-        where TJob : IAdminJob
-    {
-        return JobKey.Create(Guid.NewGuid().ToString(), typeof(TJob).Name);
-    }
-    
-    private static JobKey GenerateJobKey<TJob, TEntity>(TEntity entity)
-        where TJob : IAdminJob
+    public static ValueTask ScheduleAdminJobs<TJob, TEntity>(this IScheduler scheduler, IEnumerable<(TEntity Entity, DateTimeOffset StartAt)> entities)
+        where TJob : IAdminJob<TJob, TEntity> 
         where TEntity : class, INumberKeyedDbEntity
     {
-        return JobKey.Create(entity.Id.ToString(), typeof(TJob).Name);
+        var jobDict = entities.Select(static t => t.Entity.FormatJobAndTrigger<TJob, TEntity>(t.StartAt))
+            .ToDictionary(t => t.JobDetail, IReadOnlyCollection<ITrigger> (x) => [x.Trigger]);
+        
+        return scheduler.ScheduleJobs(jobDict, true);
+    }
+    
+    public static ValueTask ScheduleAdminJobs<TJob, TEntity>(this IScheduler scheduler, IEnumerable<TEntity> entities)
+        where TJob : IAdminJob<TJob, TEntity> 
+        where TEntity : class, INumberKeyedDbEntity, IExpiringDbEntity
+    {
+        var jobDict = entities.Select(FormatJobAndTrigger<TJob, TEntity>)
+            .ToDictionary(x => x.JobDetail, IReadOnlyCollection<ITrigger> (x) => [x.Trigger]);
+        
+        return scheduler.ScheduleJobs(jobDict, true);
+    }
+    
+    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity, DateTimeOffset startAt)
+        where TJob : IAdminJob<TJob, TEntity> 
+        where TEntity : class, INumberKeyedDbEntity
+    {
+        var (jobDetail, trigger) = entity.FormatJobAndTrigger<TJob, TEntity>(startAt);
+        return scheduler.ScheduleJob(jobDetail, trigger);
     }
 
-    private static TriggerKey GenerateTriggerKey<TJob>(DateTimeOffset startAt)
-        where TJob : IAdminJob
+    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity)
+        where TJob : IAdminJob<TJob, TEntity> 
+        where TEntity : class, INumberKeyedDbEntity, IExpiringDbEntity
     {
-        return new TriggerKey(startAt.ToUnixTimeMilliseconds().ToString(), $"{typeof(TJob)}_Trigger");
+        var (jobDetail, trigger) = entity.FormatJobAndTrigger<TJob, TEntity>();
+        return scheduler.ScheduleJob(jobDetail, trigger);
     }
     
-    private static TriggerKey GenerateTriggerKey<TJob, TEntity>(TEntity entity)
-        where TJob : IAdminJob
-        where TEntity : class, IExpiringDbEntity, INumberKeyedDbEntity
-    {
-        Guard.IsNotNull(entity.ExpiresAt);
-        
-        return new TriggerKey(entity.ExpiresAt.Value.ToUnixTimeMilliseconds().ToString(), $"{typeof(TJob)}_Trigger");
-    }
-    
-    private static TriggerKey GenerateTriggerKey<TJob, TEntity>(TEntity entity, DateTimeOffset startAt)
-        where TJob : IAdminJob
+    public static async ValueTask RescheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity, DateTimeOffset startAt)
+        where TJob : IAdminJob<TJob, TEntity> 
         where TEntity : class, INumberKeyedDbEntity
     {
-        return new TriggerKey(startAt.ToUnixTimeMilliseconds().ToString(), $"{typeof(TJob)}_Trigger");
+        var triggerKey = await scheduler.GetTriggerKey<TJob, TEntity>(entity);
+        Guard.IsNotNull(triggerKey);
+
+        var (_, newTrigger) = entity.FormatJobAndTrigger<TJob, TEntity>(startAt);
+        await scheduler.RescheduleJob(triggerKey, newTrigger);
     }
-    */
+
+    public static async ValueTask RescheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity)
+        where TJob : IAdminJob<TJob, TEntity> 
+        where TEntity : class, INumberKeyedDbEntity, IExpiringDbEntity
+    {
+        Guard.IsNotNull(entity.ExpiresAt);
+
+        var triggerKey = await scheduler.GetTriggerKey<TJob, TEntity>(entity);
+        Guard.IsNotNull(triggerKey);
+
+        var (_, newTrigger) = entity.FormatJobAndTrigger<TJob, TEntity>();
+        await scheduler.RescheduleJob(triggerKey, newTrigger);
+    }
     
     public static ValueTask<bool> DeleteAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity)
         where TJob : IAdminJob<TJob, TEntity>
@@ -53,115 +73,44 @@ public static class QuartzExtensions
         return scheduler.DeleteJob(TJob.FormatJobKey(entity));
     }
     
-    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob>(this IScheduler scheduler, DateTimeOffset startAt, CancellationToken cancellationToken = default)
-        where TJob : IAdminJob<TJob>
-    {
-        return scheduler.ScheduleJob(
-            JobBuilder.Create<TJob>().WithIdentity(TJob.FormatJobKey()).Build(),
-            TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(startAt)).StartAt(startAt).Build(),
-            cancellationToken);
-    }
-
-    // TODO: non-expiring entity overload?
-    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity, CancellationToken cancellationToken = default)
+    public static ValueTask<bool> DeleteAdminJobs<TJob, TEntity>(this IScheduler scheduler, IEnumerable<TEntity> entities)
         where TJob : IAdminJob<TJob, TEntity>
-        where TEntity : class, IExpiringDbEntity, INumberKeyedDbEntity
+        where TEntity : class, INumberKeyedDbEntity
     {
-        Guard.IsNotNull(entity.ExpiresAt);
-        
-        return scheduler.ScheduleJob(
-            JobBuilder.Create<TJob>().WithIdentity(TJob.FormatJobKey(entity)).UsingJobData("key", entity.Id).Build(),
-            TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(entity, entity.ExpiresAt.Value)).StartAt(entity.ExpiresAt.Value).Build(),
-            cancellationToken);
+        var jobKeys = entities.Select(TJob.FormatJobKey).ToList();
+        return scheduler.DeleteJobs(jobKeys);
     }
 
-    public static ValueTask<DateTimeOffset> SchedulePunishmentExpiryAsync(this IScheduler scheduler, Punishment punishment, CancellationToken cancellationToken = default)
+    public static async ValueTask<TriggerKey?> GetTriggerKey<TJob, TEntity>(this IScheduler scheduler, TEntity entity)
+        where TJob : IAdminJob<TJob, TEntity> 
+        where TEntity : class, INumberKeyedDbEntity
     {
-        Guard.IsAssignableToType<IExpiringDbEntity>(punishment);
-
-        return punishment switch
-        {
-            Ban ban => ScheduleInternal(scheduler, ban, cancellationToken),
-            Block block => ScheduleInternal(scheduler, block, cancellationToken),
-            TimedRole timedRole => ScheduleInternal(scheduler, timedRole, cancellationToken),
-            Timeout timeout => ScheduleInternal(scheduler, timeout, cancellationToken),
-            _ => throw new ArgumentOutOfRangeException(nameof(punishment))
-        };
-        
-        static ValueTask<DateTimeOffset> ScheduleInternal<TPunishment>(IScheduler scheduler, TPunishment punishment, CancellationToken cancellationToken)
-            where TPunishment : RevocablePunishment, IExpiringDbEntity
-        {
-            return scheduler.ScheduleAdminJob<PunishmentExpiryJob<TPunishment>, TPunishment>(punishment, cancellationToken);
-        }
+        var triggers = await scheduler.GetTriggersOfJob(TJob.FormatJobKey(entity));
+        return triggers.FirstOrDefault()?.Key;
     }
     
-    public static ValueTask<DateTimeOffset?> RescheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TriggerKey oldKey, TEntity entity, CancellationToken cancellationToken = default)
-        where TJob : IAdminJob<TJob, TEntity>
+    public static (IJobDetail JobDetail, ITrigger Trigger) FormatJobAndTrigger<TJob, TEntity>(this TEntity entity, DateTimeOffset startAt)
+        where TJob : IAdminJob<TJob, TEntity> 
+        where TEntity : class, INumberKeyedDbEntity
+    {
+        var jobDetail = JobBuilder.Create<TJob>().WithIdentity(TJob.FormatJobKey(entity)).WithEntityKey(entity).Build();
+        var trigger = TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(entity, startAt)).StartAt(startAt).Build();
+
+        return (jobDetail, trigger);
+    }
+    
+    public static (IJobDetail JobDetail, ITrigger Trigger) FormatJobAndTrigger<TJob, TEntity>(this TEntity entity)
+        where TJob : IAdminJob<TJob, TEntity> 
         where TEntity : class, INumberKeyedDbEntity, IExpiringDbEntity
     {
         Guard.IsNotNull(entity.ExpiresAt);
 
-        return scheduler.RescheduleJob(
-            oldKey,
-            TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(entity, entity.ExpiresAt.Value)).StartAt(entity.ExpiresAt.Value).Build(),
-            cancellationToken);
+        return FormatJobAndTrigger<TJob, TEntity>(entity, entity.ExpiresAt.Value);
     }
 
-    public static ValueTask<DateTimeOffset> ScheduleDemeritPointExpiryJob(this IScheduler scheduler, Warning warning, Member member, CancellationToken cancellationToken = default)
+    private static JobBuilder WithEntityKey<TEntity>(this JobBuilder builder, TEntity entity)
+        where TEntity : class, INumberKeyedDbEntity
     {
-        Guard.IsGreaterThan(warning.DemeritPointsRemaining, 0);
-        Guard.IsNotNull(member.NextDemeritPointDecay);
-
-        return ScheduleInternal<DemeritPointDecayJob>(scheduler, warning, member, cancellationToken);
-
-        static ValueTask<DateTimeOffset> ScheduleInternal<TJob>(IScheduler scheduler, Warning warning, Member member, CancellationToken cancellationToken)
-            where TJob : IAdminJob<DemeritPointDecayJob, Warning>
-        {
-            return scheduler.ScheduleJob(
-                JobBuilder.Create<DemeritPointDecayJob>().WithIdentity(TJob.FormatJobKey(warning)).UsingJobData("key", warning.Id).Build(),
-                TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(warning, member.NextDemeritPointDecay!.Value)).StartAt(member.NextDemeritPointDecay.Value).Build(),
-                cancellationToken);
-        }
+        return builder.UsingJobData("key", entity.Id);
     }
-
-    public static ValueTask<DateTimeOffset?> RescheduleDemeritPointExpiryJob(this IScheduler scheduler, TriggerKey oldKey, Warning warning, Member member, CancellationToken cancellationToken = default)
-    {
-        Guard.IsGreaterThan(warning.DemeritPointsRemaining, 0);
-        Guard.IsNotNull(member.NextDemeritPointDecay);
-
-        return RescheduleInternal<DemeritPointDecayJob>(scheduler, oldKey, warning, member, cancellationToken);
-
-        static ValueTask<DateTimeOffset?> RescheduleInternal<TJob>(IScheduler scheduler, TriggerKey oldKey, Warning warning, Member member, CancellationToken cancellationToken)
-            where TJob : IAdminJob<DemeritPointDecayJob, Warning>
-        {
-            return scheduler.RescheduleJob(oldKey,
-                TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(warning, member.NextDemeritPointDecay!.Value)).StartAt(member.NextDemeritPointDecay.Value).Build(),
-                cancellationToken);
-        }
-    }
-    
-    /*
-    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob>(this IScheduler scheduler, DateTimeOffset startAt, CancellationToken cancellationToken = default)
-        where TJob : AdminJob2
-    {
-        return scheduler.ScheduleJob(JobBuilder.Create<TJob>().WithIdentity(AdminJob2.GenerateKey<TJob>()).Build(), TriggerBuilder.Create().StartAt(startAt).Build(), cancellationToken);
-    }
-    
-    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity, DateTimeOffset startAt, CancellationToken cancellationToken = default)
-        where TJob : AdminJob2<TEntity>
-        where TEntity : INumberKeyedDbEntity
-    {
-        return scheduler.ScheduleJob(JobBuilder.Create<TJob>().WithIdentity(AdminJob2.GenerateKey<TJob, TEntity>(entity)).UsingJobData("key", entity.Id.ToString()).Build(), TriggerBuilder.Create().StartAt(startAt).Build(), cancellationToken);
-    }
-    
-    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity, CancellationToken cancellationToken = default)
-        where TJob : AdminJob2<TEntity>
-        where TEntity : IExpiringDbEntity, INumberKeyedDbEntity
-    {
-        Guard.IsNotNull(entity.ExpiresAt);
-
-        return scheduler.ScheduleAdminJob<TJob, TEntity>(entity, entity.ExpiresAt.Value, cancellationToken);
-    }
-    
-    */
 }

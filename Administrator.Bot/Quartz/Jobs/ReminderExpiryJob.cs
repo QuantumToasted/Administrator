@@ -55,7 +55,7 @@ public sealed class ReminderExpiryJob(ILogger<ReminderExpiryJob> logger, Discord
 
             } while (reminder.ExpiresAt < now);
 
-            await context.Scheduler.RescheduleAdminJob<ReminderExpiryJob, Reminder>(context.Trigger.Key, reminder, cancellationToken);
+            await context.Scheduler.RescheduleAdminJob<ReminderExpiryJob, Reminder>(reminder);
         }
 
         await db.SaveChangesAsync(cancellationToken);

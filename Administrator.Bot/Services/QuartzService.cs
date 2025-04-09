@@ -1,3 +1,4 @@
+using System.Collections;
 using Administrator.Bot.Jobs;
 using Administrator.Database;
 using Disqord.Bot.Hosting;
@@ -6,33 +7,13 @@ using Microsoft.Extensions.Logging;
 using Qommon;
 using Quartz;
 
+using Timeout = Administrator.Database.Timeout;
+
 namespace Administrator.Bot;
 
 public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordBotService
 {
-    public async Task UnscheduleDemeritPointJobAsync(Warning warning)
-    {
-        var scheduler = await schedulerFactory.GetScheduler();
-
-        await UnscheduleDemeritPointJob(scheduler, warning, Bot.StoppingToken);
-        
-        await using (Bot.Services.CreateAsyncScopeWithDatabase(out var db))
-        {
-            var member = await db.Members.GetOrCreateAsync(warning.GuildId, warning.Target.Id);
-
-            var otherWarning = await db.Punishments.OfType<Warning>()
-                .Where(x => x.Target.Id == member.UserId.RawValue && x.GuildId == member.GuildId && x.Id != warning.Id &&
-                            x.DemeritPointsRemaining > 0)
-                .OrderByDescending(x => x.Id)
-                .FirstOrDefaultAsync();
-
-            if (otherWarning is not null)
-            {
-                await scheduler.ScheduleDemeritPointExpiryJob(otherWarning, member, Bot.StoppingToken);
-            }
-        }
-    }
-    
+    /*
     public async Task RefreshDemeritPointJobAsync(Warning warning, Member member)
     {
         var scheduler = await schedulerFactory.GetScheduler();
@@ -71,6 +52,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
             await scheduler.ScheduleDemeritPointExpiryJob(warning, member, cancellationToken);
         }
     }
+    */
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -81,42 +63,34 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
         var reminders = await db.Reminders.Where(x => x.CreatedAt != x.ExpiresAt).ToListAsync(stoppingToken);
-        foreach (var reminder in reminders)
-        {
-            await scheduler.ScheduleAdminJob<ReminderExpiryJob, Reminder>(reminder, cancellationToken: stoppingToken);
-        }
-        
+        await scheduler.ScheduleAdminJobs<ReminderExpiryJob, Reminder>(reminders);
         Logger.LogDebug("Scheduled {Count} reminder expiry jobs.", reminders.Count);
 
-        var rawEntries = await db.Members.Where(x => x.NextDemeritPointDecay != null)
-            .Select(member => new
+        var membersWithDecay = await db.Members.Where(x => x.NextDemeritPointDecay != null).ToListAsync(stoppingToken);
+        var warningsWithDemeritPoints = await db.Punishments.OfType<Warning>().Where(x => x.DemeritPointsRemaining > 0 && x.RevokedAt == null).ToListAsync(stoppingToken);
+        var guilds = await db.Guilds.ToListAsync(stoppingToken);
+        var warningsWithDecay = membersWithDecay.Select(member => new
             {
                 Member = member,
-                Warning = db.Punishments
-                    .OfType<Warning>()
-                    .OrderByDescending(x => x.Id)
+                Warning = warningsWithDemeritPoints
                     .Where(x => x.GuildId == member.GuildId && x.Target.Id == (ulong)member.UserId)
-                    .FirstOrDefault(x => x.DemeritPointsRemaining > 0)
+                    .FirstOrDefault(x => x.DemeritPointsRemaining > 0),
+                CanDecay = guilds.Any(x => x.GuildId == member.GuildId && x.DemeritPointsDecayInterval.HasValue)
             })
-            .Where(x => x.Warning != null)
-            .ToListAsync(stoppingToken);
+            .Where(x => x.Warning != null && x.CanDecay)
+            .Select(x => (x.Warning!, x.Member.NextDemeritPointDecay!.Value))
+            .ToList();
 
-        foreach (var entry in rawEntries)
-        {
-            await scheduler.ScheduleDemeritPointExpiryJob(entry.Warning!, entry.Member, stoppingToken);
-        }
+        await scheduler.ScheduleAdminJobs<DemeritPointDecayJob, Warning>(warningsWithDecay);
         
-        Logger.LogDebug("Scheduled {Count} demerit point decay jobs.", rawEntries.Count);
+        Logger.LogDebug("Scheduled {Count} demerit point decay jobs.", warningsWithDecay.Count);
 
         var punishments = await db.Punishments.OfType<RevocablePunishment>()
             .Where(x => x.RevokedAt == null)
             .ToListAsync(stoppingToken);
 
         var expiringPunishments = punishments.Where(x => x is IExpiringDbEntity { ExpiresAt: not null }).ToList();
-        foreach (var punishment in expiringPunishments)
-        {
-            await scheduler.SchedulePunishmentExpiryAsync(punishment, Bot.StoppingToken);
-        }
+        await SchedulePunishmentExpiryJobsAsync(scheduler, expiringPunishments);
         
         Logger.LogDebug("Scheduled {Count} punishment expiry jobs.", expiringPunishments.Count);
 
@@ -125,19 +99,93 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
         await scheduler.Start(stoppingToken);
     }
     
-    private static async ValueTask UnscheduleDemeritPointJob(IScheduler scheduler, Warning warning, CancellationToken cancellationToken)
+    public async ValueTask<DateTimeOffset> SchedulePunishmentExpiryJobAsync(Punishment punishment)
     {
-        await UnscheduleJob<DemeritPointDecayJob, Warning>(scheduler, warning, cancellationToken);
+        var scheduler = await schedulerFactory.GetScheduler();
         
-        static async ValueTask UnscheduleJob<TJob, TEntity>(IScheduler scheduler, Warning warning, CancellationToken cancellationToken)
-            where TJob : IAdminJob<TJob, TEntity>
-            where TEntity : RevocablePunishment
+        return await (punishment switch
         {
-            var entity = Guard.IsOfType<TEntity>(warning);
-            
-            var triggers = await scheduler.GetTriggersOfJob(TJob.FormatJobKey(entity), cancellationToken);
+            Ban ban => ScheduleInternal(scheduler, ban),
+            Block block => ScheduleInternal(scheduler, block),
+            TimedRole timedRole => ScheduleInternal(scheduler, timedRole),
+            Timeout timeout => ScheduleInternal(scheduler, timeout),
+            _ => throw new ArgumentOutOfRangeException(nameof(punishment))
+        });
+        
+        static ValueTask<DateTimeOffset> ScheduleInternal<TPunishment>(IScheduler scheduler, TPunishment punishment)
+            where TPunishment : RevocablePunishment, IExpiringDbEntity
+        {
+            return scheduler.ScheduleAdminJob<PunishmentExpiryJob<TPunishment>, TPunishment>(punishment);
+        }
+    }
 
-            await scheduler.UnscheduleJobs(triggers.Select(x => x.Key).ToList(), cancellationToken);
+    public async ValueTask ScheduleDemeritPointDecayJobAsync(Warning warning, Member member)
+    {
+        Guard.IsGreaterThan(warning.DemeritPointsRemaining, 0);
+        Guard.IsNotNull(member.NextDemeritPointDecay);
+        
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.ScheduleAdminJob<DemeritPointDecayJob, Warning>(warning, member.NextDemeritPointDecay.Value);
+    }
+
+    public async ValueTask RescheduleDemeritPointDecayJobAsync(Warning warning, Member member)
+    {
+        Guard.IsGreaterThan(warning.DemeritPointsRemaining, 0);
+        Guard.IsNotNull(member.NextDemeritPointDecay);
+        
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.RescheduleAdminJob<DemeritPointDecayJob, Warning>(warning, member.NextDemeritPointDecay.Value);
+    }
+
+    // this happens after the warning has been set to 0 demerit points
+    public async ValueTask UnscheduleDemeritPointDecayJobAsync(Warning warning)
+    {
+        var scheduler = await schedulerFactory.GetScheduler();
+
+        if (await scheduler.GetTriggerKey<DemeritPointDecayJob, Warning>(warning) is not { } triggerKey)
+            return;
+        
+        await using (Bot.Services.CreateAsyncScopeWithDatabase(out var db))
+        {
+            var member = await db.Members.GetOrCreateAsync(warning.GuildId, warning.Target.Id);
+            var otherWarning = await db.Punishments
+                .OfType<Warning>()
+                .Where(x => x.Target.Id == member.UserId.RawValue && 
+                            x.GuildId == member.GuildId && 
+                            x.Id != warning.Id &&
+                            x.RevokedAt == null &&
+                            x.DemeritPointsRemaining > 0)
+                .OrderByDescending(x => x.Id)
+                .FirstOrDefaultAsync();
+
+            if (otherWarning is not null)
+            {
+                await RescheduleDemeritPointDecayJobAsync(otherWarning, member);
+            }
+            else
+            {
+                await scheduler.DeleteAdminJob<DemeritPointDecayJob, Warning>(warning);
+            }
+        }
+    }
+    
+    private static ValueTask SchedulePunishmentExpiryJobsAsync(IScheduler scheduler, IEnumerable<RevocablePunishment> punishments)
+    {
+        var jobDict = punishments.Select(FormatJobAndTrigger)
+            .ToDictionary(x => x.JobDetail, IReadOnlyCollection<ITrigger> (x) => [x.Trigger]);
+
+        return scheduler.ScheduleJobs(jobDict, true);
+
+        static (IJobDetail JobDetail, ITrigger Trigger) FormatJobAndTrigger(RevocablePunishment punishment)
+        {
+            return punishment switch
+            {
+                Ban ban => ban.FormatJobAndTrigger<PunishmentExpiryJob<Ban>, Ban>(),
+                Block block => block.FormatJobAndTrigger<PunishmentExpiryJob<Block>, Block>(),
+                TimedRole timedRole => timedRole.FormatJobAndTrigger<PunishmentExpiryJob<TimedRole>, TimedRole>(),
+                Timeout timeout => timeout.FormatJobAndTrigger<PunishmentExpiryJob<Timeout>, Timeout>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(punishment))
+            };
         }
     }
 }

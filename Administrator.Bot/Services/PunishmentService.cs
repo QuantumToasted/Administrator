@@ -19,8 +19,8 @@ using Timeout = Administrator.Database.Timeout;
 namespace Administrator.Bot;
 
 [ScopedService]
-public sealed class PunishmentService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db,
-    ISchedulerFactory schedulerFactory, ILogger<PunishmentService> logger) : IPunishmentService
+public sealed class PunishmentService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db, 
+    QuartzService quartz, ILogger<PunishmentService> logger) : IPunishmentService
 {
     // TODO: Make these configurable?
     public const double MINIMUM_APPEAL_WAIT_PERCENTAGE = 0.05;
@@ -426,8 +426,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
 
         if (punishment is IExpiringDbEntity)
         {
-            var scheduler = await schedulerFactory.GetScheduler();
-            await scheduler.SchedulePunishmentExpiryAsync(punishment, bot.StoppingToken);
+            await quartz.SchedulePunishmentExpiryJobAsync(punishment);
         }
         
         await db.SaveChangesAsync();

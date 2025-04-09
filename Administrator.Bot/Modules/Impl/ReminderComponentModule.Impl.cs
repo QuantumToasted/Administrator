@@ -49,7 +49,7 @@ public sealed partial class ReminderComponentModule(AdminDbContext db, ISchedule
             .AppendNewline(reminder.Text);
 
         var scheduler = await schedulerFactory.GetScheduler();
-        await scheduler.ScheduleAdminJob<ReminderExpiryJob, Reminder>(reminder, Bot.StoppingToken);
+        await scheduler.ScheduleAdminJob<ReminderExpiryJob, Reminder>(reminder);
         await Interaction.Response().ModifyMessageAsync(reminder.FormatExpiryMessage<LocalInteractionMessageResponse>(false));
         return Response(contentBuilder.ToString());
     }

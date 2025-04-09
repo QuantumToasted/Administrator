@@ -5,7 +5,7 @@ using Quartz;
 
 namespace Administrator.Bot.Jobs;
 
-public sealed class DemeritPointDecayJob(ILogger<DemeritPointDecayJob> logger, AdminDbContext db) : IAdminJob<DemeritPointDecayJob, Warning>
+public sealed class DemeritPointDecayJob(ILogger<DemeritPointDecayJob> logger, QuartzService quartz, AdminDbContext db) : IAdminJob<DemeritPointDecayJob, Warning>
 {
     public ILogger Logger { get; } = logger;
     
@@ -66,12 +66,12 @@ public sealed class DemeritPointDecayJob(ILogger<DemeritPointDecayJob> logger, A
         // TODO: this will be set AFTER any modifications
         member.NextDemeritPointDecay = nextDecay;
         await db.SaveChangesAsync(cancellationToken);
-        
-        await context.Scheduler.RescheduleDemeritPointExpiryJob(context.Trigger.Key, nextWarning ?? warning, member, cancellationToken);
+
+        await quartz.RescheduleDemeritPointDecayJobAsync(nextWarning ?? warning, member);
     }
 
     public static JobKey FormatJobKey(Warning entity)
     {
-        return JobKey.Create($"{entity.GuildId}:{entity.Target.Id}", nameof(Warning));
+        return JobKey.Create($"{entity.GuildId}:{entity.Target.Id}", nameof(DemeritPointDecayJob));
     }
 }
