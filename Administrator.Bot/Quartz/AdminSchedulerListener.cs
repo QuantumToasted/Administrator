@@ -15,7 +15,7 @@ public class AdminSchedulerListener(ILogger<AdminSchedulerListener> logger) : IS
         
         var now = DateTimeOffset.UtcNow;
 
-        Logger.LogDebug("Job {Job} scheduled to fire at {Time} (about {Expires}{Filler}).", trigger.JobKey, startAt, 
+        Logger.LogTrace("Job {Job} scheduled to fire at {Time} (about {Expires}{Filler}).", trigger.JobKey, startAt, 
             (startAt - now).Humanize(minUnit: TimeUnit.Second, maxUnit: TimeUnit.Year), startAt < now ? " in the past" : string.Empty);
         
         return ValueTask.CompletedTask;
