@@ -32,9 +32,9 @@ public sealed class GuildChunkService : DiscordBotService
                 }
 
                 _chunkedGuildIds.Add(guild.Id);
-                Logger.LogDebug("Chunking completed for guild {GuildId}.", guild.Id.RawValue);
+                Logger.LogTrace("Chunking completed for guild {GuildId}.", guild.Id.RawValue);
 
-                var chunkDelaySeconds = Random.Shared.Next(1, 4);
+                var chunkDelaySeconds = Random.Shared.Next(1, 3);
                 Logger.LogTrace("Delaying next chunk by {Seconds} seconds.", chunkDelaySeconds);
                 await Task.Delay(TimeSpan.FromSeconds(chunkDelaySeconds), stoppingToken);
             }

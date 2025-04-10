@@ -96,7 +96,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
 
         await scheduler.ScheduleJob(
             JobBuilder.Create<BackpackUpdateJob>().WithIdentity(Guid.NewGuid().ToString(), nameof(BackpackUpdateJob)).Build(),
-            TriggerBuilder.Create().StartNow().WithSchedule(SimpleScheduleBuilder.Create().WithIntervalInMinutes(30)).Build(),
+            TriggerBuilder.Create().StartNow().WithSchedule(SimpleScheduleBuilder.Create().WithIntervalInMinutes(30).RepeatForever()).Build(),
             Bot.StoppingToken);
         
         // TODO: Schedule other jobs
