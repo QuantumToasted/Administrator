@@ -424,7 +424,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             member.NextDemeritPointDecay = newDemeritPointDecayStart + guild.DemeritPointsDecayInterval;
         }
 
-        if (punishment is IExpiringDbEntity)
+        if (punishment is IExpiringDbEntity { ExpiresAt: not null })
         {
             await quartz.SchedulePunishmentExpiryJobAsync(punishment);
         }
