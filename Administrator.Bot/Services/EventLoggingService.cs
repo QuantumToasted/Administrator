@@ -17,12 +17,26 @@ using StringExtensions = Administrator.Core.StringExtensions;
 
 namespace Administrator.Bot;
 
-public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService inviteFilter, AuditLogService auditLogs, MessageCacheService messageCache)
-    : DiscordBotService
+public sealed class EventLoggingService : DiscordBotService
 {
     private static readonly TimeSpan AttachmentStorageDuration = TimeSpan.FromMinutes(30);
-    private readonly ConcurrentDictionary<Snowflake, ConcurrentQueue<IMember>> _memberJoinQueues = new();
-    private readonly ConcurrentDictionary<Snowflake, ConcurrentQueue<IUser>> _memberLeaveQueues = new();
+    private readonly BatchEventDispatcher<Snowflake, MemberJoinedEventArgs> _memberJoinDispatcher;
+    private readonly BatchEventDispatcher<Snowflake, MemberLeftEventArgs> _memberLeaveDispatcher;
+    private readonly IMemoryCache _cache;
+    private readonly InviteFilterService _inviteFilter;
+    private readonly AuditLogService _auditLogs;
+    private readonly MessageCacheService _messageCache;
+
+    public EventLoggingService(IMemoryCache cache, InviteFilterService inviteFilter, AuditLogService auditLogs, MessageCacheService messageCache)
+    {
+        _memberJoinDispatcher = new(HandleJoins);
+        _memberLeaveDispatcher = new(HandleLeaves);
+
+        _cache = cache;
+        _inviteFilter = inviteFilter;
+        _auditLogs = auditLogs;
+        _messageCache = messageCache;
+    }
 
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
@@ -46,7 +60,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
                 var localAttachment = await attachmentService.GetAttachmentAsync(attachment.Url);
                 Logger.LogDebug("Caching attachment ID {Id} for {Duration}.", attachment.Id.RawValue, AttachmentStorageDuration.Humanize());
-                cache.Set(attachment.Id, localAttachment, AttachmentStorageDuration);
+                _cache.Set(attachment.Id, localAttachment, AttachmentStorageDuration);
             }
             catch (Exception ex)
             {
@@ -100,7 +114,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
                     foreach (var attachment in e.Message.Attachments)
                     {
-                        if (cache.TryGetValue<AttachmentService.Attachment>(attachment.Id, out var cachedAttachment) && cachedAttachment is not null)
+                        if (_cache.TryGetValue<AttachmentService.Attachment>(attachment.Id, out var cachedAttachment) && cachedAttachment is not null)
                         {
                             message.AddAttachment(cachedAttachment);
                         }
@@ -125,7 +139,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
                 x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x is { Count: 1, ActorId: not null });
             */
 
-            var log = await auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(guildId,
+            var log = await _auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(guildId,
                 x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x is { Count: 1, ActorId: not null }, TimeSpan.FromSeconds(1));
 
             if (log is not null && (log.Actor ?? Bot.GetUser(log.ActorId!.Value)) is { } actor)
@@ -142,7 +156,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
             }
             */
 
-            if (inviteFilter.DeletedMessageIds.Remove(e.MessageId))
+            if (_inviteFilter.DeletedMessageIds.Remove(e.MessageId))
             {
                 embed.WithFooter("Automatically deleted by the invite filter.");
             }
@@ -254,7 +268,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
             foreach (var attachmentId in oldAttachments.Except(newAttachments))
             {
-                if (cache.TryGetValue(attachmentId, out AttachmentService.Attachment? attachment) && attachment is not null)
+                if (_cache.TryGetValue(attachmentId, out AttachmentService.Attachment? attachment) && attachment is not null)
                 {
                     message.AddAttachment(attachment);
                     attachmentsRemovedBuilder.AppendNewline(Markdown.Code(attachment.FileName));
@@ -307,7 +321,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
             foreach (var messageId in e.MessageIds.Order())
             {
                 var message = e.Messages.GetValueOrDefault(messageId);
-                var cacheMessage = messageCache.GetMessage(e.ChannelId, messageId);
+                var cacheMessage = _messageCache.GetMessage(e.ChannelId, messageId);
                 
                 var author = message?.Author ?? cacheMessage?.Author;
                 var content = message?.Content ?? cacheMessage?.Content ?? "NO DATA";
@@ -332,7 +346,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
                 
                 if (!banLogSearchComplete && author is not null)
                 {
-                    log = await auditLogs.WaitForAuditLogAsync<IMemberBannedAuditLog>(e.GuildId, x => x.TargetId == author.Id,
+                    log = await _auditLogs.WaitForAuditLogAsync<IMemberBannedAuditLog>(e.GuildId, x => x.TargetId == author.Id,
                         TimeSpan.FromSeconds(2));
                     banLogSearchComplete = true;
                 }
@@ -350,7 +364,7 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
                 .AddField("Message count", e.MessageIds.Count)
                 .WithTimestamp(DateTimeOffset.UtcNow);
 
-            log ??= await auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(e.GuildId,
+            log ??= await _auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(e.GuildId,
                 x => x.Id >= e.MessageIds[0] && x.ChannelId == e.ChannelId && x.Actor is not null && x.Count == e.MessageIds.Count,
                 TimeSpan.FromSeconds(2));
 
@@ -384,7 +398,6 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
     protected override ValueTask OnMemberJoined(MemberJoinedEventArgs e)
     {
-        _memberJoinQueues.GetOrAdd(e.GuildId, _ => new ConcurrentQueue<IMember>()).Enqueue(e.Member);
         _ = Task.Run(async () =>
         {
             // TODO: due to how greeting messages are formatted, there is no way to bunch them up into single messages for large quantities of joins.
@@ -412,13 +425,12 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
             await Bot.TrySendMessageAsync(channelId, message);
         });
-        
-        return ValueTask.CompletedTask;
+
+        return _memberJoinDispatcher.WriteAsync(e.GuildId, e, Bot.StoppingToken);
     }
 
     protected override ValueTask OnMemberLeft(MemberLeftEventArgs e)
     {
-        _memberLeaveQueues.GetOrAdd(e.GuildId, _ => new ConcurrentQueue<IUser>()).Enqueue(e.User);
         _ = Task.Run(async () =>
         {
             // TODO: see OnMemberJoined w/r/t large amount of leave events
@@ -436,8 +448,8 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
 
             await Bot.TrySendMessageAsync(loggingChannel.ChannelId, message);
         });
-        
-        return ValueTask.CompletedTask;
+
+        return _memberLeaveDispatcher.WriteAsync(e.GuildId, e, Bot.StoppingToken);
     }
 
     protected override async ValueTask OnMemberUpdated(MemberUpdatedEventArgs e)
@@ -617,54 +629,25 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
         }
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    private async Task HandleJoins(ICollection<MemberJoinedEventArgs> batch, CancellationToken cancellationToken)
     {
-        _ = Task.Run(LoopJoinQueuesAsync, stoppingToken);
-        _ = Task.Run(LoopLeaveQueuesAsync, stoppingToken);
-        return Task.CompletedTask;
-    }
-
-    private async Task LoopJoinQueuesAsync()
-    {
-        while (!Bot.StoppingToken.IsCancellationRequested)
+        var guildId = batch.First().GuildId;
+        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == guildId && x.EventType == LogEventType.Join, cancellationToken) is not { } logChannel)
+            return;
+        
+        var embeds = batch.Select(x => FormatJoinEmbed(x.Member)).ToList();
+        
+        try
         {
-            //var queues = _memberJoinQueues.Values.ToList();
-            foreach (var (guildId, queue) in _memberJoinQueues)
-            {
-                if (queue.IsEmpty)
-                    continue;
-
-                await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-                if (await db.LoggingChannels.FindAsync(guildId, LogEventType.Join) is not { } logChannel)
-                {
-                    queue.Clear();
-                    continue;
-                }
-
-                var joinEmbeds = new List<LocalEmbed>();
-                while (queue.TryDequeue(out var member))
-                {
-                    joinEmbeds.Add(FormatJoinEmbed(member));
-                }
-
-                foreach (var embedChunk in joinEmbeds.Chunk(5))
-                {
-                    try
-                    {
-                        await Bot.SendMessageAsync(logChannel.ChannelId, new LocalMessage().WithEmbeds(embedChunk));
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogWarning(ex, "Failed to log join message with {EmbedCount} embed(s) to channel {ChannelId} in guild {GuildId}.",
-                            embedChunk.Length, logChannel.ChannelId.RawValue, logChannel.GuildId.RawValue);
-                        break; // don't try with the next chunk
-                    }
-                }
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Bot.SendMessageAsync(logChannel.ChannelId, new LocalMessage().WithEmbeds(embeds), cancellationToken: cancellationToken);
         }
-
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to log join message with {EmbedCount} embed(s) to channel {ChannelId} in guild {GuildId}.",
+                embeds.Count, logChannel.ChannelId.RawValue, logChannel.GuildId.RawValue);
+        }
+        
         static LocalEmbed FormatJoinEmbed(IMember member)
         {
             var embed = new LocalEmbed()
@@ -685,47 +668,26 @@ public sealed class EventLoggingService(IMemoryCache cache, InviteFilterService 
             return embed;
         }
     }
-
-    private async Task LoopLeaveQueuesAsync()
+    
+    private async Task HandleLeaves(ICollection<MemberLeftEventArgs> batch, CancellationToken cancellationToken)
     {
-        while (!Bot.StoppingToken.IsCancellationRequested)
+        var guildId = batch.First().GuildId;
+        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == guildId && x.EventType == LogEventType.Leave, cancellationToken) is not { } logChannel)
+            return;
+        
+        var embeds = batch.Select(x => FormatLeaveEmbed(x.User, x.Guild)).ToList();
+        
+        try
         {
-            foreach (var (guildId, queue) in _memberLeaveQueues)
-            {
-                if (queue.IsEmpty)
-                    continue;
-
-                await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-                if (await db.LoggingChannels.FindAsync(guildId, LogEventType.Leave) is not { } logChannel)
-                {
-                    queue.Clear();
-                    continue;
-                }
-
-                var joinEmbeds = new List<LocalEmbed>();
-                while (queue.TryDequeue(out var user))
-                {
-                    joinEmbeds.Add(FormatLeaveEmbed(user, Bot.GetGuild(guildId)));
-                }
-
-                foreach (var embedChunk in joinEmbeds.Chunk(5))
-                {
-                    try
-                    {
-                        await Bot.SendMessageAsync(logChannel.ChannelId, new LocalMessage().WithEmbeds(embedChunk));
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogWarning(ex, "Failed to log leave message with {EmbedCount} embed(s) to channel {ChannelId} in guild {GuildId}.",
-                            embedChunk.Length, logChannel.ChannelId.RawValue, logChannel.GuildId.RawValue);
-                        break; // don't try with the next chunk
-                    }
-                }
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Bot.SendMessageAsync(logChannel.ChannelId, new LocalMessage().WithEmbeds(embeds), cancellationToken: cancellationToken);
         }
-
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to log leave message with {EmbedCount} embed(s) to channel {ChannelId} in guild {GuildId}.",
+                embeds.Count, logChannel.ChannelId.RawValue, logChannel.GuildId.RawValue);
+        }
+        
         static LocalEmbed FormatLeaveEmbed(IUser user, CachedGuild? guild)
         {
             var embed = new LocalEmbed()
