@@ -60,10 +60,8 @@ public sealed record Guild(Snowflake GuildId)
     public int? CustomXpRate { get; set; }
     
     public TimeSpan? CustomXpInterval { get; set; }
-    
-    public byte[]? ApiKeySalt { get; set; }
-    
-    public byte[]? ApiKeyHash { get; set; }
+
+    public string ApiKey { get; set; } = Guid.NewGuid().ToString("N");
 
     public List<Snowflake> XpExemptChannelIds { get; set; } = new();
 
@@ -110,6 +108,7 @@ public sealed record Guild(Snowflake GuildId)
 
             guild.Property(x => x.GreetingMessage).HasColumnType("jsonb");
             guild.Property(x => x.GoodbyeMessage).HasColumnType("jsonb");
+            guild.Property(x => x.ApiKey).HasDefaultValueSql("REPLACE(gen_random_uuid()::text, '-', '' )");
 
             guild.HasMany(x => x.LoggingChannels).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);
             guild.HasMany(x => x.ButtonRoles).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);

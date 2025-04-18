@@ -152,8 +152,8 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         {
             await bot.TryModifyMessageToAsync(punishment.LogChannelId!.Value, punishment.LogMessageId.Value, logMessage);
         }
-        else if (await db.LoggingChannels.TryGetLoggingChannelAsync(punishment.GuildId, punishment.GetLogEventType()) is { } logChannel &&
-                 await bot.TrySendMessageAsync(logChannel.ChannelId, logMessage) is { } message)
+        else if (await db.LoggingChannels.TryGetAsync(punishment.GuildId, punishment.GetLogEventType()) is { } logChannelId &&
+                 await bot.TrySendMessageAsync(logChannelId, logMessage) is { } message)
         {
             punishment.LogChannelId = message.ChannelId;
             punishment.LogMessageId = message.Id;
@@ -287,10 +287,10 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             punishment.AppealStatus = null;
         }
 
-        if (await db.LoggingChannels.TryGetLoggingChannelAsync(punishment.GuildId, LogEventType.Revoke) is { } logChannel)
+        if (await db.LoggingChannels.TryGetAsync(punishment.GuildId, LogEventType.Revoke) is { } logChannelId)
         {
             var logMessage = punishment.FormatRevocationLogMessage<LocalMessage>(bot);
-            await bot.TrySendMessageAsync(logChannel.ChannelId, logMessage);
+            await bot.TrySendMessageAsync(logChannelId, logMessage);
         }
 
         var dmRevokeMessage = punishment.FormatRevocationDmMessage<LocalMessage>(bot);
@@ -379,8 +379,8 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         }
 
         var logMessage = await punishment.FormatLogMessageAsync<LocalMessage>(bot);
-        if (await db.LoggingChannels.TryGetLoggingChannelAsync(punishment.GuildId, punishment.GetLogEventType()) is { } logChannel &&
-            await bot.TrySendMessageAsync(logChannel.ChannelId, logMessage) is { } message)
+        if (await db.LoggingChannels.TryGetAsync(punishment.GuildId, punishment.GetLogEventType()) is { } logChannelId &&
+            await bot.TrySendMessageAsync(logChannelId, logMessage) is { } message)
         {
             punishment.LogChannelId = message.ChannelId;
             punishment.LogMessageId = message.Id;

@@ -40,6 +40,7 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options) : D
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresExtension("uuid-ossp");
         modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
     }
 

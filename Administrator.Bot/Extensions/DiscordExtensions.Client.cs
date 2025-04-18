@@ -21,7 +21,7 @@ public static partial class DiscordExtensions
         Guard.IsNotNullOrWhiteSpace(path);
 
         await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        if (await db.LoggingChannels.TryGetLoggingChannelAsync(guildId, LogEventType.Errors) is not { ChannelId: var channelId })
+        if (await db.LoggingChannels.TryGetAsync(guildId, LogEventType.Errors) is not { } channelId)
             return;
         
         var embed = new LocalEmbed()

@@ -280,40 +280,10 @@ public static class EndpointExtensions
 
     private static async Task<bool> AuthorizeGuildAsync(Snowflake guildId, string? apiKey, AdminDbContext db)
     {
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (apiKey is not { Length: 32 }) // GUID length without hyphens
             return false;
-        
-        var split = apiKey.Split('.');
-        if (split.Length != 2)
-            return false;
-
-        Snowflake keyGuildId;
-        try
-        {
-            keyGuildId = Snowflake.Parse(Encoding.Default.GetString(Convert.FromBase64String(split[0])));
-        }
-        catch
-        {
-            return false;
-        }
-        
-        if (guildId != keyGuildId)
-            return false;
-
-        byte[] cryptoBytes;
-        try
-        {
-            cryptoBytes = Convert.FromBase64String(split[1]);
-        }
-        catch
-        {
-            return false;
-        }
         
         var guild = await db.Guilds.GetOrCreateAsync(guildId);
-        if (guild.ApiKeySalt is null || guild.ApiKeyHash is null)
-            return false;
-
-        return guild.CheckApiKeyHash(cryptoBytes);
+        return guild.ApiKey.Equals(apiKey);
     }
 }

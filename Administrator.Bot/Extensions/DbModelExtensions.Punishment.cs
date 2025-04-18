@@ -17,6 +17,16 @@ namespace Administrator.Bot;
 
 public static partial class DbModelExtensions
 {
+    public static string FormatWithHyperlink(this Punishment punishment)
+    {
+        return (punishment.LogMessageId, punishment.LogChannelId) switch
+        {
+            ({ } messageId, { } channelId) => Markdown.Link(punishment.ToString(), 
+                Discord.MessageJumpLink(punishment.GuildId, channelId, messageId)),
+            _ => punishment.ToString()
+        };
+    }
+    
     public static bool CanBeAppealed(this RevocablePunishment punishment, [NotNullWhen(false)] out DateTimeOffset? appealAfter)
     {
         var now = DateTimeOffset.UtcNow;

@@ -409,21 +409,17 @@ public sealed class EventLoggingService : DiscordBotService
             if (guild.GreetingMessage is null)
                 return;
 
-            Snowflake channelId;
-            if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.EventType == LogEventType.Greeting) is { } loggingChannel)
-            {
-                channelId = loggingChannel.ChannelId;
-            }
-            else
+            var channelId = await db.LoggingChannels.TryGetAsync(e.GuildId, LogEventType.Greeting);
+            if (channelId is null)
             {
                 var dm = await Bot.CreateDirectChannelAsync(e.MemberId);
                 channelId = dm.Id;
             }
 
             var message = await guild.GreetingMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
-                new MockDiscordGuildCommandContext(Bot, e.GuildId, channelId, e.Member));
+                new MockDiscordGuildCommandContext(Bot, e.GuildId, channelId.Value, e.Member));
 
-            await Bot.TrySendMessageAsync(channelId, message);
+            await Bot.TrySendMessageAsync(channelId.Value, message);
         });
 
         return _memberJoinDispatcher.WriteAsync(e.GuildId, e, Bot.StoppingToken);
@@ -436,7 +432,7 @@ public sealed class EventLoggingService : DiscordBotService
             // TODO: see OnMemberJoined w/r/t large amount of leave events
 
             await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-            if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.EventType == LogEventType.Goodbye) is not { } loggingChannel)
+            if (await db.LoggingChannels.TryGetAsync(e.GuildId, LogEventType.Goodbye) is not { } channelId)
                 return;
             
             var guild = await db.Guilds.GetOrCreateAsync(e.GuildId);
@@ -444,9 +440,9 @@ public sealed class EventLoggingService : DiscordBotService
                 return;
 
             var message = await guild.GoodbyeMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
-                new MockDiscordGuildCommandContext(Bot, e.GuildId, loggingChannel.ChannelId, e.User));
+                new MockDiscordGuildCommandContext(Bot, e.GuildId, channelId, e.User));
 
-            await Bot.TrySendMessageAsync(loggingChannel.ChannelId, message);
+            await Bot.TrySendMessageAsync(channelId, message);
         });
 
         return _memberLeaveDispatcher.WriteAsync(e.GuildId, e, Bot.StoppingToken);
@@ -633,19 +629,19 @@ public sealed class EventLoggingService : DiscordBotService
     {
         var guildId = batch.First().GuildId;
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == guildId && x.EventType == LogEventType.Join, cancellationToken) is not { } logChannel)
+        if (await db.LoggingChannels.TryGetAsync(guildId, LogEventType.Join) is not { } channelId)
             return;
         
         var embeds = batch.Select(x => FormatJoinEmbed(x.Member)).ToList();
         
         try
         {
-            await Bot.SendMessageAsync(logChannel.ChannelId, new LocalMessage().WithEmbeds(embeds), cancellationToken: cancellationToken);
+            await Bot.SendMessageAsync(channelId, new LocalMessage().WithEmbeds(embeds), cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Failed to log join message with {EmbedCount} embed(s) to channel {ChannelId} in guild {GuildId}.",
-                embeds.Count, logChannel.ChannelId.RawValue, logChannel.GuildId.RawValue);
+                embeds.Count, channelId.RawValue, guildId.RawValue);
         }
         
         static LocalEmbed FormatJoinEmbed(IMember member)
@@ -673,19 +669,19 @@ public sealed class EventLoggingService : DiscordBotService
     {
         var guildId = batch.First().GuildId;
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == guildId && x.EventType == LogEventType.Leave, cancellationToken) is not { } logChannel)
+        if (await db.LoggingChannels.TryGetAsync(guildId, LogEventType.Leave) is not { } channelId)
             return;
         
         var embeds = batch.Select(x => FormatLeaveEmbed(x.User, x.Guild)).ToList();
         
         try
         {
-            await Bot.SendMessageAsync(logChannel.ChannelId, new LocalMessage().WithEmbeds(embeds), cancellationToken: cancellationToken);
+            await Bot.SendMessageAsync(channelId, new LocalMessage().WithEmbeds(embeds), cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Failed to log leave message with {EmbedCount} embed(s) to channel {ChannelId} in guild {GuildId}.",
-                embeds.Count, logChannel.ChannelId.RawValue, logChannel.GuildId.RawValue);
+                embeds.Count, channelId.RawValue, guildId.RawValue);
         }
         
         static LocalEmbed FormatLeaveEmbed(IUser user, CachedGuild? guild)

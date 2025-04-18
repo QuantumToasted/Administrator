@@ -24,7 +24,8 @@ public sealed partial class PunishmentsModule(AdminDbContext db, PunishmentServi
         var responseBuilder =
             new StringBuilder($"{user.Mention} has {"demerit point".ToQuantity(demeritPoints)} across {"warning".ToQuantity(warnings.Count)}.")
                 .AppendNewline()
-                .AppendJoinTruncated("\n", warnings.Select(x => $"{x} - {x.DemeritPointsRemaining}/{x.DemeritPoints}"), 1000);
+                .AppendJoinTruncated("\n", warnings.Select(x => 
+                    $"{x.FormatWithHyperlink()} - {x.DemeritPointsRemaining}/{x.DemeritPoints} {Markdown.Timestamp(x.CreatedAt, Markdown.TimestampFormat.RelativeTime)}"), 1000);
 
         var member = await db.Members.GetOrCreateAsync(Context.GuildId, user.Id);
 
