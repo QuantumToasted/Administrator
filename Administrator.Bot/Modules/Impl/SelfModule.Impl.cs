@@ -11,7 +11,7 @@ using Qmmands;
 
 namespace Administrator.Bot;
 
-public sealed partial class SelfModule(AdminDbContext db, AutoCompleteService autoComplete) : DiscordApplicationModuleBase
+public sealed partial class SelfModule(AdminDbContext db) : DiscordApplicationModuleBase
 {
     public partial async Task<IResult> Timezone(TimeZoneInfo timezone)
     {
@@ -83,6 +83,6 @@ public sealed partial class SelfModule(AdminDbContext db, AutoCompleteService au
         if (!timezone.IsFocused)
             return;
         
-        autoComplete.AutoComplete(timezone, DateTimeExtensions.IanaTimeZoneMap.Values.ToList());
+        timezone.AutoComplete(Context, DateTimeExtensions.IanaTimeZoneMap.Values.ToList());
     }
 }

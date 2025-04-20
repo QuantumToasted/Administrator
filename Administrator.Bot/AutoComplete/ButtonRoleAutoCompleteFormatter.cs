@@ -8,7 +8,7 @@ namespace Administrator.Bot.AutoComplete;
 
 public sealed class ButtonRoleAutoCompleteFormatter : IAutoCompleteFormatter<IDiscordCommandContext, ButtonRole, int>
 {
-    public string FormatAutoCompleteName(IDiscordCommandContext context, ButtonRole model)
+    public static string FormatAutoCompleteName(IDiscordCommandContext context, ButtonRole model)
     {
         return new StringBuilder($"{model.Id} - role ")
             .Append(context.Bot.GetRole(model.GuildId, model.RoleId) is { } role
@@ -19,8 +19,7 @@ public sealed class ButtonRoleAutoCompleteFormatter : IAutoCompleteFormatter<IDi
             .ToString();
     }
 
-    public int FormatAutoCompleteValue(IDiscordCommandContext context, ButtonRole model)
-        => model.Id;
+    public static int FormatAutoCompleteValue(IDiscordCommandContext context, ButtonRole model) => model.Id;
 
-    public Func<IDiscordCommandContext, ButtonRole, string[]> ComparisonSelector => static (_, model) => [model.Text ?? model.Id.ToString(), model.Id.ToString()];
+    public static string[] FormatComparisonValues(IDiscordCommandContext context, ButtonRole model) => [model.Text ?? model.Id.ToString(), model.Id.ToString()];
 }

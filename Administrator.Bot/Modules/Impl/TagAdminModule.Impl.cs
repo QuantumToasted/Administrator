@@ -8,7 +8,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class TagAdminModule(AdminDbContext db, AutoCompleteService autoComplete) : DiscordApplicationGuildModuleBase
+public sealed partial class TagAdminModule(AdminDbContext db) : DiscordApplicationGuildModuleBase
 {
     private List<Tag>? _autoCompleteTags;
     
@@ -91,7 +91,7 @@ public sealed partial class TagAdminModule(AdminDbContext db, AutoCompleteServic
             return;
 
         _autoCompleteTags ??= await db.Tags.Where(x => x.GuildId == Context.GuildId).OrderBy(x => x.Name).ToListAsync();
-        autoComplete.AutoComplete(tag, _autoCompleteTags);
+        tag.AutoComplete(Context, _autoCompleteTags);
     }
 
     public partial Task AutoCompleteTagLinks(AutoComplete<string> from, AutoComplete<string> to)
@@ -104,7 +104,7 @@ public sealed partial class TagAdminModule(AdminDbContext db, AutoCompleteServic
         };
     }
 
-    public sealed partial class TagAliasModule(AdminDbContext db, AutoCompleteService autoComplete) : DiscordApplicationGuildModuleBase
+    public sealed partial class TagAliasModule(AdminDbContext db) : DiscordApplicationGuildModuleBase
     {
         private List<Tag>? _autoCompleteTags;
         
@@ -142,7 +142,7 @@ public sealed partial class TagAdminModule(AdminDbContext db, AutoCompleteServic
                 .OrderBy(x => x.Name)
                 .ToListAsync();
             
-            autoComplete.AutoComplete(tag, _autoCompleteTags);
+            tag.AutoComplete(Context, _autoCompleteTags);
         }
 
         public partial async Task AutoCompleteTagAliases(AutoComplete<string> tag, AutoComplete<string> alias)
@@ -153,7 +153,7 @@ public sealed partial class TagAdminModule(AdminDbContext db, AutoCompleteServic
 
             if (tag.IsFocused)
             {
-                autoComplete.AutoComplete(tag, _autoCompleteTags);
+                tag.AutoComplete(Context, _autoCompleteTags);
                 return;
             }
 

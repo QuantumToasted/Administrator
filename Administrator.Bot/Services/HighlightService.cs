@@ -11,8 +11,7 @@ namespace Administrator.Bot;
 
 // TODO: maybe remove this or extrapolate into a util method. I don't like the idea of coupling modules to services.
 [ScopedService]
-public sealed class HighlightService(AdminDbContext db, ICommandContextAccessor contextAccessor, AutoCompleteService autoComplete, 
-    HighlightHandlingService highlights)
+public sealed class HighlightService(AdminDbContext db, ICommandContextAccessor contextAccessor, HighlightHandlingService highlights)
 {
     private readonly IDiscordInteractionCommandContext _context = (IDiscordInteractionCommandContext)contextAccessor.Context;
 
@@ -53,10 +52,10 @@ public sealed class HighlightService(AdminDbContext db, ICommandContextAccessor 
 
     public async Task AutoCompleteHighlightsAsync(AutoComplete<int> id)
     {
-        var highlights = await db.Highlights.Where(x => x.AuthorId == _context.AuthorId)
+        var userHighlights = await db.Highlights.Where(x => x.AuthorId == _context.AuthorId)
             .OrderByDescending(x => x.Id)
             .ToListAsync();
         
-        autoComplete.AutoComplete(id, highlights);
+        id.AutoComplete(_context, userHighlights);
     }
 }

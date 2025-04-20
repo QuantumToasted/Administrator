@@ -8,8 +8,7 @@ using Qmmands;
 
 namespace Administrator.Bot;
 
-public sealed partial class HelpModule(IOptions<AdministratorHelpConfiguration> options, EmojiService emojis, SlashCommandMentionService mentions,
-    AutoCompleteService autoComplete) : DiscordApplicationModuleBase
+public sealed partial class HelpModule(IOptions<AdministratorHelpConfiguration> options, EmojiService emojis, SlashCommandMentionService mentions) : DiscordApplicationModuleBase
 {
     private static IApplication? _application;
     private readonly AdministratorHelpConfiguration _config = options.Value;
@@ -69,6 +68,6 @@ public sealed partial class HelpModule(IOptions<AdministratorHelpConfiguration> 
                 !CommandUtilities.EnumerateAllChecks(x).OfType<RequireGuildAttribute>().Any(y => y.Id.HasValue))
             .ToList();
         
-        autoComplete.AutoComplete(commandName, commands);
+        commandName.AutoComplete(Context, commands);
     }
 }

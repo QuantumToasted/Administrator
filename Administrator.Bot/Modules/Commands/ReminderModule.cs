@@ -30,8 +30,8 @@ public sealed partial class ReminderModule
         [Description("The repeat mode for this reminder.")]
             ReminderRepeatMode mode,
         [Description("The interval (default: 1) that this reminder will repeat.")]
-        [Minimum(0.1667)]
-            double interval = 1,
+        [Minimum(1)]
+            int interval = 1,
         [Description("A duration (2h30m) or instant in time (tomorrow at noon) to start. Defaults to now.")]
             DateTimeOffset? time = null);
 

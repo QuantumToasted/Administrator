@@ -3,12 +3,13 @@ using Administrator.Core;
 using Administrator.Database;
 using Humanizer;
 using Humanizer.Localisation;
+using Qmmands;
 
 namespace Administrator.Bot.AutoComplete;
 
 public sealed class ReminderAutoCompleteFormatter : IAutoCompleteFormatter<Reminder, int>
 {
-    public string FormatAutoCompleteName(Reminder model)
+    public static string FormatAutoCompleteName(ICommandContext context, Reminder model)
     {
         var builder = new StringBuilder($"#{model.Id} - ");
         if (!model.RepeatMode.HasValue)
@@ -17,16 +18,7 @@ public sealed class ReminderAutoCompleteFormatter : IAutoCompleteFormatter<Remin
         }
         else
         {
-            var expiresAt = model.ExpiresAt;
-            builder.Append("Repeats ")
-                .Append(model.RepeatMode.Value switch
-                {
-                    ReminderRepeatMode.Hourly => $"every {model.FormatRepeatDuration()} at {"minute".ToQuantity(expiresAt.Minute)} past the hour",
-                    ReminderRepeatMode.Daily => $"daily at {expiresAt:t}",
-                    ReminderRepeatMode.Weekly => $"weekly on {expiresAt.DayOfWeek}s at {expiresAt:t}",
-                    _ => throw new ArgumentOutOfRangeException()
-                })
-                .Append(" - ");
+            builder.Append($"Repeats every {model.FormatRepeatDuration()} - ");
         }
 
         builder.Append(model.Text);
@@ -34,8 +26,6 @@ public sealed class ReminderAutoCompleteFormatter : IAutoCompleteFormatter<Remin
         return builder.ToString();
     }
 
-    public int FormatAutoCompleteValue(Reminder model)
-        => model.Id;
-
-    public Func<Reminder, string[]> ComparisonSelector => static model => [model.Text];
+    public static int FormatAutoCompleteValue(ICommandContext context, Reminder model) => model.Id;
+    public static string[] FormatComparisonValues(ICommandContext context, Reminder model) => [model.Text];
 }

@@ -13,7 +13,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentService attachments, LuaCommandService luaCommands, AutoCompleteService autoComplete, SlashCommandMentionService mentions)
+public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentService attachments, LuaCommandService luaCommands, SlashCommandMentionService mentions)
     : DiscordApplicationGuildModuleBase
 {
     private const string METADATA_SEPARATOR = "-- END METADATA --";
@@ -195,6 +195,6 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
             return;
         
         var commands = await db.LuaCommands.Where(x => x.GuildId == Context.GuildId).ToListAsync();
-        autoComplete.AutoComplete(commandName, commands);
+        commandName.AutoComplete(Context, commands);
     }
 }

@@ -52,15 +52,15 @@ public static partial class DbModelExtensions
         if (!reminder.RepeatMode.HasValue)
             throw new InvalidOperationException("Only repeating reminders can be formatted in this way.");
 
-        var value = reminder.RepeatMode.Value switch
+        var interval = reminder.RepeatInterval!.Value;
+        var mode = reminder.RepeatMode switch
         {
-            ReminderRepeatMode.Hourly => TimeSpan.FromHours(reminder.RepeatInterval!.Value),
-            ReminderRepeatMode.Daily => TimeSpan.FromDays(reminder.RepeatInterval!.Value),
-            ReminderRepeatMode.Weekly => TimeSpan.FromDays(reminder.RepeatInterval!.Value * 7),
+            ReminderRepeatMode.Daily => "day",
+            ReminderRepeatMode.Weekly => "week",
+            ReminderRepeatMode.Monthly => "month",
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        return value.Humanize();
-        //return value.Humanize(int.MaxValue, maxUnit: TimeUnit.Week, minUnit: TimeUnit.Minute);
+        return mode.ToQuantity(interval);
     }
 }

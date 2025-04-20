@@ -7,6 +7,7 @@ using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
+using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -17,6 +18,29 @@ namespace Administrator.Bot;
 
 public static partial class DbModelExtensions
 {
+    public static string FormatValue(this AutomaticPunishment automaticPunishment, bool includeCount = true)
+    {
+        var builder = new StringBuilder();
+
+        if (includeCount)
+            builder.Append($"{automaticPunishment.DemeritPoints} - ");
+
+        builder.Append(automaticPunishment.PunishmentType switch
+        {
+            PunishmentType.Ban when automaticPunishment.PunishmentDuration is not null =>
+                $"Ban with duration of {automaticPunishment.PunishmentDuration.Value.Humanize(int.MaxValue, maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second)}",
+            PunishmentType.Ban =>
+                "Permanent ban",
+            PunishmentType.Timeout =>
+                $"Timeout with duration of {automaticPunishment.PunishmentDuration!.Value.Humanize(int.MaxValue, maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second)}",
+            PunishmentType.Kick =>
+                "Kick",
+            _ => throw new ArgumentOutOfRangeException()
+        });
+
+        return builder.ToString();
+    }
+    
     public static string FormatWithHyperlink(this Punishment punishment)
     {
         return (punishment.LogMessageId, punishment.LogChannelId) switch

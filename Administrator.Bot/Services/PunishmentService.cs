@@ -39,7 +39,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
 
         if (!string.IsNullOrWhiteSpace(punishmentId.RawArgument) && int.TryParse(punishmentId.RawArgument, out var id))
         {
-            query = query.Where(x => EF.Functions.Like(x.Id.ToString(), $"%{id}%") || x.Id == id);
+            query = query.Where(x => EF.Functions.Like(x.Id.ToString(), $"%{id}%"));
         }
         
         var punishments = await query.OrderByDescending(x => x.Id)

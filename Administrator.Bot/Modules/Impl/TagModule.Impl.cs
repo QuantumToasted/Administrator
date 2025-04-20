@@ -11,7 +11,7 @@ using Qommon.Metadata;
 
 namespace Administrator.Bot;
 
-public sealed partial class TagModule(AdminDbContext db, AttachmentService attachments, AutoCompleteService autoComplete, SlashCommandMentionService mentions)
+public sealed partial class TagModule(AdminDbContext db, AttachmentService attachments, SlashCommandMentionService mentions)
     : DiscordApplicationGuildModuleBase
 {
     private List<Tag>? _autoCompleteTags;
@@ -164,10 +164,10 @@ public sealed partial class TagModule(AdminDbContext db, AttachmentService attac
         var parameter = command.Parameters.First(x => x.Name == nameof(tag));
         if (parameter.Checks.OfType<RequireTagOwnerAttribute>().Any())
         {
-            autoComplete.AutoComplete(tag, _autoCompleteTags.Where(x => x.OwnerId == Context.AuthorId).ToList());
+            tag.AutoComplete(Context, _autoCompleteTags.Where(x => x.OwnerId == Context.AuthorId).ToList());
             return;
         }
         
-        autoComplete.AutoComplete(tag, _autoCompleteTags);
+        tag.AutoComplete(Context, _autoCompleteTags);
     }
 }

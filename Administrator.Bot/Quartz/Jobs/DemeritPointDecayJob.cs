@@ -54,7 +54,7 @@ public sealed class DemeritPointDecayJob(ILogger<DemeritPointDecayJob> logger, Q
         }
         
         var nextDecay = member.NextDemeritPointDecay + decayInterval;
-        if (nextDecay < nextWarning?.CreatedAt)
+        if (nextWarning?.CreatedAt < nextDecay)
         {
             // Note to self: this is an exceptional case that may only result if I am in the process of fixing broken decay.
             nextDecay = nextWarning.CreatedAt + decayInterval;

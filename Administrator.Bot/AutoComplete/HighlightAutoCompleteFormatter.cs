@@ -8,7 +8,7 @@ namespace Administrator.Bot.AutoComplete;
 
 public sealed class HighlightAutoCompleteFormatter : IAutoCompleteFormatter<IDiscordCommandContext, Highlight, int>
 {
-    public string FormatAutoCompleteName(IDiscordCommandContext context, Highlight model)
+    public static string FormatAutoCompleteName(IDiscordCommandContext context, Highlight model)
     {
         var builder = new StringBuilder($"#{model.Id}")
             .Append($" - \"{model.Text}\" - ")
@@ -19,8 +19,7 @@ public sealed class HighlightAutoCompleteFormatter : IAutoCompleteFormatter<IDis
         return builder.ToString();
     }
 
-    public int FormatAutoCompleteValue(IDiscordCommandContext context, Highlight model)
-        => model.Id;
+    public static int FormatAutoCompleteValue(IDiscordCommandContext context, Highlight model) => model.Id;
 
-    public Func<IDiscordCommandContext, Highlight, string[]> ComparisonSelector => static (_, model) => [model.Text];
+    public static string[] FormatComparisonValues(IDiscordCommandContext context, Highlight model) => [model.Text];
 }

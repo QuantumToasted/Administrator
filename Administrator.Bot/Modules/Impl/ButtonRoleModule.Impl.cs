@@ -12,7 +12,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class ButtonRoleModule(AdminDbContext db, ButtonRoleService buttonRoles, AutoCompleteService autoComplete) : DiscordApplicationGuildModuleBase
+public sealed partial class ButtonRoleModule(AdminDbContext db, ButtonRoleService buttonRoles) : DiscordApplicationGuildModuleBase
 {
     public partial async Task<IResult> List()
     {
@@ -180,7 +180,7 @@ public sealed partial class ButtonRoleModule(AdminDbContext db, ButtonRoleServic
 
     public partial async Task AutoCompleteButtonRoles(AutoComplete<int> buttonRole)
     {
-        var guildButtonRoles = await EntityFrameworkQueryableExtensions.ToListAsync(db.ButtonRoles.Where(x => x.GuildId == Context.GuildId));
-        autoComplete.AutoComplete(buttonRole, guildButtonRoles);
+        var guildButtonRoles = await db.ButtonRoles.Where(x => x.GuildId == Context.GuildId).ToListAsync();
+        buttonRole.AutoComplete(Context, guildButtonRoles);
     }
 }

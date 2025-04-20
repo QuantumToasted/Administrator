@@ -4,6 +4,7 @@ using Disqord;
 using Disqord.Bot;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NodaTime;
 using Quartz;
 
 namespace Administrator.Bot.Jobs;
@@ -41,20 +42,22 @@ public sealed class ReminderExpiryJob(ILogger<ReminderExpiryJob> logger, Discord
         }
         else
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = LocalDateTime.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
+            var expiresAt = LocalDateTime.FromDateTime(reminder.ExpiresAt.UtcDateTime);
             
             do
             {
-                reminder.ExpiresAt = reminder.RepeatMode!.Value switch
+                expiresAt = reminder.RepeatMode switch
                 {
-                    ReminderRepeatMode.Hourly => reminder.ExpiresAt.AddHours(reminder.RepeatInterval!.Value),
-                    ReminderRepeatMode.Daily => reminder.ExpiresAt.AddDays(reminder.RepeatInterval!.Value),
-                    ReminderRepeatMode.Weekly => reminder.ExpiresAt.AddWeeks(reminder.RepeatInterval!.Value),
+                    ReminderRepeatMode.Daily => expiresAt.PlusDays(reminder.RepeatInterval.Value),
+                    ReminderRepeatMode.Weekly => expiresAt.PlusWeeks(reminder.RepeatInterval.Value),
+                    ReminderRepeatMode.Monthly => expiresAt.PlusMonths(reminder.RepeatInterval.Value),
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
-            } while (reminder.ExpiresAt < now);
+            } while (expiresAt < now);
 
+            reminder.ExpiresAt = new ZonedDateTime(expiresAt, DateTimeZone.Utc, Offset.Zero).ToDateTimeOffset();
             await context.Scheduler.RescheduleAdminJob<ReminderExpiryJob, Reminder>(reminder);
         }
 

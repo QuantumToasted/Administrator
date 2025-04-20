@@ -37,6 +37,7 @@ var host = new HostBuilder()
 #else
                 config.DefaultLevel)
 #endif
+            .Filter.ByExcluding(x => x.MessageTemplate.Text.StartsWith("Pending guild"))
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.File("Logs/log_.txt",

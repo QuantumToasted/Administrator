@@ -25,7 +25,7 @@ public enum CurrencyType
     CraftHats
 }
 
-public sealed partial class BackpackModule(BackpackService backpack, AutoCompleteService autoComplete, SlashCommandMentionService mentions)
+public sealed partial class BackpackModule(BackpackService backpack, SlashCommandMentionService mentions)
     : DiscordApplicationModuleBase
 {
     private static readonly ParticleEffect[] ParticleEffects = Enum.GetValues<ParticleEffect>();
@@ -293,9 +293,9 @@ public sealed partial class BackpackModule(BackpackService backpack, AutoComplet
     public partial void AutoCompleteItems(AutoComplete<string> itemName, AutoComplete<string> particleEffect)
     {
         if (itemName.IsFocused)
-            autoComplete.AutoComplete(itemName, _items);
+            itemName.AutoComplete(Context, _items);
 
         if (particleEffect.IsFocused)
-            autoComplete.AutoComplete(particleEffect, ParticleEffects);
+            particleEffect.AutoComplete(Context, ParticleEffects);
     }
 }

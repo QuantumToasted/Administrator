@@ -6,12 +6,12 @@ namespace Administrator.Database;
 
 public enum ReminderRepeatMode
 {
-    Hourly,
-    Daily,
-    Weekly
+    Daily = 1,
+    Weekly,
+    Monthly
 }
 
-public sealed record Reminder(string Text, Snowflake AuthorId, Snowflake ChannelId, DateTimeOffset ExpiresAt, ReminderRepeatMode? RepeatMode, double? RepeatInterval) 
+public sealed record Reminder(string Text, Snowflake AuthorId, Snowflake ChannelId, DateTimeOffset ExpiresAt, ReminderRepeatMode? RepeatMode, int? RepeatInterval) 
     : INumberKeyedDbEntity, IExpiringDbEntity
 {
     public int Id { get; init; }

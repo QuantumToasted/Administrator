@@ -48,8 +48,7 @@ public sealed class SlashCommandMentionService : DiscordBotService
 
     public static string? GetPath(ICommand command)
     {
-        var module = command.Module as ApplicationModule;
-        if (module is null)
+        if (command.Module is not ApplicationModule module)
             return null;
         
         var path = new[] { command.Name }.ToList();

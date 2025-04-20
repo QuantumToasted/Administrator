@@ -323,7 +323,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
         }
     }
 
-    public sealed partial class AutomaticPunishmentConfigModule(AdminDbContext db, AutoCompleteService autoComplete) : DiscordApplicationGuildModuleBase
+    public sealed partial class AutomaticPunishmentConfigModule(AdminDbContext db) : DiscordApplicationGuildModuleBase
     {
         public enum PunishmentTypeSelection
         {
@@ -349,7 +349,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
                             {
                                 var builder = new StringBuilder(Markdown.Bold("demerit point".ToQuantity(y.DemeritPoints)))
                                     .Append(" - ")
-                                    .Append(AutomaticPunishmentAutoCompleteFormatter.FormatWarningPunishment(y, false));
+                                    .Append(y.FormatValue(false));
 
                                 return builder.ToString();
                             })));
@@ -391,7 +391,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
             await db.SaveChangesAsync();
             return Response(
                 $"Automatic punishment created/updated. Upon receiving {Markdown.Bold("demerit point".ToQuantity(demeritPoints))}, users will receive the following punishment:\n" +
-                Markdown.Bold(AutomaticPunishmentAutoCompleteFormatter.FormatWarningPunishment(automaticPunishment, false)));
+                Markdown.Bold(automaticPunishment.FormatValue(false)));
         }
 
         public partial async Task<IResult> Remove(int demeritPoints)
@@ -413,7 +413,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
                 .OrderBy(x => x.DemeritPoints)
                 .ToListAsync();
 
-            autoComplete.AutoComplete(demeritPoints, automaticPunishments);
+            demeritPoints.AutoComplete(Context, automaticPunishments);
         }
     }
 
