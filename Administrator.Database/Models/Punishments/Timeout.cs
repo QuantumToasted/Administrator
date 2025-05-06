@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Timeout : RevocablePunishment, ITimeout, IEntityTypeConfiguration<Timeout>
+public sealed record Timeout : RevocablePunishment, ITimeout, IEntityTypeConfiguration<Timeout>
 {
     public DateTimeOffset ExpiresAt { get; init; }
     

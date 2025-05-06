@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class InviteFilterExemption : IInviteFilterExemption, IEntityTypeConfiguration<InviteFilterExemption>
+public sealed record InviteFilterExemption : IInviteFilterExemption, IEntityTypeConfiguration<InviteFilterExemption>
 {
     public int Id { get; init; }
     

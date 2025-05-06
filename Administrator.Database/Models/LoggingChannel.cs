@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class LoggingChannel : ILoggingChannel, IEntityTypeConfiguration<LoggingChannel>
+public sealed record LoggingChannel : ILoggingChannel, IEntityTypeConfiguration<LoggingChannel>
 {
     public Snowflake GuildId { get; init; }
     

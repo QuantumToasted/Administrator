@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class TimedRole : RevocablePunishment, ITimedRole, IEntityTypeConfiguration<TimedRole>
+public sealed record TimedRole : RevocablePunishment, ITimedRole, IEntityTypeConfiguration<TimedRole>
 {
     public Snowflake RoleId { get; init; }
     

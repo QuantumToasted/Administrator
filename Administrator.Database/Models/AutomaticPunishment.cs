@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class AutomaticPunishment : IAutomaticPunishment, IEntityTypeConfiguration<AutomaticPunishment>
+public sealed record AutomaticPunishment : IAutomaticPunishment, IEntityTypeConfiguration<AutomaticPunishment>
 {
     public Snowflake GuildId { get; init; }
     

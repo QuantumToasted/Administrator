@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Kick : Punishment, IKick, IEntityTypeConfiguration<Kick>
+public sealed record Kick : Punishment, IKick, IEntityTypeConfiguration<Kick>
 {
     public override PunishmentType Type => PunishmentType.Kick;
     

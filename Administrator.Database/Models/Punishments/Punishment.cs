@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public abstract partial class Punishment : IPunishment, IEntityTypeConfiguration<Punishment>
+public abstract partial record Punishment : IPunishment, IEntityTypeConfiguration<Punishment>
 {
     public int Id { get; init; }
     

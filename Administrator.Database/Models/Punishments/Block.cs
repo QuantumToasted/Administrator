@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Block : RevocablePunishment, IBlock, IEntityTypeConfiguration<Block>
+public sealed record Block : RevocablePunishment, IBlock, IEntityTypeConfiguration<Block>
 {
     public Snowflake ChannelId { get; init; }
     

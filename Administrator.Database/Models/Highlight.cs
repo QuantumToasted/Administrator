@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Highlight : IHighlight, IEntityTypeConfiguration<Highlight>
+public sealed record Highlight : IHighlight, IEntityTypeConfiguration<Highlight>
 {
     public const int MAX_HIGHLIGHT_LENGTH = 50;
     

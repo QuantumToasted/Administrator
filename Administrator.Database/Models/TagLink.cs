@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class TagLink : ITagLink, IEntityTypeConfiguration<TagLink>
+public sealed record TagLink : ITagLink, IEntityTypeConfiguration<TagLink>
 {
     public int Id { get; init; }
     

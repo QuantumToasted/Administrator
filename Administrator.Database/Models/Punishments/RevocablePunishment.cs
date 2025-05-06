@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public abstract class RevocablePunishment : Punishment, IRevocablePunishment, IEntityTypeConfiguration<RevocablePunishment>
+public abstract record RevocablePunishment : Punishment, IRevocablePunishment, IEntityTypeConfiguration<RevocablePunishment>
 {
     public DateTimeOffset? RevokedAt { get; set; }
     

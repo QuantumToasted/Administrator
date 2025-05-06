@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class LuaCommand : ILuaCommand, IEntityTypeConfiguration<LuaCommand>
+public sealed record LuaCommand : ILuaCommand, IEntityTypeConfiguration<LuaCommand>
 {
     public Snowflake GuildId { get; init; }
 

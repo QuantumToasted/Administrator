@@ -6,7 +6,7 @@ using NodaTime;
 
 namespace Administrator.Database;
 
-public sealed class Reminder : IReminder, IEntityTypeConfiguration<Reminder>
+public sealed record Reminder : IReminder, IEntityTypeConfiguration<Reminder>
 {
     public int Id { get; init; }
     

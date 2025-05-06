@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class ForumAutoTag : IForumAutoTag, IEntityTypeConfiguration<ForumAutoTag>
+public sealed record ForumAutoTag : IForumAutoTag, IEntityTypeConfiguration<ForumAutoTag>
 {
     public const int MAX_TEXT_LENGTH = 50;
     

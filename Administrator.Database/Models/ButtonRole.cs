@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class ButtonRole : IButtonRole, IEntityTypeConfiguration<ButtonRole>
+public sealed record ButtonRole : IButtonRole, IEntityTypeConfiguration<ButtonRole>
 {
     public int Id { get; init; }
     

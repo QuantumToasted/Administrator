@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Ban : RevocablePunishment, Core.IBan, IEntityTypeConfiguration<Ban>
+public sealed record Ban : RevocablePunishment, IBan, IEntityTypeConfiguration<Ban>
 {
     public int? MessagePruneDays { get; init; }
     

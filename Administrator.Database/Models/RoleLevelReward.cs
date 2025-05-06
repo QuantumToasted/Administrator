@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class RoleLevelReward : IRoleLevelReward, IEntityTypeConfiguration<RoleLevelReward>
+public sealed record RoleLevelReward : IRoleLevelReward, IEntityTypeConfiguration<RoleLevelReward>
 {
     public Snowflake GuildId { get; init; }
     

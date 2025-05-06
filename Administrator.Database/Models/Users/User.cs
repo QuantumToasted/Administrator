@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class User : IUserXp, IUserConfiguration, IEntityTypeConfiguration<User>
+public sealed record User : IUserXp, IUserConfiguration, IEntityTypeConfiguration<User>
 {
     public Snowflake UserId { get; init; }
 

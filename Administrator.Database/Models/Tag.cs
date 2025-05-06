@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Tag : ITag, IEntityTypeConfiguration<Tag>
+public sealed record Tag : ITag, IEntityTypeConfiguration<Tag>
 {
     public Snowflake GuildId { get; init; }
     

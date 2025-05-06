@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Warning : RevocablePunishment, IWarning, IEntityTypeConfiguration<Warning>
+public sealed record Warning : RevocablePunishment, IWarning, IEntityTypeConfiguration<Warning>
 {
     public int DemeritPoints { get; init; }
     

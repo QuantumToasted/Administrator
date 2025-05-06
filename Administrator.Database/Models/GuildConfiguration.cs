@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class GuildConfiguration : IGuildConfiguration, IEntityTypeConfiguration<GuildConfiguration>
+public sealed record GuildConfiguration : IGuildConfiguration, IEntityTypeConfiguration<GuildConfiguration>
 {
     public const string DEFAULT_LEVEL_UP_EMOJI = "🎉";
     

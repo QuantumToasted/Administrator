@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed class Member : IUserXp, IMemberConfiguration, IEntityTypeConfiguration<Member>
+public sealed record Member : IUserXp, IMemberConfiguration, IEntityTypeConfiguration<Member>
 {
     private static readonly string[] InitialBlurbChoices =
     {
