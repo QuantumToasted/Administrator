@@ -1,3 +1,4 @@
+using Administrator.Core;
 using Administrator.Database;
 using Disqord.Bot;
 using Humanizer;
@@ -9,7 +10,7 @@ namespace Administrator.Bot.Jobs;
 
 public sealed class PunishmentExpiryJob<TPunishment>(ILogger<PunishmentExpiryJob<TPunishment>> logger, AdminDbContext db, 
     PunishmentService punishmentService, DiscordBotBase bot) : IAdminJob<PunishmentExpiryJob<TPunishment>, TPunishment>
-    where TPunishment : RevocablePunishment, IExpiringDbEntity
+    where TPunishment : RevocablePunishment, IExpiringEntity
 {
     public ILogger Logger { get; } = logger;
     

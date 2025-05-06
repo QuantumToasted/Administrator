@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
@@ -9,10 +9,10 @@
 
     <ItemGroup>
       <PackageReference Include="Disqord.Core" Version="1.0.0-alpha5.77" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-      <PackageReference Include="NodaTime" Version="3.1.11" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.4" />
+      <PackageReference Include="NodaTime" Version="3.2.2" />
       <PackageReference Include="Qmmands" Version="6.0.0-alpha8" />
       <PackageReference Include="Serilog" Version="4.2.0" />
     </ItemGroup>

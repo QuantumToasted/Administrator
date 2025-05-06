@@ -1,5 +1,6 @@
 using System.Collections;
 using Administrator.Bot.Jobs;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord.Bot.Hosting;
 using LinqToDB;
@@ -13,47 +14,6 @@ namespace Administrator.Bot;
 
 public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordBotService
 {
-    /*
-    public async Task RefreshDemeritPointJobAsync(Warning warning, Member member)
-    {
-        var scheduler = await schedulerFactory.GetScheduler();
-
-        await using (Bot.Services.CreateAsyncScopeWithDatabase(out var db))
-        {
-            var otherWarnings = await db.Punishments.OfType<Warning>()
-                .Where(x => x.Target.Id == member.UserId.RawValue && x.GuildId == member.GuildId && x.Id != warning.Id &&
-                            x.DemeritPointsRemaining > 0)
-                .ToListAsync();
-
-            // Unschedule other warning decay jobs
-            foreach (var otherWarning in otherWarnings)
-            {
-                await UnscheduleDemeritPointJob(scheduler, otherWarning, Bot.StoppingToken);
-            }
-        }
-        
-        await RefreshInternal<DemeritPointDecayJob, Warning>(scheduler, warning, member, Bot.StoppingToken);
-        
-        static async ValueTask RefreshInternal<TJob, TEntity>(IScheduler scheduler, Warning warning, Member member, CancellationToken cancellationToken)
-            where TJob : IAdminJob<TJob, TEntity>
-            where TEntity : RevocablePunishment
-        {
-            var entity = Guard.IsOfType<TEntity>(warning);
-            
-            var triggers = await scheduler.GetTriggersOfJob(TJob.FormatJobKey(entity), cancellationToken);
-
-            if (triggers.FirstOrDefault() is { Key: var key })
-            {
-                // reschedule, there's already a job
-                await scheduler.RescheduleDemeritPointExpiryJob(key, warning, member, cancellationToken);
-                return;
-            }
-
-            await scheduler.ScheduleDemeritPointExpiryJob(warning, member, cancellationToken);
-        }
-    }
-    */
-    
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
@@ -75,7 +35,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
                 Warning = warningsWithDemeritPoints
                     .Where(x => x.GuildId == member.GuildId && x.Target.Id == (ulong)member.UserId)
                     .FirstOrDefault(x => x.DemeritPointsRemaining > 0),
-                CanDecay = guilds.Any(x => x.GuildId == member.GuildId && x.DemeritPointsDecayInterval.HasValue)
+                CanDecay = guilds.Any(x => x.GuildId == member.GuildId && x.DemeritPointDecayInterval.HasValue)
             })
             .Where(x => x.Warning != null && x.CanDecay)
             .Select(x => (x.Warning!, x.Member.NextDemeritPointDecay!.Value))
@@ -89,7 +49,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
             .Where(x => x.RevokedAt == null)
             .ToListAsync(stoppingToken);
 
-        var expiringPunishments = punishments.Where(x => x is IExpiringDbEntity { ExpiresAt: not null }).ToList();
+        var expiringPunishments = punishments.Where(x => x is IExpiringEntity { ExpiresAt: not null }).ToList();
         await SchedulePunishmentExpiryJobsAsync(scheduler, expiringPunishments);
         
         Logger.LogDebug("Scheduled {Count} punishment expiry jobs.", expiringPunishments.Count);
@@ -118,7 +78,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
         });
         
         static ValueTask<DateTimeOffset> ScheduleInternal<TPunishment>(IScheduler scheduler, TPunishment punishment)
-            where TPunishment : RevocablePunishment, IExpiringDbEntity
+            where TPunishment : RevocablePunishment, IExpiringEntity
         {
             return scheduler.ScheduleAdminJob<PunishmentExpiryJob<TPunishment>, TPunishment>(punishment);
         }

@@ -117,7 +117,7 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
 
         if (view.Result)
         {
-            byte[] persistence = [];
+            byte[]? persistence = null;
             if (luaCommand is not null)
             {
                 if (keepPersistence)
@@ -128,12 +128,7 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
             }
 
             var commandRemainder = string.Join("\n", split[1..]);
-            var metadataBytes = Encoding.Default.GetBytes(rawMetadata).GZipCompress();
-            var commandBytes = Encoding.Default.GetBytes(commandRemainder).GZipCompress();
-            var command = new LuaCommand(Context.GuildId, commandName, metadataBytes, commandBytes)
-            {
-                Persistence = persistence
-            };
+            var command = LuaCommand.Create(Context.GuildId, commandName, rawMetadata, commandRemainder, persistence);
 
             db.LuaCommands.Add(command);
             await db.SaveChangesAsync();

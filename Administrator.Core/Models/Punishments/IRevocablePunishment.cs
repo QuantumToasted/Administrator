@@ -1,5 +1,14 @@
 ﻿namespace Administrator.Core;
 
+public enum AppealStatus
+{
+    Sent,
+    NeedsInfo,
+    Updated,
+    Rejected,
+    Ignored
+}
+
 public interface IRevocablePunishment : IPunishment
 {
     DateTimeOffset? RevokedAt { get; }
@@ -11,4 +20,6 @@ public interface IRevocablePunishment : IPunishment
     DateTimeOffset? AppealedAt { get; }
     
     string? AppealText { get; }
+    
+    AppealStatus? AppealStatus { get; }
 }

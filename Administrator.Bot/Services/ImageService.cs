@@ -59,15 +59,16 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                 .FirstOrDefaultAsync();
 
             Member? member = null;
-            Guild? guild = null;
+            GuildConfiguration? guild = null;
             var guildPosition = 0L;
             if (guildId.HasValue)
             {
                 member = await db.Members.GetOrCreateAsync(guildId.Value, userId);
                 guild = await db.Guilds.GetOrCreateAsync(guildId.Value);
 
+                var longGuildId = (long)guildId.Value.RawValue;
                 guildPosition = await db.Members.ToLinqToDBTable()
-                    .Where(x => x.GuildId == guildId.Value)
+                    .Where(x => (long) (ulong) x.GuildId == longGuildId)
                     .Select(x => new
                     {
                         UserId = (long) (ulong) x.UserId,
@@ -85,7 +86,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
             
             using var background = LoadBackgroundImage();
             using var avatar = await LoadAvatarImageAsync(guildId, userId);
-            using var currentLevel = await LoadLevelImageAsync(user.Tier, user.Level);
+            using var currentLevel = await LoadLevelImageAsync(user.GetTier(), user.GetLevel());
 
             // Draw outer bounding box
             {
@@ -176,7 +177,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
             {
                 const int leftX = 77 * SCALE;
                 var topY = 274 * SCALE - guildOffset;
-                var rightX = (356d * ((double) user.CurrentLevelXp / user.NextLevelXp) + 77) * SCALE;
+                var rightX = (356d * ((double) user.GetCurrentLevelXp() / user.GetNextLevelXp()) + 77) * SCALE;
                 var bottomY = 283 * SCALE - guildOffset;
                 
                 background.Draw(new Drawables()
@@ -195,10 +196,10 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                 
                 background.Draw(Fonts.TF2()
                     .FontPointSize(fontSize)
-                    .FillColor(Colors.GetGradeColor(user.Grade))
+                    .FillColor(Colors.GetGradeColor(user.GetGrade()))
                     //.Gravity(Gravity.North)
                     .TextAlignment(TextAlignment.Center)
-                    .Text(originX, originY, $"Tier {user.Tier}, Level {user.Level} ({user.Grade} Grade)")); // 259
+                    .Text(originX, originY, $"Tier {user.GetTier()}, Level {user.GetLevel()} ({user.GetGrade()} Grade)")); // 259
             }
             
             
@@ -213,7 +214,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                     .FillColor(MagickColors.WhiteSmoke)
                     //.Gravity(Gravity.North)
                     .TextAlignment(TextAlignment.Center)
-                    .Text(originX, originY, $"{user.TotalXp} / {user.NextLevelTotalXp} XP")); // 273
+                    .Text(originX, originY, $"{user.TotalXp} / {user.GetNextLevelTotalXp()} XP")); // 273
             }
             
             // Draw current level
@@ -277,7 +278,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                 {
                     const int leftX = 77 * SCALE;
                     const int topY = 279 * SCALE;
-                    var rightX = (356d * ((double) member.CurrentLevelXp / member.NextLevelXp) + 77) * SCALE;
+                    var rightX = (356d * ((double) member.GetCurrentLevelXp() / member.GetNextLevelXp()) + 77) * SCALE;
                     const int bottomY = 288 * SCALE;
                     
                     background.Draw(new Drawables()
@@ -296,10 +297,10 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                     
                     background.Draw(Fonts.TF2()
                         .FontPointSize(fontSize)
-                        .FillColor(Colors.GetGradeColor(member.Grade))
+                        .FillColor(Colors.GetGradeColor(member.GetGrade()))
                         //.Gravity(Gravity.North)
                         .TextAlignment(TextAlignment.Center)
-                        .Text(originX, originY, $"Tier {member.Tier}, Level {member.Level} ({member.Grade} Grade)")); // 264
+                        .Text(originX, originY, $"Tier {member.GetTier()}, Level {member.GetLevel()} ({member.GetGrade()} Grade)")); // 264
                 }
                 
                 // Write current guild XP text
@@ -313,7 +314,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                         .FillColor(MagickColors.WhiteSmoke)
                         //.Gravity(Gravity.North)
                         .TextAlignment(TextAlignment.Center)
-                        .Text(originX, originY, $"{member.TotalXp} / {member.NextLevelTotalXp} XP")); // 278
+                        .Text(originX, originY, $"{member.TotalXp} / {member.GetNextLevelTotalXp()} XP")); // 278
                 }
                 
                 // Draw current guild level
@@ -321,7 +322,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                     const int originX = 45 * SCALE;
                     const int originY = 292 * SCALE;
                     
-                    using var currentGuildLevel = await LoadLevelImageAsync(member.Tier, member.Level);
+                    using var currentGuildLevel = await LoadLevelImageAsync(member.GetTier(), member.GetLevel());
                     var justifiedOrigin = Justify(originX, originY, currentGuildLevel, Gravity.South);
                     background.Composite(currentGuildLevel,  justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
                 }

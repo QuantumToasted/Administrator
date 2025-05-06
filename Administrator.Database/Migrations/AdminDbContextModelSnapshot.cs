@@ -18,29 +18,11 @@ namespace Administrator.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "uuid-ossp");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Administrator.Database.Attachment", b =>
-                {
-                    b.Property<Guid>("Key")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("key");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("file_name");
-
-                    b.HasKey("Key")
-                        .HasName("pk_attachment");
-
-                    b.ToTable("attachment", (string)null);
-                });
 
             modelBuilder.Entity("Administrator.Database.AutomaticPunishment", b =>
                 {
@@ -80,7 +62,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("channel_id");
 
                     b.Property<string>("Emoji")
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("emoji");
 
                     b.Property<int?>("ExclusiveGroupId")
@@ -112,7 +95,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("style");
 
                     b.Property<string>("Text")
-                        .HasColumnType("text")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
                         .HasColumnName("text");
 
                     b.HasKey("Id")
@@ -174,7 +158,8 @@ namespace Administrator.Database.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("text");
 
                     b.HasKey("Id")
@@ -189,7 +174,7 @@ namespace Administrator.Database.Migrations
                     b.ToTable("auto_tags", (string)null);
                 });
 
-            modelBuilder.Entity("Administrator.Database.Guild", b =>
+            modelBuilder.Entity("Administrator.Database.GuildConfiguration", b =>
                 {
                     b.Property<long>("GuildId")
                         .HasColumnType("bigint")
@@ -198,7 +183,8 @@ namespace Administrator.Database.Migrations
                     b.Property<string>("ApiKey")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
                         .HasColumnName("api_key")
                         .HasDefaultValueSql("REPLACE(gen_random_uuid()::text, '-', '' )");
 
@@ -208,7 +194,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("auto_quote_exempt_channel_ids");
 
                     b.Property<string>("CustomPunishmentText")
-                        .HasColumnType("text")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
                         .HasColumnName("custom_punishment_text");
 
                     b.Property<TimeSpan?>("CustomXpInterval")
@@ -227,9 +214,9 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("default_warning_demerit_points");
 
-                    b.Property<TimeSpan?>("DemeritPointsDecayInterval")
+                    b.Property<TimeSpan?>("DemeritPointDecayInterval")
                         .HasColumnType("interval")
-                        .HasColumnName("demerit_points_decay_interval");
+                        .HasColumnName("demerit_point_decay_interval");
 
                     b.Property<bool>("DmGreetingMessage")
                         .HasColumnType("boolean")
@@ -249,7 +236,8 @@ namespace Administrator.Database.Migrations
 
                     b.Property<string>("LevelUpEmoji")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("level_up_emoji");
 
                     b.Property<int>("MaxLuaCommands")
@@ -298,7 +286,8 @@ namespace Administrator.Database.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("text");
 
                     b.HasKey("Id")
@@ -328,7 +317,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("guild_id");
 
                     b.Property<string>("InviteCode")
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("invite_code");
 
                     b.Property<long?>("TargetId")
@@ -371,7 +361,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("guild_id");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
                         .HasColumnName("name");
 
                     b.Property<byte[]>("Command")
@@ -403,11 +394,12 @@ namespace Administrator.Database.Migrations
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
-                        .HasColumnName("user");
+                        .HasColumnName("user_id");
 
                     b.Property<string>("Blurb")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("blurb");
 
                     b.Property<DateTimeOffset>("LastLevelUp")
@@ -424,7 +416,7 @@ namespace Administrator.Database.Migrations
 
                     b.Property<int>("TotalXp")
                         .HasColumnType("integer")
-                        .HasColumnName("xp");
+                        .HasColumnName("total_xp");
 
                     b.HasKey("GuildId", "UserId")
                         .HasName("pk_members");
@@ -475,7 +467,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("moderator");
 
                     b.Property<string>("Reason")
-                        .HasColumnType("text")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
                         .HasColumnName("reason");
 
                     b.Property<UserSnapshot>("Target")
@@ -538,7 +531,8 @@ namespace Administrator.Database.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
                         .HasColumnName("text");
 
                     b.HasKey("Id")
@@ -547,10 +541,26 @@ namespace Administrator.Database.Migrations
                     b.HasIndex("AuthorId")
                         .HasDatabaseName("ix_reminders_author_id");
 
-                    b.HasIndex("ExpiresAt")
-                        .HasDatabaseName("ix_reminders_expires_at");
-
                     b.ToTable("reminders", (string)null);
+                });
+
+            modelBuilder.Entity("Administrator.Database.RemoteAttachment", b =>
+                {
+                    b.Property<Guid>("Key")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("key");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("file_name");
+
+                    b.HasKey("Key")
+                        .HasName("pk_attachment");
+
+                    b.ToTable("attachment", (string)null);
                 });
 
             modelBuilder.Entity("Administrator.Database.RoleLevelReward", b =>
@@ -590,10 +600,11 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("guild_id");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
                         .HasColumnName("name");
 
-                    b.Property<string[]>("Aliases")
+                    b.PrimitiveCollection<string[]>("Aliases")
                         .IsRequired()
                         .HasColumnType("text[]")
                         .HasColumnName("aliases");
@@ -643,11 +654,13 @@ namespace Administrator.Database.Migrations
             modelBuilder.Entity("Administrator.Database.TagLink", b =>
                 {
                     b.Property<string>("From")
-                        .HasColumnType("text")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
                         .HasColumnName("from");
 
                     b.Property<string>("To")
-                        .HasColumnType("text")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
                         .HasColumnName("to");
 
                     b.Property<long>("GuildId")
@@ -663,7 +676,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("is_ephemeral");
 
                     b.Property<string>("Label")
-                        .HasColumnType("text")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
                         .HasColumnName("label");
 
                     b.Property<byte>("Style")
@@ -683,7 +697,7 @@ namespace Administrator.Database.Migrations
                 {
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
-                        .HasColumnName("user");
+                        .HasColumnName("user_id");
 
                     b.Property<long[]>("BlacklistedHighlightChannelIds")
                         .IsRequired()
@@ -721,7 +735,7 @@ namespace Administrator.Database.Migrations
 
                     b.Property<int>("TotalXp")
                         .HasColumnType("integer")
-                        .HasColumnName("xp");
+                        .HasColumnName("total_xp");
 
                     b.Property<bool>("WasSentInitialJoinMessage")
                         .HasColumnType("boolean")
@@ -759,7 +773,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("appeal_status");
 
                     b.Property<string>("AppealText")
-                        .HasColumnType("text")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
                         .HasColumnName("appeal_text");
 
                     b.Property<DateTimeOffset?>("AppealedAt")
@@ -767,7 +782,8 @@ namespace Administrator.Database.Migrations
                         .HasColumnName("appealed_at");
 
                     b.Property<string>("RevocationReason")
-                        .HasColumnType("text")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
                         .HasColumnName("revocation_reason");
 
                     b.Property<DateTimeOffset?>("RevokedAt")
@@ -899,7 +915,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.AutomaticPunishment", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("AutomaticPunishments")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -911,7 +927,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.ButtonRole", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("ButtonRoles")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -923,7 +939,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.EmojiStats", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("EmojiStats")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -935,7 +951,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.ForumAutoTag", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("ForumAutoTags")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -959,7 +975,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.InviteFilterExemption", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("InviteFilterExemptions")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -971,7 +987,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.LoggingChannel", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("LoggingChannels")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -983,7 +999,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.LuaCommand", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("LuaCommands")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -995,12 +1011,12 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.Punishment", b =>
                 {
-                    b.HasOne("Administrator.Database.Attachment", "Attachment")
+                    b.HasOne("Administrator.Database.RemoteAttachment", "Attachment")
                         .WithMany()
                         .HasForeignKey("AttachmentId")
                         .HasConstraintName("fk_punishments_attachment_attachment_id");
 
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("Punishments")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1026,7 +1042,7 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.RoleLevelReward", b =>
                 {
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("LevelRewards")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1038,12 +1054,12 @@ namespace Administrator.Database.Migrations
 
             modelBuilder.Entity("Administrator.Database.Tag", b =>
                 {
-                    b.HasOne("Administrator.Database.Attachment", "Attachment")
+                    b.HasOne("Administrator.Database.RemoteAttachment", "Attachment")
                         .WithMany()
                         .HasForeignKey("AttachmentId")
                         .HasConstraintName("fk_tags_attachment_attachment_id");
 
-                    b.HasOne("Administrator.Database.Guild", "Guild")
+                    b.HasOne("Administrator.Database.GuildConfiguration", "Guild")
                         .WithMany("Tags")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1074,7 +1090,7 @@ namespace Administrator.Database.Migrations
                     b.Navigation("AdditionalPunishment");
                 });
 
-            modelBuilder.Entity("Administrator.Database.Guild", b =>
+            modelBuilder.Entity("Administrator.Database.GuildConfiguration", b =>
                 {
                     b.Navigation("AutomaticPunishments");
 

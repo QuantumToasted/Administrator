@@ -1,22 +1,40 @@
-﻿using Disqord;
+﻿using Administrator.Core;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record RoleLevelReward(Snowflake GuildId, int Tier, int Level)
+public sealed class RoleLevelReward : IRoleLevelReward, IEntityTypeConfiguration<RoleLevelReward>
 {
-    public List<Snowflake> GrantedRoleIds { get; set; } = new();
-
-    public List<Snowflake> RevokedRoleIds { get; set; } = new();
+    public Snowflake GuildId { get; init; }
     
-    public Guild? Guild { get; init; }
+    public int Tier { get; init; }
+    
+    public int Level { get; init; }
 
-    private sealed class RoleLevelRewardConfiguration : IEntityTypeConfiguration<RoleLevelReward>
+    public List<Snowflake> GrantedRoleIds { get; set; } = [];
+
+    public List<Snowflake> RevokedRoleIds { get; set; } = [];
+    
+    public GuildConfiguration? Guild { get; init; }
+
+    public static RoleLevelReward Create(Snowflake guildId, int tier, int level, IEnumerable<Snowflake> grantedRoleIds, IEnumerable<Snowflake> revokedRoleIds)
     {
-        public void Configure(EntityTypeBuilder<RoleLevelReward> reward)
+        return new RoleLevelReward
         {
-            reward.HasKey(x => new { x.GuildId, x.Tier, x.Level });
-        }
+            GuildId = guildId,
+            Tier = tier,
+            Level = level,
+            GrantedRoleIds = grantedRoleIds.ToList(),
+            RevokedRoleIds = revokedRoleIds.ToList()
+        };
+    }
+    
+    IReadOnlyList<Snowflake> IRoleLevelReward.GrantedRoleIds => GrantedRoleIds;
+    IReadOnlyList<Snowflake> IRoleLevelReward.RevokedRoleIds => RevokedRoleIds;
+    void IEntityTypeConfiguration<RoleLevelReward>.Configure(EntityTypeBuilder<RoleLevelReward> reward)
+    {
+        reward.HasKey(x => new { x.GuildId, x.Tier, x.Level });
     }
 }

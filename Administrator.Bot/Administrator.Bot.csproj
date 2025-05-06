@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
@@ -17,7 +17,7 @@
       <PackageReference Include="Backpack.Net" Version="2.0.1" />
       <PackageReference Include="Chronic.Core" Version="0.4.0" />
       <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.77" />
-      <PackageReference Include="Laylua" Version="0.0.1-30" />
+      <PackageReference Include="Laylua" Version="0.0.1-32" />
       <PackageReference Include="Magick.NET-Q16-x64" Version="13.10.0" />
       <PackageReference Include="MimeTypes" Version="2.5.2">
         <PrivateAssets>all</PrivateAssets>

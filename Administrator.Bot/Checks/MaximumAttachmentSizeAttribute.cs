@@ -23,8 +23,8 @@ public class MaximumAttachmentSizeAttribute(double value, FileSizeMeasure measur
         _attachmentService ??= context.Services.GetRequiredService<AttachmentService>();
 
         var attachment = (IAttachment) argument!;
-        var sizeinBytes = (long)(value * (long)measure);
-        if (!await _attachmentService.CheckSizeAsync(attachment.Url, sizeinBytes))
+        var sizeInBytes = (long)(value * (long)measure);
+        if (!await _attachmentService.CheckSizeAsync(attachment.Url, sizeInBytes))
             return Results.Failure($"The provided file must be {value:F}{measure} or smaller in size.");
 
         return Results.Success;

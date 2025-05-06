@@ -1,4 +1,4 @@
-using Administrator.Database;
+using Administrator.Core;
 using Microsoft.Extensions.Logging;
 using Quartz;
 
@@ -19,8 +19,7 @@ public interface IAdminJob<TJob> : IAdminJob
 
 public interface IAdminJob<TJob, TEntity> : IAdminJob<TJob>
     where TJob : IAdminJob<TJob, TEntity>
-    where TEntity : class, INumberKeyedDbEntity
-    //where TEntity : INumberKeyedDbEntity
+    where TEntity : class, IKeyedEntity<int>
 {
     ValueTask<TEntity> GetEntity(IJobExecutionContext context, int entityKey);
     ValueTask Execute(IJobExecutionContext context, TEntity entity);

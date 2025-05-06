@@ -20,6 +20,7 @@ using Serilog.Core;
 using Serilog.Events;
 using SteamWebAPI2.Utilities;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+using LinqToDBForEFTools = LinqToDB.EntityFrameworkCore.LinqToDBForEFTools;
 
 CultureInfo.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
 
@@ -113,6 +114,7 @@ var host = new HostBuilder()
         
         services.AddMemoryCache();
 
+        LinqToDBForEFTools.Implementation = new Administrator.Database.LinqToDBForEFTools(dbConfiguration.ConnectionString);
         var dataSource = new NpgsqlDataSourceBuilder(dbConfiguration.ConnectionString).EnableDynamicJson().Build();
         services.AddDbContext<AdminDbContext>(builder =>
         {
@@ -149,6 +151,7 @@ ILogger? logger = null;
 
 try
 {
+    LinqToDBForEFTools.Initialize();
     logger = host.Services.GetRequiredService<ILogger<IHost>>();
     host.Run();
 }

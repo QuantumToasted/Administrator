@@ -54,7 +54,7 @@ public static partial class DbModelExtensions
     public static bool CanBeAppealed(this RevocablePunishment punishment, [NotNullWhen(false)] out DateTimeOffset? appealAfter)
     {
         var now = DateTimeOffset.UtcNow;
-        var expires = (punishment as IExpiringDbEntity)?.ExpiresAt;
+        var expires = (punishment as IExpiringEntity)?.ExpiresAt;
         
         if (!expires.HasValue)
         {
@@ -115,7 +115,7 @@ public static partial class DbModelExtensions
         {
             await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
             var guild = await db.Guilds.GetOrCreateAsync(member.GuildId);
-            if (guild.DemeritPointsDecayInterval is { } interval)
+            if (guild.DemeritPointDecayInterval is { } interval)
             {
                 member.NextDemeritPointDecay = warning.CreatedAt + interval;
                 await db.SaveChangesAsync();
@@ -172,7 +172,7 @@ public static partial class DbModelExtensions
             }
             else
             {
-                var nextDecay = warning.CreatedAt + guild.DemeritPointsDecayInterval;
+                var nextDecay = warning.CreatedAt + guild.DemeritPointDecayInterval;
                 member.NextDemeritPointDecay = nextDecay;
 
                 if (await db.Punishments.OfType<Warning>()
@@ -217,7 +217,7 @@ public static partial class DbModelExtensions
         if (!string.IsNullOrWhiteSpace(punishment.Reason))
             builder.AppendNewline($"Reason: {punishment.Reason}");
 
-        if (punishment is IExpiringDbEntity { ExpiresAt: { } expiresAt })
+        if (punishment is IExpiringEntity { ExpiresAt: { } expiresAt })
         {
             builder.AppendNewline($"Expires: {Markdown.Timestamp(expiresAt, Markdown.TimestampFormat.RelativeTime)}");
         }
@@ -293,7 +293,7 @@ public static partial class DbModelExtensions
             .AddField(punishment.FormatReasonField(bot, true))
             .WithTimestamp(punishment.CreatedAt);
 
-        if (punishment is IExpiringDbEntity entity)
+        if (punishment is IExpiringEntity entity)
         {
             embed.AddField(entity.FormatExpiryField());
         }
@@ -338,7 +338,7 @@ public static partial class DbModelExtensions
             embed.AddField("Demerit points", demeritPoints);
         }
         
-        if (punishment is IExpiringDbEntity entity)
+        if (punishment is IExpiringEntity entity)
         {
             embed.AddField(entity.FormatExpiryField());
         }
@@ -354,7 +354,7 @@ public static partial class DbModelExtensions
             var config = bot.Services.GetRequiredService<IOptions<AdministratorAppealConfiguration>>().Value;
 
             var appealWaitTextBuilder = new StringBuilder("You will be able to appeal this punishment ");
-            if (punishment is IExpiringDbEntity { ExpiresAt: var expiresAt })
+            if (punishment is IExpiringEntity { ExpiresAt: var expiresAt })
             {
                 DateTimeOffset appealAfter;
                 if (!expiresAt.HasValue)
@@ -520,7 +520,7 @@ public static partial class DbModelExtensions
             valueBuilder.AppendNewline($"Role {verb}: {Mention.Role(roleId)} ({Markdown.Code(roleId)})");
         }
 
-        if (punishment is IExpiringDbEntity entity)
+        if (punishment is IExpiringEntity entity)
         {
             valueBuilder.Append(entity.ExpiresAt is { } expiresAt && expiresAt < DateTimeOffset.UtcNow
                     ? "Expired: "
@@ -596,7 +596,7 @@ public static partial class DbModelExtensions
             embed.AddField($"Role {verb}", $"{Mention.Role(roleId)} ({Markdown.Code(roleId)})");
         }
 
-        if (punishment is IExpiringDbEntity entity)
+        if (punishment is IExpiringEntity entity)
             embed.AddField(entity.FormatExpiryField());
 
         if (punishment is Warning warning)
@@ -824,7 +824,7 @@ public static partial class DbModelExtensions
         }
     }
 
-    private static LocalEmbedField FormatExpiryField(this IExpiringDbEntity entity)
+    private static LocalEmbedField FormatExpiryField(this IExpiringEntity entity)
     {
         return new LocalEmbedField()
             .WithName(entity.ExpiresAt is { } expiresAt && expiresAt < DateTimeOffset.UtcNow

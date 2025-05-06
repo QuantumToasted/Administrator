@@ -229,7 +229,7 @@ namespace Administrator.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("default_warning_demerit_points");
 
-                    b.Property<TimeSpan?>("DemeritPointsDecayInterval")
+                    b.Property<TimeSpan?>("DemeritPointDecayInterval")
                         .HasColumnType("interval")
                         .HasColumnName("demerit_points_decay_interval");
 

@@ -168,10 +168,10 @@ public sealed partial class UserModule(AttachmentService attachments) : DiscordA
                     var name = Bot.GetMember(guildUser.GuildId, guildUser.UserId)?.Tag
                                ?? guildUser.UserId.ToString();
 
-                    var emoji = emojis.GetLevelEmoji(guildUser.Tier, guildUser.Level);
+                    var emoji = emojis.GetLevelEmoji(guildUser.GetTier(), guildUser.GetLevel());
 
                     embed.AddField($"{++position}. {emoji} {name}",
-                        $"Tier {guildUser.Tier}, Level {guildUser.Level} + {guildUser.CurrentLevelXp}/{guildUser.NextLevelXp}");
+                        $"Tier {guildUser.GetTier()}, Level {guildUser.GetLevel()} + {guildUser.GetCurrentLevelXp()}/{guildUser.GetNextLevelXp()}");
                 }
 
                 pages.Add(new Page().AddEmbed(embed));

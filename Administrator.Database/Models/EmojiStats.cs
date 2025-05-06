@@ -1,21 +1,33 @@
-﻿using Disqord;
+﻿using Administrator.Core;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record EmojiStats(Snowflake EmojiId, Snowflake GuildId)
+public sealed class EmojiStats : IEmojiStats, IEntityTypeConfiguration<EmojiStats>
 {
+    public Snowflake GuildId { get; init; }
+    
+    public Snowflake EmojiId { get; init; }
+    
     public int Uses { get; set; }
     
-    public Guild? Guild { get; init; }
+    public GuildConfiguration? Guild { get; init; }
 
-    private sealed class EmojiStatsConfiguration : IEntityTypeConfiguration<EmojiStats>
+    public static EmojiStats Create(IGuildEmoji emoji) => Create(emoji.GuildId, emoji.Id);
+    public static EmojiStats Create(Snowflake guildId, Snowflake emojiId)
     {
-        public void Configure(EntityTypeBuilder<EmojiStats> stats)
+        return new EmojiStats
         {
-            stats.HasKey(x => x.EmojiId);
-            stats.HasIndex(x => x.GuildId);
-        }
+            GuildId = guildId,
+            EmojiId = emojiId
+        };
+    }
+
+    void IEntityTypeConfiguration<EmojiStats>.Configure(EntityTypeBuilder<EmojiStats> stats)
+    {
+        stats.HasKey(x => x.EmojiId);
+        stats.HasIndex(x => x.GuildId);
     }
 }

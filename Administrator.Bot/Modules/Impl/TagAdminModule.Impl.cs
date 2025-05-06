@@ -66,7 +66,7 @@ public sealed partial class TagAdminModule(AdminDbContext db) : DiscordApplicati
         if (await db.LinkedTags.AnyAsync(x => x.From == from.Name && x.To == to.Name))
             return Response($"Tags {Markdown.Bold(from)} and {Markdown.Bold(to)} are already linked!").AsEphemeral();
 
-        var link = new TagLink(Context.GuildId, from.Name, to.Name, text, style, ephemeral); // using .Name to avoid alias messiness
+        var link = TagLink.Create(Context.GuildId, from.Name, to.Name, text, style, ephemeral); // using .Name to avoid alias messiness
         db.LinkedTags.Add(link);
 
         await db.SaveChangesAsync();

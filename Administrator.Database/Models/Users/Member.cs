@@ -1,10 +1,11 @@
-﻿using Disqord;
+﻿using Administrator.Core;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record Member(Snowflake GuildId, Snowflake UserId) : UserBase(UserId)
+public sealed class Member : IUserXp, IMemberConfiguration, IEntityTypeConfiguration<Member>
 {
     private static readonly string[] InitialBlurbChoices =
     {
@@ -19,25 +20,39 @@ public sealed record Member(Snowflake GuildId, Snowflake UserId) : UserBase(User
         "They'll never see us coming!"
     };
     
-    public string Blurb { get; set; } = CreateInitialBlurb();
+    public Snowflake UserId { get; init; }
+    
+    public int TotalXp { get; set; }
+    
+    public DateTimeOffset LastXpGain { get; set; }
+    
+    public DateTimeOffset LastLevelUp { get; set; }
+    
+    public Snowflake GuildId { get; init; }
+
+    public string Blurb { get; set; } = null!;
     
     public DateTimeOffset? NextDemeritPointDecay { get; set; }
-    
-    //public int DemeritPoints { get; set; }
     
 #pragma warning disable CS8618
     public List<Tag> Tags { get; init; }
 #pragma warning restore CS8618
 
-    private static string CreateInitialBlurb()
-        => Random.Shared.GetItems(InitialBlurbChoices, 1)[0];
-
-    private sealed class MemberConfiguration : IEntityTypeConfiguration<Member>
+    public static Member Create(IMember member) => Create(member.GuildId, member.Id);
+    public static Member Create(Snowflake guildId, Snowflake userId)
     {
-        public void Configure(EntityTypeBuilder<Member> user)
+        return new Member
         {
-            user.HasKey(x => new { x.GuildId, x.UserId });
-            user.HasMany(x => x.Tags).WithOne(x => x.Owner).HasForeignKey(x => new { x.GuildId, x.OwnerId }).OnDelete(DeleteBehavior.NoAction);
-        }
+            UserId = userId,
+            GuildId = guildId,
+            Blurb = new Random(userId.GetHashCode()).GetItems(InitialBlurbChoices, 1)[0]
+        };
+    }
+
+    void IEntityTypeConfiguration<Member>.Configure(EntityTypeBuilder<Member> member)
+    {
+        member.HasKey(x => new { x.GuildId, x.UserId });
+        member.Property(x => x.Blurb).HasMaxLength(50);
+        member.HasMany(x => x.Tags).WithOne(x => x.Owner).HasForeignKey(x => new { x.GuildId, x.OwnerId }).OnDelete(DeleteBehavior.NoAction);
     }
 }

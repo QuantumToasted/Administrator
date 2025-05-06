@@ -5,17 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public enum AppealStatus
-{
-    Sent,
-    NeedsInfo,
-    Updated,
-    Rejected,
-    Ignored
-}
-
-public abstract record RevocablePunishment(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason)
-    : Punishment(GuildId, Target, Moderator, Reason), IRevocablePunishment
+public abstract class RevocablePunishment : Punishment, IRevocablePunishment, IEntityTypeConfiguration<RevocablePunishment>
 {
     public DateTimeOffset? RevokedAt { get; set; }
     
@@ -33,13 +23,12 @@ public abstract record RevocablePunishment(Snowflake GuildId, UserSnapshot Targe
     
     public Snowflake? AppealMessageId { get; set; }
 
-    private sealed class RevocablePunishmentConfiguration : IEntityTypeConfiguration<RevocablePunishment>
+    void IEntityTypeConfiguration<RevocablePunishment>.Configure(EntityTypeBuilder<RevocablePunishment> punishment)
     {
-        public void Configure(EntityTypeBuilder<RevocablePunishment> punishment)
-        {
-            punishment.HasBaseType<Punishment>();
+        punishment.HasBaseType<Punishment>();
         
-            punishment.Property(x => x.Revoker).HasColumnType("jsonb");
-        }
+        punishment.Property(x => x.Revoker).HasColumnType("jsonb");
+        punishment.Property(x => x.RevocationReason).HasMaxLength(Discord.Limits.Message.Embed.Field.MaxValueLength);
+        punishment.Property(x => x.AppealText).HasMaxLength(Discord.Limits.Message.Embed.Field.MaxValueLength);
     }
 }

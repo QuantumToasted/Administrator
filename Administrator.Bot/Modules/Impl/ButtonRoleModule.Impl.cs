@@ -124,10 +124,8 @@ public sealed partial class ButtonRoleModule(AdminDbContext db, ButtonRoleServic
             position = p;
         }
 
-        var buttonRole = new ButtonRole(Context.GuildId, channel.Id, messageId, row.Value, position.Value, emoji?.ToString(), text, style, role.Id)
-        {
-            ExclusiveGroupId = exclusiveGroup
-        };
+        var buttonRole = ButtonRole.Create(Context.GuildId, message, role, row.Value, position.Value, style, emoji, text);
+        buttonRole.ExclusiveGroupId = exclusiveGroup;
         
         db.ButtonRoles.Add(buttonRole);
         await db.SaveChangesAsync();
@@ -142,16 +140,13 @@ public sealed partial class ButtonRoleModule(AdminDbContext db, ButtonRoleServic
     public partial async Task<IResult> Modify(int buttonRoleId, IRole? role, string? text, IEmoji? emoji, LocalButtonComponentStyle? style)
     {
         await Deferral();
-        if (await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(db.ButtonRoles, x => x.GuildId == Context.GuildId && x.Id == buttonRoleId) is not { } buttonRole)
+        if (await db.ButtonRoles.FirstOrDefaultAsync(x => x.GuildId == Context.GuildId && x.Id == buttonRoleId) is not { } buttonRole)
             return Response($"No button role could be found with the ID {Markdown.Bold(buttonRoleId)}!");
 
-        buttonRole = buttonRole with
-        {
-            RoleId = role?.Id ?? buttonRole.RoleId,
-            Text = text ?? buttonRole.Text,
-            Emoji = emoji?.ToString() ?? buttonRole.Emoji,
-            Style = style ?? buttonRole.Style
-        };
+        buttonRole.RoleId = role?.Id ?? buttonRole.RoleId;
+        buttonRole.Text = text ?? buttonRole.Text;
+        buttonRole.Emoji = emoji?.ToString() ?? buttonRole.Emoji;
+        buttonRole.Style = style ?? buttonRole.Style;
 
         db.ButtonRoles.Update(buttonRole);
         await db.SaveChangesAsync();

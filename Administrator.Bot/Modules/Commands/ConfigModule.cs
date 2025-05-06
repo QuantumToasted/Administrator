@@ -1,4 +1,5 @@
-﻿using Administrator.Database;
+﻿using Administrator.Core;
+using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Commands.Application;
 using Qmmands;
@@ -207,6 +208,7 @@ public sealed partial class ConfigModule
     [Description("Sets or updates the server's custom punishment text sent to users.")]
     public partial Task<IResult> SetPunishmentText(
         [Description("The new text. Whitespace only disables the custom text, or supply nothing to view the current text.")]
+        [Maximum(Discord.Limits.Message.Embed.Field.MaxValueLength)]
             string? text = null);
 
     [SlashCommand("xp-rate")]

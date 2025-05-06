@@ -19,6 +19,8 @@ public abstract class PunishmentDTO(IPunishment punishment) : IPunishment
 
     public string? Reason => punishment.Reason;
 
+    public Guid? AttachmentId => punishment.AttachmentId;
+
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public PunishmentType Type => punishment.Type;
 

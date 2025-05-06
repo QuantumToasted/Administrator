@@ -99,6 +99,7 @@ public sealed partial class ReminderModule(AdminDbContext db, SlashCommandMentio
     
     private async Task<IResult> Create(ReminderCreationOptions options)
     {
+        Reminder reminder;
         if (options.IsRepeating)
         {
             var now = LocalDateTime.FromDateTime(Context.Interaction.CreatedAt().UtcDateTime);
@@ -116,6 +117,8 @@ public sealed partial class ReminderModule(AdminDbContext db, SlashCommandMentio
             }
 
             options.ExpiresAt = new ZonedDateTime(expiresAt, DateTimeZone.Utc, Offset.Zero).ToDateTimeOffset();
+            reminder = Reminder.CreateRepeating(options.Text, Context.AuthorId, Context.ChannelId, options.ExpiresAt, 
+                options.RepeatMode.Value, options.RepeatInterval.Value);
         }
         else if (options.ExpiresAt < Context.Interaction.CreatedAt())
         {
@@ -123,8 +126,11 @@ public sealed partial class ReminderModule(AdminDbContext db, SlashCommandMentio
                             "(If this time isn't in the past for you, try changing your timezone with " +
                             $"{mentions.GetMention("self timezone")}.)").AsEphemeral();
         }
+        else
+        {
+            reminder = Reminder.CreateSingle(options.Text, Context.AuthorId, Context.ChannelId, options.ExpiresAt.Value);
+        }
 
-        var reminder = new Reminder(options.Text, Context.AuthorId, Context.ChannelId, options.ExpiresAt.Value, options.RepeatMode, options.RepeatInterval);
         db.Reminders.Add(reminder);
         await db.SaveChangesAsync();
 

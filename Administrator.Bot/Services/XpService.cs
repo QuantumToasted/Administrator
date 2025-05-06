@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;
@@ -12,6 +13,10 @@ namespace Administrator.Bot;
 
 public sealed class XpService(EmojiService emojis) : DiscordBotService
 {
+    public const int XP_INCREMENT_RATE = 50;
+    
+    public static readonly TimeSpan XpGainInterval = TimeSpan.FromMinutes(5);
+    
 #if !MIGRATING
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
@@ -27,7 +32,7 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
         var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
 
         var dbUser = await db.Users.GetOrCreateAsync(message.Author.Id);
-        dbUser.IncrementXp(UserBase.XP_INCREMENT_RATE, UserBase.XpGainInterval, out var globalLeveledUp);
+        dbUser.IncrementXp(XP_INCREMENT_RATE, XpGainInterval, out var globalLeveledUp);
         
         if (globalLeveledUp)
         {
@@ -35,15 +40,15 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
             {
                 await message.AddReactionAsync(LocalEmoji.Unicode("🌐"));
                 await Task.Delay(TimeSpan.FromSeconds(1));
-                await message.AddReactionAsync(emojis.GetLevelEmoji(dbUser.Tier, dbUser.Level));
+                await message.AddReactionAsync(emojis.GetLevelEmoji(dbUser.GetTier(), dbUser.GetLevel()));
             });
         }
 
         if (guildConfig.HasSetting(GuildSettings.TrackServerXp) && !guildConfig.XpExemptChannelIds.Contains(e.ChannelId))
         {
             var dbMember = await db.Members.GetOrCreateAsync(guildId, message.Author.Id);
-            dbMember.IncrementXp(guildConfig.CustomXpRate ?? UserBase.XP_INCREMENT_RATE, 
-                guildConfig.CustomXpInterval ?? UserBase.XpGainInterval, out var guildLeveledUp);
+            dbMember.IncrementXp(guildConfig.CustomXpRate ?? XP_INCREMENT_RATE, 
+                guildConfig.CustomXpInterval ?? XpGainInterval, out var guildLeveledUp);
             
             if (guildLeveledUp)
             {
@@ -51,10 +56,10 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
                 {
                     await message.AddReactionAsync(LocalEmoji.FromString(guildConfig.LevelUpEmoji));
                     await Task.Delay(TimeSpan.FromSeconds(1));
-                    await message.AddReactionAsync(emojis.GetLevelEmoji(dbMember.Tier, dbMember.Level));
+                    await message.AddReactionAsync(emojis.GetLevelEmoji(dbMember.GetTier(), dbMember.GetLevel()));
                 });
 
-                if (await db.LevelRewards.FindAsync(guildId, dbMember.Tier, dbMember.Level) is { } levelReward)
+                if (await db.LevelRewards.FindAsync(guildId, dbMember.GetTier(), dbMember.GetLevel()) is { } levelReward)
                 {
                     var member = e.Member ?? message.Author as IMember ??
                         await Bot.GetOrFetchMemberAsync(guildId, message.Author.Id);
@@ -67,7 +72,7 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
                     else
                     {
                         var contentBuilder = new StringBuilder()
-                            .AppendNewline($"Congrats on leveling up to {Markdown.Bold($"Tier {dbMember.Tier}, Level {dbMember.Level}")}!");
+                            .AppendNewline($"Congrats on leveling up to {Markdown.Bold($"Tier {dbMember.GetTier()}, Level {dbMember.GetLevel()}")}!");
 
                         var baseLength = contentBuilder.Length;
                         
@@ -151,10 +156,13 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
             return;
         
         var levelRewards = await db.LevelRewards.Where(x => x.GuildId == e.GuildId)
-            .Where(x => x.Tier < member.Tier || (x.Tier == member.Tier && x.Level <= member.Level))
+            .ToListAsync();
+            
+        levelRewards = levelRewards
+            .Where(x => x.Tier < member.GetTier() || (x.Tier == member.GetTier() && x.Level <= member.GetLevel()))
             .OrderBy(x => x.Tier)
             .ThenBy(x => x.Level)
-            .ToListAsync();
+            .ToList();
 
         var roleIds = e.Member.RoleIds.ToHashSet();
         foreach (var levelReward in levelRewards)

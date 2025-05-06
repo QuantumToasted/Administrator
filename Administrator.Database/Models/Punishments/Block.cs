@@ -5,16 +5,21 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record Block(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason, Snowflake ChannelId, DateTimeOffset? ExpiresAt, Permissions? PreviousChannelAllowPermissions, Permissions? PreviousChannelDenyPermissions)
-    : RevocablePunishment(GuildId, Target, Moderator, Reason), IExpiringDbEntity, IBlock
+public sealed class Block : RevocablePunishment, IBlock, IEntityTypeConfiguration<Block>
 {
+    public Snowflake ChannelId { get; init; }
+    
+    public DateTimeOffset? ExpiresAt { get; init; }
+    // Permissions? PreviousChannelAllowPermissions, Permissions? PreviousChannelDenyPermissions
+    
+    public Permissions? PreviousChannelAllowPermissions { get; init; }
+    
+    public Permissions? PreviousChannelDenyPermissions { get; init; }
+    
     public override PunishmentType Type => PunishmentType.Block;
 
-    private sealed class BlockConfiguration : IEntityTypeConfiguration<Block>
+    void IEntityTypeConfiguration<Block>.Configure(EntityTypeBuilder<Block> block)
     {
-        public void Configure(EntityTypeBuilder<Block> block)
-        {
-            block.HasBaseType<RevocablePunishment>();
-        }
+        block.HasBaseType<RevocablePunishment>();
     }
 }

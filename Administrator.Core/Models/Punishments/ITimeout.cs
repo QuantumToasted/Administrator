@@ -1,8 +1,9 @@
 ﻿namespace Administrator.Core;
 
-public interface ITimeout : IRevocablePunishment
+public interface ITimeout : IRevocablePunishment, IExpiringEntity
 {
-    DateTimeOffset ExpiresAt { get; }
+    new DateTimeOffset ExpiresAt { get; }
     
     PunishmentType IPunishment.Type => PunishmentType.Timeout;
+    DateTimeOffset? IExpiringEntity.ExpiresAt => ExpiresAt;
 }

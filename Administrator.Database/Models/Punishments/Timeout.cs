@@ -1,24 +1,19 @@
 ﻿using Administrator.Core;
-using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record Timeout(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason, DateTimeOffset ExpiresAt)
-    : RevocablePunishment(GuildId, Target, Moderator, Reason), IExpiringDbEntity, ITimeout
+public sealed class Timeout : RevocablePunishment, ITimeout, IEntityTypeConfiguration<Timeout>
 {
-    public bool WasManuallyRevoked { get; set; }
+    public DateTimeOffset ExpiresAt { get; init; }
     
+    public bool WasManuallyRevoked { get; set; }
+
     public override PunishmentType Type => PunishmentType.Timeout;
 
-    DateTimeOffset? IExpiringDbEntity.ExpiresAt => ExpiresAt;
-
-    private sealed class TimeoutConfiguration : IEntityTypeConfiguration<Timeout>
+    void IEntityTypeConfiguration<Timeout>.Configure(EntityTypeBuilder<Timeout> timeout)
     {
-        public void Configure(EntityTypeBuilder<Timeout> timeout)
-        {
-            timeout.HasBaseType<RevocablePunishment>();
-        }
+        timeout.HasBaseType<RevocablePunishment>();
     }
 }

@@ -47,14 +47,12 @@ public sealed partial class TagImportComponentModule(AdminDbContext db, SlashCom
                          $"(Attachments may not render correctly until you use {mentions.GetMention("tag show")}.)")
             .WithIsEphemeral();
 
-        var tag = new Tag(Context.GuildId, Context.AuthorId, name)
-        {
-            Message = JsonMessage.FromMessage(response)
-        };
+        var tag = Tag.Create(Context.Author, name);
+        tag.Message = JsonMessage.FromMessage(response);
 
         if (attachment is not null && await attachments.GetAttachmentAsync(attachment.Url) is var fetchedAttachment)
         {
-            var tagAttachment = new Attachment(fetchedAttachment.FileName);
+            var tagAttachment = RemoteAttachment.Create(fetchedAttachment.FileName);
             if (await tagAttachment.UploadAsync(Bot, fetchedAttachment.Stream.ToArray()))
             {
                 tag.Attachment = tagAttachment;

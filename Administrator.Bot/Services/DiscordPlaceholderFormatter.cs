@@ -56,21 +56,21 @@ public sealed class DiscordPlaceholderFormatter : IPlaceholderFormatter
         if (UserPlaceholderRegex.IsMatch(str))
         {
             var userXp = await db.Users.GetOrCreateAsync(context.AuthorId);
-            str = str.Replace("{user.xp}", userXp.CurrentLevelXp.ToString())
-                .Replace("{user.level}", userXp.Level.ToString())
-                .Replace("{user.nextxp}", userXp.NextLevelXp.ToString())
-                .Replace("{user.tier}", userXp.Tier.ToString())
-                .Replace("{user.img}", emojis.GetLevelEmoji(userXp.Tier, userXp.Level).GetUrl());
+            str = str.Replace("{user.xp}", userXp.GetCurrentLevelXp().ToString())
+                .Replace("{user.level}", userXp.GetLevel().ToString())
+                .Replace("{user.nextxp}", userXp.GetNextLevelXp().ToString())
+                .Replace("{user.tier}", userXp.GetTier().ToString())
+                .Replace("{user.img}", emojis.GetLevelEmoji(userXp.GetTier(), userXp.GetLevel()).GetUrl());
         }
 
         if (GuildUserPlaceholderRegex.IsMatch(str) && context.GuildId.HasValue)
         {
             var guildUserXp = await db.Members.GetOrCreateAsync(context.GuildId.Value, context.AuthorId);
-            str = str.Replace("{user.guildxp}", guildUserXp.CurrentLevelXp.ToString())
-                .Replace("{user.guildlevel}", guildUserXp.Level.ToString())
-                .Replace("{user.guildnextxp}", guildUserXp.NextLevelXp.ToString())
-                .Replace("{user.guildtier}", guildUserXp.Tier.ToString())
-                .Replace("{user.guildimg}", emojis.GetLevelEmoji(guildUserXp.Tier, guildUserXp.Level).GetUrl());
+            str = str.Replace("{user.guildxp}", guildUserXp.GetCurrentLevelXp().ToString())
+                .Replace("{user.guildlevel}", guildUserXp.GetLevel().ToString())
+                .Replace("{user.guildnextxp}", guildUserXp.GetNextLevelXp().ToString())
+                .Replace("{user.guildtier}", guildUserXp.GetTier().ToString())
+                .Replace("{user.guildimg}", emojis.GetLevelEmoji(guildUserXp.GetTier(), guildUserXp.GetLevel()).GetUrl());
         }
 
         if (context.Bot.TryGetAnyGuildChannel(context.ChannelId, out var channel))

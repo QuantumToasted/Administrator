@@ -1,4 +1,5 @@
-﻿using Administrator.Database;
+﻿using Administrator.Core;
+using Administrator.Database;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Disqord;
@@ -11,11 +12,13 @@ namespace Administrator.Bot;
 
 public static partial class DbModelExtensions
 {
-    public static bool IsImageAttachment(this Attachment attachment)
-        => Path.GetExtension(attachment.FileName) is { } extension && new[] { "png", "jpeg", "jpg", "webp" }.Contains(extension[1..], StringComparer.InvariantCultureIgnoreCase); 
+    private static readonly string[] ImageExtensions = ["png", "jpeg", "jpg", "webp"];
+    
+    public static bool IsImageAttachment(this RemoteAttachment attachment)
+        => Path.GetExtension(attachment.FileName) is { } extension && ImageExtensions.Contains(extension[1..], StringComparer.InvariantCultureIgnoreCase); 
     
     public static void IncrementXp<TUser>(this TUser user, int xp, TimeSpan xpGainInterval, out bool leveledUp)
-        where TUser : UserBase
+        where TUser : IUserXp
     {
         leveledUp = false;
         var now = DateTimeOffset.UtcNow;
@@ -23,11 +26,11 @@ public static partial class DbModelExtensions
         if (now < user.LastXpGain + xpGainInterval)
             return;
 
-        var currentLevel = user.Level;
+        var currentLevel = user.GetLevel();
         user.TotalXp += xp;
         user.LastXpGain = now;
 
-        if (currentLevel != user.Level)
+        if (currentLevel != user.GetLevel())
         {
             leveledUp = true;
             user.LastLevelUp = DateTimeOffset.UtcNow;
@@ -66,7 +69,7 @@ public static partial class DbModelExtensions
         return member.ModifyAsync(x => x.RoleIds = roleIds);
     }
 
-    public static async Task<bool> UploadAsync(this Attachment attachment, DiscordBotBase bot, byte[] data)
+    public static async Task<bool> UploadAsync(this RemoteAttachment attachment, DiscordBotBase bot, byte[] data)
     {
         var s3 = bot.Services.GetRequiredService<AmazonS3Client>();
         var bucket = bot.CurrentUser.Id.ToString();
@@ -90,7 +93,7 @@ public static partial class DbModelExtensions
         }
     }
 
-    public static async Task<LocalAttachment?> DownloadAsync(this Attachment attachment, DiscordBotBase bot)
+    public static async Task<LocalAttachment?> DownloadAsync(this RemoteAttachment attachment, DiscordBotBase bot)
     {
         var s3 = bot.Services.GetRequiredService<AmazonS3Client>();
         var bucket = bot.CurrentUser.Id.ToString();

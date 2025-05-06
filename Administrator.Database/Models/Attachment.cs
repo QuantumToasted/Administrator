@@ -1,17 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Administrator.Core;
+using Disqord;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record Attachment(string FileName)
+public sealed class RemoteAttachment : IRemoteAttachment, IEntityTypeConfiguration<RemoteAttachment>
 {
     public Guid Key { get; init; } = Guid.NewGuid();
 
-    private sealed class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
+    public string FileName { get; init; } = null!;
+
+    public static RemoteAttachment Create(string fileName)
     {
-        public void Configure(EntityTypeBuilder<Attachment> attachment)
+        return new RemoteAttachment
         {
-            attachment.HasKey(x => x.Key);
-        }
+            FileName = fileName
+        };
+    }
+    
+    public void Configure(EntityTypeBuilder<RemoteAttachment> attachment)
+    {
+        attachment.HasKey(x => x.Key);
+        attachment.Property(x => x.FileName).HasMaxLength(200);
     }
 }

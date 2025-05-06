@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using Administrator.Database;
+using Disqord;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
 using Qmmands;
@@ -20,7 +21,7 @@ public sealed partial class HighlightModule
     [Description("Creates a new highlight for a server. If in DMs, adds a new global highlight instead.")]
     public partial Task<IResult> Add(
         [Description("The text you wish to be highlighted for.")]
-        [Maximum(25)]
+        [Maximum(Highlight.MAX_HIGHLIGHT_LENGTH)]
             string text);
 
     [SlashCommand("remove")]

@@ -8,13 +8,11 @@ public enum TimedRoleApplyMode
     Revoke
 }
 
-public interface ITimedRole : IRevocablePunishment
+public interface ITimedRole : IRevocablePunishment, IExpiringEntity
 {
     Snowflake RoleId { get; }
     
     TimedRoleApplyMode Mode { get; }
-    
-    DateTimeOffset? ExpiresAt { get; }
     
     PunishmentType IPunishment.Type => PunishmentType.TimedRole;
 }

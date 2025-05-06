@@ -6,21 +6,40 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record LuaCommand(Snowflake GuildId, string Name, byte[] Metadata, byte[] Command)
+public sealed class LuaCommand : ILuaCommand, IEntityTypeConfiguration<LuaCommand>
 {
-    public byte[] Metadata { get; set; } = Metadata;
+    public Snowflake GuildId { get; init; }
 
-    public byte[] Command { get; set; } = Command;
+    public string Name { get; init; } = null!;
 
-    public byte[] Persistence { get; set; } = Encoding.Default.GetBytes(Name).GZipCompress();
+    public byte[] Metadata { get; init; } = [];
+
+    public byte[] Command { get; init; } = [];
+
+    public byte[] Persistence { get; set; } = [];
     
-    public Guild? Guild { get; init; }
+    public GuildConfiguration? Guild { get; init; }
 
-    private sealed class LuaCommandConfiguration : IEntityTypeConfiguration<LuaCommand>
+    public static LuaCommand Create(Snowflake guildId, string name, string metadata, string command, byte[]? persistence = null)
     {
-        public void Configure(EntityTypeBuilder<LuaCommand> command)
+        return new LuaCommand
         {
-            command.HasKey(x => new { x.GuildId, x.Name });
-        }
+            GuildId = guildId,
+            Name = name,
+            Metadata = Compress(metadata),
+            Command = Compress(command),
+            Persistence = persistence ?? Compress(name)
+        };
+
+        static byte[] Compress(string text) => Encoding.Default.GetBytes(text).GZipCompress();
+    }
+
+    string ILuaCommand.Metadata => Encoding.Default.GetString(Metadata.GZipDecompress());
+    string ILuaCommand.Command => Encoding.Default.GetString(Command.GZipDecompress());
+    string ILuaCommand.Persistence => Encoding.Default.GetString(Persistence.GZipDecompress());
+    void IEntityTypeConfiguration<LuaCommand>.Configure(EntityTypeBuilder<LuaCommand> command)
+    {
+        command.HasKey(x => new { x.GuildId, x.Name });
+        command.Property(x => x.Name).HasMaxLength(Discord.Limits.ApplicationCommand.MaxNameLength);
     }
 }

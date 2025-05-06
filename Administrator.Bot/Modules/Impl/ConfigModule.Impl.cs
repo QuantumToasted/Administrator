@@ -8,10 +8,24 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Humanizer;
 using Humanizer.Localisation;
+using LinqToDB;
+using LinqToDB.Async;
+using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
 namespace Administrator.Bot;
+
+public enum GuildSettingFlags
+{
+    AutomaticPunishmentDetection = 1 << 0,
+    LogModeratorsInPunishments = 1 << 1,
+    LogImagesInPunishments = 1 << 2,
+    FilterDiscordInvites = 1 << 3,
+    TrackServerXp = 1 << 4,
+    IgnoreBotMessages = 1 << 5,
+    AutoQuote = 1 << 6
+}
 
 public enum Mode
 {
@@ -69,8 +83,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> View()
         {
-            var loggingChannels = await db.LoggingChannels.Where(x => x.GuildId == Context.GuildId)
-                .ToDictionaryAsync(x => x.EventType);
+            var loggingChannels = await EntityFrameworkQueryableExtensions.ToDictionaryAsync(db.LoggingChannels.Where(x => x.GuildId == Context.GuildId), x => x.EventType);
             
             var responseBuilder = new StringBuilder();
             foreach (var flag in Enum.GetValues<LogEventType>())
@@ -90,13 +103,13 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
         
         public partial async Task<IResult> Set(LogEventType type, IChannel channel)
         {
-            if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == Context.GuildId && x.EventType == type) is { } loggingChannel)
+            if (await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(db.LoggingChannels, x => x.GuildId == Context.GuildId && x.EventType == type) is { } loggingChannel)
             {
                 loggingChannel.ChannelId = channel.Id;
             }
             else
             {
-                loggingChannel = new LoggingChannel(Context.GuildId, type, channel.Id);
+                loggingChannel = LoggingChannel.Create(Context.GuildId, channel.Id, type);
                 db.LoggingChannels.Add(loggingChannel);
             }
 
@@ -106,7 +119,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
         public partial async Task<IResult> Remove(LogEventType type)
         {
-            if (await db.LoggingChannels.FirstOrDefaultAsync(x => x.GuildId == Context.GuildId && x.EventType == type) is { } loggingChannel)
+            if (await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(db.LoggingChannels, x => x.GuildId == Context.GuildId && x.EventType == type) is { } loggingChannel)
             {
                 db.LoggingChannels.Remove(loggingChannel);
                 await db.SaveChangesAsync();
@@ -122,12 +135,12 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
             List<LoggingChannel> channelsToClear;
             if (channel is null)
             {
-                channelsToClear = await db.LoggingChannels.Where(x => x.GuildId == Context.GuildId).ToListAsync();
+                channelsToClear = await EntityFrameworkQueryableExtensions.ToListAsync(db.LoggingChannels.Where(x => x.GuildId == Context.GuildId));
                 promptBuilder.Append("this server");
             }
             else
             {
-                channelsToClear = await db.LoggingChannels.Where(x => x.GuildId == Context.GuildId && x.ChannelId == channel.Id).ToListAsync();
+                channelsToClear = await EntityFrameworkQueryableExtensions.ToListAsync(db.LoggingChannels.Where(x => x.GuildId == Context.GuildId && x.ChannelId == channel.Id));
                 promptBuilder.Append($"the channel {Mention.Channel(channel.Id)}");
             }
             
@@ -157,7 +170,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
     public sealed partial class SettingConfigModule(AdminDbContext db, SlashCommandMentionService mentions, EmojiService emojis) : DiscordApplicationGuildModuleBase
     {
-        private Guild _guild = null!;
+        private GuildConfiguration _guild = null!;
         
         public override async ValueTask OnBeforeExecuted()
         {
@@ -228,34 +241,33 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> Add(IUser? user, IRole? role, IChannel? channel, Snowflake? guildId, string? inviteCode)
         {
-            var exemptions = await db.InviteFilterExemptions.Where(x => x.GuildId == Context.GuildId)
-                .ToListAsync();
+            var exemptions = await EntityFrameworkQueryableExtensions.ToListAsync(db.InviteFilterExemptions.Where(x => x.GuildId == Context.GuildId));
             
             try
             {
                 if (user is not null && exemptions.All(x => x.TargetId != user.Id))
                 {
-                    db.InviteFilterExemptions.Add(new InviteFilterExemption(Context.GuildId, InviteFilterExemptionType.User, user.Id, null));
+                    db.InviteFilterExemptions.Add(InviteFilterExemption.FromUser(Context.GuildId, user.Id));
                     return Response($"{user.Mention} has been exempted from the invite filter.");
                 }
                 else if (role is not null && exemptions.All(x => x.TargetId != role.Id))
                 {
-                    db.InviteFilterExemptions.Add(new InviteFilterExemption(Context.GuildId, InviteFilterExemptionType.Role, role.Id, null));
+                    db.InviteFilterExemptions.Add(InviteFilterExemption.FromRole(role));
                     return Response($"Users with the role {role.Mention} have been exempted from the invite filter.");
                 }
                 else if (channel is not null && exemptions.All(x => x.TargetId != channel.Id))
                 {
-                    db.InviteFilterExemptions.Add(new InviteFilterExemption(Context.GuildId, InviteFilterExemptionType.Channel, channel.Id, null));
+                    db.InviteFilterExemptions.Add(InviteFilterExemption.FromChannel(Context.GuildId, channel.Id));
                     return Response($"{Mention.Channel(channel.Id)} has been exempted from the invite filter.");
                 }
                 else if (guildId.HasValue && exemptions.All(x => x.TargetId == guildId.Value))
                 {
-                    db.InviteFilterExemptions.Add(new InviteFilterExemption(Context.GuildId, InviteFilterExemptionType.Guild, guildId.Value, null));
+                    db.InviteFilterExemptions.Add(InviteFilterExemption.FromGuild(Context.GuildId, guildId.Value));
                     return Response($"Invites from the server with the ID {Markdown.Code(guildId.Value)} have been exempted from the invite filter.");
                 }
                 else if (!string.IsNullOrWhiteSpace(inviteCode) && exemptions.All(x => x.InviteCode?.Equals(inviteCode) != true))
                 {
-                    db.InviteFilterExemptions.Add(new InviteFilterExemption(Context.GuildId, InviteFilterExemptionType.InviteCode, null, inviteCode));
+                    db.InviteFilterExemptions.Add(InviteFilterExemption.FromInviteCode(Context.GuildId, inviteCode));
                     return Response($"The invite code {Markdown.Code(inviteCode)} has been exempted from the invite filter.");
                 }
                 else if (user is null && role is null && channel is null && !guildId.HasValue && string.IsNullOrWhiteSpace(inviteCode))
@@ -275,8 +287,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
         
         public partial async Task<IResult> Remove(IUser? user, IRole? role, IChannel? channel, Snowflake? guildId, string? inviteCode)
         {
-            var exemptions = await db.InviteFilterExemptions.Where(x => x.GuildId == Context.GuildId)
-                .ToListAsync();
+            var exemptions = await EntityFrameworkQueryableExtensions.ToListAsync(db.InviteFilterExemptions.Where(x => x.GuildId == Context.GuildId));
             
             try
             {
@@ -334,8 +345,8 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
         public partial async Task<IResult> List()
         {
-            var automaticPunishments = await db.AutomaticPunishments.Where(x => x.GuildId == Context.GuildId)
-                .OrderBy(x => x.DemeritPoints).ToListAsync();
+            var automaticPunishments = await EntityFrameworkQueryableExtensions.ToListAsync(db.AutomaticPunishments.Where(x => x.GuildId == Context.GuildId)
+                    .OrderBy(x => x.DemeritPoints));
             if (automaticPunishments.Count == 0)
                 return Response("No automatic punishments are currently set up for this server!");
 
@@ -375,29 +386,41 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
             if (type is PunishmentTypeSelection.Timeout && duration > TimeSpan.FromDays(28))
                 return Response("Timeouts may not be any longer than 28 days (4 weeks) in length.").AsEphemeral();
-            
-            if (await db.AutomaticPunishments
-                    .FirstOrDefaultAsync(x => x.GuildId == Context.GuildId && x.DemeritPoints == demeritPoints) is { } automaticPunishment)
+
+            if (await db.AutomaticPunishments.FirstOrDefaultAsyncEF(x => x.GuildId == Context.GuildId && x.DemeritPoints == demeritPoints) is { } automaticPunishment)
             {
-                automaticPunishment.PunishmentType = (PunishmentType)type;
+                automaticPunishment.PunishmentType = (PunishmentType) type;
                 automaticPunishment.PunishmentDuration = duration;
             }
             else
             {
-                automaticPunishment = new AutomaticPunishment(Context.GuildId, demeritPoints, (PunishmentType)type, duration);
+                automaticPunishment = AutomaticPunishment.Create(Context.GuildId, demeritPoints, (PunishmentType) type, duration);
                 db.AutomaticPunishments.Add(automaticPunishment);
             }
 
             await db.SaveChangesAsync();
+            /*
+            var newAutomaticPunishment = AutomaticPunishment.Create(Context.GuildId, demeritPoints, (PunishmentType)type, duration);
+            var automaticPunishment = await db.AutomaticPunishments
+                .ToLinqToDBTable()
+                .Merge()
+                .Using([newAutomaticPunishment])
+                .OnTargetKey()
+                .InsertWhenNotMatched(static src => new AutomaticPunishment{GuildId = src.GuildId, DemeritPoints = src.DemeritPoints, PunishmentDuration = src.PunishmentDuration, PunishmentType = src.PunishmentType})
+                .UpdateWhenMatched(static (dst, src) => new AutomaticPunishment
+                    { PunishmentType = src.PunishmentType, PunishmentDuration = src.PunishmentDuration })
+                .MergeWithOutputAsync((action, del, ins, src) => ins)
+                .FirstAsync();
+            */
+            
             return Response(
-                $"Automatic punishment created/updated. Upon receiving {Markdown.Bold("demerit point".ToQuantity(demeritPoints))}, users will receive the following punishment:\n" +
-                Markdown.Bold(automaticPunishment.FormatValue(false)));
+                $"Automatic punishment created/updated. Upon receiving {Markdown.Bold("demerit point".ToQuantity(demeritPoints))}, " +
+                $"users will receive the following punishment:\n{Markdown.Bold(automaticPunishment.FormatValue(false))}");
         }
 
         public partial async Task<IResult> Remove(int demeritPoints)
         {
-            if (await db.AutomaticPunishments
-                    .FirstOrDefaultAsync(x => x.GuildId == Context.GuildId && x.DemeritPoints == demeritPoints) is { } automaticPunishment)
+            if (await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(db.AutomaticPunishments, x => x.GuildId == Context.GuildId && x.DemeritPoints == demeritPoints) is { } automaticPunishment)
             {
                 db.AutomaticPunishments.Remove(automaticPunishment);
             }
@@ -409,9 +432,8 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
         public partial async Task AutoCompleteAutomaticPunishments(AutoComplete<int> demeritPoints)
         {
-            var automaticPunishments = await db.AutomaticPunishments.Where(x => x.GuildId == Context.GuildId)
-                .OrderBy(x => x.DemeritPoints)
-                .ToListAsync();
+            var automaticPunishments = await EntityFrameworkQueryableExtensions.ToListAsync(db.AutomaticPunishments.Where(x => x.GuildId == Context.GuildId)
+                    .OrderBy(x => x.DemeritPoints));
 
             demeritPoints.AutoComplete(Context, automaticPunishments);
         }
@@ -575,10 +597,16 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
             await db.SaveChangesAsync();
             content = $"Custom punishment text updated!\n{content}";
         }
-        
-        var fakePunishment = new Ban(Context.GuildId, UserSnapshot.FromUser(Context.Author), UserSnapshot.FromUser(Bot.CurrentUser),
-            "Example punishment", null, null);
-        fakePunishment = fakePunishment with { Guild = guild }; // hack to set Guild for FormatDmMessage
+
+        var fakePunishment = new Ban
+        {
+            Id = 1,
+            GuildId = Context.GuildId,
+            Target = UserSnapshot.FromUser(Context.Author),
+            Moderator = UserSnapshot.FromUser(Bot.CurrentUser),
+            Reason = "Example punishment",
+            Guild = guild
+        };
 
         var message = await fakePunishment.FormatDmMessageAsync<LocalInteractionMessageResponse>(Bot);
         message.WithContent(content);
@@ -626,7 +654,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
                 return Response("The demerit point decay interval must be at least 24 hours (1 day).").AsEphemeral();
             
             var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.DemeritPointsDecayInterval = interval;
+            guild.DemeritPointDecayInterval = interval;
             await db.SaveChangesAsync();
             return Response(interval.HasValue
                 ? $"Demerit points will now decay every {Markdown.Bold(interval.Value.Humanize(int.MaxValue, minUnit: TimeUnit.Day))}."

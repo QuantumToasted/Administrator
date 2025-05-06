@@ -1,28 +1,25 @@
 ﻿using Administrator.Core;
-using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record Warning(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason, int DemeritPoints)
-    : RevocablePunishment(GuildId, Target, Moderator, Reason), IWarning
+public sealed class Warning : RevocablePunishment, IWarning, IEntityTypeConfiguration<Warning>
 {
-    public int DemeritPointsRemaining { get; set; } = DemeritPoints;
+    public int DemeritPoints { get; init; }
+    
+    public int DemeritPointsRemaining { get; set; }
     
     public int? AdditionalPunishmentId { get; set; }
     
     public Punishment? AdditionalPunishment { get; init; }
-    
+
     public override PunishmentType Type => PunishmentType.Warning;
 
-    private sealed class WarningConfiguration : IEntityTypeConfiguration<Warning>
+    void IEntityTypeConfiguration<Warning>.Configure(EntityTypeBuilder<Warning> warning)
     {
-        public void Configure(EntityTypeBuilder<Warning> warning)
-        {
-            warning.HasBaseType<RevocablePunishment>();
+        warning.HasBaseType<RevocablePunishment>();
             
-            warning.HasOne(x => x.AdditionalPunishment);
-        }
+        warning.HasOne(x => x.AdditionalPunishment);
     }
 }

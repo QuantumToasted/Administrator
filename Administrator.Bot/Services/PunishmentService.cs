@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Text;
 using Administrator.Bot.Jobs;
 using Administrator.Core;
 using Administrator.Database;
@@ -9,6 +10,7 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Disqord.Rest.Api;
 using Humanizer;
+using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Qommon;
@@ -70,7 +72,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             return $"{Markdown.Bold(target)} has already been banned from this server!";
 
         var guild = await db.Guilds.GetOrCreateAsync(guildId);
-        var ban = new Ban(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, messagePruneDays ?? guild.DefaultBanPruneDays, expiresAt);
+        var ban = Punishment.Ban(guildId, target, moderator, reason, messagePruneDays ?? guild.DefaultBanPruneDays, expiresAt);
         return await ProcessPunishmentAsync(ban, attachment);
     }
 
@@ -81,13 +83,8 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         
         if (existingOverwrite?.Permissions.Denied.HasFlag(Permissions.SendMessages) == true)
             return $"{Markdown.Bold(target)} may already be blocked from this channel! Check the permission overwrites in {Mention.Channel(channel.Id)} first.";
-        
-        var previousChannelAllowPermissions = existingOverwrite?.Permissions.Allowed;
-        var previousChannelDenyPermissions = existingOverwrite?.Permissions.Denied;
 
-        var block = new Block(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, channel.Id, expiresAt,
-            previousChannelAllowPermissions, previousChannelDenyPermissions);
-
+        var block = Punishment.Block(guildId, target, moderator, reason, channel.Id, existingOverwrite?.Permissions, expiresAt);
         return await ProcessPunishmentAsync(block, attachment);
     }
 
@@ -96,7 +93,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         if (await bot.GetOrFetchMemberAsync(guildId, target.Id) is null)
             return $"{Markdown.Bold(target)} is not in this server, or has already been kicked!";
         
-        var kick = new Kick(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason);
+        var kick = Punishment.Kick(guildId, target, moderator, reason);
         return await ProcessPunishmentAsync(kick, attachment);
     }
 
@@ -104,10 +101,8 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
     {
         if (bot.GetMember(guildId, target.Id) is { } member && member.RoleIds.Contains(role.Id))
             return $"{Markdown.Bold(target)} already has the role {role.Mention}!";
-        
-        var timedRole = new TimedRole(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, role.Id, 
-            TimedRoleApplyMode.Grant, expiresAt);
-        
+
+        var timedRole = Punishment.TimedRole(guildId, target, moderator, reason, role, TimedRoleApplyMode.Grant, expiresAt);
         return await ProcessPunishmentAsync(timedRole, attachment);
     }
 
@@ -116,15 +111,13 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         if (bot.GetMember(guildId, target.Id) is { } member && !member.RoleIds.Contains(role.Id))
             return $"{Markdown.Bold(target)} doesn't have the role {role.Mention}!";
         
-        var timedRole = new TimedRole(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, role.Id, 
-            TimedRoleApplyMode.Revoke, expiresAt);
-        
+        var timedRole = Punishment.TimedRole(guildId, target, moderator, reason, role, TimedRoleApplyMode.Revoke, expiresAt);
         return await ProcessPunishmentAsync(timedRole, attachment);
     }
 
     public async Task<Result<Timeout>> TimeoutAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, DateTimeOffset expiresAt, IAttachment? attachment)
     {
-        var timeout = new Timeout(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, expiresAt);
+        var timeout = Punishment.Timeout(guildId, target, moderator, reason, expiresAt);
         return await ProcessPunishmentAsync(timeout, attachment);
     }
 
@@ -132,8 +125,8 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
     {
         var guild = await db.Guilds.GetOrCreateAsync(guildId);
         demeritPoints ??= guild.DefaultWarningDemeritPoints;
-        
-        var warning = new Warning(guildId, UserSnapshot.FromUser(target), UserSnapshot.FromUser(moderator), reason, demeritPoints.Value);
+
+        var warning = Punishment.Warning(guildId, target, moderator, reason, demeritPoints.Value);
         return await ProcessPunishmentAsync(warning, attachment);
     }
 
@@ -316,7 +309,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             if (targetPunishments.OfType<RevocablePunishment>().All(x => x.RevokedAt.HasValue))
             {
                 var member = await db.Members.GetOrCreateAsync(guildId, punishment.Target.Id);
-                member.NextDemeritPointDecay = punishment.RevokedAt!.Value + guild.DemeritPointsDecayInterval;
+                member.NextDemeritPointDecay = punishment.RevokedAt!.Value + guild.DemeritPointDecayInterval;
             }
         }
 
@@ -336,7 +329,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
     {
         if (attachment is not null && await attachments.GetAttachmentAsync(attachment) is var (stream, fileName))
         {
-            var punishmentAttachment = new Attachment(fileName);
+            var punishmentAttachment = RemoteAttachment.Create(fileName);
             if (await punishmentAttachment.UploadAsync(bot, stream.ToArray()))
             {
                 punishment.Attachment = punishmentAttachment;
@@ -403,14 +396,16 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             if (newDemeritPoints > 0 && newDemeritPoints > oldDemeritPoints && automaticPunishments.FirstOrDefault() is { } demeritPointPunishment)
             {
                 var expiresAt = warning.CreatedAt + demeritPointPunishment.PunishmentDuration;
+                var reason = new StringBuilder("Automatic ")
+                    .Append(demeritPointPunishment.PunishmentType.ToString().ToLower())
+                    .Append($" for reaching {Markdown.Bold("demerit point".ToQuantity(demeritPointPunishment.DemeritPoints))}: See case {warning}.")
+                    .ToString();
+
                 Punishment punishmentToApply = demeritPointPunishment.PunishmentType switch
                 {
-                    PunishmentType.Timeout => new Timeout(warning.GuildId, warning.Target, warning.Moderator,
-                        $"Automatic timeout for reaching {Markdown.Bold("demerit point".ToQuantity(demeritPointPunishment.DemeritPoints))}: See case {warning}.", expiresAt!.Value),
-                    PunishmentType.Kick => new Kick(warning.GuildId, warning.Target, warning.Moderator,
-                        $"Automatic kick for reaching {Markdown.Bold("demerit point".ToQuantity(demeritPointPunishment.DemeritPoints))}: See case {warning}."),
-                    PunishmentType.Ban => new Ban(warning.GuildId, warning.Target, warning.Moderator,
-                        $"Automatic ban for reaching {Markdown.Bold("demerit point".ToQuantity(demeritPointPunishment.DemeritPoints))}: See case {warning}.", warning.Guild!.DefaultBanPruneDays, expiresAt),
+                    PunishmentType.Ban => Punishment.Ban(warning.GuildId, warning.Target, warning.Moderator, reason, guild.DefaultBanPruneDays, expiresAt),
+                    PunishmentType.Kick => Punishment.Kick(warning.GuildId, warning.Target, warning.Moderator, reason),
+                    PunishmentType.Timeout => Punishment.Timeout(warning.GuildId, warning.Target, warning.Moderator, reason, expiresAt!.Value),
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
@@ -421,10 +416,10 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         
         if (punishment is Ban { ExpiresAt: var newDemeritPointDecayStart } && newDemeritPointDecayStart > member.NextDemeritPointDecay)
         {
-            member.NextDemeritPointDecay = newDemeritPointDecayStart + guild.DemeritPointsDecayInterval;
+            member.NextDemeritPointDecay = newDemeritPointDecayStart + guild.DemeritPointDecayInterval;
         }
 
-        if (punishment is IExpiringDbEntity { ExpiresAt: not null })
+        if (punishment is IExpiringEntity { ExpiresAt: not null })
         {
             await quartz.SchedulePunishmentExpiryJobAsync(punishment);
         }

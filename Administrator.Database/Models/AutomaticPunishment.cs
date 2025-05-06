@@ -5,19 +5,34 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public record AutomaticPunishment(Snowflake GuildId, int DemeritPoints, PunishmentType PunishmentType, TimeSpan? PunishmentDuration)
+public sealed class AutomaticPunishment : IAutomaticPunishment, IEntityTypeConfiguration<AutomaticPunishment>
 {
-    public PunishmentType PunishmentType { get; set; } = PunishmentType;
-
-    public TimeSpan? PunishmentDuration { get; set; } = PunishmentDuration;
+    public Snowflake GuildId { get; init; }
     
-    public Guild? Guild { get; set; }
+    public int DemeritPoints { get; init; }
+    
+    public PunishmentType PunishmentType { get; set; }
+    
+    public TimeSpan? PunishmentDuration { get; set; }
+    
+    public GuildConfiguration? Guild { get; init; }
 
-    private sealed class AutomaticPunishmentConfiguration : IEntityTypeConfiguration<AutomaticPunishment>
+    public static AutomaticPunishment Ban(Snowflake guildId, int demeritPoints, TimeSpan? duration) => Create(guildId, demeritPoints, PunishmentType.Ban, duration);
+    public static AutomaticPunishment Kick(Snowflake guildId, int demeritPoints) => Create(guildId, demeritPoints, PunishmentType.Kick, null);
+    public static AutomaticPunishment Timeout(Snowflake guildId, int demeritPoints, TimeSpan duration) => Create(guildId, demeritPoints, PunishmentType.Timeout, duration);
+    public static AutomaticPunishment Create(Snowflake guildId, int demeritPoints, PunishmentType type, TimeSpan? duration)
     {
-        public void Configure(EntityTypeBuilder<AutomaticPunishment> autoPunishment)
+        return new AutomaticPunishment
         {
-            autoPunishment.HasKey(x => new { x.GuildId, x.DemeritPoints });
-        }
+            GuildId = guildId,
+            DemeritPoints = demeritPoints,
+            PunishmentType = type,
+            PunishmentDuration = duration
+        };
+    }
+
+    void IEntityTypeConfiguration<AutomaticPunishment>.Configure(EntityTypeBuilder<AutomaticPunishment> autoPunishment)
+    {
+        autoPunishment.HasKey(x => new { x.GuildId, x.DemeritPoints });
     }
 }

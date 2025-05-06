@@ -6,7 +6,9 @@ namespace Administrator.Database;
 #pragma warning disable CS8618
 public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options) : DbContext(options)
 {
-    public DbSet<Guild> Guilds { get; init; }
+    public DbSet<RemoteAttachment> Attachment { get; init; }
+    
+    public DbSet<GuildConfiguration> Guilds { get; init; }
 
     public DbSet<Punishment> Punishments { get; init; }
 

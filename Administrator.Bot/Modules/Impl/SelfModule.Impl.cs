@@ -50,9 +50,9 @@ public sealed partial class SelfModule(AdminDbContext db) : DiscordApplicationMo
         
         var dbGuild = await db.Guilds.GetOrCreateAsync(guildId.Value);
         
-        if (member.NextDemeritPointDecay.HasValue && dbGuild.DemeritPointsDecayInterval.HasValue)
+        if (member.NextDemeritPointDecay.HasValue && dbGuild.DemeritPointDecayInterval.HasValue)
         {
-            var nextDecay = member.NextDemeritPointDecay.Value + dbGuild.DemeritPointsDecayInterval.Value;
+            var nextDecay = member.NextDemeritPointDecay.Value + dbGuild.DemeritPointDecayInterval.Value;
             responseBuilder.AppendNewline($"Your next decay will occur {Markdown.Timestamp(nextDecay, Markdown.TimestampFormat.RelativeTime)}.");
         }
         

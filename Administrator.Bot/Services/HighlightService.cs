@@ -29,7 +29,7 @@ public sealed class HighlightService(AdminDbContext db, ICommandContextAccessor 
                 : $"You already have a global highlight for the text \"{text}\"!";
         }
 
-        var highlight = new Highlight(_context.AuthorId, _context.GuildId, text);
+        var highlight = Highlight.Create(_context.GuildId, _context.AuthorId, text);
         
         db.Highlights.Add(highlight);
         await db.SaveChangesAsync();

@@ -5,16 +5,18 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Administrator.Database;
 
-public sealed record TimedRole(Snowflake GuildId, UserSnapshot Target, UserSnapshot Moderator, string? Reason, Snowflake RoleId, TimedRoleApplyMode Mode, DateTimeOffset? ExpiresAt)
-    : RevocablePunishment(GuildId, Target, Moderator, Reason), IExpiringDbEntity, ITimedRole
+public sealed class TimedRole : RevocablePunishment, ITimedRole, IEntityTypeConfiguration<TimedRole>
 {
+    public Snowflake RoleId { get; init; }
+    
+    public TimedRoleApplyMode Mode { get; init; }
+    
+    public DateTimeOffset? ExpiresAt { get; init; }
+
     public override PunishmentType Type => PunishmentType.TimedRole;
 
-    private sealed class TimedRoleConfiguration : IEntityTypeConfiguration<TimedRole>
+    void IEntityTypeConfiguration<TimedRole>.Configure(EntityTypeBuilder<TimedRole> timedRole)
     {
-        public void Configure(EntityTypeBuilder<TimedRole> timedRole)
-        {
-            timedRole.HasBaseType<RevocablePunishment>();
-        }
+        timedRole.HasBaseType<RevocablePunishment>();
     }
 }

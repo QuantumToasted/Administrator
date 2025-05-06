@@ -47,7 +47,7 @@ public sealed class DemeritPointDecayJob(ILogger<DemeritPointDecayJob> logger, Q
 
         var guild = await db.Guilds.GetOrCreateAsync(warning.GuildId);
 
-        if (guild.DemeritPointsDecayInterval is not { } decayInterval)
+        if (guild.DemeritPointDecayInterval is not { } decayInterval)
         {
             Logger.LogWarning("Guild [{GuildId}] has removed their decay interval. Not rescheduling warning decay.", warning.GuildId.RawValue);
             return; // Don't set their decay to null

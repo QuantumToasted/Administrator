@@ -1,10 +1,13 @@
 ﻿using System.Text;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Commands.Application;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Humanizer;
+using LinqToDB;
+using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
@@ -15,9 +18,9 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
     public partial async Task<IResult> List()
     {
         var levelRewards = await db.LevelRewards.Where(x => x.GuildId == Context.GuildId)
-            .OrderBy(x => x.Tier)
-            .ThenBy(x => x.Level)
-            .ToListAsync();
+                .OrderBy(x => x.Tier)
+                .ThenBy(x => x.Level)
+                .ToListAsyncEF();
 
         var guild = Bot.GetGuild(Context.GuildId)!;
         var pages = levelRewards.Chunk(10)
@@ -45,8 +48,7 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
 
     public partial async Task Clear(int? tier)
     {
-        var levelRewards = await db.LevelRewards.Where(x => x.GuildId == Context.GuildId)
-            .ToListAsync();
+        var levelRewards = await db.LevelRewards.Where(x => x.GuildId == Context.GuildId).ToListAsyncEF();
 
         if (tier.HasValue)
             levelRewards = levelRewards.Where(x => x.Tier == tier.Value).ToList();
@@ -159,6 +161,25 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
                 revokedRoles.Add(role);
             }
         }
+        
+        /*
+        var newLevelReward = RoleLevelReward.Create(Context.GuildId, tier, level, 
+            grantedRoles.Select(x => x.Id).Distinct(), revokedRoles.Select(x => x.Id).Distinct());
+
+        var levelReward = await db.LevelRewards.Merge()
+            .Using([newLevelReward])
+            .OnTargetKey()
+            .InsertWhenNotMatched(static src => new RoleLevelReward
+            {
+                GuildId = src.GuildId, Level = src.Level, Tier = src.Tier, GrantedRoleIds = src.GrantedRoleIds, RevokedRoleIds = src.RevokedRoleIds
+            })
+            .UpdateWhenMatched(static (dst, src) => new RoleLevelReward
+            {
+                GrantedRoleIds = src.GrantedRoleIds, RevokedRoleIds = src.RevokedRoleIds
+            })
+            .MergeWithOutputAsync(static (action, del, ins, src) => ins)
+            .FirstAsync();
+        */
 
         if (await db.LevelRewards.FindAsync(Context.GuildId, tier, level) is { } levelReward)
         {
@@ -167,11 +188,8 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
         }
         else
         {
-            levelReward = new RoleLevelReward(Context.GuildId, tier, level)
-            {
-                GrantedRoleIds = grantedRoles.Select(x => x.Id).Distinct().ToList(),
-                RevokedRoleIds = revokedRoles.Select(x => x.Id).Distinct().ToList()
-            };
+            levelReward = RoleLevelReward.Create(Context.GuildId, tier, level, 
+                grantedRoles.Select(x => x.Id).Distinct(), revokedRoles.Select(x => x.Id).Distinct());
             
             db.LevelRewards.Add(levelReward);
         }
@@ -196,10 +214,9 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
         var members = Bot.GetMembers(Context.GuildId).Values
             .ToList();
 
-        var dbMembers = await db.Members.Where(x => x.GuildId == Context.GuildId)
-            .ToListAsync();
+        var dbMembers = await db.Members.Where(x => x.GuildId == Context.GuildId).ToListAsyncEF();
 
-        dbMembers = dbMembers.Where(x => x.Tier >= tier && x.Level >= level).ToList();
+        dbMembers = dbMembers.Where(x => x.GetTier() >= tier && x.GetLevel() >= level).ToList();
 
         var memberXp = dbMembers.ToDictionary(x => x.UserId);
 
@@ -278,10 +295,9 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
         var members = Bot.GetMembers(Context.GuildId).Values
             .ToList();
 
-        var dbMembers = await db.Members.Where(x => x.GuildId == Context.GuildId)
-            .ToListAsync();
+        var dbMembers = await db.Members.Where(x => x.GuildId == Context.GuildId).ToListAsyncEF();
 
-        dbMembers = dbMembers.Where(x => x.Tier <= tier || x.Level <= level).ToList();
+        dbMembers = dbMembers.Where(x => x.GetTier() <= tier || x.GetLevel() <= level).ToList();
 
         var memberXp = dbMembers.ToDictionary(x => x.UserId);
         
@@ -350,9 +366,9 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
     public partial async Task AutoCompleteLevelRewards(AutoComplete<int> tier, AutoComplete<int> level)
     {
         var levelRewards = await db.LevelRewards.Where(x => x.GuildId == Context.GuildId)
-            .OrderBy(x => x.Tier)
-            .ThenBy(x => x.Level)
-            .ToListAsync();
+                .OrderBy(x => x.Tier)
+                .ThenBy(x => x.Level)
+                .ToListAsyncEF();
 
         if (tier.IsFocused)
         {

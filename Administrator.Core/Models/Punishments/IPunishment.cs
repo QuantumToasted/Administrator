@@ -12,12 +12,8 @@ public enum PunishmentType
     Warning = 6
 }
 
-public interface IPunishment
+public interface IPunishment : IKeyedEntity<int>, IGuildEntity
 {
-    int Id { get; }
-    
-    Snowflake GuildId { get; }
-    
     UserSnapshot Target { get; }
     
     UserSnapshot Moderator { get; }
@@ -27,4 +23,6 @@ public interface IPunishment
     string? Reason { get; }
     
     PunishmentType Type { get; }
+    
+    Guid? AttachmentId { get; }
 }

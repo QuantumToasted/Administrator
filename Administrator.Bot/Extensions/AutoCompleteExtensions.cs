@@ -47,6 +47,7 @@ public static class AutoCompleteExtensions
 
         var closeMatches = comparisonDict.Where(x => x.Key.Contains(autoComplete.RawArgument, StringComparison.InvariantCultureIgnoreCase))
             .Select(x => x.Value).ToList();
+			
         if (closeMatches.Count > 0)
         {
             autoComplete.AddRange(context, closeMatches);
