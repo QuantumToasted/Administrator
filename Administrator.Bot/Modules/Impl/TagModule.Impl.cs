@@ -46,13 +46,14 @@ public sealed partial class TagModule(AdminDbContext db, AttachmentService attac
         if (await db.Tags.FirstOrDefaultAsync(x => x.GuildId == Context.GuildId && x.Name == name || x.Aliases.Contains(name)) is not null)
             return Response($"A tag already exists with the name or alias \"{name}\"!").AsEphemeral();
         
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        //var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        var maxTags = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.MaximumTagsPerUser);
         var tagCount = await db.Tags.CountAsync(x => x.GuildId == Context.GuildId && x.OwnerId == Context.AuthorId);
 
         const Permissions bypassPermission = Permissions.ManageMessages;
-        if (tagCount >= guild.MaximumTagsPerUser && !Context.Author.CalculateGuildPermissions().HasFlag(bypassPermission))
+        if (tagCount >= maxTags && !Context.Author.CalculateGuildPermissions().HasFlag(bypassPermission))
         {
-            return Response($"You cannot create more than {"tag".ToQuantity(guild.MaximumTagsPerUser.Value)} in this server.\n" +
+            return Response($"You cannot create more than {"tag".ToQuantity(maxTags.Value)} in this server.\n" +
                             $"Users with {Markdown.Bold(bypassPermission.Humanize(LetterCasing.Title))} can bypass this.").AsEphemeral();
         }
 

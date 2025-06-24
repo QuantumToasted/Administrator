@@ -18,9 +18,9 @@ public sealed class PunishmentManagementService : DiscordBotService
             return;
         
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var guild = await db.Guilds.GetOrCreateAsync(e.GuildId);
 
-        if (!guild.HasSetting(GuildSettings.AutomaticPunishmentDetection))
+        var settings = await db.Guilds.GetValueOrDefault(e.GuildId, g => g.Settings);
+        if (!settings.HasFlag(GuildSettings.AutomaticPunishmentDetection))
             return;
 
         var punishments = scope.ServiceProvider.GetRequiredService<PunishmentService>();
@@ -40,7 +40,7 @@ public sealed class PunishmentManagementService : DiscordBotService
                 return;
             }
             case IMemberUnbannedAuditLog when await db.Punishments.OfType<Ban>()
-                .FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.Target.Id == target.Id && !x.RevokedAt.HasValue) is { } ban:
+                .FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.Target.Id == target.Id && x.RevokedAt == null) is { } ban:
             {
                 await punishments.RevokePunishmentAsync(e.GuildId, ban.Id, moderator, reason, true);
                 return;

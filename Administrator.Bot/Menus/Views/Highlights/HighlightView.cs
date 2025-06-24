@@ -3,6 +3,8 @@ using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Gateway;
+using LinqToDB;
+using LinqToDB.DataProvider.PostgreSQL;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
@@ -58,10 +60,11 @@ public sealed class HighlightView : ViewBase
     public async ValueTask BlacklistAuthorAsync(ButtonEventArgs e)
     {
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-
-        var globalUser = await db.Users.GetOrCreateAsync(e.AuthorId);
-        globalUser.BlacklistedHighlightUserIds.Add(_message.Author.Id);
-        await db.SaveChangesAsync();
+        
+        await db.Users
+            .Where(u => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(_message.Author.Id, u.BlacklistedHighlightUserIds))
+            .Merge(User.Create(e.AuthorId) with { BlacklistedHighlightUserIds = [_message.Author.Id] },
+                u => new() { BlacklistedHighlightUserIds = Sql.Ext.PostgreSQL().ArrayAppend(u.BlacklistedHighlightChannelIds, _message.Author.Id) });
         
         Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
 
@@ -72,10 +75,11 @@ public sealed class HighlightView : ViewBase
     public async ValueTask BlacklistChannelAsync(ButtonEventArgs e)
     {
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-
-        var globalUser = await db.Users.GetOrCreateAsync(e.AuthorId);
-        globalUser.BlacklistedHighlightChannelIds.Add(_message.ChannelId);
-        await db.SaveChangesAsync();
+        
+        await db.Users
+            .Where(u => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(_message.ChannelId, u.BlacklistedHighlightChannelIds))
+            .Merge(User.Create(e.AuthorId) with { BlacklistedHighlightChannelIds = [_message.ChannelId] },
+                u => new() { BlacklistedHighlightChannelIds = Sql.Ext.PostgreSQL().ArrayAppend(u.BlacklistedHighlightChannelIds, _message.ChannelId) });
         
         Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
 

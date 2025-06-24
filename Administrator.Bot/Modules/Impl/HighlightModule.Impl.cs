@@ -6,6 +6,8 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Humanizer;
+using LinqToDB;
+using LinqToDB.DataProvider.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
@@ -22,9 +24,9 @@ public sealed partial class HighlightModule(HighlightService highlights, AdminDb
     public partial async Task Clear()
     {
         var userHighlights = db.Highlights.Where(x => x.AuthorId == Context.AuthorId);
-        var contextHighlights = await (Context.GuildId.HasValue
+        var contextHighlights = await EntityFrameworkQueryableExtensions.ToListAsync((Context.GuildId.HasValue
             ? userHighlights.Where(x => x.GuildId == Context.GuildId.Value)
-            : userHighlights.Where(x => x.GuildId == null)).OrderByDescending(x => x.Id).ToListAsync();
+            : userHighlights.Where(x => x.GuildId == null)).OrderByDescending(x => x.Id));
 
         if (contextHighlights.Count == 0)
         {
@@ -53,9 +55,9 @@ public sealed partial class HighlightModule(HighlightService highlights, AdminDb
     public partial async Task<IResult> List()
     {
         var userHighlights = db.Highlights.Where(x => x.AuthorId == Context.AuthorId);
-        var contextHighlights = await (Context.GuildId.HasValue
+        var contextHighlights = await EntityFrameworkQueryableExtensions.ToListAsync((Context.GuildId.HasValue
             ? userHighlights.Where(x => x.GuildId == Context.GuildId.Value)
-            : userHighlights.Where(x => x.GuildId == null)).OrderByDescending(x => x.Id).ToListAsync();
+            : userHighlights.Where(x => x.GuildId == null)).OrderByDescending(x => x.Id));
 
         if (contextHighlights.Count == 0)
         {
@@ -151,21 +153,15 @@ public sealed partial class HighlightModule(HighlightService highlights, AdminDb
 
     public sealed partial class HighlightBlacklistModule(AdminDbContext db, HighlightHandlingService highlights) : DiscordApplicationModuleBase
     {
-        private User _user = null!;
-
-        public override async ValueTask OnBeforeExecuted()
-        {
-            _user = await db.Users.GetOrCreateAsync(Context.AuthorId);
-        }
-        
         public partial async Task<IResult> View(ViewMode mode)
         {
-            var blacklist = mode == ViewMode.Channel
-                ? _user.BlacklistedHighlightChannelIds
-                : _user.BlacklistedHighlightUserIds;
+            var blacklist = await db.Users.GetValueOrDefault<Snowflake[]>(Context.AuthorId,
+                mode == ViewMode.Channel
+                    ? u => u.BlacklistedHighlightChannelIds
+                    : u => u.BlacklistedHighlightUserIds);
 
             var formatted = new List<string>();
-            foreach (var id in blacklist)
+            foreach (var id in blacklist ?? [])
             {
                 if (mode == ViewMode.User)
                 {
@@ -208,16 +204,22 @@ public sealed partial class HighlightModule(HighlightService highlights, AdminDb
 
             if (user is not null)
             {
-                responseBuilder.AppendNewline(_user.BlacklistedHighlightUserIds.TryAddUnique(user.Id)
-                    ? $"You've added {user.Mention} to your highlight blacklist."
-                    : $"You already have {user.Mention} on your blacklist!");
+                await db.Users
+                    .Where(u => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(user.Id, u.BlacklistedHighlightUserIds))
+                    .Merge(User.Create(Context.AuthorId) with { BlacklistedHighlightUserIds = [user.Id] },
+                        u => new() { BlacklistedHighlightUserIds = Sql.Ext.PostgreSQL().ArrayAppend(u.BlacklistedHighlightChannelIds, user.Id) });
+                
+                responseBuilder.AppendNewline($"You've added {user.Mention} to your highlight blacklist.");
             }
             
             if (channel is not null)
             {
-                responseBuilder.AppendNewline(_user.BlacklistedHighlightChannelIds.TryAddUnique(channel.Id)
-                    ? $"You've added {Markdown.Bold(channel)} to your highlight blacklist."
-                    : $"You already have {Markdown.Bold(channel)} on your blacklist!");
+                await db.Users
+                    .Where(u => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(channel.Id, u.BlacklistedHighlightChannelIds))
+                    .Merge(User.Create(Context.AuthorId) with { BlacklistedHighlightChannelIds = [channel.Id] },
+                        u => new() { BlacklistedHighlightChannelIds = Sql.Ext.PostgreSQL().ArrayAppend(u.BlacklistedHighlightChannelIds, channel.Id) });
+                
+                responseBuilder.AppendNewline($"You've added {Markdown.Bold(channel)} to your highlight blacklist.");
             }
 
             await db.SaveChangesAsync();
@@ -235,16 +237,22 @@ public sealed partial class HighlightModule(HighlightService highlights, AdminDb
 
             if (user is not null)
             {
-                responseBuilder.AppendNewline(_user.BlacklistedHighlightUserIds.Remove(user.Id)
-                    ? $"You've removed {user.Mention} from your highlight blacklist."
-                    : $"You already do not have {user.Mention} on your blacklist!");
+                await db.Users
+                    .Where(u => Sql.Ext.PostgreSQL().Contains(u.BlacklistedHighlightUserIds, new[] { user.Id }))
+                    .Merge(Context.AuthorId,
+                        u => new() { BlacklistedHighlightUserIds = Sql.Ext.PostgreSQL().ArrayRemove(u.BlacklistedHighlightUserIds, user.Id) });
+                
+                responseBuilder.AppendNewline($"You've removed {user.Mention} from your highlight blacklist.");
             }
             
             if (channel is not null)
             {
-                responseBuilder.AppendNewline(_user.BlacklistedHighlightChannelIds.Remove(channel.Id)
-                    ? $"You've removed {Markdown.Bold(channel)} from your highlight blacklist."
-                    : $"You already do not have {Markdown.Bold(channel)} on your blacklist!");
+                await db.Users
+                    .Where(u => Sql.Ext.PostgreSQL().Contains(u.BlacklistedHighlightChannelIds, new[] { channel.Id }))
+                    .Merge(Context.AuthorId,
+                        u => new() { BlacklistedHighlightChannelIds = Sql.Ext.PostgreSQL().ArrayRemove(u.BlacklistedHighlightChannelIds, channel.Id) });
+                
+                responseBuilder.AppendNewline($"You've removed {Markdown.Bold(channel)} from your highlight blacklist.");
             }
 
             await db.SaveChangesAsync();

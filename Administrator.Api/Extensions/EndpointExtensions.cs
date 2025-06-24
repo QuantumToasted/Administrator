@@ -280,10 +280,7 @@ public static class EndpointExtensions
 
     private static async Task<bool> AuthorizeGuildAsync(Snowflake guildId, string? apiKey, AdminDbContext db)
     {
-        if (apiKey is not { Length: 32 }) // GUID length without hyphens
-            return false;
-        
-        var guild = await db.Guilds.GetOrCreateAsync(guildId);
-        return guild.ApiKey.Equals(apiKey);
+        var guildApiKey = await db.Guilds.GetValueOrDefault(guildId, g => g.ApiKey);
+        return apiKey == guildApiKey;
     }
 }

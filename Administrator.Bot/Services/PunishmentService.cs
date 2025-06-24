@@ -71,8 +71,9 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         if (await bot.FetchBanAsync(guildId, target.Id) is not null)
             return $"{Markdown.Bold(target)} has already been banned from this server!";
 
-        var guild = await db.Guilds.GetOrCreateAsync(guildId);
-        var ban = Punishment.Ban(guildId, target, moderator, reason, messagePruneDays ?? guild.DefaultBanPruneDays, expiresAt);
+        var defaultBanPruneDays = await db.Guilds.GetValueOrDefault(guildId, g => g.DefaultBanPruneDays);
+
+        var ban = Punishment.Ban(guildId, target, moderator, reason, messagePruneDays ?? defaultBanPruneDays, expiresAt);
         return await ProcessPunishmentAsync(ban, attachment);
     }
 
@@ -123,8 +124,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
 
     public async Task<Result<Warning>> WarnAsync(Snowflake guildId, IUser target, IUser moderator, string? reason, int? demeritPoints, IAttachment? attachment)
     {
-        var guild = await db.Guilds.GetOrCreateAsync(guildId);
-        demeritPoints ??= guild.DefaultWarningDemeritPoints;
+        demeritPoints ??= await db.Guilds.GetValueOrDefault(guildId, g => g.DefaultWarningDemeritPoints);
 
         var warning = Punishment.Warning(guildId, target, moderator, reason, demeritPoints.Value);
         return await ProcessPunishmentAsync(warning, attachment);
@@ -282,7 +282,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
 
         if (await db.LoggingChannels.TryGetAsync(punishment.GuildId, LogEventType.Revoke) is { } logChannelId)
         {
-            var logMessage = punishment.FormatRevocationLogMessage<LocalMessage>(bot);
+            var logMessage = await punishment.FormatRevocationLogMessage<LocalMessage>(bot);
             await bot.TrySendMessageAsync(logChannelId, logMessage);
         }
 
@@ -303,13 +303,13 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
                 .Where(x => x.Target.Id == punishment.Target.Id && x.Id != punishmentId && x.GuildId == guildId)
                 .ToListAsync();
 
-            var guild = await db.Guilds.GetOrCreateAsync(punishment.GuildId);
-
+            var decayInterval = await db.Guilds.GetValueOrDefault(punishment.GuildId, g => g.DemeritPointDecayInterval);
+            
             // only reset their demerit point decay if they don't have any other active punishments
             if (targetPunishments.OfType<RevocablePunishment>().All(x => x.RevokedAt.HasValue))
             {
                 var member = await db.Members.GetOrCreateAsync(guildId, punishment.Target.Id);
-                member.NextDemeritPointDecay = punishment.RevokedAt!.Value + guild.DemeritPointDecayInterval;
+                member.NextDemeritPointDecay = punishment.RevokedAt!.Value + decayInterval;
             }
         }
 
@@ -336,10 +336,12 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             }
         }
         
+        /*
         var guild = await db.Guilds.GetOrCreateAsync(punishment.GuildId);
         await db.Entry(guild)
             .Collection(static x => x.LoggingChannels)
             .LoadAsync();
+        */
 
         var oldDemeritPoints = await db.Punishments.GetCurrentDemeritPointsAsync(punishment.GuildId, punishment.Target.Id);
 
@@ -379,6 +381,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
             punishment.LogMessageId = message.Id;
         }
 
+        var guildConfig = await db.Guilds.GetValueOrDefault(punishment.GuildId, g => new { g.DefaultBanPruneDays, g.DemeritPointDecayInterval });
         if (punishment is Warning warning)
         {
             var newDemeritPoints = oldDemeritPoints + warning.DemeritPoints;
@@ -403,7 +406,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
 
                 Punishment punishmentToApply = demeritPointPunishment.PunishmentType switch
                 {
-                    PunishmentType.Ban => Punishment.Ban(warning.GuildId, warning.Target, warning.Moderator, reason, guild.DefaultBanPruneDays, expiresAt),
+                    PunishmentType.Ban => Punishment.Ban(warning.GuildId, warning.Target, warning.Moderator, reason, guildConfig?.DefaultBanPruneDays, expiresAt),
                     PunishmentType.Kick => Punishment.Kick(warning.GuildId, warning.Target, warning.Moderator, reason),
                     PunishmentType.Timeout => Punishment.Timeout(warning.GuildId, warning.Target, warning.Moderator, reason, expiresAt!.Value),
                     _ => throw new ArgumentOutOfRangeException()
@@ -416,7 +419,7 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
         
         if (punishment is Ban { ExpiresAt: var newDemeritPointDecayStart } && newDemeritPointDecayStart > member.NextDemeritPointDecay)
         {
-            member.NextDemeritPointDecay = newDemeritPointDecayStart + guild.DemeritPointDecayInterval;
+            member.NextDemeritPointDecay = newDemeritPointDecayStart + guildConfig!.DemeritPointDecayInterval;
         }
 
         if (punishment is IExpiringEntity { ExpiresAt: not null })

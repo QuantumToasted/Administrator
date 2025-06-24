@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq.Expressions;
+using System.Text;
 using Administrator.Bot.AutoComplete;
 using Administrator.Core;
 using Administrator.Database;
@@ -10,8 +11,11 @@ using Humanizer;
 using Humanizer.Localisation;
 using LinqToDB;
 using LinqToDB.Async;
+using LinqToDB.DataProvider.PostgreSQL;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Npgsql;
 using Qmmands;
 
 namespace Administrator.Bot;
@@ -38,44 +42,45 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 {
     public partial async Task<IResult> SetJoinRole(IRole? role, bool disable)
     {
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        Expression<Func<GuildConfiguration, GuildConfiguration>> updateSetterExpression;
+        string response;
         if (disable)
         {
-            guild.JoinRoleId = null;
-            await db.SaveChangesAsync();
-            return Response("This server's join role has been disabled.");
+            updateSetterExpression = _ => new() { JoinRoleId = null };
+            response = "This server's join role has been disabled.";
         }
-        
-        if (role is not null)
+        else if (role is not null)
         {
-            guild.JoinRoleId = role.Id;
-            await db.SaveChangesAsync();
-            return Response($"This server's join role has been set to {role.Mention}.");
+            updateSetterExpression = _ => new() { JoinRoleId = role.Id };
+            response = $"This server's join role has been set to {role.Mention}.";
         }
-        
-        if (guild.JoinRoleId is { } joinRoleId)
+        else if (await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.JoinRoleId) is { } joinRoleId)
         {
             if (Bot.GetRole(Context.GuildId, joinRoleId) is not { } joinRole)
             {
-                guild.JoinRoleId = null;
-                await db.SaveChangesAsync();
-                return Response($"This server's join role (ID {Markdown.Code(joinRoleId)}) could not be found or was deleted, so it has been disabled.");
+                updateSetterExpression = _ => new() { JoinRoleId = null };
+                response = $"This server's join role (ID {Markdown.Code(joinRoleId)}) could not be found or was deleted, so it has been disabled.";
             }
-
-            return Response($"This server's join role is currently {joinRole.Mention}.");
+            else
+            {
+                return Response($"This server's join role is currently {joinRole.Mention}.");
+            }
+        }
+        else
+        {
+            return Response("This server has no join role set up!");
         }
 
-        return Response("This server has no join role set up!");
+        await db.Guilds.Merge(Context.GuildId, updateSetterExpression);
+        return Response(response);
     }
 
     public partial async Task<IResult> SetLevelUpEmoji(IEmoji emoji)
     {
         if (emoji is ICustomEmoji { Id: var emojiId } && !Bot.GetGuilds().Values.SelectMany(x => x.Emojis.Keys).Contains(emojiId))
             return Response("I do not have access to emojis from this server, so I cannot add it as a reaction.").AsEphemeral();
-        
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-        guild.LevelUpEmoji = emoji.ToString()!;
-        await db.SaveChangesAsync();
+
+        await db.Guilds.Merge(Context.GuildId, g => new() { LevelUpEmoji = emoji.ToString()! });
         return Response($"The server's custom level-up emoji has been changed to {emoji}.");
     }
     
@@ -170,24 +175,18 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
     public sealed partial class SettingConfigModule(AdminDbContext db, SlashCommandMentionService mentions, EmojiService emojis) : DiscordApplicationGuildModuleBase
     {
-        private GuildConfiguration _guild = null!;
-        
-        public override async ValueTask OnBeforeExecuted()
-        {
-            _guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-        }
-
-        public partial IResult View()
+        public partial async Task<IResult> View()
         {
             var yes = emojis.Names["white_check_mark"];
             var no = emojis.Names["x"];
             
             var responseBuilder = new StringBuilder();
+            var settings = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.Settings);
             foreach (var flag in Enum.GetValues<GuildSettings>().Except([GuildSettings.Default]))
             {
                 var valueName = flag.ToString("G");
                 var description = flag.Humanize();
-                var currentValue = _guild.HasSetting(flag) ? $"{yes} {Markdown.Bold("Enabled")}" : $"{no} {Markdown.Bold("Disabled")}";
+                var currentValue = settings.HasFlag(flag) ? $"{yes} {Markdown.Bold("Enabled")}" : $"{no} {Markdown.Bold("Disabled")}";
 
                 responseBuilder.AppendNewline(Markdown.Bold(valueName))
                     .AppendNewline(Markdown.Italics(description))
@@ -200,8 +199,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
         public partial async Task<IResult> Enable(GuildSettingFlags setting)
         {
-            _guild.Settings |= (GuildSettings) setting;
-            await db.SaveChangesAsync();
+            await db.Guilds.Merge(Context.GuildId, g => new() { Settings = g.Settings | (GuildSettings) setting });
 
             return Response($"{Markdown.Bold(setting.ToString())} setting enabled.\n" + setting switch
             {
@@ -219,8 +217,8 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
         public partial async Task<IResult> Disable(GuildSettingFlags setting)
         {
-            _guild.Settings &= (GuildSettings) ~setting;
-            await db.SaveChangesAsync();
+            var unsetFlag = (GuildSettings)~setting;
+            await db.Guilds.Merge(Context.GuildId, g => new() { Settings = g.Settings & unsetFlag });
 
             return Response($"{Markdown.Bold(setting.ToString())} setting disabled.\n" + setting switch
             {
@@ -443,26 +441,31 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> Add(IChannel channel)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.XpExemptChannelIds.TryAddUnique(channel.Id);
-            await db.SaveChangesAsync();
+            await db.Guilds
+                .Where(g => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(channel.Id, g.XpExemptChannelIds))
+                .Merge(GuildConfiguration.Create(Context.GuildId) with { XpExemptChannelIds = [channel.Id] },
+                    g => new() { XpExemptChannelIds = Sql.Ext.PostgreSQL().ArrayAppend(g.XpExemptChannelIds, channel.Id) });
+            
             return Response($"Messages sent in {Mention.Channel(channel.Id)} will no longer grant XP.");
         }
         
         public partial async Task<IResult> Remove(IChannel channel)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.XpExemptChannelIds.Remove(channel.Id);
-            await db.SaveChangesAsync();
+            await db.Guilds
+                .Where(g => Sql.Ext.PostgreSQL().Contains(g.XpExemptChannelIds, new[] { channel.Id }))
+                .Merge(Context.GuildId,
+                    g => new() { XpExemptChannelIds = Sql.Ext.PostgreSQL().ArrayRemove(g.XpExemptChannelIds, channel.Id) });
+            
             return Response($"Messages sent in {Mention.Channel(channel.Id)} will now grant XP.");
         }
     }
 
     public partial async Task<IResult> SetTagLimits(int limit)
     {
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-        guild.MaximumTagsPerUser = limit >= 0 ? limit : null;
-        await db.SaveChangesAsync();
+        int? newLimit = limit > 0 ? limit : null;
+        await db.Guilds
+            .Merge(Context.GuildId, g => new() { MaximumTagsPerUser = newLimit });
+        
         return Response("Tag limit updated.\n" +
                         (limit > 0
                             ? $"Users will now be limited to creating {"tag".ToQuantity(limit)} each."
@@ -473,17 +476,21 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> Add(IChannel channel)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.AutoQuoteExemptChannelIds.TryAddUnique(channel.Id);
-            await db.SaveChangesAsync();
+            await db.Guilds
+                .Where(g => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(channel.Id, g.AutoQuoteExemptChannelIds))
+                .Merge(GuildConfiguration.Create(Context.GuildId) with { AutoQuoteExemptChannelIds = [channel.Id] },
+                    g => new() { AutoQuoteExemptChannelIds = Sql.Ext.PostgreSQL().ArrayAppend(g.AutoQuoteExemptChannelIds, channel.Id) });
+            
             return Response($"Message links sent in {Mention.Channel(channel.Id)} will no longer trigger the automatic quote feature.");
         }
         
         public partial async Task<IResult> Remove(IChannel channel)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.AutoQuoteExemptChannelIds.Remove(channel.Id);
-            await db.SaveChangesAsync();
+            await db.Guilds
+                .Where(g => Sql.Ext.PostgreSQL().Contains(g.AutoQuoteExemptChannelIds, new[] { channel.Id }))
+                .Merge(Context.GuildId,
+                    g => new() { AutoQuoteExemptChannelIds = Sql.Ext.PostgreSQL().ArrayRemove(g.AutoQuoteExemptChannelIds, channel.Id) });
+            
             return Response($"Message links sent in {Mention.Channel(channel.Id)} will now trigger the automatic quote feature.");
         }
     }
@@ -492,29 +499,29 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> ModifyMessage(Mode mode)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+            if (mode is Mode.Remove)
+            {
+                await db.Guilds.Merge(Context.GuildId, g => new() { GreetingMessage = null });
+                return Response("The greeting message has been removed/disabled for this server.");
+            }
+            
+            //var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+            var greetingMessage = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.GreetingMessage);
 
             if (mode is Mode.View)
             {
-                if (guild.GreetingMessage is null)
+                if (greetingMessage is null)
                     return Response("No greeting message has been defined for this server!").AsEphemeral();
 
                 await Deferral();
-                var message = await guild.GreetingMessage.ToLocalMessageAsync<LocalInteractionMessageResponse>(formatter, Context);
+                var message = await greetingMessage.ToLocalMessageAsync<LocalInteractionMessageResponse>(formatter, Context);
                 return Response(message);
             }
-
-            if (mode is Mode.Remove)
-            {
-                guild.GreetingMessage = null;
-                await db.SaveChangesAsync();
-                return Response("The greeting message has been removed/disabled for this server.");
-            }
-
+            
             LocalMessage baseGreetingMessage;
-            if (guild.GreetingMessage is not null)
+            if (greetingMessage is not null)
             {
-                baseGreetingMessage = await guild.GreetingMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(), Context);
+                baseGreetingMessage = await greetingMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(), Context);
             }
             else
             {
@@ -527,9 +534,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
         public partial async Task<IResult> ModifyGreetingDm(bool dm)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.DmGreetingMessage = dm;
-            await db.SaveChangesAsync();
+            await db.Guilds.Merge(Context.GuildId, g => new() { DmGreetingMessage = dm });
             return Response(dm
                 ? "The server's greeting message will be sent in the user's DMs."
                 : "The server's greeting message will no longer be sent in the user's DMs.\n" +
@@ -541,35 +546,35 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> ModifyMessage(Mode mode)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-
-            if (mode is Mode.View)
-            {
-                if (guild.GoodbyeMessage is null)
-                    return Response("No goodbye message has been defined for this server!").AsEphemeral();
-
-                await Deferral();
-                var message = await guild.GoodbyeMessage.ToLocalMessageAsync<LocalInteractionMessageResponse>(formatter, Context);
-                return Response(message);
-            }
-            
             if (mode is Mode.Remove)
             {
-                guild.GoodbyeMessage = null;
-                await db.SaveChangesAsync();
+                await db.Guilds.Merge(Context.GuildId, g => new() { GoodbyeMessage = null });
                 return Response("The goodbye message has been removed/disabled for this server.");
             }
             
-            LocalMessage baseGoodbyeMessage;
-            if (guild.GoodbyeMessage is not null)
+            //var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+            var goodbyeMessage = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.GoodbyeMessage);
+
+            if (mode is Mode.View)
             {
-                baseGoodbyeMessage = await guild.GoodbyeMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(), Context);
+                if (goodbyeMessage is null)
+                    return Response("No goodbye message has been defined for this server!").AsEphemeral();
+
+                await Deferral();
+                var message = await goodbyeMessage.ToLocalMessageAsync<LocalInteractionMessageResponse>(formatter, Context);
+                return Response(message);
+            }
+            
+            LocalMessage baseGoodbyeMessage;
+            if (goodbyeMessage is not null)
+            {
+                baseGoodbyeMessage = await goodbyeMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(), Context);
             }
             else
             {
                 baseGoodbyeMessage = new LocalMessage().WithContent("Hope to see you again soon, {user.mention}!");
             }
-
+            
             var view = new GoodbyeMessageEditView(baseGoodbyeMessage);
             return Menu(new MessageEditMenu(view, Context.Interaction), TimeSpan.FromMinutes(30));
         }
@@ -577,34 +582,27 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
 
     public partial async Task<IResult> SetPunishmentText(string? text)
     {
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-
-        var content = "Example punishment with custom text:";
-        if (text is null)
+        if (!string.IsNullOrWhiteSpace(text))
         {
-            if (string.IsNullOrWhiteSpace(guild.CustomPunishmentText))
-                return Response("No custom punishment text has been specified on this server.").AsEphemeral();
-        }
-        else if (string.IsNullOrWhiteSpace(text))
-        {
-            guild.CustomPunishmentText = null;
-            await db.SaveChangesAsync();
+            await db.Guilds.Merge(Context.GuildId, g => new() { CustomPunishmentText = null });
             return Response("Custom punishment text removed.");
         }
-        else
+
+        var customPunishmentText = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.CustomPunishmentText);
+
+        var content = "Example punishment with custom text:";
+        if (text is null && string.IsNullOrWhiteSpace(customPunishmentText))
         {
-            guild.CustomPunishmentText = text;
-            await db.SaveChangesAsync();
-            content = $"Custom punishment text updated!\n{content}";
+            return Response("No custom punishment text has been specified on this server.").AsEphemeral();
         }
 
-        var fakePunishment = new Ban
+        await db.Guilds.Merge(Context.GuildId, g => new() { CustomPunishmentText = text });
+        content = $"Custom punishment text updated!\n{content}";
+
+        var guild = await db.Guilds.FirstAsyncEF(x => x.GuildId == Context.GuildId);
+        var fakePunishment = Punishment.Ban(Context.GuildId, Context.Author, Bot.CurrentUser, "Example punishment.", null, null) with
         {
             Id = 1,
-            GuildId = Context.GuildId,
-            Target = UserSnapshot.FromUser(Context.Author),
-            Moderator = UserSnapshot.FromUser(Bot.CurrentUser),
-            Reason = "Example punishment",
             Guild = guild
         };
 
@@ -617,20 +615,15 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         if (interval < TimeSpan.FromSeconds(30))
             return Response("The minimum XP interval is 30 seconds.").AsEphemeral();
-        
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-        guild.CustomXpRate = amount;
-        guild.CustomXpInterval = interval;
-        await db.SaveChangesAsync();
+
+        await db.Guilds.Merge(Context.GuildId, g => new() { CustomXpRate = amount, CustomXpInterval = interval });
         return Response($"Custom XP rate updated. Users will now be eligible to gain " +
                         $"{Markdown.Bold(amount)} XP every {Markdown.Bold(interval.Humanize(int.MaxValue, minUnit: TimeUnit.Second))}.");
     }
 
     public partial async Task<IResult> SetDefaultBanPruneDays(int pruneDays)
     {
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-        guild.DefaultBanPruneDays = pruneDays;
-        await db.SaveChangesAsync();
+        await db.Guilds.Merge(Context.GuildId, g => new() { DefaultBanPruneDays = pruneDays });
         return Response(pruneDays > 0
             ? $"{mentions.GetMention("ban")} will now prune {"day".ToQuantity(pruneDays)} worth of messages by default if no amount is specified."
             : $"{mentions.GetMention("ban")} will not prune any messages by default if no amount is specified.");
@@ -640,9 +633,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> SetWarningDefault(int demeritPoints)
         {
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.DefaultWarningDemeritPoints = demeritPoints;
-            await db.SaveChangesAsync();
+            await db.Guilds.Merge(Context.GuildId, g => new() { DefaultWarningDemeritPoints = demeritPoints });
             return Response(demeritPoints > 0
                 ? $"{mentions.GetMention("warn")} will now add {Markdown.Bold("demerit point".ToQuantity(demeritPoints))} automatically if no amount is specified."
                 : $"{mentions.GetMention("warn")} will not add any demerit points by default if no amount is specified.");
@@ -652,10 +643,8 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
         {
             if (interval < TimeSpan.FromDays(1))
                 return Response("The demerit point decay interval must be at least 24 hours (1 day).").AsEphemeral();
-            
-            var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-            guild.DemeritPointDecayInterval = interval;
-            await db.SaveChangesAsync();
+
+            await db.Guilds.Merge(Context.GuildId, g => new() { DemeritPointDecayInterval = interval });
             return Response(interval.HasValue
                 ? $"Demerit points will now decay every {Markdown.Bold(interval.Value.Humanize(int.MaxValue, minUnit: TimeUnit.Day))}."
                 : "Demerit points will no longer decay.");

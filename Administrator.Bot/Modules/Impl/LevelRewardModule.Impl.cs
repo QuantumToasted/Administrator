@@ -181,20 +181,12 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
             .FirstAsync();
         */
 
-        if (await db.LevelRewards.FindAsync(Context.GuildId, tier, level) is { } levelReward)
+        var levelReward = RoleLevelReward.Create(Context.GuildId, tier, level, grantedRoles.Select(x => x.Id), revokedRoles.Select(x => x.Id));
+        await db.LevelRewards.Merge(levelReward, g => new()
         {
-            levelReward.GrantedRoleIds = grantedRoles.Select(x => x.Id).Distinct().ToList();
-            levelReward.RevokedRoleIds = revokedRoles.Select(x => x.Id).Distinct().ToList();
-        }
-        else
-        {
-            levelReward = RoleLevelReward.Create(Context.GuildId, tier, level, 
-                grantedRoles.Select(x => x.Id).Distinct(), revokedRoles.Select(x => x.Id).Distinct());
-            
-            db.LevelRewards.Add(levelReward);
-        }
-
-        await db.SaveChangesAsync();
+            GrantedRoleIds = grantedRoles.Select(x => x.Id).Distinct().ToArray(),
+            RevokedRoleIds = revokedRoles.Select(x => x.Id).Distinct().ToArray()
+        });
 
         var responseBuilder = new StringBuilder().AppendNewline($"Role level reward created/updated for Tier {tier}, Level {level}.");
         if (grantedRoles.Count > 0)
@@ -401,14 +393,14 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
                 {
                     var builder = new StringBuilder($"Tier {x.Tier}, Level {x.Level} - ");
                     
-                    if (x.GrantedRoleIds.Count > 0)
-                        builder.Append($"{"role".ToQuantity(x.GrantedRoleIds.Count)} added");
+                    if (x.GrantedRoleIds.Length > 0)
+                        builder.Append($"{"role".ToQuantity(x.GrantedRoleIds.Length)} added");
 
-                    if (x.GrantedRoleIds.Count > 0 && x.RevokedRoleIds.Count > 0)
+                    if (x.GrantedRoleIds.Length > 0 && x.RevokedRoleIds.Length > 0)
                         builder.Append(", ");
 
-                    if (x.RevokedRoleIds.Count > 0)
-                        builder.Append($"{"role".ToQuantity(x.RevokedRoleIds.Count)} removed");
+                    if (x.RevokedRoleIds.Length > 0)
+                        builder.Append($"{"role".ToQuantity(x.RevokedRoleIds.Length)} removed");
 
                     return builder.ToString();
                 });
@@ -435,16 +427,16 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
     {
         var valueBuilder = new StringBuilder();
 
-        if (reward.GrantedRoleIds.Count > 0)
+        if (reward.GrantedRoleIds.Length > 0)
         {
-            valueBuilder.Append($"{"granted role".ToQuantity(reward.GrantedRoleIds.Count)}: ")
+            valueBuilder.Append($"{"granted role".ToQuantity(reward.GrantedRoleIds.Length)}: ")
                 .AppendJoinTruncated(", ", reward.GrantedRoleIds.Select(Mention.Role), Discord.Limits.Message.Embed.Field.MaxValueLength / 3)
                 .AppendNewline();
         }
                     
-        if (reward.RevokedRoleIds.Count > 0)
+        if (reward.RevokedRoleIds.Length > 0)
         {
-            valueBuilder.Append($"{"revoked role".ToQuantity(reward.RevokedRoleIds.Count)}: ")
+            valueBuilder.Append($"{"revoked role".ToQuantity(reward.RevokedRoleIds.Length)}: ")
                 .AppendJoinTruncated(", ", reward.RevokedRoleIds.Select(Mention.Role), Discord.Limits.Message.Embed.Field.MaxValueLength / 3)
                 .AppendNewline();
         }

@@ -114,15 +114,14 @@ public static partial class DbModelExtensions
         static async Task ApplyWarningAsync(Warning warning, DiscordBotBase bot, Member member)
         {
             await using var scope = bot.Services.CreateAsyncScopeWithDatabase(out var db);
-            var guild = await db.Guilds.GetOrCreateAsync(member.GuildId);
-            if (guild.DemeritPointDecayInterval is { } interval)
-            {
-                member.NextDemeritPointDecay = warning.CreatedAt + interval;
-                await db.SaveChangesAsync();
+            if (await db.Guilds.GetValueOrDefault(warning.GuildId, g => g.DemeritPointDecayInterval) is not { } interval)
+                return;
+            
+            member.NextDemeritPointDecay = warning.CreatedAt + interval;
+            await db.SaveChangesAsync();
 
-                var quartz = bot.Services.GetRequiredService<QuartzService>();
-                await quartz.RescheduleDemeritPointDecayJobAsync(warning, member);
-            }
+            var quartz = bot.Services.GetRequiredService<QuartzService>();
+            await quartz.RescheduleDemeritPointDecayJobAsync(warning, member);
         }
     }
 
@@ -163,16 +162,16 @@ public static partial class DbModelExtensions
                 .Where(x => x.GuildId == warning.GuildId && x.Target.Id == warning.Target.Id && x.DemeritPoints > 0 && x.Id != warning.Id)
                 .SumAsync(x => x.DemeritPointsRemaining);
 
-            var guild = await db.Guilds.GetOrCreateAsync(warning.GuildId);
             var member = await db.Members.GetOrCreateAsync(warning.GuildId, warning.Target.Id);
 
-            if (demeritPoints == 0)
+            if (demeritPoints == 0 || 
+                await db.Guilds.GetValueOrDefault(warning.GuildId, g => g.DemeritPointDecayInterval) is not { } interval)
             {
                 member.NextDemeritPointDecay = null;
             }
             else
             {
-                var nextDecay = warning.CreatedAt + guild.DemeritPointDecayInterval;
+                var nextDecay = warning.CreatedAt + interval;
                 member.NextDemeritPointDecay = nextDecay;
 
                 if (await db.Punishments.OfType<Warning>()
@@ -283,8 +282,6 @@ public static partial class DbModelExtensions
     public static async Task<TMessage> FormatLogMessageAsync<TMessage>(this Punishment punishment, DiscordBotBase bot)
         where TMessage : LocalMessageBase, new()
     {
-        Guard.IsNotNull(punishment.Guild);
-        
         var message = new TMessage();
         var embed = new LocalEmbed()
             .WithColor(punishment.GetInitialEmbedColor())
@@ -298,13 +295,15 @@ public static partial class DbModelExtensions
             embed.AddField(entity.FormatExpiryField());
         }
 
-        if (punishment.Guild.HasSetting(GuildSettings.LogModeratorsInPunishments))
+        await using var _ = bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        var settings = await db.Guilds.GetValueOrDefault(punishment.GuildId, g => g.Settings);
+        if (settings.HasFlag(GuildSettings.LogModeratorsInPunishments))
         {
             var moderator = bot.GetMember(punishment.GuildId, punishment.Moderator.Id) ?? bot.GetUser(punishment.Moderator.Id);
             embed.WithFooter($"Moderator: {punishment.Moderator.Name}", moderator?.GetAvatarUrl());
         }
 
-        if (punishment.Guild.HasSetting(GuildSettings.LogImagesInPunishments) && punishment.Attachment is { } attachment &&
+        if (settings.HasFlag(GuildSettings.LogImagesInPunishments) && punishment.Attachment is { } attachment &&
             await attachment.DownloadAsync(bot) is { } localAttachment)
         {
             message.AddAttachment(localAttachment);
@@ -317,8 +316,6 @@ public static partial class DbModelExtensions
     public static async Task<TMessage> FormatDmMessageAsync<TMessage>(this Punishment punishment, DiscordBotBase bot)
         where TMessage : LocalMessageBase, new()
     {
-        Guard.IsNotNull(punishment.Guild);
-        
         var message = new TMessage();
         var embed = new LocalEmbed()
             .WithColor(GetInitialEmbedColor(punishment))
@@ -343,9 +340,10 @@ public static partial class DbModelExtensions
             embed.AddField(entity.FormatExpiryField());
         }
 
-        if (!string.IsNullOrWhiteSpace(punishment.Guild.CustomPunishmentText))
+        await using var _ = bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        if (await db.Guilds.GetValueOrDefault(punishment.GuildId, g => g.CustomPunishmentText) is { Length: > 0 } text)
         {
-            embed.AddField("Message from moderators", punishment.Guild.CustomPunishmentText);
+            embed.AddField("Message from moderators", text);
         }
 
         if (punishment is RevocablePunishment)
@@ -450,11 +448,9 @@ public static partial class DbModelExtensions
         return message;
     }
     
-    public static TMessage FormatRevocationLogMessage<TMessage>(this RevocablePunishment punishment, DiscordBotBase bot)
+    public static async Task<TMessage> FormatRevocationLogMessage<TMessage>(this RevocablePunishment punishment, DiscordBotBase bot)
         where TMessage : LocalMessageBase, new()
     {
-        Guard.IsNotNull(punishment.Guild);
-        
         var message = new TMessage();
         var embed = new LocalEmbed()
             .WithCommunityColor()
@@ -462,11 +458,12 @@ public static partial class DbModelExtensions
             .WithDescription(punishment.FormatRevocationLogEmbedDescription(bot))
             .AddField(punishment.FormatRevocationReasonField())
             .WithTimestamp(punishment.RevokedAt!.Value);
-        
-        if (punishment.Guild.HasSetting(GuildSettings.LogModeratorsInPunishments) && punishment.Revoker is { } revoker)
+
+        await using var _ = bot.Services.CreateAsyncScopeWithDatabase(out var db);
+        var settings = await db.Guilds.GetValueOrDefault(punishment.GuildId, g => g.Settings);
+        if (settings.HasFlag(GuildSettings.LogModeratorsInPunishments) && punishment.Revoker is { } revoker)
         {
-            embed.WithFooter($"Revoker: {revoker.Name}", bot.GetMember(punishment.GuildId, revoker.Id)?.GetGuildAvatarUrl()
-                                                        ?? bot.GetUser(revoker.Id)?.GetAvatarUrl());
+            embed.WithFooter($"Revoker: {revoker.Name}", bot.GetMember(punishment.GuildId, revoker.Id)?.GetGuildAvatarUrl());
         }
         
         message.AddEmbed(embed);

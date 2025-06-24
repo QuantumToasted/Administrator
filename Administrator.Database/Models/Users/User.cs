@@ -21,9 +21,9 @@ public sealed record User : IUserXp, IUserConfiguration, IEntityTypeConfiguratio
     
     public DateTimeOffset? HighlightsSnoozedUntil { get; set; }
 
-    public List<Snowflake> BlacklistedHighlightUserIds { get; init; } = new();
+    public Snowflake[] BlacklistedHighlightUserIds { get; init; } = [];
 
-    public List<Snowflake> BlacklistedHighlightChannelIds { get; init; } = new();
+    public Snowflake[] BlacklistedHighlightChannelIds { get; init; } = [];
 
     public int ResumeHighlightsAfterMessageCount { get; init; } = 25;
     

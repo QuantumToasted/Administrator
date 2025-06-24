@@ -13,9 +13,9 @@ public sealed record RoleLevelReward : IRoleLevelReward, IEntityTypeConfiguratio
     
     public int Level { get; init; }
 
-    public List<Snowflake> GrantedRoleIds { get; set; } = [];
+    public Snowflake[] GrantedRoleIds { get; set; } = [];
 
-    public List<Snowflake> RevokedRoleIds { get; set; } = [];
+    public Snowflake[] RevokedRoleIds { get; set; } = [];
     
     public GuildConfiguration? Guild { get; init; }
 
@@ -26,8 +26,8 @@ public sealed record RoleLevelReward : IRoleLevelReward, IEntityTypeConfiguratio
             GuildId = guildId,
             Tier = tier,
             Level = level,
-            GrantedRoleIds = grantedRoleIds.ToList(),
-            RevokedRoleIds = revokedRoleIds.ToList()
+            GrantedRoleIds = grantedRoleIds.Distinct().ToArray(),
+            RevokedRoleIds = revokedRoleIds.Distinct().ToArray()
         };
     }
     

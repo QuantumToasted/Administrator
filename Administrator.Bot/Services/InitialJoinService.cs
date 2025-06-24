@@ -6,6 +6,7 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
+using LinqToDB;
 using Microsoft.Extensions.Options;
 
 namespace Administrator.Bot;
@@ -25,7 +26,6 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IOpti
     {
         await TrySendInitialJoinMessageAsync(e.Guild);
     }
-    
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -45,8 +45,7 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IOpti
         
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var guildConfig = await db.Guilds.GetOrCreateAsync(guild.Id);
-        if (guildConfig.WasVisited)
+        if (await db.Guilds.GetValueOrDefault(guild.Id, g => g.WasVisited))
             return false;
 
         var message = FormatInitialJoinMessage(guild);
@@ -72,7 +71,7 @@ public sealed class InitialJoinService(SlashCommandMentionService mention, IOpti
 
         globalUser.WasSentInitialJoinMessage = true;
 
-        guildConfig.WasVisited = true;
+        await db.Guilds.Where(x => x.GuildId == guild.Id).UpdateAsync(g => new() { WasVisited = true });
         await db.SaveChangesAsync();
         return true;
     }

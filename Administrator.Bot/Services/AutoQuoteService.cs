@@ -31,9 +31,14 @@ public sealed partial class AutoQuoteService : DiscordBotService
         
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
-        if (!guildConfig.HasSetting(GuildSettings.AutoQuote) || guildConfig.AutoQuoteExemptChannelIds.Contains(e.ChannelId))
+        //var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
+        var guildConfig = await db.Guilds.GetValueOrDefault(guildId, g => new { g.Settings, g.AutoQuoteExemptChannelIds });
+        if (guildConfig is null ||
+            !guildConfig.Settings.HasFlag(GuildSettings.AutoQuote) ||
+            guildConfig.AutoQuoteExemptChannelIds.Contains(e.ChannelId))
+        {
             return;
+        }
 
         var messageGuildId = Snowflake.TryParse(match.Groups["guild_id"].Value, out var id) ? id : (Snowflake?) null;
         var messageChannelId = Snowflake.Parse(match.Groups["channel_id"].Value);

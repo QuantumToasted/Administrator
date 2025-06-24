@@ -95,8 +95,9 @@ public sealed class EventLoggingService : DiscordBotService
             {
                 if (e.Message.Author.IsBot)
                 {
-                    var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
-                    if (guildConfig.HasSetting(GuildSettings.IgnoreBotMessages))
+                    var settings = await db.Guilds.GetValueOrDefault(guildId, g => g.Settings);
+                    //var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
+                    if (settings.HasFlag(GuildSettings.IgnoreBotMessages))
                         return;
                 }
 
@@ -210,8 +211,9 @@ public sealed class EventLoggingService : DiscordBotService
 
         if (author?.IsBot == true)
         {
-            var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
-            if (guildConfig.HasSetting(GuildSettings.IgnoreBotMessages))
+            var settings = await db.Guilds.GetValueOrDefault(guildId, g => g.Settings);
+            //var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
+            if (settings.HasFlag(GuildSettings.IgnoreBotMessages))
                 return;
         }
 
@@ -404,9 +406,8 @@ public sealed class EventLoggingService : DiscordBotService
             // This may cause ratelimiting issues when raids occur in guilds....
 
             await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-            var guild = await db.Guilds.GetOrCreateAsync(e.GuildId);
 
-            if (guild.GreetingMessage is null)
+            if (await db.Guilds.GetValueOrDefault(e.GuildId, g => g.GreetingMessage) is not { } greetingMessage)
                 return;
 
             var channelId = await db.LoggingChannels.TryGetAsync(e.GuildId, LogEventType.Greeting);
@@ -416,7 +417,7 @@ public sealed class EventLoggingService : DiscordBotService
                 channelId = dm.Id;
             }
 
-            var message = await guild.GreetingMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
+            var message = await greetingMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
                 new MockDiscordGuildCommandContext(Bot, e.GuildId, channelId.Value, e.Member));
 
             await Bot.TrySendMessageAsync(channelId.Value, message);
@@ -432,14 +433,11 @@ public sealed class EventLoggingService : DiscordBotService
             // TODO: see OnMemberJoined w/r/t large amount of leave events
 
             await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-            if (await db.LoggingChannels.TryGetAsync(e.GuildId, LogEventType.Goodbye) is not { } channelId)
-                return;
-            
-            var guild = await db.Guilds.GetOrCreateAsync(e.GuildId);
-            if (guild.GoodbyeMessage is null)
+            if (await db.LoggingChannels.TryGetAsync(e.GuildId, LogEventType.Goodbye) is not { } channelId ||
+                await db.Guilds.GetValueOrDefault(e.GuildId, g => g.GoodbyeMessage) is not { } goodbyeMessage)
                 return;
 
-            var message = await guild.GoodbyeMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
+            var message = await goodbyeMessage.ToLocalMessageAsync<LocalMessage>(new DiscordPlaceholderFormatter(),
                 new MockDiscordGuildCommandContext(Bot, e.GuildId, channelId, e.User));
 
             await Bot.TrySendMessageAsync(channelId, message);

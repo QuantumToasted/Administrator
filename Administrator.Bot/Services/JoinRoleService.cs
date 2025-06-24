@@ -3,6 +3,7 @@ using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Rest;
+using LinqToDB;
 
 namespace Administrator.Bot;
 
@@ -30,9 +31,8 @@ public sealed class JoinRoleService : DiscordBotService
     private async Task GrantJoinRoleAsync(Snowflake guildId, Snowflake memberId)
     {
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var guild = await db.Guilds.GetOrCreateAsync(guildId);
-
-        if (guild.JoinRoleId is not { } roleId)
+        
+        if (await db.Guilds.GetValueOrDefault(guildId, g => g.JoinRoleId) is not { } roleId)
             return;
 
         try
@@ -43,6 +43,8 @@ public sealed class JoinRoleService : DiscordBotService
         {
             await Bot.TrySendErrorAsync(guildId,
                 $"The server's join role (ID {Markdown.Code(roleId)}) could not be found and was likely deleted, so it has been unset as the join role.");
+
+            await db.Guilds.Where(x => x.GuildId == guildId).UpdateAsync(g => new() { JoinRoleId = null });
         }
         catch (RestApiException ex) when (ex.ErrorModel?.Code == RestApiErrorCode.MissingPermissions)
         {

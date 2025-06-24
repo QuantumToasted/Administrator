@@ -36,11 +36,12 @@ public sealed partial class TagImportComponentModule(AdminDbContext db, SlashCom
         if (await db.Tags.FirstOrDefaultAsync(x => x.GuildId == Context.GuildId && x.Name == name || x.Aliases.Contains(name)) is not null)
             return Response($"A tag already exists with the name or alias \"{name}\"!").AsEphemeral();
 
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        //var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        var maxTags = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.MaximumTagsPerUser);
         var tagCount = await db.Tags.CountAsync(x => x.GuildId == Context.GuildId && x.OwnerId == Context.AuthorId);
 
-        if (tagCount >= guild.MaximumTagsPerUser)
-            return Response($"You cannot create more than {"tag".ToQuantity(guild.MaximumTagsPerUser.Value)} in this server.").AsEphemeral();
+        if (tagCount >= maxTags)
+            return Response($"You cannot create more than {"tag".ToQuantity(maxTags.Value)} in this server.").AsEphemeral();
 
         var response = new LocalInteractionMessageResponse()
             .WithContent($"New tag \"{name}\" created. Use the buttons below to modify its response.\n" +

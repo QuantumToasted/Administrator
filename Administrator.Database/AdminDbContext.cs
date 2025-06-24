@@ -53,6 +53,9 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options) : D
 
         configurationBuilder.Properties<List<Snowflake>>()
             .HaveConversion(typeof(SnowflakeListConverter), typeof(ListValueComparer<Snowflake>));
+        
+        configurationBuilder.Properties<Snowflake[]>()
+            .HaveConversion(typeof(SnowflakeArrayConverter), typeof(ArrayValueComparer<Snowflake>));
 
         configurationBuilder.Properties<Snowflake>()
             .HaveConversion(typeof(SnowflakeConverter));

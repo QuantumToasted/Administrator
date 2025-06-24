@@ -59,7 +59,7 @@ public sealed partial class ConfigModule
     {
         [SlashCommand("view")]
         [Description("Displays a list of settings and whether they are enabled or disabled.")]
-        public partial IResult View();
+        public partial Task<IResult> View();
 
         [SlashCommand("enable")]
         [Description("Enables a specific server setting.")]

@@ -86,7 +86,8 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
 
         AdminPromptView view;
 
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        //var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
+        var maxLuaCommands = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.MaxLuaCommands);
         var metadataChanged = true;
         if (await db.LuaCommands.FindAsync(Context.GuildId, commandName) is { } luaCommand)
         {
@@ -101,9 +102,9 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
             view = new AdminPromptView($"An existing command already exists with the name {Markdown.Code($"/{commandName}")}, and will be overwritten by this command.",
                     slashCommand.ToDisplayEmbed());
         }
-        else if (await db.LuaCommands.CountAsync(x => x.GuildId == Context.GuildId) > guild.MaxLuaCommands)
+        else if (await db.LuaCommands.CountAsync(x => x.GuildId == Context.GuildId) > maxLuaCommands)
         {
-            return Response($"This server is only allowed to create up to {"lua command".ToQuantity(guild.MaxLuaCommands)}.");
+            return Response($"This server is only allowed to create up to {"lua command".ToQuantity(maxLuaCommands)}.");
         }
         else
         {

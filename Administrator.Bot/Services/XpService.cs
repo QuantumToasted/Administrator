@@ -29,7 +29,17 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
+        var guildConfig = await db.Guilds.GetValueOrDefault(guildId, g => new
+        {
+            g.Settings,
+            g.XpExemptChannelIds,
+            g.CustomXpRate,
+            g.CustomXpInterval,
+            g.LevelUpEmoji
+        });
+
+        if (guildConfig is null)
+            throw new InvalidOperationException("Invalid guild object state.");
 
         var dbUser = await db.Users.GetOrCreateAsync(message.Author.Id);
         dbUser.IncrementXp(XP_INCREMENT_RATE, XpGainInterval, out var globalLeveledUp);
@@ -44,7 +54,7 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
             });
         }
 
-        if (guildConfig.HasSetting(GuildSettings.TrackServerXp) && !guildConfig.XpExemptChannelIds.Contains(e.ChannelId))
+        if (guildConfig.Settings.HasFlag(GuildSettings.TrackServerXp) && !guildConfig.XpExemptChannelIds.Contains(e.ChannelId))
         {
             var dbMember = await db.Members.GetOrCreateAsync(guildId, message.Author.Id);
             dbMember.IncrementXp(guildConfig.CustomXpRate ?? XP_INCREMENT_RATE, 
@@ -76,51 +86,52 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
 
                         var baseLength = contentBuilder.Length;
                         
-                        if (levelReward.GrantedRoleIds.Count > 0)
+                        if (levelReward.GrantedRoleIds.Length > 0)
                         {
                             var grantedRoles = new List<IRole>();
-                            var missingRoles = new List<Snowflake>();
+                            //var missingRoles = new List<Snowflake>();
                             foreach (var roleId in levelReward.GrantedRoleIds)
                             {
-                                if (Bot.GetRole(guildId, roleId) is { } role)
+                                if (Bot.GetRole(guildId, roleId) is not { } role)
                                 {
-                                    grantedRoles.Add(role);
                                     continue;
                                 }
+                                
+                                grantedRoles.Add(role);
 
-                                missingRoles.Add(roleId);
+                                //missingRoles.Add(roleId);
                             }
                             
-                            missingRoles.ForEach(x => levelReward.GrantedRoleIds.Remove(x));
+                            //missingRoles.ForEach(x => levelReward.GrantedRoleIds.Remove(x));
 
                             if (grantedRoles.Count > 0)
                             {
-                                contentBuilder.Append($"You've been given the following {"role".ToQuantity(levelReward.GrantedRoleIds.Count)}: ")
+                                contentBuilder.Append($"You've been given the following {"role".ToQuantity(grantedRoles.Count)}: ")
                                     .AppendJoin(", ", grantedRoles.Select(x => Markdown.Bold(x.Name)))
                                     .AppendNewline();
                             }
                         }
 
-                        if (levelReward.RevokedRoleIds.Count > 0)
+                        if (levelReward.RevokedRoleIds.Length > 0)
                         {
                             var revokedRoles = new List<IRole>();
-                            var missingRoles = new List<Snowflake>();
+                            //var missingRoles = new List<Snowflake>();
                             foreach (var roleId in levelReward.RevokedRoleIds)
                             {
-                                if (Bot.GetRole(guildId, roleId) is { } role)
+                                if (Bot.GetRole(guildId, roleId) is not { } role)
                                 {
-                                    revokedRoles.Add(role);
+                                    //missingRoles.Add(roleId);
                                     continue;
                                 }
-
-                                missingRoles.Add(roleId);
+                                
+                                revokedRoles.Add(role);
                             }
                             
-                            missingRoles.ForEach(x => levelReward.RevokedRoleIds.Remove(x));
+                            //missingRoles.ForEach(x => levelReward.RevokedRoleIds.Remove(x));
 
                             if (revokedRoles.Count > 0)
                             {
-                                contentBuilder.Append($"You've had the following {"role".ToQuantity(levelReward.GrantedRoleIds.Count)} removed: ")
+                                contentBuilder.Append($"You've had the following {"role".ToQuantity(revokedRoles.Capacity)} removed: ")
                                     .AppendJoin(", ", revokedRoles.Select(x => Markdown.Bold(x.Name)));
                             }
                         }

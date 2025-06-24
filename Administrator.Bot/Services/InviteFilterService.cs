@@ -7,6 +7,7 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Http;
 using Disqord.Rest;
+using LinqToDB;
 using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;
@@ -33,11 +34,10 @@ public sealed class InviteFilterService : DiscordBotService
         {
             if (!Bot.HasPermissionsInGuild(guildId, Permissions.ManageGuild))
             {
-                var guildConfig = await db.Guilds.GetOrCreateAsync(guildId);
-                if (guildConfig.HasSetting(GuildSettings.FilterDiscordInvites))
+                var settings = await db.Guilds.GetValueOrDefault(guildId, g => g.Settings);
+                if (settings.HasFlag(GuildSettings.FilterDiscordInvites))
                 {
-                    Logger.LogWarning("Guild {GuildId} has FilterDiscordInvites enabled but the bot cannot fetch invites.",
-                        guildId.RawValue);
+                    Logger.LogWarning("Guild {GuildId} has FilterDiscordInvites enabled but the bot cannot fetch invites.", guildId.RawValue);
                 }
 
                 continue;
@@ -107,8 +107,9 @@ public sealed class InviteFilterService : DiscordBotService
             return;
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        var guild = await db.Guilds.GetOrCreateAsync(guildId);
-        if (!guild.HasSetting(GuildSettings.FilterDiscordInvites))
+        var settings = await db.Guilds.GetValueOrDefault(guildId, g => g.Settings);
+
+        if (!settings.HasFlag(GuildSettings.FilterDiscordInvites))
             return;
 
         var now = DateTimeOffset.UtcNow;
@@ -118,9 +119,7 @@ public sealed class InviteFilterService : DiscordBotService
                 _checkedInvites.Remove(key, out _);
         }
 
-        await db.Guilds.Entry(guild)
-            .Collection(x => x.InviteFilterExemptions)
-            .LoadAsync();
+        var inviteFilterExemptions = await db.InviteFilterExemptions.Where(x => x.GuildId == guildId).ToListAsync();
 
         if (!InviteRegex.IsMatch(e.Message.Content, out var match))
             return;
@@ -129,7 +128,7 @@ public sealed class InviteFilterService : DiscordBotService
         if (_guildInviteCodes.TryGetValue(guildId, out var inviteCodes) && inviteCodes.Contains(inviteCode))
             return;
 
-        foreach (var exemption in guild.InviteFilterExemptions)
+        foreach (var exemption in inviteFilterExemptions)
         {
             switch (exemption.ExemptionType)
             {

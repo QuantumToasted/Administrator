@@ -30,6 +30,13 @@ public static class EnumerableExtensions
         return hashSet;
     }
 
+    public static TCollection AddUnique<TCollection, TItem>(this TCollection collection, TItem item)
+        where TCollection : ICollection<TItem>
+    {
+        collection.TryAddUnique(item);
+        return collection;
+    }
+
     public static bool TryAddUnique<T>(this ICollection<T> collection, T item)
     {
         if (collection.Contains(item))

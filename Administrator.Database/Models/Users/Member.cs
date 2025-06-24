@@ -49,6 +49,11 @@ public sealed record Member : IUserXp, IMemberConfiguration, IEntityTypeConfigur
         };
     }
 
+    public static string GenerateBlurb(Snowflake userId)
+    {
+        return new Random(userId.GetHashCode()).GetItems(InitialBlurbChoices, 1)[0];
+    }
+
     void IEntityTypeConfiguration<Member>.Configure(EntityTypeBuilder<Member> member)
     {
         member.HasKey(x => new { x.GuildId, x.UserId });

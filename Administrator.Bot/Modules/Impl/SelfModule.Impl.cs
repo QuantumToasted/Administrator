@@ -48,11 +48,11 @@ public sealed partial class SelfModule(AdminDbContext db) : DiscordApplicationMo
             .AppendNewline($"You are currently at {Markdown.Bold("demerit point".ToQuantity(currentDemeritPoints))} " +
                            $"in {Markdown.Bold(guild.Name)}.");
         
-        var dbGuild = await db.Guilds.GetOrCreateAsync(guildId.Value);
+        //var dbGuild = await db.Guilds.GetOrCreateAsync(guildId.Value);
         
-        if (member.NextDemeritPointDecay.HasValue && dbGuild.DemeritPointDecayInterval.HasValue)
+        if (member.NextDemeritPointDecay.HasValue && await db.Guilds.GetValueOrDefault(guildId.Value, g => g.DemeritPointDecayInterval) is { } interval)
         {
-            var nextDecay = member.NextDemeritPointDecay.Value + dbGuild.DemeritPointDecayInterval.Value;
+            var nextDecay = member.NextDemeritPointDecay.Value + interval;
             responseBuilder.AppendNewline($"Your next decay will occur {Markdown.Timestamp(nextDecay, Markdown.TimestampFormat.RelativeTime)}.");
         }
         

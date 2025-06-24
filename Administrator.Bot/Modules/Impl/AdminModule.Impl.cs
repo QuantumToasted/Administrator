@@ -8,11 +8,11 @@ public sealed partial class AdminModule(AdminDbContext db) : DiscordApplicationG
 {
     public partial async Task GenerateApiKey()
     {
-        var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
-        guild.ApiKey = Guid.NewGuid().ToString("N");
+        var newApiKey = Guid.NewGuid().ToString("N");
+        await db.Guilds.Merge(Context.GuildId, _ => new() { ApiKey = newApiKey });
         
         var view = new AdminPromptView("A new API key will be generated, invalidating any previous API keys generated.", isEphemeral: true)
-            .OnConfirm($"Your new API key (don't share this with anyone else!)\n{Markdown.CodeBlock(guild.ApiKey)}");
+            .OnConfirm($"Your new API key (don't share this with anyone else!)\n{Markdown.CodeBlock(newApiKey)}");
 
         await View(view);
 

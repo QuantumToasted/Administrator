@@ -1,4 +1,5 @@
-﻿using Administrator.Core;
+﻿using System.Linq.Expressions;
+using Administrator.Core;
 using Disqord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -31,9 +32,9 @@ public sealed record GuildConfiguration : IGuildConfiguration, IEntityTypeConfig
 
     public string ApiKey { get; set; } = null!;
     
-    public List<Snowflake> XpExemptChannelIds { get; init; } = [];
+    public Snowflake[] XpExemptChannelIds { get; init; } = [];
     
-    public List<Snowflake> AutoQuoteExemptChannelIds { get; init; } = [];
+    public Snowflake[] AutoQuoteExemptChannelIds { get; init; } = [];
 
     public int DefaultBanPruneDays { get; set; } = 1;
 

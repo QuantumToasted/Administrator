@@ -59,12 +59,11 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                 .FirstOrDefaultAsync();
 
             Member? member = null;
-            GuildConfiguration? guild = null;
+            GuildSettings guildSettings = default;
             var guildPosition = 0L;
             if (guildId.HasValue)
             {
                 member = await db.Members.GetOrCreateAsync(guildId.Value, userId);
-                guild = await db.Guilds.GetOrCreateAsync(guildId.Value);
 
                 var longGuildId = (long)guildId.Value.RawValue;
                 guildPosition = await db.Members.ToLinqToDBTable()
@@ -78,9 +77,12 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                     .Where(x => x.UserId == longId)
                     .Select(x => x.Rank)
                     .FirstOrDefaultAsync();
+
+                guildSettings = await db.Guilds.GetValueOrDefault(guildId.Value, g => g.Settings);
             }
 
-            var guildOffset = guild?.HasSetting(GuildSettings.TrackServerXp) == true
+            
+            var guildOffset = guildSettings.HasFlag(GuildSettings.TrackServerXp)
                 ? XP_IMAGE_GUILD_OFFSET
                 : 0;
             
