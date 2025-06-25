@@ -13,30 +13,14 @@ namespace Administrator.Bot;
 [ScopedService]
 public sealed class ImageService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db, EmojiService emojis)
 {
-    private const int SCALE = 2;
+    public const int SCALE = 2;
     private const int XP_IMAGE_WIDTH = 450 * SCALE;
     private const int XP_IMAGE_HEIGHT = 300 * SCALE;
     private const int XP_IMAGE_GUILD_OFFSET = 45 * SCALE;
     private const int XP_IMAGE_AVATAR_SIZE = 50 * SCALE;
     private const int XP_IMAGE_LEVEL_ICON_SIZE = 45 * SCALE;
     private const int XP_IMAGE_GUILD_ICON_SIZE = 18 * SCALE;
-    
-    private static readonly char[] AllowedSpecialCharacters =
-    [
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '#',
-        '$', '€', '£', '+', '-', '*', '/', '÷', '=', '%', '"', '\'', 
-        '@', '&', '_', '(', ')', ',', '.', ';', ':', '¿', '?', '¡', '!', 
-        '\\', '{', '}', '<', '>', '[', ']', '`', '^', '~', '©', '®', '™',
-        'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 
-        'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'ß',
-        'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 
-        'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'ù', 'ú', 'û', 'ü', 'ß'
-    ];
-    
+   
     private static readonly byte[] DefaultBackgroundBytes;
     
     public async Task<Result<LocalAttachment>> GenerateXpImageAsync(Snowflake? guildId, Snowflake userId)
@@ -80,7 +64,6 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
 
                 guildSettings = await db.Guilds.GetValueOrDefault(guildId.Value, g => g.Settings);
             }
-
             
             var guildOffset = guildSettings.HasFlag(GuildSettings.TrackServerXp)
                 ? XP_IMAGE_GUILD_OFFSET
@@ -90,290 +73,32 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
             using var avatar = await LoadAvatarImageAsync(guildId, userId);
             using var currentLevel = await LoadLevelImageAsync(user.GetTier(), user.GetLevel());
 
-            // Draw outer bounding box
-            {
-                const int leftX = 10 * SCALE;
-                var topY = 190 * SCALE - guildOffset;
-                const int rightX = 440 * SCALE;
-                var bottomY = 290 * SCALE - guildOffset;
-                
-                background.Draw(new Drawables()
-                    .FillColor(Colors.DarkButTransparent)
-                    .Polygon(new PointD(leftX, topY),
-                        new PointD(rightX, topY),
-                        new PointD(rightX, bottomY),
-                        new PointD(leftX, bottomY)));
-            }
+            background.DrawOuterBoundingBox(guildOffset)
+                .DrawAvatarBoundingBox(guildOffset)
+                .DrawAvatar(avatar, guildOffset)
+                .DrawAvatarBoundingBoxOutline(guildOffset)
+                .DrawUsername(bot.GetUser(userId)?.Name ?? "noname", guildOffset)
+                .DrawInnerBox(guildOffset)
+                .DrawCurrentXpBar(user.GetCurrentLevelXp(), user.GetNextLevelXp(), guildOffset)
+                .DrawCurrentLevelText(user.GetTier(), user.GetLevel(), user.GetGrade(), guildOffset)
+                .DrawCurrentXpText(user.TotalXp, user.GetNextLevelTotalXp(), guildOffset)
+                .DrawCurrentLevel(currentLevel, guildOffset)
+                .DrawCurrentGlobalPosition((int) globalPosition, guildOffset);
             
-            // Draw avatar bounding box
-            {
-                const int leftX = 385 * SCALE;
-                var topY = 215 * SCALE - guildOffset;
-                const int rightX = 435 * SCALE;
-                var bottomY = 265 * SCALE - guildOffset;
-                
-                background.Draw(new Drawables()
-                    .FillColor(Colors.Blurple)
-                    .Polygon(new PointD(leftX, topY),
-                        new PointD(rightX, topY),
-                        new PointD(rightX, bottomY),
-                        new PointD(leftX, bottomY)));
-            }
-            
-            
-            // Draw avatar
-            {
-                const int originX = 385 * SCALE;
-                var originY = 215 * SCALE - guildOffset;
-                background.Composite(avatar, originX, originY, CompositeOperator.Atop);
-            }
-            
-            // Draw avatar bounding box outline
-            {
-                const int leftX = 385 * SCALE;
-                var topY = 215 * SCALE - guildOffset;
-                const int rightX = 435 * SCALE;
-                var bottomY = 265 * SCALE - guildOffset;
-                
-                background.Draw(new Drawables()
-                    .FillColor(MagickColors.Transparent)
-                    .StrokeColor(MagickColors.WhiteSmoke)
-                    .StrokeWidth(2d)
-                    .Path(new PathLineToAbs(new PointD(leftX, topY),
-                        new PointD(rightX, topY),
-                        new PointD(rightX, bottomY),
-                        new PointD(leftX, bottomY),
-                        new PointD(leftX, topY)))); // end where we start
-            }
-            
-            // Write username
-            {
-                const int fontSize = 20 * SCALE;
-                const int originX = 15 * SCALE;
-                var originY = 195 * SCALE - guildOffset;
-                
-                background.Draw(new Drawables()
-                    .Font("Data/tf2build.ttf")
-                    .FontPointSize(fontSize)
-                    .FillColor(MagickColors.WhiteSmoke)
-                    .Gravity(Gravity.Northwest)
-                    .Text(originX, originY, bot.GetUser(userId)!.Name));
-            }
-            
-            // Draw inner box (XP bar outline)
-            {
-                const int leftX = 75 * SCALE;
-                var topY = 272 * SCALE - guildOffset;
-                const int rightX = 435 * SCALE;
-                var bottomY = 285 * SCALE - guildOffset;
-                
-                background.Draw(new Drawables()
-                    .FillColor(Colors.LessDark)
-                    .Polygon(new PointD(leftX, topY),
-                        new PointD(rightX, topY),
-                        new PointD(rightX, bottomY),
-                        new PointD(leftX, bottomY)));
-            }
-            
-            // Draw current XP bar
-            {
-                const int leftX = 77 * SCALE;
-                var topY = 274 * SCALE - guildOffset;
-                var rightX = (356d * ((double) user.GetCurrentLevelXp() / user.GetNextLevelXp()) + 77) * SCALE;
-                var bottomY = 283 * SCALE - guildOffset;
-                
-                background.Draw(new Drawables()
-                    .FillColor(Colors.XpBar)
-                    .Polygon(new PointD(leftX, topY),
-                        new PointD(rightX, topY),
-                        new PointD(rightX, bottomY),
-                        new PointD(leftX, bottomY)));
-            }
-            
-            // Write current level text
-            {
-                const int fontSize = 13 * SCALE;
-                const int originX = 255 * SCALE;
-                var originY = 269 * SCALE - guildOffset;
-                
-                background.Draw(Fonts.TF2()
-                    .FontPointSize(fontSize)
-                    .FillColor(Colors.GetGradeColor(user.GetGrade()))
-                    //.Gravity(Gravity.North)
-                    .TextAlignment(TextAlignment.Center)
-                    .Text(originX, originY, $"Tier {user.GetTier()}, Level {user.GetLevel()} ({user.GetGrade()} Grade)")); // 259
-            }
-            
-            
-            // Write current XP text
-            {
-                const int fontSize = 13 * SCALE;
-                const int originX = 255 * SCALE;
-                var originY = 284 * SCALE - guildOffset;
-                
-                background.Draw(Fonts.TF2()
-                    .FontPointSize(fontSize)
-                    .FillColor(MagickColors.WhiteSmoke)
-                    //.Gravity(Gravity.North)
-                    .TextAlignment(TextAlignment.Center)
-                    .Text(originX, originY, $"{user.TotalXp} / {user.GetNextLevelTotalXp()} XP")); // 273
-            }
-            
-            // Draw current level
-            {
-                const int originX = 45 * SCALE;
-                var originY = 285 * SCALE - guildOffset;
-                var justifiedOrigin = Justify(originX, originY, currentLevel, Gravity.South);
-                
-                background.Composite(currentLevel, justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
-            }
-            
-            // Write current global position
-            {
-                const int fontSize = 11 * SCALE;
-                const int originX = 255 * SCALE;
-                var originY = 258 * SCALE - guildOffset;
-                
-                background.Draw(Fonts.TF2()
-                    .FontPointSize(fontSize)
-                    .FillColor(MagickColors.WhiteSmoke)
-                    //.Gravity(Gravity.North)
-                    .TextAlignment(TextAlignment.Center)
-                    .Text(originX, originY, $"Global rank #{globalPosition}")); // 248
-            }
-            
-
             if (member is not null && guildOffset > 0)
             {
-                // Draw guild bounding box
-                {
-                    const int leftX = 10 * SCALE;
-                    const int topY = 250 * SCALE;
-                    const int rightX = 440 * SCALE;
-                    const int bottomY = 295 * SCALE;
-                    
-                    background.Draw(new Drawables()
-                        .FillColor(Colors.DarkButTransparent)
-                        .Polygon(new PointD(leftX, topY),
-                            new PointD(rightX, topY),
-                            new PointD(rightX, bottomY),
-                            new PointD(leftX, bottomY)));
-                }
+                using var currentGuildLevel = await LoadLevelImageAsync(member.GetTier(), member.GetLevel());
+                using var currentGuildIcon = await LoadGuildIconImageAsync(member.GuildId);
                 
-                
-                // Draw guild XP bar outline
-                {
-                    const int leftX = 75 * SCALE;
-                    const int topY = 277 * SCALE;
-                    const int rightX = 435 * SCALE;
-                    const int bottomY = 290 * SCALE;
-                    
-                    background.Draw(new Drawables()
-                        .FillColor(Colors.LessDark)
-                        .Polygon(new PointD(leftX, topY),
-                            new PointD(rightX, topY),
-                            new PointD(rightX, bottomY),
-                            new PointD(leftX, bottomY)));
-                }
-                
-                // Draw guild XP bar
-                {
-                    const int leftX = 77 * SCALE;
-                    const int topY = 279 * SCALE;
-                    var rightX = (356d * ((double) member.GetCurrentLevelXp() / member.GetNextLevelXp()) + 77) * SCALE;
-                    const int bottomY = 288 * SCALE;
-                    
-                    background.Draw(new Drawables()
-                        .FillColor(Colors.XpBar)
-                        .Polygon(new PointD(leftX, topY),
-                            new PointD(rightX, topY),
-                            new PointD(rightX, bottomY),
-                            new PointD(leftX, bottomY)));
-                }
-                
-                // Write current guild level text
-                {
-                    const int fontSize = 13 * SCALE;
-                    const int originX = 255 * SCALE;
-                    const int originY = 274 * SCALE;
-                    
-                    background.Draw(Fonts.TF2()
-                        .FontPointSize(fontSize)
-                        .FillColor(Colors.GetGradeColor(member.GetGrade()))
-                        //.Gravity(Gravity.North)
-                        .TextAlignment(TextAlignment.Center)
-                        .Text(originX, originY, $"Tier {member.GetTier()}, Level {member.GetLevel()} ({member.GetGrade()} Grade)")); // 264
-                }
-                
-                // Write current guild XP text
-                {
-                    const int fontSize = 13 * SCALE;
-                    const int originX = 255 * SCALE;
-                    const int originY = 289 * SCALE;
-                    
-                    background.Draw(Fonts.TF2()
-                        .FontPointSize(fontSize)
-                        .FillColor(MagickColors.WhiteSmoke)
-                        //.Gravity(Gravity.North)
-                        .TextAlignment(TextAlignment.Center)
-                        .Text(originX, originY, $"{member.TotalXp} / {member.GetNextLevelTotalXp()} XP")); // 278
-                }
-                
-                // Draw current guild level
-                {
-                    const int originX = 45 * SCALE;
-                    const int originY = 292 * SCALE;
-                    
-                    using var currentGuildLevel = await LoadLevelImageAsync(member.GetTier(), member.GetLevel());
-                    var justifiedOrigin = Justify(originX, originY, currentGuildLevel, Gravity.South);
-                    background.Composite(currentGuildLevel,  justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
-                }
-                
-                // Draw current guild icon
-                {
-                    const int originX = 435 * SCALE;
-                    const int originY = 255 * SCALE;
-                    
-                    using var currentGuildIcon = await LoadGuildIconImageAsync(member.GuildId);
-                    var justifiedOrigin = Justify(originX, originY, currentGuildIcon, Gravity.Northeast);
-                    background.Composite(currentGuildIcon,  justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
-                }
-                
-                // Write current guild position
-                {
-                    const int fontSize = 11 * SCALE;
-                    const int originX = 255 * SCALE;
-                    const int originY = 263 * SCALE;
-                    
-                    background.Draw(Fonts.TF2()
-                        .FontPointSize(fontSize)
-                        .FillColor(MagickColors.WhiteSmoke)
-                        //.Gravity(Gravity.North)
-                        .TextAlignment(TextAlignment.Center)
-                        .Text(originX, originY, $"Server rank #{guildPosition}")); // 253
-                }
-                
-                // Write blurb
-                {
-                    const int fontSize = 11 * SCALE;
-                    const int originX = 15 * SCALE;
-                    var originY = 215 * SCALE - guildOffset;
-                    const int textBoxWith = 360 * SCALE;
-                    var sanitizedBlurb = new string(member.Blurb.Where(AllowedSpecialCharacters.Contains).ToArray());
-
-                    var settings = new MagickReadSettings
-                    {
-                        Font = "Data/TF2secondary.ttf",
-                        BackgroundColor = MagickColors.Transparent,
-                        FillColor = MagickColors.WhiteSmoke,
-                        StrokeColor = MagickColors.Transparent,
-                        FontPointsize = fontSize,
-                        Width =  textBoxWith
-                    };
-
-                    using var image = new MagickImage($"caption:\"{sanitizedBlurb}\"", settings);
-                    background.Composite(image,  originX,  originY, CompositeOperator.Atop);
-                }
+                background.DrawGuildBoundingBox()
+                    .DrawGuildXpBarOutline()
+                    .DrawGuildXpBar(member.GetCurrentLevelXp(), member.GetNextLevelXp())
+                    .DrawCurrentGuildLevelText(member.GetTier(), member.GetLevel(), member.GetGrade())
+                    .DrawCurrentGuildXpText(member.TotalXp, member.GetNextLevelTotalXp())
+                    .DrawCurrentGuildLevel(currentGuildLevel)
+                    .DrawCurrentGuildIcon(currentGuildIcon)
+                    .DrawCurrentGuildPosition((int) guildPosition)
+                    .DrawBlurb(member.Blurb, guildOffset);
             }
             
             await background.WriteAsync(output, MagickFormat.Png);
@@ -456,7 +181,350 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
     private static MagickImage LoadEmptyImage(int width, int height)
         => new(MagickColors.Transparent, width, height);
     
-    public static (int X, int Y) Justify(int x, int y, MagickImage image, Gravity gravity)
+    static ImageService()
+    {
+        const string xpImagePath = "Data/defaultXp.png";
+        try
+        {
+            DefaultBackgroundBytes = File.ReadAllBytes(xpImagePath);
+        }
+        catch
+        {
+            DefaultBackgroundBytes = [];
+        }
+    }
+}
+
+public static class MagickImageExtensions
+{
+    private static readonly char[] AllowedSpecialCharacters =
+    [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '#',
+        '$', '€', '£', '+', '-', '*', '/', '÷', '=', '%', '"', '\'', 
+        '@', '&', '_', '(', ')', ',', '.', ';', ':', '¿', '?', '¡', '!', 
+        '\\', '{', '}', '<', '>', '[', ']', '`', '^', '~', '©', '®', '™',
+        'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 
+        'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'ß',
+        'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 
+        'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'ù', 'ú', 'û', 'ü', 'ß'
+    ];
+    
+    public static MagickImage DrawOuterBoundingBox(this MagickImage image, int offset)
+    {
+        const int leftX = 10 * ImageService.SCALE;
+        var topY = 190 * ImageService.SCALE - offset;
+        const int rightX = 440 * ImageService.SCALE;
+        var bottomY = 290 * ImageService.SCALE - offset;
+                
+        image.Draw(new Drawables()
+            .FillColor(Colors.DarkButTransparent)
+            .Polygon(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY)));
+    
+        return image;
+    }
+
+    public static MagickImage DrawAvatarBoundingBox(this MagickImage image, int offset)
+    {
+        const int leftX = 385 * ImageService.SCALE;
+        var topY = 215 * ImageService.SCALE - offset;
+        const int rightX = 435 * ImageService.SCALE;
+        var bottomY = 265 * ImageService.SCALE - offset;
+                
+        image.Draw(new Drawables()
+            .FillColor(Colors.Blurple)
+            .Polygon(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY)));
+    
+        return image;
+    }
+
+    public static MagickImage DrawAvatar(this MagickImage image, MagickImage avatar, int offset)
+    {
+        const int originX = 385 * ImageService.SCALE;
+        var originY = 215 * ImageService.SCALE - offset;
+        image.Composite(avatar, originX, originY, CompositeOperator.Atop);
+    
+        return image;
+    }
+
+    public static MagickImage DrawAvatarBoundingBoxOutline(this MagickImage image, int offset)
+    {
+        const int leftX = 385 * ImageService.SCALE;
+        var topY = 215 * ImageService.SCALE - offset;
+        const int rightX = 435 * ImageService.SCALE;
+        var bottomY = 265 * ImageService.SCALE - offset;
+                
+        image.Draw(new Drawables()
+            .FillColor(MagickColors.Transparent)
+            .StrokeColor(MagickColors.WhiteSmoke)
+            .StrokeWidth(2d)
+            .Path(new PathLineToAbs(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY),
+                new PointD(leftX, topY)))); // end where we start
+    
+        return image;
+    }
+
+    public static MagickImage DrawUsername(this MagickImage image, string username, int offset)
+    {
+        const int fontSize = 20 * ImageService.SCALE;
+        const int originX = 15 * ImageService.SCALE;
+        var originY = 195 * ImageService.SCALE - offset;
+                
+        image.Draw(Fonts.TF2()
+            .FontPointSize(fontSize)
+            .FillColor(MagickColors.WhiteSmoke)
+            .Gravity(Gravity.Northwest)
+            .Text(originX, originY, username));
+    
+        return image;
+    }
+
+    public static MagickImage DrawInnerBox(this MagickImage image, int offset)
+    {
+        const int leftX = 75 * ImageService.SCALE;
+        var topY = 272 * ImageService.SCALE - offset;
+        const int rightX = 435 * ImageService.SCALE;
+        var bottomY = 285 * ImageService.SCALE - offset;
+                
+        image.Draw(new Drawables()
+            .FillColor(Colors.LessDark)
+            .Polygon(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY)));
+    
+        return image;
+    }
+
+    public static MagickImage DrawCurrentXpBar(this MagickImage image, int currentXp, int nextLevelXp, int offset)
+    {
+        const int leftX = 77 * ImageService.SCALE;
+        var topY = 274 * ImageService.SCALE - offset;
+        var rightX = (356d * ((double) currentXp / nextLevelXp) + 77) * ImageService.SCALE;
+        var bottomY = 283 * ImageService.SCALE - offset;
+                
+        image.Draw(new Drawables()
+            .FillColor(Colors.XpBar)
+            .Polygon(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY)));
+    
+        return image;
+    }
+
+    public static MagickImage DrawCurrentLevelText(this MagickImage image, int tier, int level, Grade grade, int offset)
+    {
+        const int fontSize = 13 * ImageService.SCALE;
+        const int originX = 255 * ImageService.SCALE;
+        var originY = 269 * ImageService.SCALE - offset;
+                
+        image.Draw(Fonts.TF2()
+            .FontPointSize(fontSize)
+            .FillColor(Colors.GetGradeColor(grade))
+            //.Gravity(Gravity.North)
+            .TextAlignment(TextAlignment.Center)
+            .Text(originX, originY, $"Tier {tier}, Level {level} ({grade} Grade)")); // 259
+    
+        return image;
+    }
+
+    public static MagickImage DrawCurrentXpText(this MagickImage image, int totalXp, int nextLevelTotalXp, int offset)
+    {
+        const int fontSize = 13 * ImageService.SCALE;
+        const int originX = 255 * ImageService.SCALE;
+        var originY = 284 * ImageService.SCALE - offset;
+                
+        image.Draw(Fonts.TF2()
+            .FontPointSize(fontSize)
+            .FillColor(MagickColors.WhiteSmoke)
+            //.Gravity(Gravity.North)
+            .TextAlignment(TextAlignment.Center)
+            .Text(originX, originY, $"{totalXp} / {nextLevelTotalXp} XP")); // 273
+    
+        return image;
+    }
+
+    public static MagickImage DrawCurrentLevel(this MagickImage image, MagickImage currentLevel, int offset)
+    {
+        const int originX = 45 * ImageService.SCALE;
+        var originY = 285 * ImageService.SCALE - offset;
+        var justifiedOrigin = Justify(originX, originY, currentLevel, Gravity.South);
+                
+        image.Composite(currentLevel, justifiedOrigin.X, justifiedOrigin.Y, CompositeOperator.Atop);
+        
+        return image;
+    }
+
+    public static MagickImage DrawCurrentGlobalPosition(this MagickImage image, int globalPosition, int offset)
+    {
+        const int fontSize = 11 * ImageService.SCALE;
+        const int originX = 255 * ImageService.SCALE;
+        var originY = 258 * ImageService.SCALE - offset;
+                
+        image.Draw(Fonts.TF2()
+            .FontPointSize(fontSize)
+            .FillColor(MagickColors.WhiteSmoke)
+            //.Gravity(Gravity.North)
+            .TextAlignment(TextAlignment.Center)
+            .Text(originX, originY, $"Global rank #{globalPosition}")); // 248
+    
+        return image;}
+
+    public static MagickImage DrawGuildBoundingBox(this MagickImage image)
+    {
+        const int leftX = 10 * ImageService.SCALE;
+        const int topY = 250 * ImageService.SCALE;
+        const int rightX = 440 * ImageService.SCALE;
+        const int bottomY = 295 * ImageService.SCALE;
+                    
+        image.Draw(new Drawables()
+            .FillColor(Colors.DarkButTransparent)
+            .Polygon(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY)));
+    
+        return image;}
+
+    public static MagickImage DrawGuildXpBarOutline(this MagickImage image)
+    {
+        const int leftX = 75 * ImageService.SCALE;
+        const int topY = 277 * ImageService.SCALE;
+        const int rightX = 435 * ImageService.SCALE;
+        const int bottomY = 290 * ImageService.SCALE;
+                    
+        image.Draw(new Drawables()
+            .FillColor(Colors.LessDark)
+            .Polygon(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY)));
+    
+        return image;}
+
+    public static MagickImage DrawGuildXpBar(this MagickImage image, int currentXp, int nextLevelXp)
+    {
+        const int leftX = 77 * ImageService.SCALE;
+        const int topY = 279 * ImageService.SCALE;
+        var rightX = (356d * ((double) currentXp / nextLevelXp) + 77) * ImageService.SCALE;
+        const int bottomY = 288 * ImageService.SCALE;
+                    
+        image.Draw(new Drawables()
+            .FillColor(Colors.XpBar)
+            .Polygon(new PointD(leftX, topY),
+                new PointD(rightX, topY),
+                new PointD(rightX, bottomY),
+                new PointD(leftX, bottomY)));
+    
+        return image;}
+
+    public static MagickImage DrawCurrentGuildLevelText(this MagickImage image, int tier, int level, Grade grade)
+    {
+        const int fontSize = 13 * ImageService.SCALE;
+        const int originX = 255 * ImageService.SCALE;
+        const int originY = 274 * ImageService.SCALE;
+                    
+        image.Draw(Fonts.TF2()
+            .FontPointSize(fontSize)
+            .FillColor(Colors.GetGradeColor(grade))
+            //.Gravity(Gravity.North)
+            .TextAlignment(TextAlignment.Center)
+            .Text(originX, originY, $"Tier {tier}, Level {level} ({grade} Grade)")); // 264
+        
+        return image;
+    }
+
+    public static MagickImage DrawCurrentGuildXpText(this MagickImage image, int totalXp, int nextLevelTotalXp)
+    {
+        const int fontSize = 13 * ImageService.SCALE;
+        const int originX = 255 * ImageService.SCALE;
+        const int originY = 289 * ImageService.SCALE;
+                    
+        image.Draw(Fonts.TF2()
+            .FontPointSize(fontSize)
+            .FillColor(MagickColors.WhiteSmoke)
+            //.Gravity(Gravity.North)
+            .TextAlignment(TextAlignment.Center)
+            .Text(originX, originY, $"{totalXp} / {nextLevelTotalXp} XP")); // 278
+        
+        return image;
+    }
+
+    public static MagickImage DrawCurrentGuildLevel(this MagickImage image, MagickImage currentGuildLevel)
+    {
+        const int originX = 45 * ImageService.SCALE;
+        const int originY = 292 * ImageService.SCALE;
+                    
+        var justifiedOrigin = Justify(originX, originY, currentGuildLevel, Gravity.South);
+        image.Composite(currentGuildLevel, justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
+        
+        return image;
+    }
+
+    public static MagickImage DrawCurrentGuildIcon(this MagickImage image, MagickImage currentGuildIcon)
+    {
+        const int originX = 435 * ImageService.SCALE;
+        const int originY = 255 * ImageService.SCALE;
+                    
+        var justifiedOrigin = Justify(originX, originY, currentGuildIcon, Gravity.Northeast);
+        image.Composite(currentGuildIcon,  justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
+        return image;
+    }
+
+    public static MagickImage DrawCurrentGuildPosition(this MagickImage image, int guildPosition)
+    {
+        const int fontSize = 11 * ImageService.SCALE;
+        const int originX = 255 * ImageService.SCALE;
+        const int originY = 263 * ImageService.SCALE;
+                    
+        image.Draw(Fonts.TF2()
+            .FontPointSize(fontSize)
+            .FillColor(MagickColors.WhiteSmoke)
+            //.Gravity(Gravity.North)
+            .TextAlignment(TextAlignment.Center)
+            .Text(originX, originY, $"Server rank #{guildPosition}")); // 253
+
+        return image;
+    }
+
+    public static MagickImage DrawBlurb(this MagickImage image, string blurb, int offset)
+    {
+        const int fontSize = 11 * ImageService.SCALE;
+        const int originX = 15 * ImageService.SCALE;
+        var originY = 215 * ImageService.SCALE - offset;
+        const int textBoxWith = 360 * ImageService.SCALE;
+        var sanitizedBlurb = new string(blurb.Where(AllowedSpecialCharacters.Contains).ToArray());
+
+        var settings = new MagickReadSettings
+        {
+            Font = "Data/TF2secondary.ttf",
+            BackgroundColor = MagickColors.Transparent,
+            FillColor = MagickColors.WhiteSmoke,
+            StrokeColor = MagickColors.Transparent,
+            FontPointsize = fontSize,
+            Width =  textBoxWith
+        };
+
+        using var blurbImage = new MagickImage($"caption:\"{sanitizedBlurb}\"", settings);
+        image.Composite(blurbImage,  originX,  originY, CompositeOperator.Atop);
+
+        return image;
+    }
+    
+    private static (int X, int Y) Justify(int x, int y, MagickImage image, Gravity gravity)
     {
         return gravity switch
         {
@@ -472,7 +540,13 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
             _ => (x, y)
         };
     }
-
+    
+    private static class Fonts
+    {
+        public static IDrawables<ushort> TF2(FontStyleType type = FontStyleType.Normal) => new Drawables().Font("Data/tf2build.ttf", type, FontWeight.Normal, FontStretch.Normal)
+            .StrokeColor(MagickColors.Transparent);
+    }
+        
     private static class Colors
     {
         public static MagickColor GetGradeColor(Grade grade)
@@ -506,24 +580,5 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
 
         internal static MagickColor WayLessDark
             => MagickColor.FromRgb(104, 110, 117);
-    }
-
-    private static class Fonts
-    {
-        public static IDrawables<ushort> TF2(FontStyleType type = FontStyleType.Normal) => new Drawables().Font("Data/tf2build.ttf", type, FontWeight.Normal, FontStretch.Normal)
-            .StrokeColor(MagickColors.Transparent);
-    }
-
-    static ImageService()
-    {
-        const string xpImagePath = "Data/defaultXp.png";
-        try
-        {
-            DefaultBackgroundBytes = File.ReadAllBytes(xpImagePath);
-        }
-        catch
-        {
-            DefaultBackgroundBytes = [];
-        }
     }
 }

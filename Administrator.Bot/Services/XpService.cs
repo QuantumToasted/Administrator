@@ -38,6 +38,7 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
             g.LevelUpEmoji
         });
 
+        // TODO: create a new guild config????
         if (guildConfig is null)
             throw new InvalidOperationException("Invalid guild object state.");
 
