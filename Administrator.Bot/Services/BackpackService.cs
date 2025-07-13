@@ -13,8 +13,7 @@ namespace Administrator.Bot;
 public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceFactory factory, HttpClient http) : DiscordBotService
 {
     private readonly EconItems _econItems = factory.CreateSteamWebInterface<EconItems>(AppId.TeamFortress2, http);
-    private readonly ConcurrentDictionary<ParticleEffect, byte[]> _particleEffectImages = new();
-    //private DateTimeOffset? _lastCheck;
+    private readonly ConcurrentDictionary<ParticleEffect, FileInfo> _particleEffectImages = new();
     
     public Currency? CraftHatCurrency { get; private set; }
 
@@ -37,12 +36,12 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
         using var item = new MagickImage(itemStream);
         item.Resize(380, 380);
 
-        if (effect.HasValue)
+        if (effect.HasValue && GetParticleEffectImage(effect.Value) is { } particleEffectImage)
         {
-            var particleEffectImage = await GetParticleEffectImageAsync(effect.Value);
-            using var particleEffect = new MagickImage(particleEffectImage);
-            
-            item.Composite(particleEffect, CompositeOperator.DstOver);
+            using (particleEffectImage)
+            {
+                item.Composite(particleEffectImage, CompositeOperator.DstOver);
+            }
         }
 
         var output = new MemoryStream();
@@ -52,18 +51,17 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
         return new LocalAttachment(output, $"{defIndex}.png");
     }
 
-    private async ValueTask<byte[]> GetParticleEffectImageAsync(ParticleEffect effect)
+    private MagickImage? GetParticleEffectImage(ParticleEffect effect)
     {
-        const string particleEffectSource = "https://backpack.tf/images/440/particles/{0}_380x380.png";
-        
-        if (_particleEffectImages.TryGetValue(effect, out var bytes))
-            return bytes;
+        var found = _particleEffectImages.TryGetValue(effect, out var file);
+        if (!found)
+        {
+            return effect != 0
+                ? GetParticleEffectImage(0)
+                : null;
+        }
 
-        await using var scope = Bot.Services.CreateAsyncScope();
-        var attachments = scope.ServiceProvider.GetRequiredService<AttachmentService>();
-
-        using MemoryStream effectStream = await attachments.GetAttachmentAsync(string.Format(particleEffectSource, (int)effect));
-        return _particleEffectImages[effect] = effectStream.ToArray();
+        return new MagickImage(file!);
     }
 
     public Task<ItemPrices> GetItemPricesAsync() => backpack.GetItemPricesAsync(CurrencyValue.Raw);
@@ -94,6 +92,7 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
         await InitializeSchemaImagesAsync();
+        InitializeParticleEffectImages();
     }
 
     private async Task InitializeSchemaImagesAsync()
@@ -123,5 +122,20 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
         }
         
         SchemaImages = schemaImages;
+    }
+
+    private void InitializeParticleEffectImages()
+    {
+        var count = 0;
+        foreach (var path in Directory.EnumerateFiles("Data/particles", "*.png"))
+        {
+            var file = new FileInfo(path);
+            var effectId = int.Parse(file.Name.Split('_')[0]);
+            var effect = (ParticleEffect)effectId;
+            _particleEffectImages[effect] = file;
+            count++;
+        }
+        
+        Logger.LogInformation("Loaded {Count} Unusual particle effect images.", count);
     }
 }
