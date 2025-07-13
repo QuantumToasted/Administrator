@@ -16,7 +16,7 @@
       <PackageReference Include="AWSSDK.S3" Version="3.7.400.2" />
       <PackageReference Include="Backpack.Net" Version="2.0.1" />
       <PackageReference Include="Chronic.Core" Version="0.4.0" />
-      <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.77" />
+      <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.91" />
       <PackageReference Include="Laylua" Version="0.0.1-32" />
       <PackageReference Include="Magick.NET-Q16-x64" Version="13.10.0" />
       <PackageReference Include="MimeTypes" Version="2.5.2">
