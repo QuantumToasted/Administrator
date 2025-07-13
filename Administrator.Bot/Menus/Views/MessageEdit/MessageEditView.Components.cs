@@ -1,5 +1,6 @@
 ﻿using Disqord;
 using Disqord.Extensions.Interactivity.Menus;
+using Microsoft.Extensions.Logging;
 using Qommon;
 
 namespace Administrator.Bot;
@@ -85,6 +86,13 @@ public abstract partial class MessageEditView
             {
                 button.IsDisabled = true;
                 return button;
+            }
+
+            // TODO: investigate the root cause of this
+            if (_embedIndex > embeds.Count - 1)
+            {
+                Menu.Client.Logger.LogError("Embed index out of range!");
+                _embedIndex = embeds.Count - 1;
             }
 
             var embed = embeds[_embedIndex];
