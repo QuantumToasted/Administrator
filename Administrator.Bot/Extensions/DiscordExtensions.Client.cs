@@ -136,7 +136,7 @@ public static partial class DiscordExtensions
                 x.AllowedMentions = message.AllowedMentions;
                 //x.Attachments = message.Attachments.GetValueOrDefault()?.ToList() ?? new List<LocalAttachment>(); // Remove attachments, I guess
                 x.Attachments = attachments2;
-                x.Components = message.Components.GetValueOrDefault()?.ToList() ?? Optional<IEnumerable<LocalRowComponent>>.Empty;
+                x.Components = message.Components.GetValueOrDefault()?.ToList() ?? Optional<IEnumerable<LocalComponent>>.Empty;
                 x.Flags = message.Flags;
                 x.StickerIds = message.StickerIds.GetValueOrDefault()?.ToList() ?? Optional<IEnumerable<Snowflake>>.Empty;
             });
