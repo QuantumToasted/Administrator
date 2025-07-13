@@ -40,7 +40,14 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
 
         // TODO: create a new guild config????
         if (guildConfig is null)
-            throw new InvalidOperationException("Invalid guild object state.");
+        {
+            Logger.LogDebug("No guild configuration created for guild {GuildId} yet. Generating a new one.", guildId.RawValue);
+            var newGuildConfig = GuildConfiguration.Create(guildId);
+            db.Guilds.Add(newGuildConfig);
+            await db.SaveChangesAsync();
+
+            return;
+        }
 
         var dbUser = await db.Users.GetOrCreateAsync(message.Author.Id);
         dbUser.IncrementXp(XP_INCREMENT_RATE, XpGainInterval, out var globalLeveledUp);
