@@ -7,8 +7,8 @@ namespace Administrator.Bot;
 
 public sealed class GuildChunkService : DiscordBotService
 {
-    private readonly HashSet<Snowflake> _chunkedGuildIds = new();
-
+    private readonly HashSet<Snowflake> _chunkedGuildIds = [];
+    
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
