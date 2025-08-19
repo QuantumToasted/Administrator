@@ -30,7 +30,7 @@ public sealed record GuildConfiguration : IGuildConfiguration, IEntityTypeConfig
     
     public TimeSpan? CustomXpInterval { get; set; }
 
-    public string ApiKey { get; set; } = null!;
+    public string ApiKey { get; set; } = Guid.NewGuid().ToString("N");
     
     public Snowflake[] XpExemptChannelIds { get; init; } = [];
     
