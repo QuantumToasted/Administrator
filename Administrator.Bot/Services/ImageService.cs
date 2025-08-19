@@ -4,6 +4,7 @@ using Disqord;
 using Disqord.Bot;
 using Disqord.Gateway;
 using ImageMagick;
+using ImageMagick.Drawing;
 using LinqToDB;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
     public const int SCALE = 2;
     private const int XP_IMAGE_WIDTH = 450 * SCALE;
     private const int XP_IMAGE_HEIGHT = 300 * SCALE;
-    private const int XP_IMAGE_GUILD_OFFSET = 45 * SCALE;
+    private const uint XP_IMAGE_GUILD_OFFSET = 45 * SCALE;
     private const int XP_IMAGE_AVATAR_SIZE = 50 * SCALE;
     private const int XP_IMAGE_LEVEL_ICON_SIZE = 45 * SCALE;
     private const int XP_IMAGE_GUILD_ICON_SIZE = 18 * SCALE;
@@ -178,7 +179,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
         }
     }
 
-    private static MagickImage LoadEmptyImage(int width, int height)
+    private static MagickImage LoadEmptyImage(uint width, uint height)
         => new(MagickColors.Transparent, width, height);
     
     static ImageService()
@@ -213,7 +214,7 @@ public static class MagickImageExtensions
         'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'ù', 'ú', 'û', 'ü', 'ß'
     ];
     
-    public static MagickImage DrawOuterBoundingBox(this MagickImage image, int offset)
+    public static MagickImage DrawOuterBoundingBox(this MagickImage image, uint offset)
     {
         const int leftX = 10 * ImageService.SCALE;
         var topY = 190 * ImageService.SCALE - offset;
@@ -230,7 +231,7 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawAvatarBoundingBox(this MagickImage image, int offset)
+    public static MagickImage DrawAvatarBoundingBox(this MagickImage image, uint offset)
     {
         const int leftX = 385 * ImageService.SCALE;
         var topY = 215 * ImageService.SCALE - offset;
@@ -247,16 +248,16 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawAvatar(this MagickImage image, MagickImage avatar, int offset)
+    public static MagickImage DrawAvatar(this MagickImage image, MagickImage avatar, uint offset)
     {
         const int originX = 385 * ImageService.SCALE;
         var originY = 215 * ImageService.SCALE - offset;
-        image.Composite(avatar, originX, originY, CompositeOperator.Atop);
+        image.Composite(avatar, originX, (int) originY, CompositeOperator.Atop);
     
         return image;
     }
 
-    public static MagickImage DrawAvatarBoundingBoxOutline(this MagickImage image, int offset)
+    public static MagickImage DrawAvatarBoundingBoxOutline(this MagickImage image, uint offset)
     {
         const int leftX = 385 * ImageService.SCALE;
         var topY = 215 * ImageService.SCALE - offset;
@@ -276,7 +277,7 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawUsername(this MagickImage image, string username, int offset)
+    public static MagickImage DrawUsername(this MagickImage image, string username, uint offset)
     {
         const int fontSize = 20 * ImageService.SCALE;
         const int originX = 15 * ImageService.SCALE;
@@ -291,7 +292,7 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawInnerBox(this MagickImage image, int offset)
+    public static MagickImage DrawInnerBox(this MagickImage image, uint offset)
     {
         const int leftX = 75 * ImageService.SCALE;
         var topY = 272 * ImageService.SCALE - offset;
@@ -308,7 +309,7 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawCurrentXpBar(this MagickImage image, int currentXp, int nextLevelXp, int offset)
+    public static MagickImage DrawCurrentXpBar(this MagickImage image, int currentXp, int nextLevelXp, uint offset)
     {
         const int leftX = 77 * ImageService.SCALE;
         var topY = 274 * ImageService.SCALE - offset;
@@ -325,7 +326,7 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawCurrentLevelText(this MagickImage image, int tier, int level, Grade grade, int offset)
+    public static MagickImage DrawCurrentLevelText(this MagickImage image, int tier, int level, Grade grade, uint offset)
     {
         const int fontSize = 13 * ImageService.SCALE;
         const int originX = 255 * ImageService.SCALE;
@@ -341,7 +342,7 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawCurrentXpText(this MagickImage image, int totalXp, int nextLevelTotalXp, int offset)
+    public static MagickImage DrawCurrentXpText(this MagickImage image, int totalXp, int nextLevelTotalXp, uint offset)
     {
         const int fontSize = 13 * ImageService.SCALE;
         const int originX = 255 * ImageService.SCALE;
@@ -357,18 +358,18 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawCurrentLevel(this MagickImage image, MagickImage currentLevel, int offset)
+    public static MagickImage DrawCurrentLevel(this MagickImage image, MagickImage currentLevel, uint offset)
     {
         const int originX = 45 * ImageService.SCALE;
         var originY = 285 * ImageService.SCALE - offset;
         var justifiedOrigin = Justify(originX, originY, currentLevel, Gravity.South);
                 
-        image.Composite(currentLevel, justifiedOrigin.X, justifiedOrigin.Y, CompositeOperator.Atop);
+        image.Composite(currentLevel, (int) justifiedOrigin.X, (int) justifiedOrigin.Y, CompositeOperator.Atop);
         
         return image;
     }
 
-    public static MagickImage DrawCurrentGlobalPosition(this MagickImage image, int globalPosition, int offset)
+    public static MagickImage DrawCurrentGlobalPosition(this MagickImage image, int globalPosition, uint offset)
     {
         const int fontSize = 11 * ImageService.SCALE;
         const int originX = 255 * ImageService.SCALE;
@@ -469,7 +470,7 @@ public static class MagickImageExtensions
         const int originY = 292 * ImageService.SCALE;
                     
         var justifiedOrigin = Justify(originX, originY, currentGuildLevel, Gravity.South);
-        image.Composite(currentGuildLevel, justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
+        image.Composite(currentGuildLevel, (int) justifiedOrigin.X,  (int) justifiedOrigin.Y, CompositeOperator.Atop);
         
         return image;
     }
@@ -480,7 +481,7 @@ public static class MagickImageExtensions
         const int originY = 255 * ImageService.SCALE;
                     
         var justifiedOrigin = Justify(originX, originY, currentGuildIcon, Gravity.Northeast);
-        image.Composite(currentGuildIcon,  justifiedOrigin.X,  justifiedOrigin.Y, CompositeOperator.Atop);
+        image.Composite(currentGuildIcon,  (int) justifiedOrigin.X, (int) justifiedOrigin.Y, CompositeOperator.Atop);
         return image;
     }
 
@@ -500,7 +501,7 @@ public static class MagickImageExtensions
         return image;
     }
 
-    public static MagickImage DrawBlurb(this MagickImage image, string blurb, int offset)
+    public static MagickImage DrawBlurb(this MagickImage image, string blurb, uint offset)
     {
         const int fontSize = 11 * ImageService.SCALE;
         const int originX = 15 * ImageService.SCALE;
@@ -519,12 +520,12 @@ public static class MagickImageExtensions
         };
 
         using var blurbImage = new MagickImage($"caption:\"{sanitizedBlurb}\"", settings);
-        image.Composite(blurbImage,  originX,  originY, CompositeOperator.Atop);
+        image.Composite(blurbImage, originX, (int) originY, CompositeOperator.Atop);
 
         return image;
     }
     
-    private static (int X, int Y) Justify(int x, int y, MagickImage image, Gravity gravity)
+    private static (uint X, uint Y) Justify(uint x, uint y, MagickImage image, Gravity gravity)
     {
         return gravity switch
         {
