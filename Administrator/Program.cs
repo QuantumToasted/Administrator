@@ -16,7 +16,6 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Quartz;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 using SteamWebAPI2.Utilities;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -53,22 +52,12 @@ var host = new HostBuilder()
     .ConfigureAppConfiguration(config =>
     {
         config.AddJsonFile("config.json");
-        //config.AddEnvironmentVariables("ADMIN_");
     })
     .ConfigureWebHost(webHost =>
     {
         webHost.UseKestrel();
         webHost.Configure(app =>
         {
-            /*
-            app.UseSwagger();
-            app.UseSwaggerUI(x =>
-            {
-                x.SwaggerEndpoint("/swagger/v1/swagger.json", "Administrator API v1");
-                x.RoutePrefix = string.Empty;
-            });
-            */
-            
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
@@ -96,21 +85,10 @@ var host = new HostBuilder()
             x.AddSchedulerListener<AdminSchedulerListener>();
         });
         
-        /* TODO: start scheduler manually - this may not be necessary
-        services.AddQuartzHostedService(x =>
-        {
-            x.WaitForJobsToComplete = false;
-        });
-        */
-        
         services.AddSingleton<HttpClient>();
         services.AddScopedServices(typeof(AdministratorBot).Assembly);
         services.AddScoped<IPlaceholderFormatter>(x => x.GetRequiredService<DiscordPlaceholderFormatter>());
         services.AddSingleton<IClient>(x => x.GetRequiredService<DiscordBotBase>());
-        
-        // while the space saved by not serializing "null" values is neat, it's not worth the trouble.
-        //dataSourceBuilder.AddTypeResolverFactory(new CustomJsonSerializerTypeHandlerResolverFactory(
-        //    new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }));
         
         services.AddMemoryCache();
 
@@ -132,7 +110,6 @@ var host = new HostBuilder()
 
         services.AddSingleton<IDiscordEntityRequester>(x => x.GetRequiredService<AdministratorBot>());
         services.AddSingleton<IPunishmentService>(x => x.GetRequiredService<PunishmentService>());
-        //services.AddSwaggerGen();
     })
     .ConfigureDiscordBot<AdministratorBot>((context, bot) =>
     {
