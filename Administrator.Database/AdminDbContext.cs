@@ -28,8 +28,6 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options) : D
 
     public DbSet<InviteFilterExemption> InviteFilterExemptions { get; init; }
 
-    public DbSet<EmojiStats> EmojiStats { get; init; }
-
     public DbSet<RoleLevelReward> LevelRewards { get; init; }
 
     public DbSet<ButtonRole> ButtonRoles { get; init; }

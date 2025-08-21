@@ -52,8 +52,6 @@ public sealed record GuildConfiguration : IGuildConfiguration, IEntityTypeConfig
     
     public List<ButtonRole>? ButtonRoles { get; init; }
     
-    public List<EmojiStats>? EmojiStats { get; init; }
-    
     public List<ForumAutoTag>? ForumAutoTags { get; init; }
     
     public List<InviteFilterExemption>? InviteFilterExemptions { get; init; }
@@ -93,7 +91,6 @@ public sealed record GuildConfiguration : IGuildConfiguration, IEntityTypeConfig
 
         config.HasMany(x => x.LoggingChannels).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);
         config.HasMany(x => x.ButtonRoles).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);
-        config.HasMany(x => x.EmojiStats).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);
         config.HasMany(x => x.ForumAutoTags).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);
         config.HasMany(x => x.InviteFilterExemptions).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);
         config.HasMany(x => x.LuaCommands).WithOne(x => x.Guild).HasForeignKey(x => x.GuildId).OnDelete(DeleteBehavior.NoAction);

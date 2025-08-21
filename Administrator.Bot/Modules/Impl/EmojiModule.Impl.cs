@@ -42,10 +42,7 @@ public sealed partial class EmojiModule(AttachmentService attachmentService, Emo
                     .AddField("ID", guildEmoji.Id)
                     .AddField("Created", Markdown.Timestamp(guildEmoji.CreatedAt(), Markdown.TimestampFormat.RelativeTime))
                     .WithFooter("This emoji is from this server.");
-
-                var emojiStats = await db.EmojiStats.GetOrCreateAsync(Context.GuildId, guildEmoji.Id);
-                if (emojiStats.Uses > 0)
-                    embed.AddField("Times used", emojiStats.Uses.ToString("N"));
+                
                 break;
             }
             case ICustomEmoji customEmoji:

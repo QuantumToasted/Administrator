@@ -43,11 +43,6 @@ public static class DbSetExtensions
         return set.GetOrCreateAsync(m => m.GuildId == guildId && m.UserId == memberId, () => Member.Create(guildId, memberId));
     }
 
-    public static Task<EmojiStats> GetOrCreateAsync(this Microsoft.EntityFrameworkCore.DbSet<EmojiStats> set, Snowflake guildId, Snowflake emojiId)
-    {
-        return set.GetOrCreateAsync(es => es.GuildId == guildId && es.EmojiId == emojiId, () => EmojiStats.Create(guildId, emojiId));
-    }
-
     private static async Task<T> GetOrCreateAsync<T>(this Microsoft.EntityFrameworkCore.DbSet<T> set, Expression<Func<T, bool>> keyQuery, Func<T> createFactory)
         where T : class
     {
