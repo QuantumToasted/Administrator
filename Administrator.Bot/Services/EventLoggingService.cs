@@ -6,6 +6,7 @@ using Disqord;
 using Disqord.AuditLogs;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
+using Disqord.Models;
 using Disqord.Rest;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -19,54 +20,23 @@ namespace Administrator.Bot;
 
 public sealed class EventLoggingService : DiscordBotService
 {
-    private static readonly TimeSpan AttachmentStorageDuration = TimeSpan.FromMinutes(30);
     private readonly BatchEventDispatcher<Snowflake, MemberJoinedEventArgs> _memberJoinDispatcher;
     private readonly BatchEventDispatcher<Snowflake, MemberLeftEventArgs> _memberLeaveDispatcher;
-    private readonly IMemoryCache _cache;
     private readonly InviteFilterService _inviteFilter;
     private readonly AuditLogService _auditLogs;
     private readonly MessageCacheService _messageCache;
+    private readonly AttachmentServiceNew _attachments;
 
-    public EventLoggingService(IMemoryCache cache, InviteFilterService inviteFilter, AuditLogService auditLogs, MessageCacheService messageCache)
+    public EventLoggingService(InviteFilterService inviteFilter, AuditLogService auditLogs, MessageCacheService messageCache,
+        AttachmentServiceNew attachments)
     {
         _memberJoinDispatcher = new(HandleJoins);
         _memberLeaveDispatcher = new(HandleLeaves);
 
-        _cache = cache;
         _inviteFilter = inviteFilter;
         _auditLogs = auditLogs;
         _messageCache = messageCache;
-    }
-
-    protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
-    {
-        if (e.GuildId is not { } guildId)
-            return;
-
-        await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        if (await db.LoggingChannels.FindAsync(guildId, LogEventType.MessageDelete) is null)
-            return;
-
-        if (e.Message is not IUserMessage {Attachments.Count: > 0} message)
-            return;
-
-        var attachmentService = scope.ServiceProvider.GetRequiredService<AttachmentService>();
-        foreach (var attachment in message.Attachments.Take(5)) // arbitrarily stop at 5 attachments
-        {
-            try
-            {
-                if (!await attachmentService.CheckSizeAsync(attachment.Url, 8_000_000))
-                    continue;
-
-                var localAttachment = await attachmentService.GetAttachmentAsync(attachment.Url);
-                Logger.LogDebug("Caching attachment ID {Id} for {Duration}.", attachment.Id.RawValue, AttachmentStorageDuration.Humanize());
-                _cache.Set(attachment.Id, localAttachment, AttachmentStorageDuration);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(ex, "Failed to fetch attachment located at {Url}.", attachment.Url);
-            }
-        }
+        _attachments = attachments;
     }
 
     protected override async ValueTask OnMessageDeleted(MessageDeletedEventArgs e)
@@ -115,9 +85,9 @@ public sealed class EventLoggingService : DiscordBotService
 
                     foreach (var attachment in e.Message.Attachments)
                     {
-                        if (_cache.TryGetValue<AttachmentService.Attachment>(attachment.Id, out var cachedAttachment) && cachedAttachment is not null)
+                        if (_attachments.GetFromCache(attachment.Url) is { } cachedAttachment)
                         {
-                            message.AddAttachment(cachedAttachment);
+                            message.AddAttachment(cachedAttachment.ToLocalAttachment());
                         }
                     }
                 }
@@ -190,9 +160,9 @@ public sealed class EventLoggingService : DiscordBotService
         var oldContent = e.OldMessage?.Content;
         var newContent = e.NewMessage?.Content ?? e.Model.Content.GetValueOrDefault();
 
-        var oldAttachments = e.OldMessage?.Attachments.Select(x => x.Id).ToList() ?? [];
-        var newAttachments = e.NewMessage?.Attachments.Select(x => x.Id).ToList() 
-                                 ?? e.Model.Attachments.GetValueOrDefault()?.Select(x => x.Id.Value).ToList() ?? [];
+        var oldAttachments = e.OldMessage?.Attachments.Select(AttachmentReference.FromAttachment).ToList() ?? [];
+        var newAttachments = e.NewMessage?.Attachments.Select(AttachmentReference.FromAttachment).ToList() 
+                                 ?? e.Model.Attachments.GetValueOrDefault()?.Select(AttachmentReference.FromModel).ToList() ?? [];
 
         // content is unchanged
         // content is still null or whitespace
@@ -268,16 +238,16 @@ public sealed class EventLoggingService : DiscordBotService
         {
             var attachmentsRemovedBuilder = new StringBuilder();
 
-            foreach (var attachmentId in oldAttachments.Except(newAttachments))
+            foreach (var removedAttachment in oldAttachments.Except(newAttachments))
             {
-                if (_cache.TryGetValue(attachmentId, out AttachmentService.Attachment? attachment) && attachment is not null)
+                if (_attachments.GetFromCache(removedAttachment.Url) is { } attachment)
                 {
-                    message.AddAttachment(attachment);
+                    message.AddAttachment(attachment.ToLocalAttachment());
                     attachmentsRemovedBuilder.AppendNewline(Markdown.Code(attachment.FileName));
                 }
                 else
                 {
-                    attachmentsRemovedBuilder.AppendNewline(Markdown.Code(attachmentId));
+                    attachmentsRemovedBuilder.AppendNewline(Markdown.Code(removedAttachment));
                 }
             }
 
@@ -455,7 +425,6 @@ public sealed class EventLoggingService : DiscordBotService
 
         if (await db.LoggingChannels.FindAsync(e.GuildId, LogEventType.AvatarUpdate) is { } avatarLogChannel)
         {
-            var attachmentService = scope.ServiceProvider.GetRequiredService<AttachmentService>();
             var message = new LocalMessage();
             // user avatar update
             if (e.OldMember.AvatarHash != e.NewMember.AvatarHash)
@@ -469,8 +438,8 @@ public sealed class EventLoggingService : DiscordBotService
                 {
                     try
                     {
-                        var attachment = await attachmentService.GetAttachmentAsync(e.OldMember.GetAvatarUrl(CdnAssetFormat.Automatic));
-                        message.AddAttachment(new LocalAttachment(attachment.Stream, attachment.FileName));
+                        var attachment = await _attachments.GetAttachment(e.OldMember.GetAvatarUrl(CdnAssetFormat.Automatic));
+                        message.AddAttachment(attachment.ToLocalAttachment());
                         oldAvatarEmbed.WithImageUrl($"attachment://{attachment.FileName}");
                     }
                     catch
@@ -507,8 +476,8 @@ public sealed class EventLoggingService : DiscordBotService
                 {
                     try
                     {
-                        var attachment = await attachmentService.GetAttachmentAsync(e.OldMember.GetGuildAvatarUrl(CdnAssetFormat.Automatic));
-                        message.AddAttachment(new LocalAttachment(attachment.Stream, attachment.FileName));
+                        var attachment = await _attachments.GetAttachment(e.OldMember.GetGuildAvatarUrl(CdnAssetFormat.Automatic));
+                        message.AddAttachment(attachment.ToLocalAttachment());
                         oldAvatarEmbed.WithImageUrl($"attachment://{attachment.FileName}");
                     }
                     catch
@@ -701,5 +670,14 @@ public sealed class EventLoggingService : DiscordBotService
 
             return embed;
         }
+    }
+
+    private record AttachmentReference(Snowflake Id, string Url)
+    {
+        public override int GetHashCode() => Id.GetHashCode();
+        public virtual bool Equals(AttachmentReference? other) => other?.Id == Id;
+        public override string ToString() => Url;
+        public static AttachmentReference FromAttachment(IAttachment attachment) => new(attachment.Id, attachment.Url);
+        public static AttachmentReference FromModel(AttachmentJsonModel attachment) => new(attachment.Id.Value, attachment.Url);
     }
 }

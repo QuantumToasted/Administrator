@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Administrator.Bot;
 
 [ScopedService]
-public sealed class ImageService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db, EmojiService emojis)
+public sealed class ImageService(DiscordBotBase bot, AttachmentServiceNew attachments, AdminDbContext db, EmojiService emojis)
 {
     public const int SCALE = 2;
     private const int XP_IMAGE_WIDTH = 450 * SCALE;
@@ -133,8 +133,8 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
 
         try
         {
-            using var attachment = await attachments.GetAttachmentAsync(avatarUrl);
-            var image = new MagickImage(attachment.Stream.ToArray());
+            var (bytes, _) = await attachments.GetAttachment(avatarUrl);
+            var image = new MagickImage(bytes);
             image.Resize(XP_IMAGE_AVATAR_SIZE, XP_IMAGE_AVATAR_SIZE);
             return image;
         }
@@ -150,8 +150,8 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
 
         try
         {
-            using var attachment = await attachments.GetAttachmentAsync(levelEmoji.GetUrl(CdnAssetFormat.Png));
-            var image = new MagickImage(attachment.Stream.ToArray());
+            var (bytes, _) = await attachments.GetAttachment(levelEmoji.GetUrl(CdnAssetFormat.Png));
+            var image = new MagickImage(bytes);
             image.Resize(XP_IMAGE_LEVEL_ICON_SIZE / image.Height * image.Width, XP_IMAGE_LEVEL_ICON_SIZE);
             return image;
         }
@@ -168,8 +168,8 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
 
         try
         {
-            using var attachment = await attachments.GetAttachmentAsync(guild!.GetIconUrl(CdnAssetFormat.Png)!);
-            var image = new MagickImage(attachment.Stream.ToArray());
+            var (bytes, _) = await attachments.GetAttachment(guild!.GetIconUrl(CdnAssetFormat.Png)!);
+            var image = new MagickImage(bytes);
             image.Resize(XP_IMAGE_GUILD_ICON_SIZE, XP_IMAGE_GUILD_ICON_SIZE);
             return image;
         }

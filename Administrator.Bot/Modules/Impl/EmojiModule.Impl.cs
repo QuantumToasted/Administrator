@@ -7,7 +7,7 @@ using Qmmands;
 
 namespace Administrator.Bot;
 
-public sealed partial class EmojiModule(AttachmentService attachmentService, EmojiService emojiService, AdminDbContext db) : DiscordApplicationGuildModuleBase
+public sealed partial class EmojiModule(AttachmentServiceNew attachmentService, EmojiService emojiService, AdminDbContext db) : DiscordApplicationGuildModuleBase
 {
     public partial async Task<IResult> DisplayInfo(IEmoji emoji)
     {
@@ -64,11 +64,11 @@ public sealed partial class EmojiModule(AttachmentService attachmentService, Emo
     public partial async Task<IResult> Create(IAttachment image, string name)
     {
         name = name.Replace(":", "");
-        var attachment = await attachmentService.GetAttachmentAsync(image.Url);
+        var (bytes, _) = await attachmentService.GetAttachment(image);
 
         try
         {
-            var newEmoji = await Bot.CreateGuildEmojiAsync(Context.GuildId, name, attachment.Stream);
+            var newEmoji = await Bot.CreateGuildEmojiAsync(Context.GuildId, name, new MemoryStream(bytes));
             return Response($"New emoji {Markdown.Code($":{newEmoji.Name}:")} created! {newEmoji.Tag}");
         }
         catch (RestApiException ex)
@@ -85,11 +85,11 @@ public sealed partial class EmojiModule(AttachmentService attachmentService, Emo
     {
         newName ??= emoji.Name!;
         newName = newName.Replace(":", "");
-        var attachment = await attachmentService.GetAttachmentAsync(emoji.GetUrl());
+        var (bytes, _) = await attachmentService.GetAttachment(emoji.GetUrl());
 
         try
         {
-            var newEmoji = await Bot.CreateGuildEmojiAsync(Context.GuildId, newName, attachment.Stream);
+            var newEmoji = await Bot.CreateGuildEmojiAsync(Context.GuildId, newName, new MemoryStream(bytes));
             return Response($"Emoji {Markdown.Code(emoji.Tag)} cloned! New emoji: {newEmoji.Tag}");
         }
         catch (RestApiException ex)

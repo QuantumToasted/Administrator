@@ -13,7 +13,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentService attachments, LuaCommandService luaCommands, SlashCommandMentionService mentions)
+public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServiceNew attachments, LuaCommandService luaCommands, SlashCommandMentionService mentions)
     : DiscordApplicationGuildModuleBase
 {
     private const string METADATA_SEPARATOR = "-- END METADATA --";
@@ -34,9 +34,8 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
         
         await Deferral();
         
-        var (stream, _) = await attachments.GetAttachmentAsync(commandAttachment);
-        using var reader = new StreamReader(stream);
-        var raw = await reader.ReadToEndAsync();
+        var (bytes, _) = await attachments.GetAttachment(commandAttachment);
+        var raw = Encoding.Default.GetString(bytes);
         // CRLF -> LF
         raw = raw.ReplaceLineEndings("\n");
 

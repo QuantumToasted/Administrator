@@ -9,7 +9,7 @@ using Qmmands;
 
 namespace Administrator.Bot;
 
-public sealed partial class TagImportComponentModule(AdminDbContext db, SlashCommandMentionService mentions, AttachmentService attachments) : DiscordComponentGuildModuleBase
+public sealed partial class TagImportComponentModule(AdminDbContext db, SlashCommandMentionService mentions, AttachmentServiceNew attachments) : DiscordComponentGuildModuleBase
 {
     public partial async Task<IResult> Import(Snowflake channelId, Snowflake messageId, string name)
     {
@@ -51,10 +51,10 @@ public sealed partial class TagImportComponentModule(AdminDbContext db, SlashCom
         var tag = Tag.Create(Context.Author, name);
         tag.Message = JsonMessage.FromMessage(response);
 
-        if (attachment is not null && await attachments.GetAttachmentAsync(attachment.Url) is var fetchedAttachment)
+        if (attachment is not null && await attachments.GetAttachment(attachment) is var fetchedAttachment)
         {
             var tagAttachment = RemoteAttachment.Create(fetchedAttachment.FileName);
-            if (await tagAttachment.UploadAsync(Bot, fetchedAttachment.Stream.ToArray()))
+            if (await tagAttachment.UploadAsync(Bot, fetchedAttachment.Data))
             {
                 tag.Attachment = tagAttachment;
             }

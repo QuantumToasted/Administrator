@@ -17,7 +17,7 @@ public enum MoveDirection
     Below
 }
 
-public sealed partial class RoleModule(AttachmentService attachmentService) : DiscordApplicationGuildModuleBase
+public sealed partial class RoleModule(AttachmentServiceNew attachmentService) : DiscordApplicationGuildModuleBase
 {
     public partial IResult Info(IRole role)
         => Response(FormatRoleInfo(role));
@@ -182,8 +182,8 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
     {
         await Deferral();
 
-        var attachment = icon is not null
-            ? await attachmentService.GetAttachmentAsync(icon)
+        AttachmentServiceNew.CachedAttachment? attachment = icon is not null
+            ? await attachmentService.GetAttachment(icon)
             : null;
 
         IRole newRole;
@@ -196,8 +196,8 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
                 x.IsHoisted = hoisted;
                 x.IsMentionable = mentionable;
 
-                if (attachment is not null)
-                    x.Icon = attachment.Stream;
+                if (attachment.HasValue)
+                    x.Icon = new MemoryStream(attachment.Value.Data);
             });
         }
         catch (RestApiException ex) when (ex.Message.Contains("boosts")) // This server needs more boosts to perform this action
@@ -215,8 +215,8 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
     {
         await Deferral();
 
-        var attachment = !string.IsNullOrWhiteSpace(role.IconHash)
-            ? await attachmentService.GetAttachmentAsync(role.GetIconUrl()!)
+        AttachmentServiceNew.CachedAttachment? attachment = !string.IsNullOrWhiteSpace(role.IconHash)
+            ? await attachmentService.GetAttachment(role.GetIconUrl()!)
             : null;
 
         var newRole = await Bot.CreateRoleAsync(Context.GuildId, x =>
@@ -227,8 +227,8 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
             x.IsMentionable = role.IsMentionable;
             x.Permissions = role.Permissions;
 
-            if (attachment is not null)
-                x.Icon = attachment.Stream;
+            if (attachment.HasValue)
+                x.Icon = new MemoryStream(attachment.Value.Data);
 
             if (role.UnicodeEmoji is not null)
                 x.UnicodeEmoji = LocalEmoji.FromEmoji(role.UnicodeEmoji)!;

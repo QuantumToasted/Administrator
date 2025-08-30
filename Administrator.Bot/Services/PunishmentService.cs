@@ -10,18 +10,16 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Disqord.Rest.Api;
 using Humanizer;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Qommon;
-using Quartz;
 using IBan = Administrator.Core.IBan;
 using Timeout = Administrator.Database.Timeout;
 
 namespace Administrator.Bot;
 
 [ScopedService]
-public sealed class PunishmentService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db, 
+public sealed class PunishmentService(DiscordBotBase bot, AttachmentServiceNew attachments, AdminDbContext db, 
     QuartzService quartz, ILogger<PunishmentService> logger) : IPunishmentService
 {
     // TODO: Make these configurable?
@@ -327,10 +325,10 @@ public sealed class PunishmentService(DiscordBotBase bot, AttachmentService atta
     public async Task<Result<TPunishment>> ProcessPunishmentAsync<TPunishment>(TPunishment punishment, IAttachment? attachment, bool alreadyApplied = false)
         where TPunishment : Punishment
     {
-        if (attachment is not null && await attachments.GetAttachmentAsync(attachment) is var (stream, fileName))
+        if (attachment is not null && await attachments.GetAttachment(attachment) is var (bytes, fileName))
         {
             var punishmentAttachment = RemoteAttachment.Create(fileName);
-            if (await punishmentAttachment.UploadAsync(bot, stream.ToArray()))
+            if (await punishmentAttachment.UploadAsync(bot, bytes))
             {
                 punishment.Attachment = punishmentAttachment;
             }
