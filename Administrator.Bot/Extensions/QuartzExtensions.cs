@@ -7,6 +7,14 @@ namespace Administrator.Bot;
 
 public static class QuartzExtensions
 {
+    public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob>(this IScheduler scheduler, TimeSpan interval)
+        where TJob : IAdminJob<TJob>
+    {
+        var jobDetail = JobBuilder.Create<TJob>().WithIdentity(TJob.FormatJobKey()).Build();
+        var trigger = TriggerBuilder.Create().WithIdentity(TJob.FormatTriggerKey(DateTimeOffset.UtcNow)).WithSimpleSchedule(x => x.WithInterval(interval).RepeatForever()).Build();
+        return scheduler.ScheduleJob(jobDetail, trigger);
+    }
+
     public static ValueTask ScheduleAdminJobs<TJob, TEntity>(this IScheduler scheduler, IEnumerable<(TEntity Entity, DateTimeOffset StartAt)> entities)
         where TJob : IAdminJob<TJob, TEntity> 
         where TEntity : class, IKeyedEntity<int>

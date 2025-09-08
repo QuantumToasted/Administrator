@@ -1,5 +1,6 @@
 ﻿using Disqord;
 using Disqord.Bot.Commands;
+using Humanizer.Bytes;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -13,19 +14,26 @@ public enum FileSizeMeasure : long
 
 public class MaximumAttachmentSizeAttribute(double value, FileSizeMeasure measure) : DiscordParameterCheckAttribute
 {
-    private static AttachmentService? _attachmentService;
+    private static AttachmentServiceNew? _attachments;
 
     public override bool CanCheck(IParameter parameter, object? value)
         => value is IAttachment;
 
     public override async ValueTask<IResult> CheckAsync(IDiscordCommandContext context, IParameter parameter, object? argument)
     {
-        _attachmentService ??= context.Services.GetRequiredService<AttachmentService>();
+        _attachments ??= context.Services.GetRequiredService<AttachmentServiceNew>();
 
         var attachment = (IAttachment) argument!;
-        var sizeInBytes = (long)(value * (long)measure);
-        if (!await _attachmentService.CheckSizeAsync(attachment.Url, sizeInBytes))
-            return Results.Failure($"The provided file must be {value:F}{measure} or smaller in size.");
+        var size = measure switch
+        {
+            FileSizeMeasure.KB => ByteSize.FromKilobytes(value),
+            FileSizeMeasure.MB => ByteSize.FromMegabytes(value),
+            _ => throw new ArgumentOutOfRangeException(nameof(measure), measure, null)
+        };
+        
+        var cachedAttachment = await _attachments.GetAttachment(attachment);
+        if (cachedAttachment.Size > size)
+            return Results.Failure($"The provided file must be {size} or smaller in size.");
 
         return Results.Success;
     }

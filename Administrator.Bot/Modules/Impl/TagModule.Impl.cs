@@ -11,7 +11,7 @@ using Qommon.Metadata;
 
 namespace Administrator.Bot;
 
-public sealed partial class TagModule(AdminDbContext db, AttachmentService attachments, SlashCommandMentionService mentions)
+public sealed partial class TagModule(AdminDbContext db, AttachmentServiceNew attachments, SlashCommandMentionService mentions)
     : DiscordApplicationGuildModuleBase
 {
     private List<Tag>? _autoCompleteTags;
@@ -65,10 +65,10 @@ public sealed partial class TagModule(AdminDbContext db, AttachmentService attac
         var tag = Tag.Create(Context.Author, name);
         tag.Message = JsonMessage.FromMessage(response);
         
-        if (attachment is not null && await attachments.GetAttachmentAsync(attachment.Url) is var fetchedAttachment)
+        if (attachment is not null && await attachments.GetAttachment(attachment) is var fetchedAttachment)
         {
             var tagAttachment = RemoteAttachment.Create(fetchedAttachment.FileName);
-            if (await tagAttachment.UploadAsync(Bot, fetchedAttachment.Stream.ToArray()))
+            if (await tagAttachment.UploadAsync(Bot, fetchedAttachment.Data))
             {
                 tag.Attachment = tagAttachment;
             }

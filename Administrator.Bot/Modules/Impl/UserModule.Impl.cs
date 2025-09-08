@@ -11,7 +11,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class UserModule(AttachmentService attachments) : DiscordApplicationModuleBase
+public sealed partial class UserModule(AttachmentServiceNew attachments) : DiscordApplicationModuleBase
 {
     public partial async Task<IResult> Info(IUser? user)
     {
@@ -84,10 +84,10 @@ public sealed partial class UserModule(AttachmentService attachments) : DiscordA
             ? "Your"
             : $"{member.Mention}'s";
 
-        var (stream, fileName) = await attachments.GetAttachmentAsync(avatarUrl);
+        var attachment = await attachments.GetAttachment(avatarUrl);
         return Response(new LocalInteractionMessageResponse()
             .WithContent($"{target} server avatar:")
-            .AddAttachment(new LocalAttachment(stream, fileName))
+            .AddAttachment(attachment.ToLocalAttachment())
             .WithAllowedMentions(LocalAllowedMentions.None));
     }
 
@@ -100,10 +100,10 @@ public sealed partial class UserModule(AttachmentService attachments) : DiscordA
             ? "Your"
             : $"{user.Mention}'s";
 
-        var (stream, fileName) = await attachments.GetAttachmentAsync(user.GetAvatarUrl(CdnAssetFormat.Automatic, size: 1024));
+        var attachment = await attachments.GetAttachment(user.GetAvatarUrl(CdnAssetFormat.Automatic, size: 1024));
         return Response(new LocalInteractionMessageResponse()
             .WithContent($"{target} global avatar:")
-            .AddAttachment(new LocalAttachment(stream, fileName))
+            .AddAttachment(attachment.ToLocalAttachment())
             .WithAllowedMentions(LocalAllowedMentions.None));
     }
 

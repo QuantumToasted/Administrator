@@ -10,7 +10,7 @@ using SteamWebAPI2.Utilities;
 
 namespace Administrator.Bot;
 
-public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceFactory factory, HttpClient http) : DiscordBotService
+public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceFactory factory, HttpClient http, AttachmentServiceNew attachments) : DiscordBotService
 {
     private readonly EconItems _econItems = factory.CreateSteamWebInterface<EconItems>(AppId.TeamFortress2, http);
     private readonly ConcurrentDictionary<ParticleEffect, FileInfo> _particleEffectImages = new();
@@ -30,22 +30,21 @@ public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceF
     public async Task<LocalAttachment> GetItemImageAsync(int defIndex, ParticleEffect? effect)
     {
         await using var scope = Bot.Services.CreateAsyncScope();
-        var attachments = scope.ServiceProvider.GetRequiredService<AttachmentService>();
 
-        using MemoryStream itemStream = await attachments.GetAttachmentAsync(SchemaImages[defIndex]);
-        using var item = new MagickImage(itemStream);
-        item.Resize(380, 380);
+        var item = await attachments.GetAttachment(SchemaImages[defIndex]);
+        using var itemImage = new MagickImage(item.Data);
+        itemImage.Resize(380, 380);
 
         if (effect.HasValue && GetParticleEffectImage(effect.Value) is { } particleEffectImage)
         {
             using (particleEffectImage)
             {
-                item.Composite(particleEffectImage, CompositeOperator.DstOver);
+                itemImage.Composite(particleEffectImage, CompositeOperator.DstOver);
             }
         }
 
         var output = new MemoryStream();
-        await item.WriteAsync(output, MagickFormat.Png);
+        await itemImage.WriteAsync(output, MagickFormat.Png);
         output.Seek(0, SeekOrigin.Begin);
 
         return new LocalAttachment(output, $"{defIndex}.png");

@@ -58,6 +58,8 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
             JobBuilder.Create<BackpackUpdateJob>().WithIdentity(Guid.NewGuid().ToString(), nameof(BackpackUpdateJob)).Build(),
             TriggerBuilder.Create().StartNow().WithSchedule(SimpleScheduleBuilder.Create().WithIntervalInMinutes(30).RepeatForever()).Build(),
             Bot.StoppingToken);
+
+        await scheduler.ScheduleAdminJob<AttachmentCleanupJob>(TimeSpan.FromMinutes(1));
         
         // TODO: Schedule other jobs
 
