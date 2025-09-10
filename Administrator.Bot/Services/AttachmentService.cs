@@ -7,12 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;
 
-public sealed class AttachmentServiceNew(HttpClient http) : DiscordBotService
+public sealed class AttachmentService(HttpClient http) : DiscordBotService
 {
     private readonly ConcurrentDictionary<string, CachedAttachment> _attachments = new();
-
-    public CachedAttachment? GetFromCache(IAttachment attachment)
-        => GetFromCache(new Uri(attachment.Url).GetLeftPart(UriPartial.Path));
     
     public CachedAttachment? GetFromCache(string url)
         => _attachments.GetValueOrDefault(url);

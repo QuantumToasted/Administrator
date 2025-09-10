@@ -9,7 +9,7 @@ using Qmmands;
 
 namespace Administrator.Bot;
 
-public sealed partial class TagImportComponentModule(AdminDbContext db, SlashCommandMentionService mentions, AttachmentServiceNew attachments) : DiscordComponentGuildModuleBase
+public sealed partial class TagImportComponentModule(AdminDbContext db, SlashCommandMentionService mentions, AttachmentService attachments) : DiscordComponentGuildModuleBase
 {
     public partial async Task<IResult> Import(Snowflake channelId, Snowflake messageId, string name)
     {

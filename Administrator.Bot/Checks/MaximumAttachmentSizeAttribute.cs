@@ -14,14 +14,14 @@ public enum FileSizeMeasure : long
 
 public class MaximumAttachmentSizeAttribute(double value, FileSizeMeasure measure) : DiscordParameterCheckAttribute
 {
-    private static AttachmentServiceNew? _attachments;
+    private static AttachmentService? _attachments;
 
     public override bool CanCheck(IParameter parameter, object? value)
         => value is IAttachment;
 
     public override async ValueTask<IResult> CheckAsync(IDiscordCommandContext context, IParameter parameter, object? argument)
     {
-        _attachments ??= context.Services.GetRequiredService<AttachmentServiceNew>();
+        _attachments ??= context.Services.GetRequiredService<AttachmentService>();
 
         var attachment = (IAttachment) argument!;
         var size = measure switch

@@ -13,7 +13,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServiceNew attachments, LuaCommandService luaCommands, SlashCommandMentionService mentions)
+public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentService attachments, LuaCommandService luaCommands, SlashCommandMentionService mentions)
     : DiscordApplicationGuildModuleBase
 {
     private const string METADATA_SEPARATOR = "-- END METADATA --";

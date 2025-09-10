@@ -10,7 +10,7 @@ using SteamWebAPI2.Utilities;
 
 namespace Administrator.Bot;
 
-public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceFactory factory, HttpClient http, AttachmentServiceNew attachments) : DiscordBotService
+public sealed class BackpackService(BackpackClient backpack, ISteamWebInterfaceFactory factory, HttpClient http, AttachmentService attachments) : DiscordBotService
 {
     private readonly EconItems _econItems = factory.CreateSteamWebInterface<EconItems>(AppId.TeamFortress2, http);
     private readonly ConcurrentDictionary<ParticleEffect, FileInfo> _particleEffectImages = new();

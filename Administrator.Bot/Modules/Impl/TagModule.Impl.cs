@@ -11,7 +11,7 @@ using Qommon.Metadata;
 
 namespace Administrator.Bot;
 
-public sealed partial class TagModule(AdminDbContext db, AttachmentServiceNew attachments, SlashCommandMentionService mentions)
+public sealed partial class TagModule(AdminDbContext db, AttachmentService attachments, SlashCommandMentionService mentions)
     : DiscordApplicationGuildModuleBase
 {
     private List<Tag>? _autoCompleteTags;

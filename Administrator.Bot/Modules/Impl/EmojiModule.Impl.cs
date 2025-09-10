@@ -7,7 +7,7 @@ using Qmmands;
 
 namespace Administrator.Bot;
 
-public sealed partial class EmojiModule(AttachmentServiceNew attachmentService, EmojiService emojiService, AdminDbContext db) : DiscordApplicationGuildModuleBase
+public sealed partial class EmojiModule(AttachmentService attachmentService, EmojiService emojiService, AdminDbContext db) : DiscordApplicationGuildModuleBase
 {
     public partial async Task<IResult> DisplayInfo(IEmoji emoji)
     {

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Administrator.Bot;
 
 [ScopedService]
-public sealed class ImageService(DiscordBotBase bot, AttachmentServiceNew attachments, AdminDbContext db, EmojiService emojis)
+public sealed class ImageService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db, EmojiService emojis)
 {
     public const int SCALE = 2;
     private const int XP_IMAGE_WIDTH = 450 * SCALE;

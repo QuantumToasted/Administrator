@@ -25,10 +25,10 @@ public sealed class EventLoggingService : DiscordBotService
     private readonly InviteFilterService _inviteFilter;
     private readonly AuditLogService _auditLogs;
     private readonly MessageCacheService _messageCache;
-    private readonly AttachmentServiceNew _attachments;
+    private readonly AttachmentService _attachments;
 
     public EventLoggingService(InviteFilterService inviteFilter, AuditLogService auditLogs, MessageCacheService messageCache,
-        AttachmentServiceNew attachments)
+        AttachmentService attachments)
     {
         _memberJoinDispatcher = new(HandleJoins);
         _memberLeaveDispatcher = new(HandleLeaves);

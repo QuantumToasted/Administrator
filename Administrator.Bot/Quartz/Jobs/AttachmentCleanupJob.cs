@@ -3,7 +3,7 @@ using Quartz;
 
 namespace Administrator.Bot.Jobs;
 
-public sealed class AttachmentCleanupJob(AttachmentServiceNew attachments, ILogger<AttachmentCleanupJob> logger) : IAdminJob<AttachmentCleanupJob>
+public sealed class AttachmentCleanupJob(AttachmentService attachments, ILogger<AttachmentCleanupJob> logger) : IAdminJob<AttachmentCleanupJob>
 {
     public ValueTask Execute(IJobExecutionContext context)
     {

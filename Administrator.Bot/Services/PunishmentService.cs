@@ -19,7 +19,7 @@ using Timeout = Administrator.Database.Timeout;
 namespace Administrator.Bot;
 
 [ScopedService]
-public sealed class PunishmentService(DiscordBotBase bot, AttachmentServiceNew attachments, AdminDbContext db, 
+public sealed class PunishmentService(DiscordBotBase bot, AttachmentService attachments, AdminDbContext db, 
     QuartzService quartz, ILogger<PunishmentService> logger) : IPunishmentService
 {
     // TODO: Make these configurable?

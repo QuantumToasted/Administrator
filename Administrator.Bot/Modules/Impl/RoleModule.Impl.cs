@@ -17,7 +17,7 @@ public enum MoveDirection
     Below
 }
 
-public sealed partial class RoleModule(AttachmentServiceNew attachmentService) : DiscordApplicationGuildModuleBase
+public sealed partial class RoleModule(AttachmentService attachmentService) : DiscordApplicationGuildModuleBase
 {
     public partial IResult Info(IRole role)
         => Response(FormatRoleInfo(role));
@@ -182,7 +182,7 @@ public sealed partial class RoleModule(AttachmentServiceNew attachmentService) :
     {
         await Deferral();
 
-        AttachmentServiceNew.CachedAttachment? attachment = icon is not null
+        AttachmentService.CachedAttachment? attachment = icon is not null
             ? await attachmentService.GetAttachment(icon)
             : null;
 
@@ -215,7 +215,7 @@ public sealed partial class RoleModule(AttachmentServiceNew attachmentService) :
     {
         await Deferral();
 
-        AttachmentServiceNew.CachedAttachment? attachment = !string.IsNullOrWhiteSpace(role.IconHash)
+        AttachmentService.CachedAttachment? attachment = !string.IsNullOrWhiteSpace(role.IconHash)
             ? await attachmentService.GetAttachment(role.GetIconUrl()!)
             : null;
 

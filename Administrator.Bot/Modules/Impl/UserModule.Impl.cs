@@ -11,7 +11,7 @@ using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed partial class UserModule(AttachmentServiceNew attachments) : DiscordApplicationModuleBase
+public sealed partial class UserModule(AttachmentService attachments) : DiscordApplicationModuleBase
 {
     public partial async Task<IResult> Info(IUser? user)
     {
