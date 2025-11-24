@@ -1,6 +1,6 @@
 ﻿using Disqord;
 using Disqord.Bot.Commands;
-using Humanizer.Bytes;
+using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 

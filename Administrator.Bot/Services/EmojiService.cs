@@ -2,10 +2,8 @@
 using System.Drawing.Imaging;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;
-using Disqord.Gateway;
 using Disqord.Models;
 using Disqord.Rest;
 using Disqord.Rest.Api;

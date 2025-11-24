@@ -5,7 +5,6 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Disqord.Rest.Api;
 using Humanizer;
-using Humanizer.Localisation;
 using Qmmands;
 
 namespace Administrator.Bot;

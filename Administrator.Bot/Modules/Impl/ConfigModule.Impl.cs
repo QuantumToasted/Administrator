@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
 using System.Text;
-using Administrator.Bot.AutoComplete;
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;
@@ -8,14 +7,10 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Humanizer;
-using Humanizer.Localisation;
 using LinqToDB;
-using LinqToDB.Async;
 using LinqToDB.DataProvider.PostgreSQL;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Npgsql;
 using Qmmands;
 
 namespace Administrator.Bot;

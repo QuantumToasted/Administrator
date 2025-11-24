@@ -7,9 +7,7 @@ using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Http;
 using Disqord.Rest;
-using Disqord.Utilities.Threading;
 using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Qommon;
 

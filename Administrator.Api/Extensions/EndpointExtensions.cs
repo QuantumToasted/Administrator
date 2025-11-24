@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Administrator.Core;
+﻿using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Microsoft.AspNetCore.Builder;

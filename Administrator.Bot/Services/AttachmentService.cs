@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using Administrator.Core;
 using Disqord;
 using Disqord.Bot.Hosting;
-using Humanizer.Bytes;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;

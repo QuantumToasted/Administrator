@@ -2,8 +2,6 @@
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;
-using Disqord.Bot;
-using Disqord.Extensions.Interactivity.Menus;
 using Humanizer;
 
 namespace Administrator.Bot;

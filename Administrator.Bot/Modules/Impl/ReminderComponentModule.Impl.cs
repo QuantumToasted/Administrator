@@ -6,7 +6,6 @@ using Disqord.Bot.Commands.Components;
 using Disqord.Rest;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
-using Qommon;
 using Quartz;
 
 namespace Administrator.Bot;

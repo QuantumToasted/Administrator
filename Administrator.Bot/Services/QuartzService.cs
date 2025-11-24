@@ -1,4 +1,3 @@
-using System.Collections;
 using Administrator.Bot.Jobs;
 using Administrator.Core;
 using Administrator.Database;
@@ -7,7 +6,6 @@ using LinqToDB;
 using Microsoft.Extensions.Logging;
 using Qommon;
 using Quartz;
-using Quartz.Impl.Triggers;
 using Timeout = Administrator.Database.Timeout;
 
 namespace Administrator.Bot;

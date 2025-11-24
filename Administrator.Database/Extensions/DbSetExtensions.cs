@@ -3,9 +3,7 @@ using System.Linq.Expressions;
 using Administrator.Core;
 using Disqord;
 using LinqToDB;
-using LinqToDB.DataProvider.PostgreSQL;
 using LinqToDB.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Qommon.Threading;
 

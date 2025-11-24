@@ -1,8 +1,5 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using Administrator.Core;
+﻿using Administrator.Core;
 using Administrator.Database;
-using Qommon;
 
 namespace Administrator.Bot;
 

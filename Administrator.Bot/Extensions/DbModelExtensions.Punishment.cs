@@ -7,11 +7,9 @@ using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
-using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Qommon;
 using Timeout = Administrator.Database.Timeout;
 
 namespace Administrator.Bot;
