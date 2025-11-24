@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Text;
+﻿using System.Text;
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;
@@ -8,10 +7,6 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Disqord.Models;
 using Disqord.Rest;
-using Humanizer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Qommon;
 using StringExtensions = Administrator.Core.StringExtensions;
@@ -43,11 +38,107 @@ public sealed class EventLoggingService : DiscordBotService
     {
         if (e.GuildId is not { } guildId)
             return;
+        
+        var auditLogTask = _auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(guildId,
+            x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x is { Count: 1, ActorId: not null }, TimeSpan.FromSeconds(1));
+        
+        var message = MessageCacheService.Message.FromMessage(e.Message) ?? _messageCache.GetMessage(e.ChannelId, e.MessageId);
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
-        if (await db.LoggingChannels.FindAsync(guildId, LogEventType.MessageDelete) is not { } logChannel)
+        var settings = await db.Guilds.GetValueOrDefault(guildId, g => g.Settings);
+        if (await db.LoggingChannels.FindAsync(guildId, LogEventType.MessageDelete) is not { } logChannel ||
+            settings.HasFlag(GuildSettings.IgnoreBotMessages) && message?.Author.IsBot == true)
+        {
             return;
+        }
 
+        var logMessage = new LocalMessage().WithAllowedMentions(LocalAllowedMentions.None);
+
+        var container = LocalComponent.Container(Colors.Collectors);
+        if (message is { Id: var id, Author: var author, Content: var content, Attachments: var attachments })
+        {
+            container
+                .AddComponent(
+                    LocalComponent.Section(
+                        LocalComponent.Thumbnail(author.GetAvatarUrl(CdnAssetFormat.WebP, 128)),
+                        LocalComponent.TextDisplay($"Message by {author.Format()} deleted in {Mention.Channel(e.ChannelId)}")))
+                .AddComponent(LocalComponent.Separator())
+                .AddComponent(LocalComponent.TextDisplay(
+                    !string.IsNullOrWhiteSpace(content)
+                        ? content
+                        : Markdown.Italics("This message had no content.")))
+                .AddComponent(LocalComponent.Separator())
+                .AddComponent(LocalComponent.Section(
+                    LocalComponent.Button($"DumpId:{id}", "Get ID"),
+                    LocalComponent.TextDisplay($"Message ID: {Markdown.Code(id)}")))
+                .AddComponent(LocalComponent.Section(
+                    LocalComponent.Button($"DumpId:{e.ChannelId}", "Get ID"),
+                    LocalComponent.TextDisplay($"Channel ID: {Markdown.Code(e.ChannelId)}")))
+                .AddComponent(LocalComponent.Section(
+                    LocalComponent.Button($"DumpId:{author.Id}", "Get ID"),
+                    LocalComponent.TextDisplay($"Author ID: {Markdown.Code(author.Id)}")));
+
+            if (attachments is not null)
+            {
+                var gallery = LocalComponent.MediaGallery();
+                foreach (var attachment in attachments)
+                {
+                    if (_attachments.GetFromCache(attachment) is not { } foundAttachment) 
+                        continue;
+
+                    // ReSharper disable once MergeIntoPattern
+                    if (gallery.Items.HasValue && gallery.Items.Value.Count >= 5)
+                        continue;
+                    
+                    logMessage.AddAttachment(foundAttachment.ToLocalAttachment());
+                    gallery.AddItem(new LocalMediaGalleryItem().WithMedia(foundAttachment.ToString()));
+                }
+
+                container
+                    .AddComponent(LocalComponent.Separator())
+                    .AddComponent(LocalComponent.TextDisplay($"Attachments:\n{string.Join(", ", attachments.Select(x => x.FileName))}"));
+                
+                // ReSharper disable once MergeIntoPattern
+                if (gallery.Items.HasValue && gallery.Items.Value.Count > 0)
+                    container.AddComponent(gallery);
+            }
+
+            // ReSharper disable once MergeIntoPattern
+            if (auditLogTask.IsCompletedSuccessfully && auditLogTask.Result is { } log &&
+                (log.Actor ?? Bot.GetUser(log.ActorId!.Value)) is { } actor)
+            {
+                container
+                    .AddComponent(LocalComponent.Separator())
+                    .AddComponent(LocalComponent.TextDisplay($"Most likely responsible moderator: {actor.Format()}"));
+                //embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actor.Id)})");
+            }
+            
+            container
+                .AddComponent(LocalComponent.Separator())
+                .AddComponent(LocalComponent.Row(
+                    LocalComponent.LinkButton(Discord.MessageJumpLink(guildId, e.ChannelId, e.MessageId), "Jump to message location")));
+        }
+        else
+        {
+            container
+                .AddComponent(LocalComponent.Section(
+                        LocalComponent.LinkButton(Discord.MessageJumpLink(guildId, e.ChannelId, e.MessageId), "Jump to message location"),
+                        LocalComponent.TextDisplay($"Message {Markdown.Code(e.MessageId)} deleted in {Mention.Channel(e.ChannelId)}")))
+                .AddComponent(LocalComponent.Separator())
+                .AddComponent(LocalComponent.TextDisplay(Markdown.Italics("This message was not cached, so detailed information is not available.")));
+        }
+        
+        try
+        {
+            await Bot.SendMessageAsync(logChannel.ChannelId, logMessage.AddComponent(container));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to log message {MessageId}'s deletion to channel {ChannelId} in guild {GuildId}.",
+                e.MessageId.RawValue, e.ChannelId.RawValue, guildId.RawValue);
+        }
+
+        /*
         _ = Task.Run(async () =>
         {
             var message = new LocalMessage()
@@ -105,10 +196,6 @@ public sealed class EventLoggingService : DiscordBotService
                 embed.WithFooter("This message was not cached, so no content can be displayed.");
             }
 
-            /*
-            var log = auditLogs.GetAuditLog<IMessagesDeletedAuditLog>(guildId,
-                x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x is { Count: 1, ActorId: not null });
-            */
 
             var log = await _auditLogs.WaitForAuditLogAsync<IMessagesDeletedAuditLog>(guildId,
                 x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x is { Count: 1, ActorId: not null }, TimeSpan.FromSeconds(1));
@@ -117,15 +204,6 @@ public sealed class EventLoggingService : DiscordBotService
             {
                 embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actor.Id)})");
             }
-
-            /*
-            if (auditLogs.GetAuditLog<IMessagesDeletedAuditLog>(guildId,
-                    x => x.Id >= e.MessageId && x.ChannelId == e.ChannelId && x.Count == 1) is { ActorId: { } actorId } log &&
-                (log.Actor ?? Bot.GetUser(actorId)) is { } actor)
-            {
-                embed.AddField("Most likely responsible moderator", $"{actor.Tag} ({Markdown.Bold(actorId)})");
-            }
-            */
 
             if (_inviteFilter.DeletedMessageIds.Remove(e.MessageId))
             {
@@ -150,6 +228,7 @@ public sealed class EventLoggingService : DiscordBotService
                     e.MessageId.RawValue, e.ChannelId.RawValue, guildId.RawValue);
             }
         });
+        */
     }
 
     protected override async ValueTask OnMessageUpdated(MessageUpdatedEventArgs e)

@@ -182,7 +182,7 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
     {
         await Deferral();
 
-        AttachmentService.CachedAttachment? attachment = icon is not null
+        var attachment = icon is not null
             ? await attachmentService.GetAttachment(icon)
             : null;
 
@@ -196,8 +196,8 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
                 x.IsHoisted = hoisted;
                 x.IsMentionable = mentionable;
 
-                if (attachment.HasValue)
-                    x.Icon = new MemoryStream(attachment.Value.Data);
+                if (attachment is not null)
+                    x.Icon = new MemoryStream(attachment.Data);
             });
         }
         catch (RestApiException ex) when (ex.Message.Contains("boosts")) // This server needs more boosts to perform this action
@@ -215,7 +215,7 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
     {
         await Deferral();
 
-        AttachmentService.CachedAttachment? attachment = !string.IsNullOrWhiteSpace(role.IconHash)
+        var attachment = !string.IsNullOrWhiteSpace(role.IconHash)
             ? await attachmentService.GetAttachment(role.GetIconUrl()!)
             : null;
 
@@ -227,8 +227,8 @@ public sealed partial class RoleModule(AttachmentService attachmentService) : Di
             x.IsMentionable = role.IsMentionable;
             x.Permissions = role.Permissions;
 
-            if (attachment.HasValue)
-                x.Icon = new MemoryStream(attachment.Value.Data);
+            if (attachment is not null)
+                x.Icon = new MemoryStream(attachment.Data);
 
             if (role.UnicodeEmoji is not null)
                 x.UnicodeEmoji = LocalEmoji.FromEmoji(role.UnicodeEmoji)!;

@@ -25,7 +25,7 @@ public sealed class MessageCacheService(IOptions<AdministratorCacheConfiguration
             return ValueTask.CompletedTask;
         
         var cache = Cache.GetOrAdd(e.ChannelId, static _ => CreateCache<Snowflake, Message>());
-        cache[e.MessageId] = new Message(message.Id, e.Message.Author, message.Content);
+        cache[e.MessageId] = new Message(message.Id, e.Message.Author, message.Content, message.Attachments);
         return ValueTask.CompletedTask;
     }
 
@@ -41,7 +41,7 @@ public sealed class MessageCacheService(IOptions<AdministratorCacheConfiguration
         }
         
         var cache = Cache.GetOrAdd(e.ChannelId, static _ => CreateCache<Snowflake, Message>());
-        cache.AddOrUpdate(e.MessageId, new Message(e.MessageId, author, content), (_, msg) => msg with { Content = content });
+        cache.AddOrUpdate(e.MessageId, new Message(e.MessageId, author, content, null), (_, msg) => msg with { Content = content });
         return ValueTask.CompletedTask;
     }
 
@@ -78,5 +78,14 @@ public sealed class MessageCacheService(IOptions<AdministratorCacheConfiguration
     private static ThreadSafeDictionary<TKey, TValue> CreateCache<TKey, TValue>() where TKey : notnull
         => ThreadSafeDictionary.Monitor.Create<TKey, TValue>();
 
-    public sealed record Message(Snowflake Id, IUser Author, string Content);
+    public sealed record Message(Snowflake Id, IUser Author, string Content, IReadOnlyList<IAttachment>? Attachments)
+    {
+        public static Message? FromMessage(IMessage? message)
+        {
+            if (message is null)
+                return null;
+
+            return new(message.Id, message.Author, message.Content, (message as IUserMessage)?.Attachments);
+        }
+    }
 }

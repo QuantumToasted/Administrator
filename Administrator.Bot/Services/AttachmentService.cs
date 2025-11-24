@@ -10,6 +10,9 @@ namespace Administrator.Bot;
 public sealed class AttachmentService(HttpClient http) : DiscordBotService
 {
     private readonly ConcurrentDictionary<string, CachedAttachment> _attachments = new();
+
+    public CachedAttachment? GetFromCache(IAttachment attachment)
+        => GetFromCache(new Uri(attachment.Url).GetLeftPart(UriPartial.Path));
     
     public CachedAttachment? GetFromCache(string url)
         => _attachments.GetValueOrDefault(url);
@@ -42,7 +45,7 @@ public sealed class AttachmentService(HttpClient http) : DiscordBotService
         var newAttachment = new CachedAttachment(data, $"{filename}{extension}");
 
         if (keep)
-            _attachments[url] = newAttachment;
+            _attachments[ignoreQueryOnLookup ? new Uri(url).GetLeftPart(UriPartial.Path) : url] = newAttachment;
 
         return newAttachment;
     }
@@ -89,7 +92,7 @@ public sealed class AttachmentService(HttpClient http) : DiscordBotService
             Logger.LogDebug("Cached {Count} new message attachments: {Ids}", cachedAttachments.Count, cachedAttachments);
     }
     
-    public readonly record struct CachedAttachment(byte[] Data, string FileName)
+    public record CachedAttachment(byte[] Data, string FileName)
     {
         public DateTimeOffset ExpiresAt { get; } = CalculateExpiry(Data.Length);
         public ByteSize Size { get; } = ByteSize.FromBytes(Data.Length);
@@ -100,6 +103,7 @@ public sealed class AttachmentService(HttpClient http) : DiscordBotService
         private static DateTimeOffset CalculateExpiry(long sizeInBytes)
         {
             var size = ByteSize.FromBytes(sizeInBytes).Megabytes;
+            // f(x) = 5 + (25/e^(0.25x - 8))
             var minutes = 5 + 25 / (1 + Math.Exp(0.25 * size - 8));
             return DateTimeOffset.Now.AddMinutes(minutes);
         }
