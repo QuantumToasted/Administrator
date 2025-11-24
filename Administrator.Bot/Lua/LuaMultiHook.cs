@@ -10,7 +10,7 @@ namespace Administrator.Bot;
 // combines MaxInstructionCountLuaHook and CancellationTokenLuaHook
 public sealed unsafe class LuaMultiHook(CancellationToken cancellationToken) : LuaHook
 {
-    private const int MAX_INSTRUCTIONS = 10000;
+    private const int MAX_INSTRUCTIONS = 20_000;
 
     protected override LuaEventMask EventMask => LuaEventMask.Call | LuaEventMask.Return | LuaEventMask.Line | LuaEventMask.Count;
 
@@ -29,7 +29,8 @@ public sealed unsafe class LuaMultiHook(CancellationToken cancellationToken) : L
 
         var functionName = GetCurrentFunction(L, ar);
         var message = $"The maximum instruction count of {InstructionCount} was exceeded by " +
-                      $"{(!string.IsNullOrWhiteSpace(functionName) ? $"'{functionName}'" : "main code")}.";
+                      $"{(!string.IsNullOrWhiteSpace(functionName) ? $"'{functionName}'" : "main code")}\n" +
+                      $"You may need to simplify your command's code to prevent this.";
 
         luaL_error(L, message);
     }
