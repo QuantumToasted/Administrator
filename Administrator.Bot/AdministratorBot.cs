@@ -47,12 +47,21 @@ public sealed class AdministratorBot(IOptions<DiscordBotConfiguration> options, 
         var luaCommandService = Services.GetRequiredService<LuaCommandService>();
         await using var scope = Services.CreateAsyncScopeWithDatabase(out var db);
         var luaCommands = await db.LuaCommands.ToListAsync(cancellationToken);
-
+        
         foreach (var guildId in luaCommands.DistinctBy(x => x.GuildId).Select(x => x.GuildId))
         {
+            var guild = this.GetGuild(guildId) ?? await this.FetchGuildAsync(guildId, cancellationToken: cancellationToken);
+            if (guild is null) // we're going to assume the bot isn't in the guild
+            {
+                Logger.LogInformation("Potentially left guild {GuildId} - skipping Lua command initialization.", guildId.RawValue);
+                // db.LuaCommands.RemoveRange(luaCommands.Where(x => x.GuildId == guildId)); TODO: remove instead of skipping? 
+                continue;
+            }
+             
             await luaCommandService.ReloadLuaCommandsAsync(guildId);
         }
 
+        //await db.SaveChangesAsync();
         await base.InitializeModules(cancellationToken);
     }
 
