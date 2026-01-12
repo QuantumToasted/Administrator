@@ -1,10 +1,12 @@
-﻿using Administrator.Database;
+﻿using Administrator.Core;
+using Administrator.Database;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Gateway;
 using LinqToDB;
 using LinqToDB.DataProvider.PostgreSQL;
+using LinqToDB.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
@@ -61,10 +63,10 @@ public sealed class HighlightView : ViewBase
     {
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
         
-        await db.Users
-            .Where(u => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(_message.Author.Id, u.BlacklistedHighlightUserIds))
-            .Merge(User.Create(e.AuthorId) with { BlacklistedHighlightUserIds = [_message.Author.Id] },
-                u => new() { BlacklistedHighlightUserIds = Sql.Ext.PostgreSQL().ArrayAppend(u.BlacklistedHighlightChannelIds, _message.Author.Id) });
+        var userIds = await db.Users.Where(x => x.UserId == e.AuthorId).Select(x => x.BlacklistedHighlightUserIds).FirstOrDefaultAsyncEF();
+        userIds = userIds?.ToList().AddUnique(_message.Author.Id).ToArray() ?? [_message.Author.Id];
+
+        await db.Users.Merge(e.AuthorId, u => new User { BlacklistedHighlightUserIds = userIds });
         
         Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
 
@@ -76,10 +78,10 @@ public sealed class HighlightView : ViewBase
     {
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
         
-        await db.Users
-            .Where(u => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(_message.ChannelId, u.BlacklistedHighlightChannelIds))
-            .Merge(User.Create(e.AuthorId) with { BlacklistedHighlightChannelIds = [_message.ChannelId] },
-                u => new() { BlacklistedHighlightChannelIds = Sql.Ext.PostgreSQL().ArrayAppend(u.BlacklistedHighlightChannelIds, _message.ChannelId) });
+        var channelIds = await db.Users.Where(x => x.UserId == e.AuthorId).Select(x => x.BlacklistedHighlightChannelIds).FirstOrDefaultAsyncEF();
+        channelIds = channelIds?.ToList().AddUnique(_message.ChannelId).ToArray() ?? [_message.ChannelId];
+
+        await db.Users.Merge(e.AuthorId, u => new User { BlacklistedHighlightChannelIds = channelIds });
         
         Bot.Services.GetRequiredService<HighlightHandlingService>().InvalidateCache();
 

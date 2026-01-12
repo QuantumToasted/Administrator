@@ -436,20 +436,20 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> Add(IChannel channel)
         {
-            await db.Guilds
-                .Where(g => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(channel.Id, g.XpExemptChannelIds))
-                .Merge(GuildConfiguration.Create(Context.GuildId) with { XpExemptChannelIds = [channel.Id] },
-                    g => new() { XpExemptChannelIds = Sql.Ext.PostgreSQL().ArrayAppend(g.XpExemptChannelIds, channel.Id) });
+            var channelIds = await db.Guilds.Where(x => x.GuildId == Context.GuildId).Select(x => x.XpExemptChannelIds).FirstOrDefaultAsyncEF();
+            channelIds = channelIds?.ToList().AddUnique(channel.Id).ToArray() ?? [channel.Id];
+
+            await db.Guilds.Merge(Context.GuildId, g => new GuildConfiguration { XpExemptChannelIds = channelIds });
             
             return Response($"Messages sent in {Mention.Channel(channel.Id)} will no longer grant XP.");
         }
         
         public partial async Task<IResult> Remove(IChannel channel)
         {
-            await db.Guilds
-                .Where(g => Sql.Ext.PostgreSQL().Contains(g.XpExemptChannelIds, new[] { channel.Id }))
-                .Merge(Context.GuildId,
-                    g => new() { XpExemptChannelIds = Sql.Ext.PostgreSQL().ArrayRemove(g.XpExemptChannelIds, channel.Id) });
+            var channelIds = await db.Guilds.Where(x => x.GuildId == Context.GuildId).Select(x => x.XpExemptChannelIds).FirstOrDefaultAsyncEF();
+            channelIds = channelIds?.ToList().Except([channel.Id]).ToArray() ?? [];
+
+            await db.Guilds.Merge(Context.GuildId, g => new GuildConfiguration { XpExemptChannelIds = channelIds });
             
             return Response($"Messages sent in {Mention.Channel(channel.Id)} will now grant XP.");
         }
@@ -471,20 +471,20 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
     {
         public partial async Task<IResult> Add(IChannel channel)
         {
-            await db.Guilds
-                .Where(g => Sql.Ext.PostgreSQL().ValueIsNotEqualToAny(channel.Id, g.AutoQuoteExemptChannelIds))
-                .Merge(GuildConfiguration.Create(Context.GuildId) with { AutoQuoteExemptChannelIds = [channel.Id] },
-                    g => new() { AutoQuoteExemptChannelIds = Sql.Ext.PostgreSQL().ArrayAppend(g.AutoQuoteExemptChannelIds, channel.Id) });
+            var channelIds = await db.Guilds.Where(x => x.GuildId == Context.GuildId).Select(x => x.AutoQuoteExemptChannelIds).FirstOrDefaultAsyncEF();
+            channelIds = channelIds?.ToList().AddUnique(channel.Id).ToArray() ?? [channel.Id];
+
+            await db.Guilds.Merge(Context.GuildId, u => new GuildConfiguration { AutoQuoteExemptChannelIds = channelIds });
             
             return Response($"Message links sent in {Mention.Channel(channel.Id)} will no longer trigger the automatic quote feature.");
         }
         
         public partial async Task<IResult> Remove(IChannel channel)
         {
-            await db.Guilds
-                .Where(g => Sql.Ext.PostgreSQL().Contains(g.AutoQuoteExemptChannelIds, new[] { channel.Id }))
-                .Merge(Context.GuildId,
-                    g => new() { AutoQuoteExemptChannelIds = Sql.Ext.PostgreSQL().ArrayRemove(g.AutoQuoteExemptChannelIds, channel.Id) });
+            var channelIds = await db.Guilds.Where(x => x.GuildId == Context.GuildId).Select(x => x.AutoQuoteExemptChannelIds).FirstOrDefaultAsyncEF();
+            channelIds = channelIds?.ToList().Except([channel.Id]).ToArray() ?? [];
+
+            await db.Guilds.Merge(Context.GuildId, u => new GuildConfiguration { AutoQuoteExemptChannelIds = channelIds });
             
             return Response($"Message links sent in {Mention.Channel(channel.Id)} will now trigger the automatic quote feature.");
         }
