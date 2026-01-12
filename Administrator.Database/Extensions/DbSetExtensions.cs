@@ -26,7 +26,8 @@ public static class DbSetExtensions
         return loggingChannel?.ChannelId;
     }
 
-    public static Task<GuildConfiguration> GetOrCreateAsync2(this Microsoft.EntityFrameworkCore.DbSet<GuildConfiguration> set, Snowflake guildId)
+    [Obsolete("Prefer Merge() where possible. This will be removed in the future.")]
+    public static Task<GuildConfiguration> GetOrCreateAsync(this Microsoft.EntityFrameworkCore.DbSet<GuildConfiguration> set, Snowflake guildId)
     {
         return set.GetOrCreateAsync(g => g.GuildId == guildId, () => GuildConfiguration.Create(guildId));
     }
