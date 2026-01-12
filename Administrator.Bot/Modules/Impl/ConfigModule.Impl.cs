@@ -23,7 +23,8 @@ public enum GuildSettingFlags
     FilterDiscordInvites = 1 << 3,
     TrackServerXp = 1 << 4,
     IgnoreBotMessages = 1 << 5,
-    AutoQuote = 1 << 6
+    AutoQuote = 1 << 6,
+    LevelUpReactions = 1 << 7
 }
 
 public enum Mode
@@ -206,6 +207,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
                 GuildSettingFlags.IgnoreBotMessages => 
                     $"Bot message updates & deletions will now be logged (to the channel configured in {mentions.GetMention("config logging-channels set")}).",
                 GuildSettingFlags.AutoQuote => "Message links posted in chat will now trigger an automatic quote post by the bot.",
+                GuildSettingFlags.LevelUpReactions => "Level-up reactions will now be added to messages sent in chat.",
                 _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, null)
             });
         }
@@ -225,6 +227,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
                 GuildSettingFlags.IgnoreBotMessages => 
                     $"Bot message updates & deletions will no longer be logged (to the channel configured in {mentions.GetMention("config logging-channels set")}).",
                 GuildSettingFlags.AutoQuote => "Message links posted in chat will no longer trigger an automatic quote post by the bot.",
+                GuildSettingFlags.LevelUpReactions => "Level-up reactions will no longer be added to messages sent in chat.",
                 _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, null)
             });
         }

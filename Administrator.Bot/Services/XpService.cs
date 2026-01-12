@@ -52,7 +52,7 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
         var dbUser = await db.Users.GetOrCreateAsync(message.Author.Id);
         dbUser.IncrementXp(XP_INCREMENT_RATE, XpGainInterval, out var globalLeveledUp);
         
-        if (globalLeveledUp)
+        if (globalLeveledUp && guildConfig.Settings.HasFlag(GuildSettings.LevelUpReactions))
         {
             _ = Task.Run(async () =>
             {
@@ -70,12 +70,15 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
             
             if (guildLeveledUp)
             {
-                _ = Task.Run(async () =>
+                if (guildConfig.Settings.HasFlag(GuildSettings.LevelUpReactions))
                 {
-                    await message.AddReactionAsync(LocalEmoji.FromString(guildConfig.LevelUpEmoji));
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    await message.AddReactionAsync(emojis.GetLevelEmoji(dbMember.GetTier(), dbMember.GetLevel()));
-                });
+                    _ = Task.Run(async () =>
+                    {
+                        await message.AddReactionAsync(LocalEmoji.FromString(guildConfig.LevelUpEmoji));
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        await message.AddReactionAsync(emojis.GetLevelEmoji(dbMember.GetTier(), dbMember.GetLevel()));
+                    });
+                }
 
                 if (await db.LevelRewards.FindAsync(guildId, dbMember.GetTier(), dbMember.GetLevel()) is { } levelReward)
                 {

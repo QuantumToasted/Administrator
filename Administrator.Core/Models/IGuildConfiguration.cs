@@ -18,9 +18,11 @@ public enum GuildSettings
     TrackServerXp = 1 << 4,
     [Description("Whether bot message updates/deletes will be logged (requires channel setup).")]
     IgnoreBotMessages = 1 << 5,
-    [Description("AutoQuote: Whether message links posted will trigger an automatic quote post by the bot.")]
+    [Description("Whether message links posted will trigger an automatic quote post by the bot.")]
     AutoQuote = 1 << 6,
-    Default = TrackServerXp | AutomaticPunishmentDetection | LogModeratorsInPunishments | IgnoreBotMessages | AutoQuote
+    [Description("Whether level-up reactions will be added to messages.")]
+    LevelUpReactions = 1 << 7,
+    Default = TrackServerXp | AutomaticPunishmentDetection | LogModeratorsInPunishments | IgnoreBotMessages | AutoQuote | LevelUpReactions
 }
 
 public interface IGuildConfiguration : IGuildEntity
