@@ -3,7 +3,7 @@ using System.Threading.Channels;
 
 namespace Administrator.Core;
 
-public delegate Task BatchHandler<TEventArgs>(ICollection<TEventArgs> eventArgs, CancellationToken cancellationToken);
+public delegate Task BatchHandler<TEventArgs>(ICollection<TEventArgs> eventArgs, CancellationToken cancellationToken) where TEventArgs : EventArgs;
 
 public class BatchEventDispatcher<TKey, TEventArgs>(BatchHandler<TEventArgs> batchHandler, int maxBatchSize = 5, TimeSpan? rateLimitInterval = null)
     where TKey : notnull
