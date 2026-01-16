@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Administrator.Bot/Administrator.Bot.csproj" />
+  <Project Path="Administrator.Core/Administrator.Core.csproj" />
+  <Project Path="Administrator.Database/Administrator.Database.csproj" />
+</Solution>

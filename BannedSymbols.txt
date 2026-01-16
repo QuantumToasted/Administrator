@@ -1,0 +1,2 @@
+T:System.DateTimeOffset;Prefer NodaTime types instead.
+N:Microsoft.EntityFrameworkCore;Prefer Linq2DB methods and types instead.

@@ -1,0 +1,70 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using Disqord;
+using Qmmands;
+using Qommon;
+
+namespace Administrator.Core;
+
+public sealed class JsonMessage
+{
+    public string? Content { get; init; }
+
+    public List<JsonEmbed>? Embeds { get; init; }
+    
+    public static JsonMessage FromMessage(IUserMessage message)
+    {
+        return new JsonMessage
+        {
+            Content = string.IsNullOrWhiteSpace(message.Content) ? null : message.Content,
+            Embeds = message.Embeds.Count > 0 ? message.Embeds.Select(JsonEmbed.FromEmbed).ToList() : null
+        };
+    }
+
+    public static JsonMessage FromMessage<TMessage>(TMessage message)
+        where TMessage : LocalMessageBase
+    {
+        return new JsonMessage
+        {
+            Content = message.Content.GetValueOrDefault(),
+            Embeds = message.Embeds.GetValueOrDefault()?.Select(JsonEmbed.FromEmbed).ToList()
+        };
+    }
+    
+    public static bool TryParse(string str, JsonSerializerOptions options, [NotNullWhen(true)] out JsonMessage? message, [NotNullWhen(false)] out string? error)
+    {
+        message = null;
+        error = null;
+
+        try
+        {
+            message = Parse(str, options);
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
+
+    public static bool TryParse(string str, [NotNullWhen(true)] out JsonMessage? message, [NotNullWhen(false)] out string? error)
+    {
+        message = null;
+        error = null;
+
+        try
+        {
+            message = Parse(str);
+            return true;
+        }
+        catch (JsonException ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
+
+    public static JsonMessage Parse(string str, JsonSerializerOptions? options = null)
+        => JsonSerializer.Deserialize<JsonMessage>(str, options ?? JsonSerializerOptions.Default)!;
+}
