@@ -4,8 +4,6 @@ using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Gateway;
-using LinqToDB;
-using LinqToDB.DataProvider.PostgreSQL;
 using LinqToDB.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
