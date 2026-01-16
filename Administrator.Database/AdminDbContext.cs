@@ -4,7 +4,11 @@ namespace Administrator.Database;
 
 public sealed class AdminDbContext : DbContext
 {
-    internal DbSet<GuildConfiguration> GuildConfigurations { get; init; } = null!;
+    internal DbSet<GuildConfigurationModel> GuildConfigurations { get; init; } = null!;
+
+    internal DbSet<PermissionsPlusModel> Permissions { get; init; } = null!;
+
+    internal DbSet<GuildBlacklistedChannelModel> GuildBlacklistedChannels { get; init; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
