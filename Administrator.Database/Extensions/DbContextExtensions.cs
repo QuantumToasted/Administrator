@@ -14,5 +14,10 @@ public static class DbContextExtensions
         
         public ITable<GuildBlacklistedChannelModel> GuildBlacklistedChannels => db.GuildBlacklistedChannels.ToLinqToDBTable();
 
+        public async Task Foo()
+        {
+            var a = await db.Permissions.ToListAsync();
+            var b = new DbContextOptionsBuilder();
+        }
     }
 }
