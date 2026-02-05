@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Disqord.Bot.Commands.Application;
 using Laylua;
 using Laylua.Marshaling;

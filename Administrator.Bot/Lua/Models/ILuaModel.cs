@@ -1,4 +1,4 @@
-﻿using Laylua.Marshaling;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 

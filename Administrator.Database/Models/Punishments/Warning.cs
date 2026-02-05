@@ -1,4 +1,4 @@
-﻿using Administrator.Core;
+using Administrator.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

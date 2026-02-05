@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Commands.Application;
 using Disqord.Gateway;

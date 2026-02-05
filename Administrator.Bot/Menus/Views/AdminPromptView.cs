@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Disqord;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Extensions.Interactivity.Menus.Prompt;

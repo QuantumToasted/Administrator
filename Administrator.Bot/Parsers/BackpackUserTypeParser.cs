@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Backpack.Net;
 using Disqord;
 using Disqord.Bot.Commands;

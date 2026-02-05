@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 
 namespace Administrator.Bot;

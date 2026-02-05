@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Laylua.Marshaling;

@@ -1,4 +1,4 @@
-﻿using Disqord.Extensions.Interactivity.Menus;
+using Disqord.Extensions.Interactivity.Menus;
 
 namespace Administrator.Bot;
 

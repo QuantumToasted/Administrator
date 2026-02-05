@@ -1,4 +1,4 @@
-﻿using Administrator.Core;
+using Administrator.Core;
 using Disqord.Bot.Commands.Application;
 using Qmmands;
 

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;

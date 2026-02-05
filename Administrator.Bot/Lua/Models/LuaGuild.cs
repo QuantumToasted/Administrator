@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Disqord.Bot;
 using Disqord.Rest;
 using Humanizer;

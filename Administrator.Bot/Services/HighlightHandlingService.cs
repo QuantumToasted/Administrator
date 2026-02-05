@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot.Hosting;

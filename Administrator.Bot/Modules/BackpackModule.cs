@@ -1,4 +1,4 @@
-﻿using Backpack.Net;
+using Backpack.Net;
 using Disqord.Bot.Commands.Application;
 using Qmmands;
 

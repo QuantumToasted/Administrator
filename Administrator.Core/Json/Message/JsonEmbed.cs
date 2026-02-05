@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using System.Text.Json.Serialization;
 using Qmmands;
 using Qommon;

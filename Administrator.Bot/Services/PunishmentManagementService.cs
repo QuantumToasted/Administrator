@@ -1,4 +1,4 @@
-﻿using Administrator.Core;
+using Administrator.Core;
 using Administrator.Database;
 using Disqord.AuditLogs;
 using Disqord.Bot.Hosting;

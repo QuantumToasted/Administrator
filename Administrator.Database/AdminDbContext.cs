@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Microsoft.EntityFrameworkCore;
 
 namespace Administrator.Database;

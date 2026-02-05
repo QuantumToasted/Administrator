@@ -1,4 +1,4 @@
-﻿using Administrator.Core;
+using Administrator.Core;
 
 namespace Administrator.Api;
 

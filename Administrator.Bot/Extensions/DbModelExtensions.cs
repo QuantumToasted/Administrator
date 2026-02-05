@@ -1,4 +1,4 @@
-﻿using Administrator.Core;
+using Administrator.Core;
 using Administrator.Database;
 using Amazon.S3;
 using Amazon.S3.Model;

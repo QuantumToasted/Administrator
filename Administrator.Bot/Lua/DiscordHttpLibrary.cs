@@ -1,4 +1,4 @@
-﻿using Laylua;
+using Laylua;
 
 namespace Administrator.Bot;
 

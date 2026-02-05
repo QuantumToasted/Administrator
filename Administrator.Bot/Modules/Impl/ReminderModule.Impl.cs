@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Administrator.Bot.Jobs;
 using Administrator.Core;
@@ -155,6 +155,18 @@ public sealed partial class ReminderModule(AdminDbContext db, SlashCommandMentio
                 .AppendNewline(options.Text);
         }
 
+        var ephemeral = false;
+        if (Context.GuildId is { } guildId)
+        {
+            var member = Context.Author as IMember ?? await Bot.GetOrFetchMemberAsync(guildId, Context.AuthorId);
+            var settings = await db.Guilds.GetValueOrDefault(guildId, g => g.Settings);
+            if (!settings.HasFlag(GuildSettings.PublicReminders) &&
+                member?.CalculateGuildPermissions().HasFlag(Permissions.ModerateMembers) != true)
+            {
+                ephemeral = true;
+            }
+        }
+
         var user = await db.Users.GetOrCreateAsync(Context.AuthorId);
         if (user.TimeZone is null)
         {
@@ -163,7 +175,7 @@ public sealed partial class ReminderModule(AdminDbContext db, SlashCommandMentio
                 .Append($"(Time/date looks weird? Use the {mentions.GetMention("self timezone")} command to set your timezone.)");
         }
 
-        return Response(responseBuilder.ToString());
+        return Response(responseBuilder.ToString()).AsEphemeral(ephemeral);
     }
 
     private record ReminderCreationOptions(string Text, 

@@ -2,6 +2,7 @@ using Administrator.Core;
 using Administrator.Database;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Gateway;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NodaTime;
@@ -22,6 +23,19 @@ public sealed class ReminderExpiryJob(ILogger<ReminderExpiryJob> logger, Discord
     public async ValueTask Execute(IJobExecutionContext context, Reminder reminder)
     {
         var expiryMessage = reminder.FormatExpiryMessage<LocalMessage>();
+
+        if (bot.TryGetAnyGuildChannel(reminder.ChannelId, out var channel))
+        {
+            var settings = await db.Guilds.GetValueOrDefault(channel.GuildId, g => g.Settings);
+            var member = await bot.GetOrFetchMemberAsync(channel.GuildId, reminder.AuthorId);
+            if (!settings.HasFlag(GuildSettings.PublicReminders) && member?.CalculateGuildPermissions().HasFlag(Permissions.ModerateMembers) != true)
+            {
+                Logger.LogDebug("Sending reminder #{Id} to user {UserId}'s DMs due to guild " +
+                                "{GuildId} having public reminders disabled.", reminder.Id, reminder.AuthorId.RawValue, channel.GuildId.RawValue);
+                await bot.TrySendDirectMessageAsync(reminder.AuthorId, expiryMessage);
+                return;
+            }
+        }
         
         Logger.LogDebug("Sending reminder #{Id} to channel {ChannelId}.", reminder.Id, reminder.ChannelId.RawValue);
         if (await bot.TrySendMessageAsync(reminder.ChannelId, expiryMessage) is null) // failed to send - try DMing

@@ -1,4 +1,4 @@
-﻿using Administrator.Core;
+using Administrator.Core;
 using Backpack.Net;
 using Humanizer;
 using Qmmands;

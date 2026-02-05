@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.IO.Compression;
 
 namespace Administrator.Core;

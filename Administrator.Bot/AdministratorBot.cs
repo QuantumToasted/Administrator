@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Administrator.Core;
 using Administrator.Database;
 using Disqord;

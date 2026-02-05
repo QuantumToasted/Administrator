@@ -1,18 +1,29 @@
-﻿using Administrator.Database;
+using System.Text.RegularExpressions;
+using Administrator.Database;
 using Chronic.Core;
 using Disqord.Bot.Commands;
 using Qmmands;
 
 namespace Administrator.Bot;
 
-public sealed class DateTimeOffsetTypeParser : DiscordTypeParser<DateTimeOffset>
+public sealed partial class DateTimeOffsetTypeParser : DiscordTypeParser<DateTimeOffset>
 {
+    private static readonly Regex TimestampMarkdownRegex = GenerateTimestampRegex();
+    
     public override async ValueTask<ITypeParserResult<DateTimeOffset>> ParseAsync(IDiscordCommandContext context, IParameter parameter, ReadOnlyMemory<char> value)
     {
+        var input = value.ToString();
+        var match = TimestampMarkdownRegex.Match(input);
+
+        if (match.Success)
+        {
+            var unixSecondsTimestamp = long.Parse(match.Groups["time"].Value);
+            return Success(DateTimeOffset.FromUnixTimeSeconds(unixSecondsTimestamp));
+        }
+        
         await using var scope = context.Services.CreateAsyncScopeWithDatabase(out var db);
         var globalUser = await db.Users.GetOrCreateAsync(context.AuthorId);
 
-        var input = value.ToString();
         var now = DateTimeOffset.UtcNow;
 
         if (TimeSpanTypeParser.TryParse(input, out var duration))
@@ -36,4 +47,7 @@ public sealed class DateTimeOffsetTypeParser : DiscordTypeParser<DateTimeOffset>
                        "\"one week from now\"\n" +
                        "\"in 30 minutes\"");
     }
+
+    [GeneratedRegex(@"<t:(?<time>[\d]+)(:[a-z])?>")]
+    private static partial Regex GenerateTimestampRegex();
 }

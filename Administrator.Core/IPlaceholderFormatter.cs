@@ -1,4 +1,4 @@
-﻿using Qmmands;
+using Qmmands;
 
 namespace Administrator.Core;
 

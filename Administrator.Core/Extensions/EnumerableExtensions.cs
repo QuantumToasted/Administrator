@@ -1,4 +1,4 @@
-﻿namespace Administrator.Core;
+namespace Administrator.Core;
 
 public static class EnumerableExtensions
 {

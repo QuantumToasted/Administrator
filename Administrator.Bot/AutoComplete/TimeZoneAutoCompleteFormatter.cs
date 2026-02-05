@@ -1,4 +1,4 @@
-﻿using Administrator.Core;
+using Administrator.Core;
 using Qmmands;
 
 namespace Administrator.Bot.AutoComplete;

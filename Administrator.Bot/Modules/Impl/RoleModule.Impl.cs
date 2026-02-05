@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Administrator.Core;
 using Disqord;
 using Disqord.Bot.Commands.Application;

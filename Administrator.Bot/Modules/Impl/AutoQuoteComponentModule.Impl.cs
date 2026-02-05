@@ -10,15 +10,23 @@ public sealed partial class AutoQuoteComponentModule : DiscordComponentGuildModu
 
     public partial async Task Delete()
     {
+        var prompt = new AdminPromptView("You are about to delete this auto-quote message for ALL users.", isEphemeral: true)
+            .OnConfirm("Auto-quote deletion started.");
+
+        await View(prompt);
+
+        if (!prompt.Result)
+            return;
+        
         var embed = LocalEmbed.CreateFrom(Interaction.Message.Embeds[0])
             .WithCollectorsColor()
             .WithFooter($"Marked for removal by {Context.Author.GetDisplayName()}", Context.Author.GetGuildAvatarUrl());
 
-        await Interaction.Response().ModifyMessageAsync(new LocalInteractionMessageResponse()
-            .WithEmbeds(embed)
-            .WithComponents());
-        
-        //await Interaction.Message.ModifyAsync(x => x.Embeds = Optional.Create<IEnumerable<LocalEmbed>>([embed]));
+        await Interaction.Message.ModifyAsync(x =>
+        {
+            x.Embeds = new[] { embed };
+            x.Components = Array.Empty<LocalComponent>();
+        });
 
         _ = Task.Run(async () =>
         {

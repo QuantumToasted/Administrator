@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Disqord.Gateway;
 
 namespace Administrator.Bot;

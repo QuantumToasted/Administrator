@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Imaging;
 using System.Text.Json;
 using System.Text.RegularExpressions;

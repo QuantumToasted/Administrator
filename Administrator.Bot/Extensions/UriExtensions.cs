@@ -1,4 +1,4 @@
-﻿using Qommon;
+using Qommon;
 
 namespace Administrator.Bot;
 

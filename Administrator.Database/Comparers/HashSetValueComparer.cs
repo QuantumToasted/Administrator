@@ -1,4 +1,4 @@
-﻿/*
+/*
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Administrator.Database;

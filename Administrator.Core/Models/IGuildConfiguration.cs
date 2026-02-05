@@ -22,7 +22,9 @@ public enum GuildSettings
     AutoQuote = 1 << 6,
     [Description("Whether level-up reactions will be added to messages.")]
     LevelUpReactions = 1 << 7,
-    Default = TrackServerXp | AutomaticPunishmentDetection | LogModeratorsInPunishments | IgnoreBotMessages | AutoQuote | LevelUpReactions
+    [Description("Whether reminders created by non-moderators will display publicly.")]
+    PublicReminders = 1 << 8,
+    Default = TrackServerXp | AutomaticPunishmentDetection | LogModeratorsInPunishments | IgnoreBotMessages | AutoQuote | LevelUpReactions | PublicReminders
 }
 
 public interface IGuildConfiguration : IGuildEntity

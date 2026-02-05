@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Qommon;
 using Modal = Disqord.LocalInteractionModalResponse;
 

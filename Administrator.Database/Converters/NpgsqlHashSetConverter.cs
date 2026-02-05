@@ -1,4 +1,4 @@
-﻿/*
+/*
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.ValueConversion;

@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Components;
 using Qmmands;

@@ -1,4 +1,4 @@
-﻿using Qmmands.Text;
+using Qmmands.Text;
 
 namespace Administrator.Bot;
 

@@ -1,4 +1,4 @@
-﻿namespace Administrator.Bot;
+namespace Administrator.Bot;
 
 public static class HttpClientExtensions
 {

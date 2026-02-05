@@ -1,4 +1,4 @@
-﻿using Disqord.Bot.Hosting;
+using Disqord.Bot.Hosting;
 using Qmmands;
 using Disqord;
 using Disqord.Bot.Commands.Application;

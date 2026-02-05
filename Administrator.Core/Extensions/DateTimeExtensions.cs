@@ -1,4 +1,4 @@
-﻿using NodaTime;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Administrator.Core;

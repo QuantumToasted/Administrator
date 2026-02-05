@@ -1,4 +1,4 @@
-﻿using Disqord;
+using Disqord;
 using Disqord.Bot.Commands;
 using IResult = Qmmands.IResult;
 using Results = Qmmands.Results;

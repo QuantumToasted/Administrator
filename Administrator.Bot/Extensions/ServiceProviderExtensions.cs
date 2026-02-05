@@ -1,4 +1,4 @@
-﻿using Administrator.Database;
+using Administrator.Database;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using Administrator.Core;
 using Disqord;

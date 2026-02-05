@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using System.Text;
 using Administrator.Core;
 using Administrator.Database;
@@ -22,7 +22,8 @@ public enum GuildSettingFlags
     TrackServerXp = 1 << 4,
     IgnoreBotMessages = 1 << 5,
     AutoQuote = 1 << 6,
-    LevelUpReactions = 1 << 7
+    LevelUpReactions = 1 << 7,
+    PublicReminders = 1 << 8
 }
 
 public enum Mode
@@ -206,6 +207,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
                     $"Bot message updates & deletions will now be logged (to the channel configured in {mentions.GetMention("config logging-channels set")}).",
                 GuildSettingFlags.AutoQuote => "Message links posted in chat will now trigger an automatic quote post by the bot.",
                 GuildSettingFlags.LevelUpReactions => "Level-up reactions will now be added to messages sent in chat.",
+                GuildSettingFlags.PublicReminders => "Reminders will now be shown in the channel a user created the reminder in.",
                 _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, null)
             });
         }
@@ -226,6 +228,7 @@ public sealed partial class ConfigModule(AdminDbContext db, SlashCommandMentionS
                     $"Bot message updates & deletions will no longer be logged (to the channel configured in {mentions.GetMention("config logging-channels set")}).",
                 GuildSettingFlags.AutoQuote => "Message links posted in chat will no longer trigger an automatic quote post by the bot.",
                 GuildSettingFlags.LevelUpReactions => "Level-up reactions will no longer be added to messages sent in chat.",
+                GuildSettingFlags.PublicReminders => "Reminders will now be shown only in DMs for non-moderators.",
                 _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, null)
             });
         }

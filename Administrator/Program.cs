@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Administrator.Api;
 using Administrator.Bot;
 using Administrator.Core;

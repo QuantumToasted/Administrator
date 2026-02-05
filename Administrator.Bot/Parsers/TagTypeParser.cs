@@ -1,4 +1,4 @@
-﻿using Administrator.Database;
+using Administrator.Database;
 using Disqord.Bot.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

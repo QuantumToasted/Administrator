@@ -1,4 +1,4 @@
-﻿using Humanizer;
+using Humanizer;
 using Laylua.Marshaling;
 
 namespace Administrator.Bot;
