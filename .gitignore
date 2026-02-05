@@ -45,3 +45,4 @@ Administrator/Logs
 OwnerModule.cs
 .idea/
 *.ps1
+*.sh
