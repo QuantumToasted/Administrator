@@ -228,7 +228,7 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
         if (!view.Result)
             return;
 
-        await Response();
+        await Response("Level reward applied.");
 
         var appliedCount = 0;
         var failedCount = 0;

@@ -4,6 +4,7 @@ using Disqord;
 using Disqord.Bot.Commands.Application;
 using Disqord.Gateway;
 using LinqToDB;
+using LinqToDB.EntityFrameworkCore;
 using Qmmands;
 
 namespace Administrator.Bot;
@@ -16,7 +17,7 @@ public sealed partial class ForumAutoTagModule(AdminDbContext db) : DiscordAppli
         if (forum?.Tags.FirstOrDefault(x => x.Id.ToString() == tag || x.Name == tag) is not { } forumTag)
             return Response($"No valid tag could be found in the forum {Mention.Channel(channel.Id)} with the input \"{tag}\".").AsEphemeral();
 
-        if (await db.AutoTags.FirstOrDefaultAsync(x => x.Text == text && x.ChannelId == channel.Id && x.GuildId == Context.GuildId) is { } existingAutoTag)
+        if (await db.AutoTags.FirstOrDefaultAsyncEF(x => x.Text == text && x.ChannelId == channel.Id && x.GuildId == Context.GuildId) is { } existingAutoTag)
             return Response($"Existing automatic tag {existingAutoTag} already matches the same text and forum channel!").AsEphemeral();
         
         ForumAutoTag autoTag;
@@ -42,7 +43,7 @@ public sealed partial class ForumAutoTagModule(AdminDbContext db) : DiscordAppli
 
     public partial async Task<IResult> Remove(int autoTagId)
     {
-        if (await db.AutoTags.FirstOrDefaultAsync(x => x.Id == autoTagId && x.GuildId == Context.GuildId) is not { } autoTag)
+        if (await db.AutoTags.FirstOrDefaultAsyncEF(x => x.Id == autoTagId && x.GuildId == Context.GuildId) is not { } autoTag)
             return Response("No automatic tag could be found with that ID.").AsEphemeral();
 
         db.AutoTags.Remove(autoTag);
@@ -70,7 +71,7 @@ public sealed partial class ForumAutoTagModule(AdminDbContext db) : DiscordAppli
         if (!autoTagId.IsFocused)
             return;
 
-        var autoTags = await db.AutoTags.Where(x => x.GuildId == Context.GuildId).ToListAsync();
+        var autoTags = await db.AutoTags.Where(x => x.GuildId == Context.GuildId).ToListAsyncEF();
         autoTagId.AutoComplete(Context, autoTags);
     }
 }

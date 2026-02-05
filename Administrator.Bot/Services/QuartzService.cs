@@ -3,6 +3,7 @@ using Administrator.Core;
 using Administrator.Database;
 using Disqord.Bot.Hosting;
 using LinqToDB;
+using LinqToDB.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Qommon;
 using Quartz;
@@ -20,13 +21,13 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
 
         await using var scope = Bot.Services.CreateAsyncScopeWithDatabase(out var db);
 
-        var reminders = await db.Reminders.Where(x => x.CreatedAt != x.ExpiresAt).ToListAsync(stoppingToken);
+        var reminders = await db.Reminders.Where(x => x.CreatedAt != x.ExpiresAt).ToListAsyncEF(stoppingToken);
         await scheduler.ScheduleAdminJobs<ReminderExpiryJob, Reminder>(reminders);
         Logger.LogDebug("Scheduled {Count} reminder expiry jobs.", reminders.Count);
 
-        var membersWithDecay = await db.Members.Where(x => x.NextDemeritPointDecay != null).ToListAsync(stoppingToken);
-        var warningsWithDemeritPoints = await db.Punishments.OfType<Warning>().Where(x => x.DemeritPointsRemaining > 0 && x.RevokedAt == null).ToListAsync(stoppingToken);
-        var guilds = await db.Guilds.ToListAsync(stoppingToken);
+        var membersWithDecay = await db.Members.Where(x => x.NextDemeritPointDecay != null).ToListAsyncEF(stoppingToken);
+        var warningsWithDemeritPoints = await db.Punishments.OfType<Warning>().Where(x => x.DemeritPointsRemaining > 0 && x.RevokedAt == null).ToListAsyncEF(stoppingToken);
+        var guilds = await db.Guilds.ToListAsyncEF(stoppingToken);
         var warningsWithDecay = membersWithDecay.Select(member => new
             {
                 Member = member,
@@ -45,7 +46,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
 
         var punishments = await db.Punishments.OfType<RevocablePunishment>()
             .Where(x => x.RevokedAt == null)
-            .ToListAsync(stoppingToken);
+            .ToListAsyncEF(stoppingToken);
 
         var expiringPunishments = punishments.Where(x => x is IExpiringEntity { ExpiresAt: not null }).ToList();
         await SchedulePunishmentExpiryJobsAsync(scheduler, expiringPunishments);
@@ -121,7 +122,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
                             x.RevokedAt == null &&
                             x.DemeritPointsRemaining > 0)
                 .OrderByDescending(x => x.Id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsyncEF();
 
             if (otherWarning is not null)
             {

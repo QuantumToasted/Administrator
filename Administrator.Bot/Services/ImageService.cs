@@ -41,7 +41,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                 .AsCte()
                 .Where(x => x.UserId == longId)
                 .Select(x => x.Rank)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsyncLinqToDB();
 
             Member? member = null;
             GuildSettings guildSettings = default;
@@ -61,7 +61,7 @@ public sealed class ImageService(DiscordBotBase bot, AttachmentService attachmen
                     .AsCte()
                     .Where(x => x.UserId == longId)
                     .Select(x => x.Rank)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsyncLinqToDB();
 
                 guildSettings = await db.Guilds.GetValueOrDefault(guildId.Value, g => g.Settings);
             }

@@ -13,17 +13,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AWSSDK.S3" Version="4.0.13.1" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.18.2" />
       <PackageReference Include="Backpack.Net" Version="2.0.1" />
       <PackageReference Include="Chronic.Core" Version="0.4.0" />
-      <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.91" />
+      <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.101" />
       <PackageReference Include="Laylua" Version="1.0.0" />
-      <PackageReference Include="Magick.NET-Q16-x64" Version="14.10.1" />
+      <PackageReference Include="Magick.NET-Q16-x64" Version="14.10.2" />
       <PackageReference Include="MimeTypes" Version="2.5.2">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Quartz" Version="4.0.0-preview-20250201-1850" />
+      <PackageReference Include="Quartz" Version="4.0.0-preview-20260124-0807" />
       <PackageReference Include="SteamWebAPI2" Version="5.0.0" />
       <PackageReference Include="Svg" Version="3.4.7" />
     </ItemGroup>

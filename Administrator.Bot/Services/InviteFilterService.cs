@@ -8,6 +8,7 @@ using Disqord.Gateway;
 using Disqord.Http;
 using Disqord.Rest;
 using LinqToDB;
+using LinqToDB.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Administrator.Bot;
@@ -119,7 +120,7 @@ public sealed class InviteFilterService : DiscordBotService
                 _checkedInvites.Remove(key, out _);
         }
 
-        var inviteFilterExemptions = await db.InviteFilterExemptions.Where(x => x.GuildId == guildId).ToListAsync();
+        var inviteFilterExemptions = await db.InviteFilterExemptions.Where(x => x.GuildId == guildId).ToListAsyncEF();
 
         if (!InviteRegex.IsMatch(e.Message.Content, out var match))
             return;
