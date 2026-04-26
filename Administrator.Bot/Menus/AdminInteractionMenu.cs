@@ -3,7 +3,7 @@ using Disqord.Extensions.Interactivity.Menus;
 
 namespace Administrator.Bot;
 
-public class AdminInteractionMenu(ViewBase view, IUserInteraction interaction) : DefaultInteractionMenu(view, interaction)
+public class AdminInteractionMenu(ViewBase view, IUserInteraction interaction, IDisposable? state = null) : DefaultInteractionMenu(view, interaction)
 {
     public override ValueTask DisposeAsync()
     {
@@ -12,6 +12,8 @@ public class AdminInteractionMenu(ViewBase view, IUserInteraction interaction) :
             View.ClearComponents();
             return ApplyChangesAsync();
         }
+        
+        state?.Dispose();
 
         return base.DisposeAsync();
     }

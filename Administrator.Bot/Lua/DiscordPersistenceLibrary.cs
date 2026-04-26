@@ -43,8 +43,9 @@ public sealed class DiscordPersistenceLibrary(IDiscordInteractionCommandContext 
 
     public bool SetPersistence(string value)
     {
-        if (value.Length > MAX_PERSISTENCE_LENGTH)
-            throw new InvalidOperationException($"Persistent data string cannot exceed {MAX_PERSISTENCE_LENGTH} characters.");
+        var bytes = Encoding.Default.GetBytes(value).GZipCompress();
+        if (bytes.Length > MAX_PERSISTENCE_LENGTH)
+            throw new InvalidOperationException($"Persistent data string cannot exceed {MAX_PERSISTENCE_LENGTH} bytes in compressed size.");
         
         return RunWait(async ct =>
         {
@@ -53,7 +54,7 @@ public sealed class DiscordPersistenceLibrary(IDiscordInteractionCommandContext 
                 await using var scope = context.Bot.Services.CreateAsyncScopeWithDatabase(out var db);
                 var commandName = context.GetMetadata<string>("command");
                 var luaCommand = await db.LuaCommands.FirstAsync(x => x.GuildId == context.GuildId && x.Name == commandName, ct);
-                luaCommand.Persistence = Encoding.Default.GetBytes(value).GZipCompress();
+                luaCommand.Persistence = bytes;
                 await db.SaveChangesAsync(ct);
                 _persistence = new Lazy<string?>(value);
                 return true;

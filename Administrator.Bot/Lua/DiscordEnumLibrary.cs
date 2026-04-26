@@ -33,5 +33,15 @@ public sealed class DiscordEnumLibrary(DiscordBotBase bot) : DiscordLuaLibraryBa
             
             yield return lua.SetStringGlobal("Emoji", emojis);
         }
+        
+        using (var styles = lua.CreateTable())
+        {
+            foreach (var flag in Enum.GetValues<LocalButtonComponentStyle>())
+            {
+                styles.SetValue(flag.Humanize(LetterCasing.AllCaps).Replace(' ', '_'), (long) flag);
+            }
+            
+            yield return lua.SetStringGlobal("ButtonStyle", styles);
+        }
     }
 }

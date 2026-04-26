@@ -13,7 +13,7 @@ public sealed class DiscordCommandContextLibrary(IDiscordApplicationGuildCommand
     {
         var ctx = new LuaCommandContext(context, lua, this);
         yield return lua.SetStringGlobal(nameof(ctx), ctx);
-        yield return lua.SetStringGlobal("now", () => DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        yield return lua.SetStringGlobal<Func<long>>("now", () => DateTimeOffset.UtcNow.ToUnixTimeSeconds());
     }
 
     static DiscordCommandContextLibrary()

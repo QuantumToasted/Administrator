@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Disqord;
+using Disqord.Bot.Commands.Parsers;
 using Humanizer;
 using Laylua;
 using Qommon;
@@ -12,6 +13,8 @@ public abstract class DiscordLuaLibraryBase(CancellationToken cancellationToken)
 {
     private const int MAX_COMBINED_FUNCTION_CALLS = 25;
     private const int MAX_FUNCTION_CALLS = 5;
+
+    private static readonly ColorTypeParser ColorTypeParserInstance = new();
     
     private readonly List<string> _globals = [];
     private readonly ConcurrentDictionary<string, int> _calledFunctions = new();
@@ -75,9 +78,15 @@ public abstract class DiscordLuaLibraryBase(CancellationToken cancellationToken)
                 localEmbed.WithDescription(description);
             }
 
+            
             if (embed.TryGetValue<string, int>("color", out var color))
             {
                 localEmbed.WithColor(color);
+            }
+            else if (embed.TryGetValue<string, string>("color", out var colorString) &&
+                     ColorTypeParserInstance.Colors.TryGetValue(colorString, out var parsedColor))
+            {
+                localEmbed.WithColor(parsedColor);
             }
 
             if (embed.TryGetValue<string, string>("thumbnail", out var thumbnailUrl))

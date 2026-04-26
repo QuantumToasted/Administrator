@@ -6,8 +6,10 @@ using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Application;
 using Disqord.Bot.Commands.Interaction;
+using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Utilities.Threading;
 using Laylua;
+using Laylua.Moon;
 using Qmmands;
 using Qommon;
 using Qommon.Collections;
@@ -221,7 +223,7 @@ public static partial class DbModelExtensions
         var interactionContext = Guard.IsAssignableToType<IDiscordApplicationGuildCommandContext>(context);
         interactionContext.SetMetadata("command", luaCommand.Name);
 
-        using var lua = new Lua();
+        var lua = new Lua();
         using var cts = new Cts();
         lua.OpenLibrary(LuaLibraries.Standard.Math);
         lua.OpenLibrary(LuaLibraries.Standard.Base);
@@ -235,23 +237,12 @@ public static partial class DbModelExtensions
         {
             var code = Encoding.Default.GetString(luaCommand.Command.GZipDecompress());
             cts.CancelAfter(CommandTimeout);
-            
-            object? response;
-            try
+
+            var res = lua.Evaluate(code);
+
+            result = res switch
             {
-                response = lua.Evaluate<object>(code);
-            }
-            catch (InvalidOperationException) // The evaluation returned no results.
-            {
-                response = null;
-            }
-                
-            result = response switch
-            {
-                LuaTable msg => new DiscordInteractionResponseCommandResult(interactionContext,
-                    DiscordLuaLibraryBase.ConvertMessage<LocalInteractionMessageResponse>(msg).WithAllowedMentions(LocalAllowedMentions.None)),
-                string content => new DiscordInteractionResponseCommandResult(interactionContext,
-                    new LocalInteractionMessageResponse().WithContent(content).WithAllowedMentions(LocalAllowedMentions.None)),
+                { IsEmpty: false, First.Value: var value } => Response(value),
                 _ => Results.Success
             };
         }
@@ -259,7 +250,28 @@ public static partial class DbModelExtensions
         {
             result = Results.Exception("executing a Lua command", ex);
         }
+        
+        if (result is not DiscordMenuCommandResult)
+            lua.Dispose();
 
         return new(result);
+
+        IResult Response(object? value)
+        {
+            return value switch
+            {
+                LuaMenu menu => new DiscordMenuCommandResult(interactionContext,
+                    new AdminInteractionMenu(new LuaMenuView(menu),
+                        interactionContext.Interaction, lua), TimeSpan.FromMinutes(2)),
+                string content => new DiscordInteractionResponseCommandResult(interactionContext,
+                    new LocalInteractionMessageResponse().WithContent(content)
+                        .WithAllowedMentions(LocalAllowedMentions.None)),
+                LuaTable msg when msg.ContainsKey("content") || msg.ContainsKey("embed") =>
+                    new DiscordInteractionResponseCommandResult(interactionContext,
+                        DiscordLuaLibraryBase.ConvertMessage<LocalInteractionMessageResponse>(msg)
+                            .WithAllowedMentions(LocalAllowedMentions.None)),
+                _ => Results.Success
+            };
+        }
     }
 }

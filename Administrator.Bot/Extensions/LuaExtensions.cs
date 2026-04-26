@@ -2,6 +2,7 @@ using System.Reflection;
 using Disqord.Bot.Commands.Application;
 using Laylua;
 using Laylua.Marshaling;
+using Laylua.Moon;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
@@ -28,9 +29,10 @@ public static class LuaExtensions
         lua.OpenLibrary(new DiscordHttpLibrary(context.Services.GetRequiredService<HttpClient>(), cancellationToken));
         lua.OpenLibrary(new DiscordJsonLibrary(cancellationToken));
         lua.OpenLibrary(new DiscordPersistenceLibrary(context, cancellationToken));
-        
+        lua.OpenLibrary(new DiscordMenuLibrary(context, cancellationToken));
+
         if (setHook)
-            lua.State.Hook = new LuaMultiHook(cancellationToken);
+            lua.State.Hook = new CancellationTokenLuaHook(cancellationToken);
     }
 
     public static void SetModelDescriptors(this DefaultUserDataDescriptorProvider provider)
