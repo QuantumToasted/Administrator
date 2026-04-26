@@ -40,7 +40,7 @@ public sealed class PunishmentManagementService : DiscordBotService
                 return;
             }
             case IMemberUnbannedAuditLog when await db.Punishments.OfType<Ban>()
-                .FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.Target.Id == target.Id && x.RevokedAt == null) is { } ban:
+                .FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.Target.Id == target.Id.RawValue && x.RevokedAt == null) is { } ban:
             {
                 await punishments.RevokePunishmentAsync(e.GuildId, ban.Id, moderator, reason, true);
                 return;
@@ -54,7 +54,7 @@ public sealed class PunishmentManagementService : DiscordBotService
                 }
                 // timeout -> no timeout
                 else if (change.OldValue.HasValue && !change.NewValue.HasValue && await db.Punishments.OfType<Timeout>()
-                         .FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.Target.Id == target.Id && x.RevokedAt == null) is { } timeout)
+                         .FirstOrDefaultAsync(x => x.GuildId == e.GuildId && x.Target.Id == target.Id.RawValue && x.RevokedAt == null) is { } timeout)
                 {
                     await punishments.RevokePunishmentAsync(e.GuildId, timeout.Id, moderator, reason, true);
                 }
