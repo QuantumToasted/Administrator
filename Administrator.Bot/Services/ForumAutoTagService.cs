@@ -36,7 +36,7 @@ public sealed class ForumAutoTagService : DiscordBotService
                 continue;
             }
 
-            if (!e.Thread.TagIds.Contains(autoTag.TagId) && autoTag.IsMatch(openingMessage))
+            if (!e.Thread.TagIds.Contains(autoTag.TagId) && autoTag.IsMatch(openingMessage, e.Thread))
                 tagsToAdd.Add(forumTag);
         }
         

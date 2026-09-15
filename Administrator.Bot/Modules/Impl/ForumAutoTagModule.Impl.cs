@@ -58,7 +58,7 @@ public sealed partial class ForumAutoTagModule(AdminDbContext db) : DiscordAppli
             return;
         
         var interaction = (IAutoCompleteInteraction)Context.Interaction;
-        var raw = interaction.Options["add"].Options["channel"].Value?.ToString();
+        var raw = interaction.Options["add"].Options["channel"].Value?.ToType<string>();
 
         if (!Snowflake.TryParse(raw, out var channelId) || Bot.GetChannel(Context.GuildId, channelId) is not IForumChannel { Tags: var tags })
             return;
