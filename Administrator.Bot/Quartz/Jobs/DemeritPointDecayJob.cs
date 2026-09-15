@@ -70,6 +70,6 @@ public sealed class DemeritPointDecayJob(ILogger<DemeritPointDecayJob> logger, Q
 
     public static JobKey FormatJobKey(Warning entity)
     {
-        return JobKey.Create($"{entity.GuildId}:{entity.Target.Id}", nameof(DemeritPointDecayJob));
+        return new($"{entity.GuildId}:{entity.Target.Id}", nameof(DemeritPointDecayJob));
     }
 }

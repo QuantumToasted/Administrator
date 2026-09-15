@@ -7,7 +7,7 @@ public class BackpackUpdateJob(ILogger<BackpackUpdateJob> logger, BackpackServic
 {
     public ILogger Logger { get; } = logger;
     
-    public async ValueTask Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken)
     {
         try
         {

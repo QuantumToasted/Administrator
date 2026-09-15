@@ -5,7 +5,7 @@ namespace Administrator.Bot.Jobs;
 
 public sealed class AttachmentCleanupJob(AttachmentService attachments, ILogger<AttachmentCleanupJob> logger) : IAdminJob<AttachmentCleanupJob>
 {
-    public ValueTask Execute(IJobExecutionContext context)
+    public ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = new CancellationToken())
     {
         try
         {

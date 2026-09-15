@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
@@ -13,17 +13,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AWSSDK.S3" Version="4.0.102.4" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.103.3" />
       <PackageReference Include="Backpack.Net" Version="2.0.1" />
       <PackageReference Include="Chronic.Core" Version="0.4.0" />
       <PackageReference Include="Disqord.Bot" Version="1.0.0-alpha5.115" />
       <PackageReference Include="Laylua" Version="2.0.0-ci.44" />
-      <PackageReference Include="Magick.NET-Q16-x64" Version="14.16.0" />
+      <PackageReference Include="Magick.NET-Q16-x64" Version="14.17.1" />
       <PackageReference Include="MimeTypes" Version="2.5.2">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Quartz" Version="4.0.0-preview-20260124-0807" />
+      <PackageReference Include="Quartz" Version="4.2.0-preview-20260915-1628" />
       <PackageReference Include="SteamWebAPI2" Version="5.0.0" />
       <PackageReference Include="Svg" Version="3.4.8" />
     </ItemGroup>

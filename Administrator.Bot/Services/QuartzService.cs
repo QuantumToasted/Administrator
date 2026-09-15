@@ -53,10 +53,11 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
         
         Logger.LogDebug("Scheduled {Count} punishment expiry jobs.", expiringPunishments.Count);
 
+        
         await scheduler.ScheduleJob(
             JobBuilder.Create<BackpackUpdateJob>().WithIdentity(Guid.NewGuid().ToString(), nameof(BackpackUpdateJob)).Build(),
-            TriggerBuilder.Create().StartNow().WithSchedule(SimpleScheduleBuilder.Create().WithIntervalInMinutes(30).RepeatForever()).Build(),
-            Bot.StoppingToken);
+            TriggerBuilder.Create().StartNow().WithSchedule(SimpleScheduleBuilder.Create().WithInterval(TimeSpan.FromMinutes(30)).RepeatForever()).Build(),
+            cancellationToken: Bot.StoppingToken);
 
         await scheduler.ScheduleAdminJob<AttachmentCleanupJob>(TimeSpan.FromMinutes(1));
         
@@ -140,7 +141,7 @@ public sealed class QuartzService(ISchedulerFactory schedulerFactory) : DiscordB
         var jobDict = punishments.Select(FormatJobAndTrigger)
             .ToDictionary(x => x.JobDetail, IReadOnlyCollection<ITrigger> (x) => [x.Trigger]);
 
-        return scheduler.ScheduleJobs(jobDict, true);
+        return scheduler.ScheduleJobs(jobDict, new ScheduleJobOptions { Replace = true });
 
         static (IJobDetail JobDetail, ITrigger Trigger) FormatJobAndTrigger(RevocablePunishment punishment)
         {

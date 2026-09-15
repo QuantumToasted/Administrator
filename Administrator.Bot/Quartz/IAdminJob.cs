@@ -13,7 +13,7 @@ public interface IAdminJob : IJob
 public interface IAdminJob<TJob> : IAdminJob
     where TJob : IAdminJob<TJob>
 {
-    static virtual JobKey FormatJobKey() => JobKey.Create(Guid.NewGuid().ToString(), typeof(TJob).Name);
+    static virtual JobKey FormatJobKey() => new(Guid.NewGuid().ToString(), typeof(TJob).Name);
     static virtual TriggerKey FormatTriggerKey(DateTimeOffset startAt) => new(startAt.ToUnixTimeMilliseconds().ToString(), $"{typeof(TJob).Name}_Trigger");
 }
 
@@ -25,9 +25,9 @@ public interface IAdminJob<TJob, TEntity> : IAdminJob<TJob>
     ValueTask Execute(IJobExecutionContext context, TEntity entity);
     ValueTask Reschedule(IJobExecutionContext context, TEntity entity, CancellationToken cancellationToken) => ValueTask.CompletedTask;
 
-    static virtual JobKey FormatJobKey(TEntity entity) => JobKey.Create(entity.Id.ToString(), typeof(TJob).Name);
+    static virtual JobKey FormatJobKey(TEntity entity) => new JobKey(entity.Id.ToString(), typeof(TJob).Name);
     static virtual TriggerKey FormatTriggerKey(TEntity entity, DateTimeOffset startAt) => new(startAt.ToUnixTimeMilliseconds().ToString(), $"{typeof(TJob).Name}_Trigger.{entity.Id}");
-    async ValueTask IJob.Execute(IJobExecutionContext context)
+    async ValueTask IJob.Execute(IJobExecutionContext context, CancellationToken cancellationToken)
     {
         TEntity entity;
         

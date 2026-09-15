@@ -80,7 +80,7 @@ var host = new HostBuilder()
 
         services.AddQuartz(x =>
         {
-            x.InterruptJobsOnShutdown = true;
+            x.ConfigureScheduler(y => y.ShutdownJobInterruption = ShutdownJobInterruption.Always);
             x.AddJobListener<AdminJobListener>();
             x.AddSchedulerListener<AdminSchedulerListener>();
         });

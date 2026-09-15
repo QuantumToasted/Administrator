@@ -20,8 +20,8 @@ public static class QuartzExtensions
     {
         var jobDict = entities.Select(static t => t.Entity.FormatJobAndTrigger<TJob, TEntity>(t.StartAt))
             .ToDictionary(t => t.JobDetail, IReadOnlyCollection<ITrigger> (x) => [x.Trigger]);
-        
-        return scheduler.ScheduleJobs(jobDict, true);
+
+        return scheduler.ScheduleJobs(jobDict, new ScheduleJobOptions { Replace = true });
     }
     
     public static ValueTask ScheduleAdminJobs<TJob, TEntity>(this IScheduler scheduler, IEnumerable<TEntity> entities)
@@ -31,7 +31,7 @@ public static class QuartzExtensions
         var jobDict = entities.Select(FormatJobAndTrigger<TJob, TEntity>)
             .ToDictionary(x => x.JobDetail, IReadOnlyCollection<ITrigger> (x) => [x.Trigger]);
         
-        return scheduler.ScheduleJobs(jobDict, true);
+        return scheduler.ScheduleJobs(jobDict, new ScheduleJobOptions { Replace = true });
     }
     
     public static ValueTask<DateTimeOffset> ScheduleAdminJob<TJob, TEntity>(this IScheduler scheduler, TEntity entity, DateTimeOffset startAt)
@@ -89,7 +89,7 @@ public static class QuartzExtensions
         return scheduler.DeleteJob(TJob.FormatJobKey(entity));
     }
     
-    public static ValueTask<bool> DeleteAdminJobs<TJob, TEntity>(this IScheduler scheduler, IEnumerable<TEntity> entities)
+    public static ValueTask<List<JobKey>> DeleteAdminJobs<TJob, TEntity>(this IScheduler scheduler, IEnumerable<TEntity> entities)
         where TJob : IAdminJob<TJob, TEntity>
         where TEntity : class, IKeyedEntity<int>
     {
@@ -124,7 +124,8 @@ public static class QuartzExtensions
         return FormatJobAndTrigger<TJob, TEntity>(entity, entity.ExpiresAt.Value);
     }
 
-    private static JobBuilder WithEntityKey<TEntity>(this JobBuilder builder, TEntity entity)
+    private static JobBuilder<TJob> WithEntityKey<TJob, TEntity>(this JobBuilder<TJob> builder, TEntity entity)
+        where TJob : IJob
         where TEntity : class, IKeyedEntity<int>
     {
         return builder.UsingJobData("key", entity.Id);

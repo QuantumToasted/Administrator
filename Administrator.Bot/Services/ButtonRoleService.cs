@@ -4,6 +4,7 @@ using Disqord.Bot.Commands;
 using Disqord.Bot.Commands.Components;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
+using Disqord.Http;
 using Disqord.Rest;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -102,7 +103,7 @@ public sealed class ButtonRoleService : DiscordBotService
         {
             await Bot.ModifyMessageAsync(channelId, messageId, x => x.Components = components);
         }
-        catch (RestApiException ex) when (ex.ErrorModel?.Code == RestApiErrorCode.UnknownMessage)
+        catch (RestApiException ex) when (ex.StatusCode == HttpResponseStatusCode.NotFound)
         {
             Logger.LogWarning("Message {MessageId} in channel {ChannelId} was deleted or could not be found - removing all button roles.",
                 messageId.RawValue, channelId.RawValue);
