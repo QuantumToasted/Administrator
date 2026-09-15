@@ -54,7 +54,7 @@ public sealed class AuditLogService : DiscordBotService
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug("Timeout exceeded waiting for audit log.");
+            Logger.LogTrace("Timeout exceeded waiting for audit log.");
         }
         finally
         {
@@ -80,7 +80,9 @@ public sealed class AuditLogService : DiscordBotService
             return log;
         }
         catch (OperationCanceledException)
-        { }
+        {
+            Logger.LogTrace("Timeout exceeded waiting for audit log.");
+        }
         finally
         {
             _waiters.Remove(tcs, out _);

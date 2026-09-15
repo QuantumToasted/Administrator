@@ -1,9 +1,4 @@
-using System.Reflection;
-using Disqord.Bot.Commands.Application;
 using Laylua;
-using Laylua.Marshaling;
-using Laylua.Moon;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
 
@@ -20,27 +15,5 @@ public static class LuaExtensions
     {
         lua.SetGlobal(key, value);
         return key;
-    }
-    
-    public static void OpenDiscordLibraries(this Lua lua, IDiscordApplicationGuildCommandContext context, CancellationToken cancellationToken, bool setHook = true)
-    {
-        lua.OpenLibrary(new DiscordCommandContextLibrary(context, cancellationToken));
-        lua.OpenLibrary(new DiscordEnumLibrary(context.Bot));
-        lua.OpenLibrary(new DiscordHttpLibrary(context.Services.GetRequiredService<HttpClient>(), cancellationToken));
-        lua.OpenLibrary(new DiscordJsonLibrary(cancellationToken));
-        lua.OpenLibrary(new DiscordPersistenceLibrary(context, cancellationToken));
-        lua.OpenLibrary(new DiscordMenuLibrary(context, cancellationToken));
-
-        if (setHook)
-            lua.State.Hook = new CancellationTokenLuaHook(cancellationToken);
-    }
-
-    public static void SetModelDescriptors(this DefaultUserDataDescriptorProvider provider)
-    {
-        foreach (var type in typeof(ILuaModel).Assembly.GetTypes().Where(x => typeof(ILuaModel).IsAssignableFrom(x) && !x.IsInterface))
-        {
-            var method = typeof(ILuaModel<>).MakeGenericType(type).GetMethod(nameof(ILuaModel.SetUserDataDescriptor), BindingFlags.Static | BindingFlags.Public)!;
-            method.Invoke(null, [provider]);
-        }
     }
 }

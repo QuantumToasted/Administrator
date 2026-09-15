@@ -1,10 +1,20 @@
 using Disqord;
+using Disqord.Bot;
+using Disqord.Gateway;
 using Disqord.Rest;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 
-public sealed class LuaCategoryChannel(ICategoryChannel channel, DiscordLuaLibraryBase library) : LuaGuildChannel(channel), ILuaModel<LuaCategoryChannel>
+[LuaType]
+public sealed partial class LuaCategoryChannel(ICategoryChannel channel) : LuaGuildChannel(channel)
 {
-    public void SetName(string name)
-        => library.RunWait(ct => channel.ModifyAsync(x => x.Name = name, cancellationToken: ct));
+    [LuaName("channels")]
+    public Snowflake[] ChannelIds { get; } = GetCategoryChannels(channel);
+
+    private static Snowflake[] GetCategoryChannels(ICategoryChannel channel)
+    {
+        var bot = (DiscordBotBase)channel.Client;
+        return bot.GetChannels(channel.GuildId).Values.Where(x => (x as ICategorizableGuildChannel)?.CategoryId == channel.Id).Select(x => x.Id).ToArray();
+    }
 }

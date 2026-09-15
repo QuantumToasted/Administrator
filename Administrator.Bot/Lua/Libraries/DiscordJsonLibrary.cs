@@ -4,7 +4,7 @@ using Laylua;
 
 namespace Administrator.Bot;
 
-public sealed class DiscordJsonLibrary(CancellationToken cancellationToken) : DiscordLuaLibraryBase(cancellationToken)
+public sealed class DiscordJsonLibrary : DiscordLuaLibrary
 {
     private static readonly JsonSerializerOptions Options = new()
     {
@@ -16,7 +16,7 @@ public sealed class DiscordJsonLibrary(CancellationToken cancellationToken) : Di
     
     public override string Name => "json";
     
-    protected override IEnumerable<string> RegisterGlobals(Lua lua)
+    protected override IEnumerable<string> EnumerateGlobals(Lua lua)
     {
         _lua = lua;
         using var jsonTable = lua.CreateTable();
@@ -26,7 +26,7 @@ public sealed class DiscordJsonLibrary(CancellationToken cancellationToken) : Di
         yield return lua.SetStringGlobal("json", jsonTable);
     }
 
-    public string Serialize(object value)
+    private string Serialize(object value)
     {
         if (value is LuaTable table)
         {
@@ -65,7 +65,7 @@ public sealed class DiscordJsonLibrary(CancellationToken cancellationToken) : Di
         }
     }
 
-    public LuaTable? Deserialize(string json)
+    private LuaTable? Deserialize(string json)
     {
         JsonElement? root;
         try

@@ -1,67 +1,44 @@
+using Administrator.Core;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Gateway;
+using Disqord.Models;
 using Disqord.Rest;
 using Laylua.Marshaling;
 using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class LuaMember(IMember member, DiscordLuaLibraryBase library) : LuaUser(member), ILuaModel<LuaMember>
+[LuaType]
+public sealed partial class LuaMember(IMember member) : LuaUser(member), IMember
 {
-    //public long GuildId { get; } = (long) member.GuildId.RawValue;
+    public string? Nickname { get; private set; }
     
-    public long[] Roles { get; } = member.RoleIds.Except([member.GuildId]).Select(x => (long) x.RawValue).ToArray();
-    
-    public string? Joined { get; } = (member.JoinedAt.GetValueOrNullable() ?? DateTimeOffset.UtcNow).ToString("s");
-    
-    public string? Nickname { get; } = member.Nick;
-    
-    public bool Muted { get; } = member.IsMuted;
-    
-    public bool Deafened { get; } = member.IsDeafened;
-    
-    public string? Boosted { get; } = member.BoostedAt?.ToString("s");
-    
-    public bool Pending { get; } = member.IsPending;
+    public Snowflake[] RoleIds { get; private set; }
 
-    public string GuildAvatar { get; } = member.GetGuildAvatarUrl(CdnAssetFormat.Automatic, 1024);
+    [LuaName("joined")]
+    public DateTimeOffset JoinedAt { get; } = member.JoinedAt.GetValueOrNullable() ?? DateTimeOffset.UtcNow;
     
-    public string? TimedOutUntil { get; } = member.TimedOutUntil?.ToString("s");
+    [LuaName("muted")]
+    public bool IsMuted { get; } = member.IsMuted;
     
-    //public long MemberFlags { get; } = (long) member.GuildFlags;
+    [LuaName("deafened")]
+    public bool IsDeafened { get; } = member.IsDeafened;
+    
+    [LuaName("boosted")]
+    public DateTimeOffset? BoostedAt { get; } = member.BoostedAt;
+    
+    public string GuildAvatar { get; } = member.GetGuildAvatarUrl(CdnAssetFormat.Automatic, 512);
+    
+    public DateTimeOffset? TimedOutUntil { get; } = member.TimedOutUntil;
 
-    public long Permissions { get; } = (long) member.CalculateGuildPermissions();
-
-    public bool HasPermission(long permissions)
-        => ((Permissions) Permissions).HasFlag((Permissions) permissions);
-
-    public void SetNickname(string nick)
+    public async Task<bool> SetNickname(string nickname)
     {
-        Guard.IsNotNull(nick);
-        library.RunWait(ct => member.ModifyAsync(x => x.Nick = nick, cancellationToken: ct));
-    }
-
-    public bool Kick(string? reason)
-    {
-        reason = !string.IsNullOrWhiteSpace(reason) ? reason : "No reason.";
         try
         {
-            library.RunWait(ct => member.KickAsync(new DefaultRestRequestOptions().WithReason(reason), cancellationToken: ct));
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-    
-    public bool Ban(string? reason, int? pruneDays)
-    {
-        reason = !string.IsNullOrWhiteSpace(reason) ? reason : "No reason.";
-        pruneDays = Math.Max(0, pruneDays.GetValueOrDefault());
-        try
-        {
-            library.RunWait(ct => member.BanAsync(reason, pruneDays, cancellationToken: ct));
+            Guard.IsNotNullOrEmpty(nickname);
+            await member.ModifyAsync(x => x.Nick = nickname);
+            Nickname = nickname;
             return true;
         }
         catch
@@ -70,12 +47,42 @@ public sealed class LuaMember(IMember member, DiscordLuaLibraryBase library) : L
         }
     }
 
-    public void GrantRole(long roleId)
-        => library.RunWait(ct => member.GrantRoleAsync((ulong)roleId, cancellationToken: ct));
+    public async Task<bool> GrantRole(Snowflake roleId)
+    {
+        try
+        {
+            await member.GrantRoleAsync(roleId);
+            RoleIds = RoleIds.AddUnique(roleId);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> RevokeRole(Snowflake roleId)
+    {
+        try
+        {
+            await member.RevokeRoleAsync(roleId);
+            RoleIds = RoleIds.Except([roleId]).ToArray();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
     
-    public void RevokeRole(long roleId)
-        => library.RunWait(ct => member.RevokeRoleAsync((ulong)roleId, cancellationToken: ct));
-    
-    static void ILuaModel.SetUserDataDescriptor(DefaultUserDataDescriptorProvider provider)
-        => ILuaModel<LuaMember>.SetUserDataDescriptor(provider);
+    Snowflake IGuildEntity.GuildId => member.GuildId;
+    void IJsonUpdatable<MemberJsonModel>.Update(MemberJsonModel model) => member.Update(model);
+    string? IMember.Nick => Nickname;
+    IReadOnlyList<Snowflake> IMember.RoleIds => RoleIds;
+    Optional<DateTimeOffset> IMember.JoinedAt => JoinedAt;
+    bool IMember.IsPending => member.IsPending;
+    string? IMember.GuildAvatarHash => member.GuildAvatarHash;
+    MemberFlags IMember.GuildFlags => member.GuildFlags;
+    IAvatarDecoration? IMember.GuildAvatarDecoration => member.GuildAvatarDecoration;
+    ICollectibles? IMember.GuildCollectibles => member.GuildCollectibles;
 }

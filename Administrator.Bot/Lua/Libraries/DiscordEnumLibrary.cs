@@ -1,18 +1,14 @@
 using Disqord;
-using Disqord.Bot;
 using Humanizer;
 using Laylua;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Administrator.Bot;
 
-public sealed class DiscordEnumLibrary(DiscordBotBase bot) : DiscordLuaLibraryBase(bot.StoppingToken)
+public sealed class DiscordEnumLibrary(EmojiService emojiService) : DiscordLuaLibrary
 {
-    private readonly EmojiService _emojiService = bot.Services.GetRequiredService<EmojiService>();
-
-    public override string Name => "enums";
-
-    protected override IEnumerable<string> RegisterGlobals(Lua lua)
+    public override string Name => "enum";
+    
+    protected override IEnumerable<string> EnumerateGlobals(Lua lua)
     {
         using (var permissions = lua.CreateTable())
         {
@@ -26,7 +22,7 @@ public sealed class DiscordEnumLibrary(DiscordBotBase bot) : DiscordLuaLibraryBa
 
         using (var emojis = lua.CreateTable())
         {
-            foreach (var (name, emoji) in _emojiService.Names)
+            foreach (var (name, emoji) in emojiService.Names)
             {
                 emojis.SetValue(name.ToUpper(), emoji.Surrogates);
             }

@@ -1,41 +1,57 @@
 using Disqord;
 using Disqord.Rest;
 using Laylua;
+using Laylua.Marshaling;
+using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class LuaVoiceChannel(IVoiceChannel channel, DiscordLuaLibraryBase library) : LuaGuildChannel(channel), ILuaModel<LuaVoiceChannel>
+[LuaType]
+public sealed partial class LuaVoiceChannel(IVoiceChannel channel) : LuaGuildChannel(channel)
 {
-    public long? CategoryId { get; } = (long?) channel.CategoryId?.RawValue;
-
-    //public int Bitrate { get; } = channel.Bitrate;
+    [LuaName("category")]
+    public Snowflake? CategoryId { get; } = channel.CategoryId;
 
     public string? Region { get; } = channel.Region;
 
-    public long? LastMessageId { get; } = (long?) channel.LastMessageId?.RawValue;
+    public Snowflake? LastMessageId { get; } = channel.LastMessageId;
 
-    public string? LastPinTimestamp { get; } = channel.LastPinTimestamp?.ToString("s");
+    public DateTimeOffset? LastPinTimestamp { get; } = channel.LastPinTimestamp;
 
-    public string Slowmode { get; } = channel.Slowmode.ToString("s");
+    public TimeSpan Slowmode { get; } = channel.Slowmode;
 
     public string Tag { get; } = channel.Tag;
 
     public bool IsAgeRestricted { get; } = channel.IsAgeRestricted;
 
     public int MemberLimit { get; } = channel.MemberLimit;
-
-    //public string VideoQualityMode { get; } = channel.VideoQualityMode.Humanize(LetterCasing.AllCaps).Replace(' ', '_');
-
-    public void SetName(string name)
-        => library.RunWait(ct => channel.ModifyAsync(x => x.Name = name, cancellationToken: ct));
-
-    public void Delete()
-        => library.RunWait(ct => channel.DeleteAsync(cancellationToken: ct));
     
-    public long SendMessage(LuaTable msg)
+    public async Task<Snowflake?> SendMessage(LuaMessage msg)
     {
-        var message = DiscordLuaLibraryBase.ConvertMessage<LocalMessage>(msg);
-        var newMessage = library.RunWait(ct => channel.SendMessageAsync(message, cancellationToken: ct));
-        return (long)newMessage.Id.RawValue;
+        try
+        {
+            var message = LocalMessage.CreateFrom(msg);
+            var sentMessage = await channel.SendMessageAsync(message);
+            return sentMessage.Id;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    
+    public async Task<LuaDiscordMessage?> GetMessage(Snowflake id)
+    {
+        try
+        {
+            var message = await channel.GetOrFetchMessageAsync(id);
+            return message is not null
+                ? new LuaDiscordMessage(message)
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -1,10 +1,12 @@
 using Disqord;
 using Disqord.Extensions.Interactivity.Menus;
+using Laylua.Marshaling;
 using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class LuaButtonEvent(ButtonEventArgs e, LuaMenuView view) : ILuaModel<LuaButtonEvent>
+[LuaType] // TODO: reduce LuaTable dependencies
+public sealed partial class LuaButtonEvent(ButtonEventArgs e, LuaMenuView view)
 {
     public string CustomId { get; } = e.Button.CustomId;
 

@@ -1,10 +1,14 @@
 using Disqord;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 
-public sealed class LuaEmbedFooter(IEmbedFooter footer) : ILuaModel<LuaEmbedFooter>
+[LuaType(Construction = LuaConstructionMode.Factory)]
+public sealed partial class LuaEmbedFooter : IEmbedFooter
 {
-    public string Text { get; } = footer.Text;
-
-    public string? IconUrl { get; } = footer.IconUrl;
+    public string? Text { get; set; }
+    
+    public string? IconUrl { get; set; }
+    
+    string? IEmbedFooter.ProxyIconUrl => null;
 }

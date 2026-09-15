@@ -2,6 +2,7 @@ using Disqord;
 using Disqord.Extensions.Interactivity.Menus;
 using Laylua;
 using Laylua.Moon;
+using Qommon;
 
 namespace Administrator.Bot;
 
@@ -10,7 +11,7 @@ public sealed class LuaMenuView : AdminViewBase
     private readonly LuaFunction _callback;
 
     public LuaMenuView(LuaMenu menu) : this(menu.Buttons, menu.Msg, menu.Callback) { }
-    public LuaMenuView(LuaTable buttons, LuaTable msg, LuaFunction callback) : base(null)
+    public LuaMenuView(LuaTable buttons, LuaMessage msg, LuaFunction callback) : base(null)
     {
         _callback = callback.CloneReference();
 
@@ -34,7 +35,7 @@ public sealed class LuaMenuView : AdminViewBase
             AddComponent(button);
         }
 
-        Message = DiscordLuaLibraryBase.ConvertMessage<LocalMessage>(msg);
+        Message = LocalMessage.CreateFrom(msg);
     }
 
     public LocalMessage Message { get; private set; }
@@ -44,12 +45,12 @@ public sealed class LuaMenuView : AdminViewBase
     private ValueTask HandleButton(ButtonEventArgs e)
     {
         var button = new LuaButtonEvent(e, this);
-        var res = _callback.Call(button);
-        if (res is { IsEmpty: false, First: { Type: LuaType.Table, Value: LuaTable msg } })
+        using var res = _callback.Call(button);
+        if (res is { IsEmpty: false } && res.First.TryGetValue(out LuaMessage? message))
         {
             try
             {
-                Message = DiscordLuaLibraryBase.ConvertMessage<LocalMessage>(msg);
+                Message = LocalMessage.CreateFrom(message!);
                 ReportChanges();
             } 
             catch { /* ignored */ }

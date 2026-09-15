@@ -16,7 +16,8 @@ public class AdminPromptView : PromptView
         MessageTemplate = messageTemplate;
     }
     
-    public AdminPromptView(string prompt, LocalEmbed? embed = null, bool isEphemeral = false, string? flavorText = DEFAULT_FLAVOR_TEXT)
+    public AdminPromptView(string prompt, LocalEmbed? embed = null, bool isEphemeral = false, string? flavorText = DEFAULT_FLAVOR_TEXT,
+        LocalAttachment? attachment = null)
         : base(null!)
     {
         var contentBuilder = new StringBuilder()
@@ -30,7 +31,11 @@ public class AdminPromptView : PromptView
             x.WithContent(contentBuilder.ToString());
             if (embed is not null)
                 x.AddEmbed(embed);
+            
             (x as LocalInteractionMessageResponse)?.WithIsEphemeral(isEphemeral);
+            
+            if (attachment is not null)
+                x.WithAttachments(attachment);
         };
     }
     

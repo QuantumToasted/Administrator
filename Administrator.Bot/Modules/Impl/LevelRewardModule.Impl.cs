@@ -5,6 +5,7 @@ using Disqord;
 using Disqord.Bot.Commands.Application;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
+using Disqord.Rest;
 using Humanizer;
 using LinqToDB.EntityFrameworkCore;
 using Qmmands;
@@ -159,25 +160,6 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
                 revokedRoles.Add(role);
             }
         }
-        
-        /*
-        var newLevelReward = RoleLevelReward.Create(Context.GuildId, tier, level, 
-            grantedRoles.Select(x => x.Id).Distinct(), revokedRoles.Select(x => x.Id).Distinct());
-
-        var levelReward = await db.LevelRewards.Merge()
-            .Using([newLevelReward])
-            .OnTargetKey()
-            .InsertWhenNotMatched(static src => new RoleLevelReward
-            {
-                GuildId = src.GuildId, Level = src.Level, Tier = src.Tier, GrantedRoleIds = src.GrantedRoleIds, RevokedRoleIds = src.RevokedRoleIds
-            })
-            .UpdateWhenMatched(static (dst, src) => new RoleLevelReward
-            {
-                GrantedRoleIds = src.GrantedRoleIds, RevokedRoleIds = src.RevokedRoleIds
-            })
-            .MergeWithOutputAsync(static (action, del, ins, src) => ins)
-            .FirstAsync();
-        */
 
         var levelReward = RoleLevelReward.Create(Context.GuildId, tier, level, grantedRoles.Select(x => x.Id), revokedRoles.Select(x => x.Id));
         await db.LevelRewards.Merge(levelReward, g => new()
@@ -210,65 +192,11 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
 
         var memberXp = dbMembers.ToDictionary(x => x.UserId);
 
-        members = members.Where(x => NeedsApplied(x, memberXp.GetValueOrDefault(x.Id), grantedRoles, revokedRoles))
+        var allRewards = await db.LevelRewards.Where(x => x.GuildId == Context.GuildId).ToListAsyncEF();
+        members = members.Where(x => NeedsAppliedOrRevoked(x, memberXp.GetValueOrDefault(x.Id), allRewards))
             .ToList();
-
-        if (members.Count == 0)
-        {
-            await Response(responseBuilder.ToString());
-            return;
-        }
-
-        responseBuilder.AppendNewline("Would you like to apply this new level reward retroactively?")
-            .AppendNewline($"{"user".ToQuantity(members.Count)} will be affected.");
-
-        var view = new AdminPromptView(responseBuilder.ToString()).OnConfirm("Applying level reward now, this may take awhile...");
-        await View(view);
-
-        if (!view.Result)
-            return;
-
-        await Response("Level reward applied.");
-
-        var appliedCount = 0;
-        var failedCount = 0;
-
-        _ = Task.Run(async () =>
-        {
-            foreach (var member in members)
-            {
-                try
-                {
-                    await levelReward.ApplyAsync(member);
-                    appliedCount++;
-                }
-                catch
-                {
-                    failedCount++;
-                }
-            }
-            
-            responseBuilder.Clear()
-                .AppendNewline("All done!")
-                .AppendNewline($"Successful level reward assignments: {appliedCount}")
-                .AppendNewline($"Failed level reward assignments: {failedCount}")
-                .AppendNewline("(If the failed count is unusually high, you may need to check your " +
-                               "role settings or reconfigure this level reward.)");
-
-            await Response(responseBuilder.ToString());
-        });
-
-        static bool NeedsApplied(IMember member, Member? xp, IEnumerable<IRole> grantedRoles, IEnumerable<IRole> revokedRoles)
-        {
-            if (xp is null)
-                return false;
-
-            var newRoleIds = member.RoleIds.Except(revokedRoles.Select(x => x.Id))
-                .Concat(grantedRoles.Select(x => x.Id))
-                .ToList();
-
-            return newRoleIds.Count != member.RoleIds.Count;
-        }
+        
+        await FixLevelRewards(responseBuilder.ToString(), members, memberXp, allRewards);
     }
 
     public partial async Task Remove(int tier, int level)
@@ -287,70 +215,14 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
 
         var dbMembers = await db.Members.Where(x => x.GuildId == Context.GuildId).ToListAsyncEF();
 
-        dbMembers = dbMembers.Where(x => x.GetTier() <= tier || x.GetLevel() <= level).ToList();
+        dbMembers = dbMembers.Where(x => x.GetTier() <= tier || (x.GetTier() == tier && x.GetLevel() <= level)).ToList();
 
         var memberXp = dbMembers.ToDictionary(x => x.UserId);
-        
-        members = members.Where(x => NeedsRevoked(x, memberXp.GetValueOrDefault(x.Id), levelReward.GrantedRoleIds, levelReward.RevokedRoleIds))
-            .ToList();
 
-        var responseBuilder = new StringBuilder($"Role level reward for tier {tier}, level {level} removed.");
-        if (members.Count == 0)
-        {
-            await Response(responseBuilder.ToString());
-            return;
-        }
+        var allRewards = await db.LevelRewards.Where(x => x.GuildId == Context.GuildId).ToListAsyncEF();
+        members = members.Where(x => NeedsAppliedOrRevoked(x, memberXp.GetValueOrDefault(x.Id), allRewards)).ToList();
 
-        responseBuilder.AppendNewline()
-            .AppendNewline("Would you like to revoke this new level reward retroactively?")
-            .AppendNewline($"{"user".ToQuantity(members.Count)} will be affected.");
-
-        var view = new AdminPromptView(responseBuilder.ToString()).OnConfirm("Revoking level reward now, this may take awhile...");;
-        await View(view);
-
-        if (!view.Result)
-            return;
-
-        var revokedCount = 0;
-        var failedCount = 0;
-
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            
-            foreach (var member in members)
-            {
-                try
-                {
-                    await levelReward.RevokeAsync(member);
-                    revokedCount++;
-                }
-                catch
-                {
-                    failedCount++;
-                }
-            }
-            
-            responseBuilder.Clear()
-                .AppendNewline("All done!")
-                .AppendNewline($"Successful level reward revocations: {revokedCount}")
-                .AppendNewline($"Failed level reward revocations: {failedCount}")
-                .AppendNewline("(If the failed count is unusually high, you may need to check your role settings.)");
-
-            await Response(responseBuilder.ToString());
-        });
-
-        static bool NeedsRevoked(IMember member, Member? xp, IEnumerable<Snowflake> grantedRoleIds, IEnumerable<Snowflake> revokedRoleIds)
-        {
-            if (xp is null)
-                return false;
-
-            var newRoleIds = member.RoleIds.Except(grantedRoleIds)
-                .Concat(revokedRoleIds)
-                .ToList();
-
-            return newRoleIds.Count != member.RoleIds.Count;
-        }
+        await FixLevelRewards($"Role level reward for tier {tier}, level {level} removed.", members, memberXp, allRewards);
     }
 
     public partial async Task AutoCompleteLevelRewards(AutoComplete<int> tier, AutoComplete<int> level)
@@ -421,6 +293,76 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
         }
     }
 
+    private async Task FixLevelRewards(string promptStart, IList<CachedMember> members,
+        Dictionary<Snowflake, Member> dbMembers, ICollection<RoleLevelReward> allLevelRewards)
+    {
+        var responseBuilder = new StringBuilder(promptStart);
+        if (members.Count == 0)
+        {
+            await Response(responseBuilder.ToString());
+            return;
+        }
+
+        responseBuilder.AppendNewline()
+            .AppendNewline("Would you like to fix any members with improper role rewards now?")
+            .AppendNewline($"This will affect {"user".ToQuantity(members.Count)}, including incorrectly applied or " +
+                           $"missing level rewards. Please review the list below and proceed at your own risk.");
+        
+        var stream = new MemoryStream();
+        await using (var writer = new StreamWriter(stream, leaveOpen: true))
+        {
+            foreach (var member in members)
+            {
+                await writer.WriteAsync($"{member.Name} ({member.Id})");
+
+                if (dbMembers.GetValueOrDefault(member.Id) is { } xp)
+                    await writer.WriteAsync($" Tier {xp.GetTier()}, Level {xp.GetLevel()}");
+
+                await writer.WriteLineAsync();
+            }
+        }
+
+        stream.Seek(0, SeekOrigin.Begin);
+        var view = new AdminPromptView(responseBuilder.ToString(), attachment: new LocalAttachment(stream, "pending.txt"))
+            .OnConfirm("Correcting level rewards now, this may take awhile...");
+        
+        await View(view);
+
+        if (!view.Result)
+            return;
+
+        var successCount = 0;
+        var failedCount = 0;
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            
+            foreach (var member in members)
+            {
+                var newRoleIds = member.GetLevelRewardOutputRoles(dbMembers.GetValueOrDefault(member.Id), allLevelRewards);
+                
+                try
+                {
+                    await member.ModifyAsync(x => x.RoleIds = newRoleIds);
+                    successCount++;
+                }
+                catch
+                {
+                    failedCount++;
+                }
+            }
+            
+            responseBuilder.Clear()
+                .AppendNewline("All done!")
+                .AppendNewline($"Successful level reward corrections: {successCount}")
+                .AppendNewline($"Failed level reward corrections: {failedCount}")
+                .AppendNewline("(If the failed count is unusually high, you may need to check your role settings.)");
+
+            await Response(responseBuilder.ToString());
+        });
+    }
+    
     private static LocalEmbedField FormatField(RoleLevelReward reward)
     {
         var valueBuilder = new StringBuilder();
@@ -441,5 +383,18 @@ public sealed partial class LevelRewardModule(AdminDbContext db) : DiscordApplic
 
         return new LocalEmbedField().WithName($"Tier {reward.Tier}, Level {reward.Level}")
             .WithValue(valueBuilder.Length > 0 ? valueBuilder.ToString() : "None");
+    }
+
+    private static bool NeedsAppliedOrRevoked(IMember member, Member? xp, IEnumerable<RoleLevelReward> rewards)
+    {
+        var roleIds = member.RoleIds.Order().ToList();
+        var newRoleIds = member.GetLevelRewardOutputRoles(xp, rewards).Order().ToList();
+
+        if (!roleIds.SequenceEqual(newRoleIds))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

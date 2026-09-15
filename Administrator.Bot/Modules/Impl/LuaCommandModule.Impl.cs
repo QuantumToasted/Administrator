@@ -46,11 +46,7 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
                             $"(Make sure to include the separator ({Markdown.Code(METADATA_SEPARATOR)}) {Markdown.Bold("between")} the metadata and the command!)");
         }
         
-        using var cts = new Cts();
-        using var lua = new Lua();
-        lua.OpenDiscordLibraries(Context, cts.Token);
-        lua.OpenLibrary(LuaLibraries.Standard.Math);
-        lua.OpenLibrary(LuaLibraries.Standard.String);
+        using var luaContext = new AdminLuaContext(Context);
 
         // just SHOOOVE a `return metadata` in there to force return the metadata object
         var rawMetadata = split[0].Replace(INSERTED_RETURN, "\n") + $"\n{INSERTED_RETURN}";
@@ -64,7 +60,7 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
         LuaSlashCommand slashCommand;
         try
         {
-            var rawCommand = lua.Evaluate<LuaTable>(rawMetadata);
+            var rawCommand = luaContext.Lua.Evaluate<LuaTable>(rawMetadata);
             Guard.IsNotNull(rawCommand);
             slashCommand = new LuaSlashCommand(rawCommand);
             slashCommand.Validate();
@@ -85,12 +81,11 @@ public sealed partial class LuaCommandModule(AdminDbContext db, AttachmentServic
 
         AdminPromptView view;
 
-        //var guild = await db.Guilds.GetOrCreateAsync(Context.GuildId);
         var maxLuaCommands = await db.Guilds.GetValueOrDefault(Context.GuildId, g => g.MaxLuaCommands);
         var metadataChanged = true;
         if (await db.LuaCommands.FindAsync(Context.GuildId, commandName) is { } luaCommand)
         {
-            var metadataTable = luaCommand.ToMetadataTable(lua, Bot);
+            var metadataTable = luaCommand.ToMetadataTable(luaContext.Lua);
             var currentSlashCommand = new LuaSlashCommand(metadataTable);
 
             if (slashCommand.Equals(currentSlashCommand))

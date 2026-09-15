@@ -2,12 +2,10 @@ using Disqord;
 
 namespace Administrator.Bot;
 
-public sealed class LuaRole(IRole role) : ILuaModel<LuaRole>
+public sealed class LuaRole(IRole role)
 {
-    public long Id { get; } = (long) role.Id.RawValue;
-    
-    //public long GuildId { get; } = (long) role.GuildId.RawValue;
-    
+    public Snowflake Id { get; } = role.Id;
+
     public string Name { get; } = role.Name;
     
     public string Mention { get; } = role.Mention;
@@ -17,7 +15,7 @@ public sealed class LuaRole(IRole role) : ILuaModel<LuaRole>
     public string? Icon { get; } = role.UnicodeEmoji is { } emoji
         ? emoji.ToString()
         : !string.IsNullOrWhiteSpace(role.IconHash)
-            ? role.GetIconUrl(CdnAssetFormat.Automatic, size: 1024)
+            ? role.GetIconUrl(CdnAssetFormat.Automatic, size: 512)
             : null;
     
     public bool Hoisted { get; } = role.IsHoisted;

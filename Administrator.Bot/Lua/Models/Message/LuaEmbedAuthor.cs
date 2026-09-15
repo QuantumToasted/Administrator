@@ -1,12 +1,17 @@
 using Disqord;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 
-public sealed class LuaEmbedAuthor(IEmbedAuthor author) : ILuaModel<LuaEmbedAuthor>
+[LuaType(Construction = LuaConstructionMode.Factory)]
+public sealed partial class LuaEmbedAuthor : IEmbedAuthor
 {
-    public string Name { get; } = author.Name;
-
-    public string? Url { get; } = author.Url;
-
-    public string? IconUrl { get; } = author.IconUrl;
+    public required string Name { get; set; }
+    
+    public string? Url { get; set; }
+    
+    [LuaName("icon")]
+    public string? IconUrl { get; set; }
+    
+    string? IEmbedAuthor.ProxyIconUrl => null;
 }

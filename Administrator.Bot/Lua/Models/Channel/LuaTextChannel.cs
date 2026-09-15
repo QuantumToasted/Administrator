@@ -1,17 +1,20 @@
 using Disqord;
 using Disqord.Rest;
 using Laylua;
+using Laylua.Marshaling;
 using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class LuaTextChannel(ITextChannel channel, DiscordLuaLibraryBase library) : LuaGuildChannel(channel), ILuaModel<LuaTextChannel>
+[LuaType]
+public sealed partial class LuaTextChannel(ITextChannel channel) : LuaGuildChannel(channel)
 {
-    public long? LastMessageId { get; } = (long?) channel.LastMessageId?.RawValue;
+    [LuaName("lastMessage")]
+    public Snowflake? LastMessageId { get; } = channel.LastMessageId;
     
     public string Tag { get; } = channel.Tag;
     
-    public string? LastPin { get; } = channel.LastPinTimestamp?.ToString("s");
+    public DateTimeOffset? LastPin { get; } = channel.LastPinTimestamp;
     
     public bool AgeRestricted { get; } = channel.IsAgeRestricted;
     
@@ -19,50 +22,53 @@ public sealed class LuaTextChannel(ITextChannel channel, DiscordLuaLibraryBase l
     
     public string? Topic { get; } = channel.Topic;
     
-    public long? CategoryId { get; } = (long?) channel.CategoryId?.RawValue;
+    [LuaName("category")]
+    public Snowflake? CategoryId { get; } = channel.CategoryId;
     
     public bool News { get; } = channel.IsNews;
     
-    public string ArchiveThreadsAfter { get; } = channel.DefaultAutomaticArchiveDuration.ToString("g");
+    public TimeSpan ArchiveThreadsAfter { get; } = channel.DefaultAutomaticArchiveDuration;
 
-    public void SetName(string name)
+    public async Task<bool> SetTopic(string topic)
     {
-        Guard.IsNotNullOrWhiteSpace(name);
-        library.RunWait(ct => channel.ModifyAsync(x => x.Name = name, cancellationToken: ct));
-    }
-
-    public void SetTopic(string topic)
-    {
-        Guard.IsNotNull(topic);
-        library.RunWait(ct => channel.ModifyAsync(x => x.Topic = topic, cancellationToken: ct));
-    }
-    
-    public void Delete()
-        => library.RunWait(ct => channel.DeleteAsync(cancellationToken: ct));
-
-    public long SendMessage(LuaTable msg)
-    {
-        Guard.IsNotNull(msg);
-        var message = DiscordLuaLibraryBase.ConvertMessage<LocalMessage>(msg);
-        var newMessage = library.RunWait(ct => channel.SendMessageAsync(message, cancellationToken: ct));
-        return (long)newMessage.Id.RawValue;
-    }
-
-    public LuaMessage? GetMessage(long id)
-    {
-        var message = library.RunWait(async ct =>
+        try
         {
-            try
-            {
-                var m = await channel.GetOrFetchMessageAsync((ulong)id, ct);
-                return m;
-            }
-            catch
-            {
-                return null;
-            }
-        });
+            Guard.IsNotNull(topic);
+            await channel.ModifyAsync(x => x.Topic = topic);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
-        return message is not null ? new LuaMessage(message, channel.GuildId, library) : null;
+    public async Task<Snowflake?> SendMessage(LuaMessage msg)
+    {
+        try
+        {
+            var message = LocalMessage.CreateFrom(msg);
+            var sentMessage = await channel.SendMessageAsync(message);
+            return sentMessage.Id;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<LuaDiscordMessage?> GetMessage(Snowflake id)
+    {
+        try
+        {
+            var message = await channel.GetOrFetchMessageAsync(id);
+            return message is not null
+                ? new LuaDiscordMessage(message)
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

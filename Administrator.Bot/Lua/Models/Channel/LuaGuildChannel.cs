@@ -1,14 +1,37 @@
 using Disqord;
+using Disqord.Bot;
+using Disqord.Rest.Api;
+using Laylua.Marshaling;
+using Qommon;
 
 namespace Administrator.Bot;
 
-public abstract class LuaGuildChannel(IGuildChannel channel) : LuaChannel(channel)
+[LuaType]
+public partial class LuaGuildChannel(IGuildChannel channel)
 {
-    //public long GuildId { get; } = (long) channel.GuildId.RawValue;
+    public Snowflake Id { get; } = channel.Id;
     
-    public string Mention { get; } = channel.Mention;
+    public string Name { get; } = channel.Name;
 
+    public string Type { get; } = channel.Type.ToString().ToLower();
+    
+    public string Mention { get; } = Disqord.Mention.Channel(channel.Id);
+    
     public int Position { get; } = channel.Position;
+    
+    public async Task<bool> SetName(string name)
+    {
+        try
+        {
+            Guard.IsNotNullOrWhiteSpace(name);
 
-    //public long Flags { get; } = (long) channel.Flags;
+            var bot = (DiscordBotBase)channel.Client;
+            await bot.ApiClient.ModifyChannelAsync(Id, new ModifyChannelJsonRestRequestContent { Name = name });
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

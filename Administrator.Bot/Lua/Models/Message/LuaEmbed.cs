@@ -1,20 +1,41 @@
 using Disqord;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 
-public sealed class LuaEmbed(IEmbed embed) : ILuaModel<LuaEmbed>
+[LuaType(Construction = LuaConstructionMode.Factory)]
+public sealed partial class LuaEmbed : IEmbed
 {
-    public string? Title { get; } = embed.Title;
+    public string? Title { get; set; }
+    
+    public string? Description { get; set; }
+    
+    public string? Url { get; set; }
+    
+    public long? Timestamp { get; set; }
+    
+    public string? Color { get; set; }
+    
+    [LuaName("image")]
+    public string? ImageUrl { get; set; }
+    
+    [LuaName("thumbnail")]
+    public string? ThumbnailUrl { get; set; }
+    
+    public LuaEmbedFooter? Footer { get; set; }
+    
+    public LuaEmbedAuthor? Author { get; set; }
+    
+    public LuaEmbedField[]? Fields { get; set; }
 
-    public string? Description { get; } = embed.Description;
-
-    public string? Timestamp { get; } = embed.Timestamp?.ToString("s");
-
-    public string? Color { get; } = embed.Color?.ToString();
-
-    public LuaEmbedFooter? Footer { get; } = embed.Footer is { } footer ? new LuaEmbedFooter(footer) : null;
-
-    public LuaEmbedAuthor? Author { get; } = embed.Author is { } author ? new LuaEmbedAuthor(author) : null;
-
-    public LuaEmbedField[] Fields { get; } = embed.Fields.Select(x => new LuaEmbedField(x)).ToArray();
+    string IEmbed.Type => "rich";
+    DateTimeOffset? IEmbed.Timestamp => Timestamp is { } seconds ? DateTimeOffset.FromUnixTimeSeconds(seconds) : null;
+    Color? IEmbed.Color => Disqord.Color.TryParse(Color, out var color) ? color : null;
+    IEmbedImage? IEmbed.Image => TransientEmbedImage.FromImageUrl(ImageUrl);
+    IEmbedThumbnail? IEmbed.Thumbnail => TransientEmbedThumbnail.FromThumbnailUrl(ThumbnailUrl);
+    IEmbedVideo? IEmbed.Video => null;
+    IEmbedProvider? IEmbed.Provider => null;
+    IEmbedFooter? IEmbed.Footer => Footer;
+    IEmbedAuthor? IEmbed.Author => Author;
+    IReadOnlyList<IEmbedField> IEmbed.Fields => Fields?.ToList() ?? [];
 }

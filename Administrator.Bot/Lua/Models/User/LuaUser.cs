@@ -1,10 +1,13 @@
 using Disqord;
+using Disqord.Models;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 
-public class LuaUser(IUser user) : ILuaModel<LuaUser>
+[LuaType]
+public partial class LuaUser(IUser user) : IUser
 {
-    public long Id { get; } = (long) user.Id.RawValue;
+    public Snowflake Id { get; } = user.Id;
     
     public string Name { get; } = user.Name;
     
@@ -12,15 +15,28 @@ public class LuaUser(IUser user) : ILuaModel<LuaUser>
     
     public string Tag { get; } = user.Tag;
     
-    public string? Discriminator { get; } = user.Discriminator != "0000" ? user.Discriminator : null;
+    public string Discriminator { get; } = user.Discriminator;
     
     public string? GlobalName { get; } = user.GlobalName;
 
-    public string Avatar { get; } = user.GetAvatarUrl(CdnAssetFormat.Automatic, 1024);
+    public string Avatar { get; } = user.GetAvatarUrl(CdnAssetFormat.Automatic, 512);
     
-    public bool Bot { get; } = user.IsBot;
-    
-    //public long Flags { get; } = (long) user.PublicFlags;
+    public bool IsBot { get; } = user.IsBot;
 
     public bool Member { get; } = user is IMember;
+
+    public static LuaUser FromUser(IUser user)
+    {
+        return user is IMember member ? new LuaMember(member) : new LuaUser(user);
+    }
+
+    public UserFlags PublicFlags => user.PublicFlags;
+
+    IUserPrimaryGuild? IUser.PrimaryGuild => user.PrimaryGuild;
+    IAvatarDecoration? IUser.AvatarDecoration => user.AvatarDecoration;
+    ICollectibles? IUser.Collectibles => user.Collectibles;
+
+    public string? AvatarHash => user.AvatarHash;
+    public IClient Client => user.Client;
+    public void Update(UserJsonModel model) => user.Update(model);
 }

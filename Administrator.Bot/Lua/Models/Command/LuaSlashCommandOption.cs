@@ -1,10 +1,12 @@
 using Disqord;
 using Laylua;
+using Laylua.Marshaling;
 using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed record LuaSlashCommandOption : ILuaModel<LuaSlashCommandOption>
+[LuaType] // TODO: reduce LuaTable dependencies
+public sealed partial class LuaSlashCommandOption
 {
     public LuaSlashCommandOption(string name, LuaTable table)
     {

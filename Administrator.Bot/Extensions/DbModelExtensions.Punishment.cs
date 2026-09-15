@@ -100,7 +100,7 @@ public static partial class DbModelExtensions
             Kick => bot.KickMemberAsync(punishment.GuildId, punishment.Target.Id, options),
             Block block => bot.SetOverwriteAsync(block.ChannelId, LocalOverwrite.Member(block.Target.Id,
                 new OverwritePermissions().Deny(Permissions.SendMessages | Permissions.AddReactions))),
-            Ban ban => bot.CreateBanAsync(ban.GuildId, ban.Target.Id, deleteMessageDays: ban.MessagePruneDays, options: options),
+            Ban ban => bot.CreateBanAsync(ban.GuildId, ban.Target.Id, deleteMessageDuration: TimeSpan.FromDays(ban.MessagePruneDays ?? 0), options: options),
             TimedRole timedRole => timedRole.Mode is TimedRoleApplyMode.Grant
                 ? bot.GrantRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId, options)
                 : bot.RevokeRoleAsync(timedRole.GuildId, timedRole.Target.Id, timedRole.RoleId, options),

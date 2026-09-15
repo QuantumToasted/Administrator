@@ -3,11 +3,13 @@ using System.Text.RegularExpressions;
 using Disqord;
 using Humanizer;
 using Laylua;
+using Laylua.Marshaling;
 using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class LuaSlashCommand : ILuaModel<LuaSlashCommand>
+[LuaType] // TODO: reduce LuaTable dependencies
+public sealed partial class LuaSlashCommand
 {
     private static readonly Regex NameRegex = new(@"^[-_\p{L}\p{N}\p{Sc}]{1,32}$", RegexOptions.Compiled);
     
@@ -37,7 +39,7 @@ public sealed class LuaSlashCommand : ILuaModel<LuaSlashCommand>
     
     public string Description { get; } 
     
-    public Permissions? Permissions { get;}
+    public Permissions? Permissions { get; }
     
     public LuaTable? Options { get; }
     

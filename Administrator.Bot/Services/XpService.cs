@@ -180,25 +180,15 @@ public sealed class XpService(EmojiService emojis) : DiscordBotService
         var levelRewards = await db.LevelRewards.Where(x => x.GuildId == e.GuildId)
             .ToListAsync();
             
+        /*
         levelRewards = levelRewards
             .Where(x => x.Tier < member.GetTier() || (x.Tier == member.GetTier() && x.Level <= member.GetLevel()))
             .OrderBy(x => x.Tier)
             .ThenBy(x => x.Level)
             .ToList();
+        */
 
-        var roleIds = e.Member.RoleIds.ToHashSet();
-        foreach (var levelReward in levelRewards)
-        {
-            foreach (var roleId in levelReward.RevokedRoleIds)
-            {
-                roleIds.Remove(roleId);
-            }
-
-            foreach (var roleId in levelReward.GrantedRoleIds)
-            {
-                roleIds.Add(roleId);
-            }
-        }
+        var roleIds = e.Member.GetLevelRewardOutputRoles(member, levelRewards);
 
         await Bot.ModifyMemberAsync(e.GuildId, e.MemberId, x => x.RoleIds = roleIds);
     }

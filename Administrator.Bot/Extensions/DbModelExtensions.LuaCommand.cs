@@ -9,7 +9,9 @@ using Disqord.Bot.Commands.Interaction;
 using Disqord.Extensions.Interactivity.Menus;
 using Disqord.Utilities.Threading;
 using Laylua;
+using Laylua.Marshaling;
 using Laylua.Moon;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Qommon;
 using Qommon.Collections;
@@ -32,9 +34,8 @@ public static partial class DbModelExtensions
         [SlashCommandOptionType.Attachment] = typeof(IAttachment)
     };
 
-    public static LuaTable ToMetadataTable(this LuaCommand command, Lua lua, DiscordBotBase bot)
+    public static LuaTable ToMetadataTable(this LuaCommand command, Lua lua)
     {
-        lua.OpenLibrary(new DiscordEnumLibrary(bot));
         var raw = Encoding.Default.GetString(command.Metadata.GZipDecompress());
         // metadata should always end with `return metadata`
         var metadata = lua.Evaluate<LuaTable>(raw);
@@ -45,7 +46,8 @@ public static partial class DbModelExtensions
     public static void MutateApplicationModule(this LuaCommand luaCommand, DiscordBotBase bot, ApplicationModuleBuilder parentModule)
     {
         using var lua = new Lua();
-        var metadataTable = luaCommand.ToMetadataTable(lua, bot);
+        lua.OpenLibrary(new DiscordEnumLibrary(bot.Services.GetRequiredService<EmojiService>()));
+        var metadataTable = luaCommand.ToMetadataTable(lua);
         var slashCommand = new LuaSlashCommand(metadataTable);
         
         Guard.IsNotNullOrWhiteSpace(luaCommand.Name);
@@ -218,31 +220,24 @@ public static partial class DbModelExtensions
         }
     }
     
-    public static ValueTask<IResult?> ExecuteAsync(this LuaCommand luaCommand, ICommandContext context)
+    public static async ValueTask<IResult?> ExecuteAsync(this LuaCommand luaCommand, ICommandContext ctx)
     {
-        var interactionContext = Guard.IsAssignableToType<IDiscordApplicationGuildCommandContext>(context);
-        interactionContext.SetMetadata("command", luaCommand.Name);
+        var context = Guard.IsAssignableToType<IDiscordApplicationGuildCommandContext>(ctx);
+        context.SetMetadata("command", luaCommand.Name);
 
-        var lua = new Lua();
-        using var cts = new Cts();
-        lua.OpenLibrary(LuaLibraries.Standard.Math);
-        lua.OpenLibrary(LuaLibraries.Standard.Base);
-        lua.OpenLibrary(LuaLibraries.Standard.String);
-        lua.OpenLibrary(LuaLibraries.Standard.Table);
-        lua.OpenDiscordLibraries(interactionContext, cts.Token);
+        var luaContext = new AdminLuaContext(context);
 
-        IResult? result;
+        IResult result;
 
         try
         {
             var code = Encoding.Default.GetString(luaCommand.Command.GZipDecompress());
-            cts.CancelAfter(CommandTimeout);
+            luaContext.Cts.CancelAfter(CommandTimeout);
 
-            var res = lua.Evaluate(code);
-
+            var res = await luaContext.Lua.EvaluateAsync(code, cancellationToken: luaContext.Cts.Token);
             result = res switch
             {
-                { IsEmpty: false, First.Value: var value } => Response(value),
+                { IsEmpty: false, First: var value } => GetResult(value, luaContext),
                 _ => Results.Success
             };
         }
@@ -252,26 +247,31 @@ public static partial class DbModelExtensions
         }
         
         if (result is not DiscordMenuCommandResult)
-            lua.Dispose();
+            luaContext.Dispose();
 
-        return new(result);
+        return result;
 
-        IResult Response(object? value)
+        static IResult GetResult(LuaStackValue value, AdminLuaContext context)
         {
-            return value switch
+            if (value.TryGetValue(out string? text) && !string.IsNullOrWhiteSpace(text))
             {
-                LuaMenu menu => new DiscordMenuCommandResult(interactionContext,
+                return new DiscordInteractionResponseCommandResult(context.CommandContext,
+                    new LocalInteractionMessageResponse().WithContent(text));
+            }
+
+            if (value.TryGetValue(out LuaMessage? message) && message is not null)
+            {
+                return new DiscordInteractionResponseCommandResult(context.CommandContext, LocalInteractionMessageResponse.CreateFrom(message));
+            }
+
+            if (value.TryGetValue(out LuaMenu? menu) && menu is not null)
+            {
+                return new DiscordMenuCommandResult(context.CommandContext,
                     new AdminInteractionMenu(new LuaMenuView(menu),
-                        interactionContext.Interaction, lua), TimeSpan.FromMinutes(2)),
-                string content => new DiscordInteractionResponseCommandResult(interactionContext,
-                    new LocalInteractionMessageResponse().WithContent(content)
-                        .WithAllowedMentions(LocalAllowedMentions.None)),
-                LuaTable msg when msg.ContainsKey("content") || msg.ContainsKey("embed") =>
-                    new DiscordInteractionResponseCommandResult(interactionContext,
-                        DiscordLuaLibraryBase.ConvertMessage<LocalInteractionMessageResponse>(msg)
-                            .WithAllowedMentions(LocalAllowedMentions.None)),
-                _ => Results.Success
-            };
+                        context.CommandContext.Interaction, context), TimeSpan.FromMinutes(2));
+            }
+            
+            return Results.Success;
         }
     }
 }

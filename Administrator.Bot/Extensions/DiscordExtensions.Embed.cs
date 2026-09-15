@@ -1,11 +1,34 @@
 using Administrator.Core;
 using Backpack.Net;
 using Disqord;
+using Disqord.Models;
 
 namespace Administrator.Bot;
 
 public static partial class DiscordExtensions
 {
+    extension(TransientEmbedImage)
+    {
+        public static TransientEmbedImage? FromImageUrl(string? imageUrl)
+        {
+            if (string.IsNullOrWhiteSpace(imageUrl))
+                return null;
+
+            return new TransientEmbedImage(new EmbedImageJsonModel { Url = imageUrl });
+        }
+    }
+
+    extension(TransientEmbedThumbnail)
+    {
+        public static TransientEmbedThumbnail? FromThumbnailUrl(string? thumbnailUrl)
+        {
+            if (string.IsNullOrWhiteSpace(thumbnailUrl))
+                return null;
+
+            return new TransientEmbedThumbnail(new EmbedThumbnailJsonModel { Url = thumbnailUrl });
+        }
+    }
+    
     public static LocalEmbed WithQualityColor(this LocalEmbed embed, Quality quality)
     {
         return embed.WithColor(quality switch

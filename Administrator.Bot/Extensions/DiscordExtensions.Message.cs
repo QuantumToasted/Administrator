@@ -1,10 +1,25 @@
 using Administrator.Core;
 using Disqord;
+using Qommon;
 
 namespace Administrator.Bot;
 
 public static partial class DiscordExtensions
 {
+    extension<TMessage>(TMessage) where TMessage : LocalMessageBase, new()
+    {
+        public static TMessage CreateFrom(LuaMessage msg)
+        {
+            var message = new TMessage
+            {
+                Content = msg.Content,
+                Embeds = msg.Embeds?.Select(LocalEmbed.CreateFrom).ToList() ?? Optional<IList<LocalEmbed>>.Empty
+            };
+
+            return message;
+        }
+    }
+    
     public static LocalMessage ToQuoteMessage(this IUserMessage message, Snowflake? guildId, IUser? quoter = null, IMessageGuildChannel? channel = null)
     {
         var localMessage = new LocalMessage()

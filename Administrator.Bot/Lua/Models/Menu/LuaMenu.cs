@@ -1,12 +1,24 @@
 using Laylua;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 
-public sealed class LuaMenu(LuaTable buttons, LuaTable msg, LuaFunction callback) : ILuaModel<LuaMenu>
+[LuaType] // TODO: reduce LuaTable dependencies
+public sealed partial class LuaMenu
 {
-    public LuaTable Buttons { get; } = buttons.CloneReference();
+    public LuaTable? Buttons { get; set; }
 
-    public LuaTable Msg { get; } = msg.CloneReference();
+    public LuaMessage? Msg { get; set; }
 
-    public LuaFunction Callback { get; } = callback.CloneReference();
+    public LuaFunction? Callback { get; set; }
+
+    public static LuaMenu Create(LuaTable buttons, LuaMessage msg, LuaFunction callback)
+    {
+        return new LuaMenu
+        {
+            Buttons = buttons.CloneReference(),
+            Msg = msg,
+            Callback = callback.CloneReference()
+        };
+    }
 }

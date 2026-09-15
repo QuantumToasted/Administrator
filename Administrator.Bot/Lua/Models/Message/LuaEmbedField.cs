@@ -1,12 +1,15 @@
 using Disqord;
+using Laylua.Marshaling;
 
 namespace Administrator.Bot;
 
-public sealed class LuaEmbedField(IEmbedField field) : ILuaModel<LuaEmbed>
+[LuaType(Construction = LuaConstructionMode.Factory)]
+public sealed partial class LuaEmbedField : IEmbedField
 {
-    public string Name { get; } = field.Name;
-
-    public string Value { get; } = field.Value;
-
-    public bool Inline { get; } = field.IsInline;
+    public required string Name { get; set; }
+    
+    public required string Value { get; set; }
+    
+    [LuaName("inline")]
+    public bool IsInline { get; set; }
 }

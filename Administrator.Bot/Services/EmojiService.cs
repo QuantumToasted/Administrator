@@ -165,15 +165,10 @@ public sealed class EmojiService(HttpClient http, IMemoryCache cache) : DiscordB
     {
         await Bot.WaitUntilReadyAsync(stoppingToken);
         var application = await Bot.FetchCurrentApplicationAsync(cancellationToken: stoppingToken);
-        
-        // TODO: waiting for PR to be merged
-        var apiClient = Bot.ApiClient as IRestApiClient;
-        var route = Route.Get("applications/{0:application_id}/emojis");
-        var formattedRoute = route.Format([application.Id]);
 
-        var emojis = await apiClient.ExecuteAsync<EmojisJsonModel>(formattedRoute, cancellationToken: stoppingToken);
-        var customEmojis = emojis.Items.Select(x => new LocalCustomEmoji(x.Id!.Value, x.Name!, x.Animated.Value));
-        ApplicationEmojis = customEmojis.ToDictionary(x => x.Id.Value);
+        var applicationEmojis = await application.FetchEmojisAsync(cancellationToken: stoppingToken);
+        ApplicationEmojis = applicationEmojis.ToDictionary(x => x.Id, x => LocalEmoji.Custom(x.Id, x.Name, x.IsAnimated));
+        
         Logger.LogInformation("Loaded {Count} application emojis.", ApplicationEmojis.Count);
     }
 

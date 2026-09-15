@@ -25,6 +25,9 @@ public sealed record UserSnapshot(ulong Id, string Name, string? Discriminator, 
     string IUser.Discriminator => Discriminator ?? "0000";
     string IUser.AvatarHash => throw new InvalidOperationException(); // Avatars are prone to deletion, making this useless
     UserFlags IUser.PublicFlags => throw new InvalidOperationException();
+    IUserPrimaryGuild? IUser.PrimaryGuild => throw new InvalidOperationException();
+    IAvatarDecoration? IUser.AvatarDecoration => throw new InvalidOperationException();
+    ICollectibles? IUser.Collectibles => throw new InvalidOperationException();
     IClient IClientEntity.Client => throw new InvalidOperationException();
     void IJsonUpdatable<UserJsonModel>.Update(UserJsonModel model) => throw new InvalidOperationException();
 }

@@ -1,57 +1,68 @@
 using Disqord;
+using Disqord.Bot;
+using Disqord.Gateway;
 using Disqord.Rest;
 using Laylua;
+using Laylua.Marshaling;
+using Qommon;
 
 namespace Administrator.Bot;
 
-public sealed class LuaThreadChannel(IThreadChannel channel, DiscordLuaLibraryBase library) : LuaGuildChannel(channel), ILuaModel<LuaThreadChannel>
+[LuaType]
+public sealed partial class LuaThreadChannel(IThreadChannel channel) : LuaGuildChannel(channel)
 {
-    public long? LastMessageId { get; } = (long?) channel.LastMessageId?.RawValue;
+    public Snowflake? LastMessageId { get; } = channel.LastMessageId;
+
+    public DateTimeOffset? LastPinTimestamp { get; } = channel.LastPinTimestamp;
     
-    public string? LastPinTimestamp { get; } = channel.LastPinTimestamp?.ToString("s");
-    
-    public string Slowmode { get; } = channel.Slowmode.ToString("g");
+    public TimeSpan Slowmode { get; } = channel.Slowmode;
     
     public string Tag { get; } = channel.Tag;
     
-    public long ParentId { get; } = (long) channel.ChannelId.RawValue;
+    [LuaName("parent")]
+    public Snowflake ParentId { get; } = channel.ChannelId;
     
-    public long CreatorId { get; } = (long) channel.CreatorId.RawValue;
+    [LuaName("creator")]
+    public Snowflake CreatorId { get; } = channel.CreatorId;
     
     public int MessageCount { get; } = channel.MessageCount;
     
-    //public int MemberCount { get; } = channel.MemberCount;
+    public string[] Tags { get; } = GetTags(channel);
     
-    public long[] Tags { get; } = channel.TagIds.Select(x => (long) x.RawValue).ToArray();
-    
-    public void SetName(string name)
-        => library.RunWait(ct => channel.ModifyAsync(x => x.Name = name, cancellationToken: ct));
-    
-    public void Delete()
-        => library.RunWait(ct => channel.DeleteAsync(cancellationToken: ct));
-    
-    public long SendMessage(LuaTable msg)
+    public async Task<Snowflake?> SendMessage(LuaMessage msg)
     {
-        var message = DiscordLuaLibraryBase.ConvertMessage<LocalMessage>(msg);
-        var newMessage = library.RunWait(ct => channel.SendMessageAsync(message, cancellationToken: ct));
-        return (long)newMessage.Id.RawValue;
+        try
+        {
+            var message = LocalMessage.CreateFrom(msg);
+            var sentMessage = await channel.SendMessageAsync(message);
+            return sentMessage.Id;
+        }
+        catch
+        {
+            return null;
+        }
     }
     
-    public LuaMessage? GetMessage(long id)
+    public async Task<LuaDiscordMessage?> GetMessage(Snowflake id)
     {
-        var message = library.RunWait(async ct =>
+        try
         {
-            try
-            {
-                var m = await channel.GetOrFetchMessageAsync((ulong)id, ct);
-                return m;
-            }
-            catch
-            {
-                return null;
-            }
-        });
+            var message = await channel.GetOrFetchMessageAsync(id);
+            return message is not null
+                ? new LuaDiscordMessage(message)
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-        return message is not null ? new LuaMessage(message, channel.GuildId, library) : null;
+    private static string[] GetTags(IThreadChannel channel)
+    {
+        var bot = (DiscordBotBase) channel.Client;
+        return (bot.GetChannel(channel.GuildId, channel.ChannelId) as IForumChannel)?.Tags
+            .Where(x => channel.TagIds.Contains(x.Id))
+            .Select(x => x.Name).ToArray() ?? [];
     }
 }
