@@ -43,29 +43,6 @@ public sealed partial class UserModule(AttachmentService attachments) : DiscordA
 
             if (member.GetHighestRole(x => x.Color.HasValue) is { } role)
                 embed.WithColor(role.Color!.Value);
-
-            /*
-            if (member.GetPresence() is { } presence)
-            {
-                embed.AddField("Status", presence.Status);
-
-                if (presence.Activities.FirstOrDefault(x => x is not ICustomActivity) is { } activity)
-                {
-                    var footerText = activity switch
-                    {
-                        IRichActivity richActivity => !string.IsNullOrWhiteSpace(richActivity.Details)
-                            ? $"{richActivity.Name} ({richActivity.Details})"
-                            : richActivity.Name,
-                        ISpotifyActivity spotifyActivity => $"Listening to \"{spotifyActivity.TrackTitle}\" by {string.Join(", ", spotifyActivity.Artists)} on Spotify",
-                        IStreamingActivity streamingActivity => $"Streaming now: \"{streamingActivity.Name}\" - {streamingActivity.Url}",
-                        _ => null
-                    };
-
-                    if (!string.IsNullOrWhiteSpace(footerText))
-                        embed.WithFooter(footerText.Truncate(Discord.Limits.Message.Embed.Footer.MaxTextLength));
-                }
-            }
-            */
         }
 
         embed.AddField("Account created",
